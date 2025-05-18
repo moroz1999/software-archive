@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mydb
+      SPRING_DATASOURCE_USERNAME: myuser
+      SPRING_DATASOURCE_PASSWORD: mypassword
+    depends_on:
+      - postgres
+      - typesense
+
+  frontend:
+    image: node:20-alpine
+    volumes:
+      - ./frontend:/app
+    working_dir: /app
+    command: sh -c "npm install && npm run dev"
+    ports:
+      - "3000:5173"
+#    depends_on:
+#      - backend
+
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  typesense:
+    image: typesense/typesense:28.0
+    ports:
+      - "8108:8108"
+    environment:
+      TYPESENSE_API_KEY: my-secret-key
+    volumes:
+      - typesense-data:/data
+    command: '--data-dir /data --api-key=my-secret-key --listen-port=8108'
+
+volumes:
+  pgdata:
+  typesense-data:
