@@ -16,9 +16,11 @@ public class Software {
     @Id
     private UUID id;
 
-    private String name;
+    private String title;
     private String description;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+    @Column(name = "release_date")
+    private LocalDateTime releaseDate;
 }
