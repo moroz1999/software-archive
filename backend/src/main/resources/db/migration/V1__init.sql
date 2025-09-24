@@ -1,11 +1,11 @@
 -- Base software table
 CREATE TABLE software
 (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-    title        TEXT        NOT NULL,
+    id           UUID PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+    title        TEXT                                       NOT NULL,
     description  TEXT,
-    created_at   TIMESTAMP   DEFAULT now(),
-    release_date TIMESTAMP   DEFAULT NULL
+    created_at   TIMESTAMPTZ      DEFAULT now(),
+    release_date DATE        DEFAULT NULL
 );
 
 -- Software alternative titles
@@ -14,7 +14,7 @@ CREATE TABLE software_alternative_titles
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
     title       TEXT                                       NOT NULL,
     software_id UUID                                       NOT NULL,
-    lang_code   VARCHAR(10) DEFAULT NULL,
+    lang_code   VARCHAR(10)      DEFAULT NULL,
     CONSTRAINT software_alternative_titles_software_id_fk
         FOREIGN KEY (software_id)
             REFERENCES software (id)
@@ -26,7 +26,7 @@ CREATE TABLE software_languages
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
     software_id UUID                                       NOT NULL
         REFERENCES software,
-    language    VARCHAR(10)                               NOT NULL
+    language    VARCHAR(10)                                NOT NULL
 );
 
 -- Software link type as table (final design)
@@ -73,9 +73,10 @@ CREATE TABLE city
 -- Person
 CREATE TABLE person
 (
-    id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    real_name TEXT,
-    notes     TEXT
+    id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    real_name  TEXT,
+    created_at TIMESTAMPTZ      DEFAULT now(),
+    notes      TEXT
 );
 
 -- Group type
@@ -87,9 +88,10 @@ CREATE TABLE group_type
 -- Group
 CREATE TABLE "group"
 (
-    id    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name  TEXT NOT NULL,
-    notes TEXT
+    id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name       TEXT NOT NULL,
+    created_at TIMESTAMPTZ      DEFAULT now(),
+    notes      TEXT
 );
 
 -- Group - group type relation
@@ -107,7 +109,8 @@ CREATE TABLE alias
     name            TEXT NOT NULL,
     person_id       UUID REFERENCES person (id),
     group_id        UUID REFERENCES "group" (id),
-    is_display_name BOOLEAN DEFAULT FALSE
+    created_at      TIMESTAMPTZ      DEFAULT now(),
+    is_display_name BOOLEAN          DEFAULT FALSE
 );
 
 -- Alias - city relation
@@ -161,6 +164,7 @@ CREATE TABLE event
     type        TEXT REFERENCES event_type (code),
     description TEXT,
     website     TEXT,
+    created_at  TIMESTAMPTZ      DEFAULT now(),
     date_start  DATE,
     date_end    DATE
 );
@@ -202,6 +206,6 @@ CREATE TABLE entity_location
     entity_id   UUID NOT NULL,
     city_id     UUID REFERENCES city (id),
     country_id  UUID REFERENCES country (id),
-    is_primary  BOOLEAN DEFAULT FALSE,
+    is_primary  BOOLEAN          DEFAULT FALSE,
     notes       TEXT
 );

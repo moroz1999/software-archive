@@ -1,12 +1,12 @@
 import {BrowserRouter as Router, Route, Routes} from 'react-router';
-import {SoftwareList} from '../../features/software-list/ui/SoftwareList.tsx';
+import {Software} from '../pages/Software.tsx';
 
 function App() {
 
     return (
         <Router>
             <Routes>
-                <Route path="/" element={<SoftwareList/>}></Route>
+                <Route path="/" element={<Software/>}></Route>
             </Routes>
         </Router>
     );
