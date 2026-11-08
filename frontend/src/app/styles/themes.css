@@ -1,0 +1,44 @@
+/*
+ * Semantic theme variables over the palette (palette.css).
+ * Light by default, dark by prefers-color-scheme only: there is no manual switch.
+ * Never used by components directly: only theme files map component variables onto these.
+ */
+:root {
+    /* Text. */
+    --text-color: var(--secondary-800);
+    --text-light-color: var(--secondary-600);
+    --error-color: var(--danger-400);
+
+    /* Links. */
+    --link-color: var(--primary-600);
+    --link-alt-color: var(--warning-400);
+
+    /* Surfaces. */
+    --surface: var(--white);
+    --background-page: var(--secondary-50);
+    --background-dark: var(--secondary-200);
+    --background-deep: var(--secondary-100);
+
+    /* Borders. */
+    --border-color: var(--secondary-200);
+    --border-light: var(--border-width-thin) solid var(--secondary-200);
+    --border-focused: var(--secondary-950);
+
+    /* Focus ring of interactive elements. */
+    --focus-ring-color: var(--primary-400);
+
+    /* Highlight sweeping over loading placeholders. */
+    --shimmer-color: rgb(255 255 255 / 60%);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --text-color: var(--secondary-900);
+        --link-color: var(--primary-700);
+        --surface: var(--secondary-100);
+        --background-dark: var(--secondary-100);
+        --background-deep: var(--secondary-50);
+        --border-focused: var(--white);
+        --shimmer-color: rgb(255 255 255 / 8%);
+    }
+}

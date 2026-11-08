@@ -1,0 +1,31 @@
+.input {
+    width: 100%;
+    height: var(--input-height);
+    padding: var(--input-padding);
+    border-width: var(--input-border-width);
+    border-style: solid;
+    border-color: var(--input-border-color);
+    border-radius: var(--input-radius);
+    outline: none;
+    background: var(--input-bg);
+    color: var(--input-text);
+    font-family: inherit;
+    font-size: var(--input-font-size);
+    line-height: var(--input-line-height);
+    transition: border-color var(--input-transition) ease-in-out, box-shadow var(--input-transition) ease-in-out;
+}
+
+.input:focus-visible {
+    border-color: var(--input-focus-border-color);
+    box-shadow: var(--input-focus-ring);
+}
+
+.input:disabled {
+    background: var(--input-disabled-bg);
+    cursor: not-allowed;
+}
+
+.invalid,
+.invalid:focus-visible {
+    border-color: var(--input-invalid-border-color);
+}

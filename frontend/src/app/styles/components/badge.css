@@ -1,0 +1,30 @@
+:root {
+    /* Font size, padding and corner radius. */
+    --badge-font-size: var(--font-size-xs);
+    --badge-padding: var(--space-2) var(--space-4);
+    --badge-radius: var(--radius-xl);
+
+    /* Border width. */
+    --badge-border-width: var(--border-width-thin);
+
+    /* Primary variant: background, text and border. */
+    --badge-primary-bg: var(--primary-500);
+    --badge-primary-text: var(--white);
+    --badge-primary-border: var(--primary-600);
+
+    /* Secondary variant: background, text and border. */
+    --badge-secondary-bg: var(--secondary-100);
+    --badge-secondary-text: var(--secondary-900);
+    --badge-secondary-border: var(--secondary-400);
+
+    /* Hover of a clickable badge: transition duration and opacity. */
+    --badge-hover-transition: var(--animation-sm);
+    --badge-hover-opacity: 0.8;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --badge-secondary-text: var(--secondary-800);
+        --badge-secondary-border: var(--secondary-200);
+    }
+}

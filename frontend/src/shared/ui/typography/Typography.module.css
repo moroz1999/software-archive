@@ -1,0 +1,92 @@
+.display {
+    margin: 0;
+    font-size: var(--typography-display-size);
+    font-weight: var(--typography-display-weight);
+    line-height: var(--typography-display-line-height);
+    overflow-wrap: anywhere;
+}
+
+.headline {
+    margin: 0;
+    font-size: var(--typography-headline-size);
+    font-weight: var(--typography-headline-weight);
+    line-height: var(--typography-headline-line-height);
+    overflow-wrap: anywhere;
+}
+
+.title {
+    margin: 0;
+    font-size: var(--typography-title-size);
+    font-weight: var(--typography-title-weight);
+    line-height: var(--typography-title-line-height);
+    overflow-wrap: anywhere;
+}
+
+.body {
+    margin: 0;
+    font-size: var(--typography-body-size);
+    font-weight: var(--typography-body-weight);
+    line-height: var(--typography-body-line-height);
+}
+
+.bodySm {
+    margin: 0;
+    font-size: var(--typography-body-sm-size);
+    font-weight: var(--typography-body-sm-weight);
+    line-height: var(--typography-body-sm-line-height);
+}
+
+.mono {
+    margin: 0;
+    font-family: var(--typography-mono-family);
+    font-size: var(--typography-mono-size);
+    font-weight: var(--typography-mono-weight);
+    line-height: var(--typography-mono-line-height);
+}
+
+.caption {
+    margin: 0;
+    font-size: var(--typography-caption-size);
+    font-weight: var(--typography-caption-weight);
+    line-height: var(--typography-caption-line-height);
+}
+
+.label {
+    margin: 0;
+    font-size: var(--typography-label-size);
+    font-weight: var(--typography-label-weight);
+    line-height: var(--typography-label-line-height);
+}
+
+.tonePrimary { color: var(--typography-primary-color); }
+.toneMuted { color: var(--typography-muted-color); }
+.toneDanger { color: var(--typography-danger-color); }
+.toneInherit { color: inherit; }
+
+.toneStrong {
+    color: var(--typography-primary-color);
+    font-weight: var(--typography-strong-weight);
+}
+
+.toneLink,
+.toneMutedLink,
+.toneLinkAlt {
+    text-decoration: var(--typography-link-decoration);
+    cursor: pointer;
+}
+
+.toneLink { color: var(--typography-link-color); }
+.toneMutedLink { color: var(--typography-muted-link-color); }
+.toneLinkAlt { color: var(--typography-link-alt-color); }
+
+.toneLink:hover,
+.toneMutedLink:hover,
+.toneLinkAlt:hover {
+    text-decoration: var(--typography-link-hover-decoration);
+}
+
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

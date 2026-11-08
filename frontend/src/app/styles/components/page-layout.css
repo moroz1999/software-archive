@@ -1,0 +1,13 @@
+:root {
+    /* Maximal width of the page content. */
+    --page-layout-max-width: 1200px;
+
+    /* Space between the page content and the viewport edges. */
+    --page-layout-padding: var(--space-32) var(--space-16);
+
+    /* Space between the page header and the content area. */
+    --page-layout-header-content-gap: var(--space-24);
+
+    /* Space between independent page content blocks. */
+    --page-layout-content-block-gap: var(--space-48);
+}

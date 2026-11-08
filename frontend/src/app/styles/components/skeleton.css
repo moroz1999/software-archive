@@ -1,0 +1,13 @@
+:root {
+    /* Placeholder fill. */
+    --skeleton-bg: var(--background-deep);
+
+    /* Highlight sweeping over the placeholder. */
+    --skeleton-shimmer: var(--shimmer-color);
+
+    /* Duration of one shimmer sweep. */
+    --skeleton-shimmer-duration: 1.8s;
+
+    /* Corner radius. */
+    --skeleton-radius: var(--radius-sm);
+}

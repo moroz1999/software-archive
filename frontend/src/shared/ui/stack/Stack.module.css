@@ -1,0 +1,20 @@
+.stack {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.gapNone { gap: var(--stack-gap-none); }
+.gapXs { gap: var(--stack-gap-xs); }
+.gapSm { gap: var(--stack-gap-sm); }
+.gapMd { gap: var(--stack-gap-md); }
+.gapLg { gap: var(--stack-gap-lg); }
+.gapXl { gap: var(--stack-gap-xl); }
+.gapXxl { gap: var(--stack-gap-xxl); }
+
+.alignCenter { align-items: center; }
+.alignStart { align-items: flex-start; }
+.alignEnd { align-items: flex-end; }
+.alignStretch { align-items: stretch; }

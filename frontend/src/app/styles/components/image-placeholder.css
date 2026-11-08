@@ -1,0 +1,10 @@
+:root {
+    /* Fill standing in for the missing image. */
+    --image-placeholder-bg: var(--background-deep);
+
+    /* Color of the picture glyph. */
+    --image-placeholder-icon-color: var(--secondary-300);
+
+    /* Size of the picture glyph. */
+    --image-placeholder-icon-size: var(--space-48);
+}

@@ -1,0 +1,33 @@
+.badge {
+    display: inline-block;
+    margin: 0;
+    padding: var(--badge-padding);
+    border-width: var(--badge-border-width);
+    border-style: solid;
+    border-radius: var(--badge-radius);
+    font: inherit;
+    font-size: var(--badge-font-size);
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.primary {
+    border-color: var(--badge-primary-border);
+    background-color: var(--badge-primary-bg);
+    color: var(--badge-primary-text);
+}
+
+.secondary {
+    border-color: var(--badge-secondary-border);
+    background-color: var(--badge-secondary-bg);
+    color: var(--badge-secondary-text);
+}
+
+.clickable {
+    cursor: pointer;
+    transition: opacity var(--badge-hover-transition) ease-in-out;
+}
+
+.clickable:hover {
+    opacity: var(--badge-hover-opacity);
+}

@@ -1,0 +1,15 @@
+.placeholder {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    background: var(--image-placeholder-bg);
+    color: var(--image-placeholder-icon-color);
+}
+
+.ratio4x3 { aspect-ratio: 4 / 3; }
+.ratio1x1 { aspect-ratio: 1; }
+
+.icon {
+    width: var(--image-placeholder-icon-size);
+    height: var(--image-placeholder-icon-size);
+}

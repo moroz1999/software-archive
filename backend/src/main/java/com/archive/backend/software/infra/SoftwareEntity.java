@@ -11,8 +11,8 @@ import java.util.UUID;
 @Table(name = "software")
 @Data
 public class SoftwareEntity {
+    /** Assigned by the domain, never generated. */
     @Id
-    @GeneratedValue
     private UUID id;
 
     @Column(nullable = false)
@@ -20,7 +20,8 @@ public class SoftwareEntity {
 
     private String description;
 
-    @Column(name = "created_at", columnDefinition = "timestamptz")
+    /** Set by the database default. */
+    @Column(name = "created_at", columnDefinition = "timestamptz", insertable = false, updatable = false)
     private Instant createdAt;
 
     @Column(name = "release_date")

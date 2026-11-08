@@ -1,0 +1,29 @@
+:root {
+    /* Height, inner padding, font size and line height. */
+    --input-height: 36px;
+    --input-padding: 0 var(--space-12);
+    --input-font-size: var(--font-size-md);
+    --input-line-height: var(--line-height-normal);
+
+    /* Border width and corner radius. */
+    --input-border-width: var(--border-width-thin);
+    --input-radius: var(--radius-lg);
+
+    /* Surface, text and border colors. */
+    --input-bg: var(--surface);
+    --input-text: var(--text-color);
+    --input-border-color: var(--border-color);
+
+    /* Keyboard focus: border color and ring. */
+    --input-focus-border-color: var(--focus-ring-color);
+    --input-focus-ring: 0 0 0 var(--border-width-thin) var(--focus-ring-color);
+
+    /* Border color of an input with an error. */
+    --input-invalid-border-color: var(--error-color);
+
+    /* Background of a disabled input. */
+    --input-disabled-bg: var(--background-deep);
+
+    /* Duration of border and focus transitions. */
+    --input-transition: var(--animation-sm);
+}

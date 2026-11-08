@@ -1,0 +1,26 @@
+:root {
+    /* Backdrop dimming the page under the dialog. */
+    --dialog-backdrop-bg: var(--overlay-bg);
+
+    /* Space kept between the dialog and the viewport edges. */
+    --dialog-viewport-padding: var(--space-16);
+
+    /* Maximal dialog width. */
+    --dialog-max-width: 480px;
+
+    /* Inner padding. */
+    --dialog-padding: var(--space-24);
+
+    /* Corner radius. */
+    --dialog-radius: var(--radius-xl);
+
+    /* Surface and text color. */
+    --dialog-bg: var(--surface);
+    --dialog-text: var(--text-color);
+
+    /* Shadow lifting the dialog off the backdrop. */
+    --dialog-shadow: var(--shadow-lg);
+
+    /* Stacking layer. */
+    --dialog-layer: var(--layer-dialog);
+}

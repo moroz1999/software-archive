@@ -1,0 +1,46 @@
+.spinner {
+    --spinner-size: var(--spinner-size-md);
+
+    position: relative;
+    display: inline-block;
+    width: var(--spinner-size);
+    height: var(--spinner-size);
+}
+
+.xs { --spinner-size: var(--spinner-size-xs); }
+.sm { --spinner-size: var(--spinner-size-sm); }
+.md { --spinner-size: var(--spinner-size-md); }
+.lg { --spinner-size: var(--spinner-size-lg); }
+.xl { --spinner-size: var(--spinner-size-xl); }
+
+.ring {
+    position: absolute;
+    inset: 0;
+    border-width: var(--spinner-ring-width);
+    border-style: solid;
+    border-color: transparent;
+    border-radius: 50%;
+    animation: rotate var(--spinner-speed) var(--spinner-easing) infinite;
+}
+
+.ring:nth-child(1) {
+    border-top-color: var(--spinner-ring-color-1);
+    animation-delay: var(--spinner-delay-1);
+}
+
+.ring:nth-child(2) {
+    inset: var(--spinner-ring-step);
+    border-top-color: var(--spinner-ring-color-2);
+    animation-delay: var(--spinner-delay-2);
+}
+
+.ring:nth-child(3) {
+    inset: var(--spinner-ring-step-double);
+    border-top-color: var(--spinner-ring-color-3);
+    animation-delay: var(--spinner-delay-3);
+}
+
+@keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

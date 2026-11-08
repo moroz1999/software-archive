@@ -1,0 +1,38 @@
+.bone {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: var(--skeleton-radius);
+    background: var(--skeleton-bg);
+}
+
+.inline {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Off-screen bones are not painted, so their shimmer costs nothing. */
+.bone[data-offscreen] {
+    visibility: hidden;
+}
+
+.bone::after {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, var(--skeleton-shimmer) 50%, transparent 100%);
+    transform: translateX(-100%);
+    content: "";
+}
+
+.animated::after {
+    animation: shimmer var(--skeleton-shimmer-duration) ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .animated::after { animation: none; }
+}

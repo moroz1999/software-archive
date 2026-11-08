@@ -5,26 +5,56 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "build": "npm run typecheck && vite build",
+    "lint": "eslint . --max-warnings 0",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint:fsd": "steiger ./src",
+    "lint:css": "stylelint \"src/**/*.css\" --allow-empty-input --max-warnings 0",
+    "css:types": "tcm --pattern 'src/**/*.module.css' --namedExports=false",
+    "typecheck": "npm run css:types && tsc -b",
+    "check": "npm run typecheck && npm run lint && npm run lint:css && npm run lint:fsd && npm test"
   },
   "dependencies": {
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-router": "^7.9.1"
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-router": "^8.5.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
-    "@types/react": "^19.1.2",
-    "@types/react-dom": "^19.1.2",
+    "@feature-sliced/steiger-plugin": "^0.8.2",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.8",
+    "@types/node": "^20.19.43",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^5.0.3",
+    "@vitest/eslint-plugin": "^1.6.27",
     "eslint": "^9.25.0",
-    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.4.19",
+    "eslint-plugin-testing-library": "^7.16.2",
     "globals": "^16.0.0",
+    "jsdom": "^29.1.1",
+    "steiger": "^0.6.0",
+    "stylelint": "^17.16.0",
+    "stylelint-config-css-modules": "^4.6.0",
+    "stylelint-config-standard": "^40.0.0",
+    "stylelint-declaration-strict-value": "^1.12.1",
+    "typed-css-modules": "^0.9.1",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.44.1",
-    "vite": "^7.1.7"
+    "vite": "^7.1.7",
+    "vitest": "^4.1.12"
+  },
+  "overrides": {
+    "eslint-plugin-react-hooks": {
+      "zod-validation-error": "^4.0.0"
+    }
   }
 }

@@ -1,15 +1,20 @@
-import {BrowserRouter as Router, Route, Routes} from 'react-router';
-import {Software} from '../pages/Software.tsx';
+import {RouterProvider} from 'react-router';
+import {SystemErrorDialog} from '../widgets/system-error-dialog';
+import type {AppRouter} from './router';
 
-function App() {
-
-    return (
-        <Router>
-            <Routes>
-                <Route path="/" element={<Software/>}></Route>
-            </Routes>
-        </Router>
-    );
+export interface AppProps {
+    /**
+     * Created once, outside React: a router starts the first route's preload as soon as it exists and
+     * listens to the browser history, so a second one (StrictMode renders twice) would load everything twice.
+     */
+    readonly router: AppRouter;
 }
 
-export default App;
+export function App({router}: AppProps) {
+    return (
+        <>
+            <RouterProvider router={router}/>
+            <SystemErrorDialog/>
+        </>
+    );
+}

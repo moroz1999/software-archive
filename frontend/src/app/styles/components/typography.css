@@ -1,0 +1,63 @@
+:root {
+    /* Display: page-level h1 headings. */
+    --typography-display-size: var(--font-size-xxl);
+    --typography-display-weight: var(--font-weight-medium);
+    --typography-display-line-height: var(--line-height-tight);
+
+    /* Headline: section-level h2 headings. */
+    --typography-headline-size: var(--font-size-xl);
+    --typography-headline-weight: var(--font-weight-medium);
+    --typography-headline-line-height: var(--line-height-snug);
+
+    /* Title: panel, card and subsection headings. */
+    --typography-title-size: var(--font-size-lg);
+    --typography-title-weight: var(--font-weight-medium);
+    --typography-title-line-height: var(--line-height-heading);
+
+    /* Body: primary readable content. */
+    --typography-body-size: var(--font-size-md);
+    --typography-body-weight: var(--font-weight-regular);
+    --typography-body-line-height: var(--line-height-normal);
+
+    /* Small body: secondary readable paragraphs. */
+    --typography-body-sm-size: var(--font-size-sm);
+    --typography-body-sm-weight: var(--font-weight-regular);
+    --typography-body-sm-line-height: var(--line-height-compact);
+
+    /* Mono: text laid out on a fixed-width grid; a fixed-width face needs its own size and leading. */
+    --typography-mono-family: var(--font-family-mono);
+    --typography-mono-size: var(--font-size-mono);
+    --typography-mono-weight: var(--font-weight-regular);
+    --typography-mono-line-height: var(--line-height-loose);
+
+    /* Caption: supporting descriptions and metadata. */
+    --typography-caption-size: var(--font-size-sm);
+    --typography-caption-weight: var(--font-weight-regular);
+    --typography-caption-line-height: var(--line-height-compact);
+
+    /* Label: compact labels and control captions. */
+    --typography-label-size: var(--font-size-sm);
+    --typography-label-weight: var(--font-weight-regular);
+    --typography-label-line-height: var(--line-height-compact);
+
+    /* Primary text tone. */
+    --typography-primary-color: var(--text-color);
+
+    /* Muted text tone. */
+    --typography-muted-color: var(--text-light-color);
+
+    /* Weight of the strong tone. */
+    --typography-strong-weight: var(--font-weight-medium);
+
+    /* Link, muted link and alternative link tones. */
+    --typography-link-color: var(--link-color);
+    --typography-muted-link-color: var(--text-light-color);
+    --typography-link-alt-color: var(--link-alt-color);
+
+    /* Error tone. */
+    --typography-danger-color: var(--error-color);
+
+    /* Link decoration at rest and on hover. */
+    --typography-link-decoration: none;
+    --typography-link-hover-decoration: underline;
+}

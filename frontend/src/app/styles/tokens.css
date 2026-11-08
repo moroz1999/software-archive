@@ -1,0 +1,79 @@
+/*
+ * Base tokens: spacing, font sizes, radii, borders, durations, layers.
+ * Never used by components directly: only theme files map component variables onto these.
+ * Adding or changing a token needs the user's approval (docs/styles.md).
+ */
+:root {
+    /* Spacing scale. */
+    --space-2: 2px;
+    --space-4: 4px;
+    --space-8: 8px;
+    --space-12: 12px;
+    --space-16: 16px;
+    --space-20: 20px;
+    --space-24: 24px;
+    --space-32: 32px;
+    --space-40: 40px;
+    --space-48: 48px;
+    --space-64: 64px;
+
+    /* Named gaps between siblings. */
+    --gap-sm: var(--space-8);
+    --gap-md: var(--space-12);
+    --gap-lg: var(--space-16);
+    --gap-xl: var(--space-32);
+    --gap-xxl: var(--space-48);
+
+    /* Named inner paddings. */
+    --padding-xs: var(--space-4);
+    --padding-sm: var(--space-8);
+    --padding-md: var(--space-12);
+    --padding-lg: var(--space-16);
+    --padding-xl: var(--space-32);
+
+    /* Font families. */
+    --font-family-base: system-ui, -apple-system, "Segoe UI", roboto, sans-serif;
+    --font-family-mono: ui-monospace, sfmono-regular, menlo, consolas, monospace;
+
+    /* Font size tiers. */
+    --font-size-xs: 12px;
+    --font-size-sm: 13px;
+    --font-size-md: 14px;
+    --font-size-lg: 18px;
+    --font-size-xl: 21px;
+    --font-size-xxl: 23px;
+    --font-size-mono: 16px;
+
+    /* Font weights. */
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+
+    /* Line heights. */
+    --line-height-tight: 1.2;
+    --line-height-snug: 1.25;
+    --line-height-heading: 1.3;
+    --line-height-compact: 1.4;
+    --line-height-normal: 1.5;
+    --line-height-loose: 1.6;
+
+    /* Border radii. */
+    --radius-xs: 1px;
+    --radius-sm: 2px;
+    --radius-md: 3px;
+    --radius-lg: 6px;
+    --radius-xl: 12px;
+    --radius-pill: 999px;
+
+    /* Border widths. */
+    --border-width-thin: 1px;
+    --border-width-thick: 2px;
+
+    /* Animation durations. */
+    --animation-xs: 100ms;
+    --animation-sm: 200ms;
+    --animation-md: 300ms;
+
+    /* Stacking layers. */
+    --layer-overlay: 900;
+    --layer-dialog: 1000;
+}

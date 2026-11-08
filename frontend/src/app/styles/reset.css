@@ -1,0 +1,22 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+:root {
+    color-scheme: light dark;
+}
+
+html,
+body {
+    margin: 0;
+}
+
+body {
+    background: var(--background-page);
+    color: var(--text-color);
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-md);
+    line-height: var(--line-height-normal);
+}

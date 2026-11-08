@@ -1,0 +1,20 @@
+.inset {
+    --inset-active-padding: var(--inset-padding-md);
+
+    display: block;
+}
+
+.paddingNone { --inset-active-padding: var(--inset-padding-none); }
+.paddingXs { --inset-active-padding: var(--inset-padding-xs); }
+.paddingSm { --inset-active-padding: var(--inset-padding-sm); }
+.paddingMd { --inset-active-padding: var(--inset-padding-md); }
+.paddingLg { --inset-active-padding: var(--inset-padding-lg); }
+.paddingXl { --inset-active-padding: var(--inset-padding-xl); }
+
+.sideAll { padding: var(--inset-active-padding); }
+.sideBlock { padding-block: var(--inset-active-padding); }
+.sideInline { padding-inline: var(--inset-active-padding); }
+.sideTop { padding-top: var(--inset-active-padding); }
+.sideRight { padding-right: var(--inset-active-padding); }
+.sideBottom { padding-bottom: var(--inset-active-padding); }
+.sideLeft { padding-left: var(--inset-active-padding); }

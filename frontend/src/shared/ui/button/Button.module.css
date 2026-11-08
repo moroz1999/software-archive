@@ -1,0 +1,214 @@
+.button {
+    --button-ripple-x: 0;
+    --button-ripple-y: 0;
+    --button-ripple-size: 0;
+    --button-ripple-mix: var(--button-ripple-strong-mix);
+    --button-ripple-opacity: var(--button-ripple-strong-opacity);
+    --button-current-height: var(--button-md-height);
+
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 100%;
+    margin: 0;
+    overflow: hidden;
+    border-width: var(--button-border-width);
+    border-style: solid;
+    border-color: transparent;
+    border-radius: var(--button-radius);
+    outline: none;
+    font-family: inherit;
+    font-weight: var(--button-font-weight);
+    line-height: var(--button-line-height);
+    text-decoration: none;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    user-select: none;
+    transition:
+        background-color var(--button-transition) ease-in-out,
+        color var(--button-transition) ease-in-out,
+        border-color var(--button-transition) ease-in-out,
+        box-shadow var(--button-transition) ease-in-out;
+}
+
+.button:focus-visible {
+    box-shadow: var(--button-focus-ring);
+}
+
+.button:is(:disabled, [aria-disabled="true"]) {
+    cursor: not-allowed;
+    opacity: var(--button-disabled-opacity);
+    pointer-events: none;
+}
+
+.xs {
+    --button-current-height: var(--button-xs-height);
+
+    height: var(--button-xs-height);
+    padding: var(--button-xs-padding);
+    font-size: var(--button-xs-font-size);
+}
+
+.sm {
+    --button-current-height: var(--button-sm-height);
+
+    height: var(--button-sm-height);
+    padding: var(--button-sm-padding);
+    font-size: var(--button-sm-font-size);
+}
+
+.md {
+    --button-current-height: var(--button-md-height);
+
+    height: var(--button-md-height);
+    padding: var(--button-md-padding);
+    font-size: var(--button-md-font-size);
+}
+
+.primary {
+    background-color: var(--button-primary-bg);
+    color: var(--button-primary-text);
+}
+
+.primary:hover {
+    background-color: var(--button-primary-hover-bg);
+}
+
+.primary:is(:disabled, [aria-disabled="true"]) {
+    background-color: var(--button-primary-disabled-bg);
+    color: var(--button-primary-disabled-text);
+}
+
+.secondary,
+.danger {
+    --button-ripple-mix: var(--button-ripple-medium-mix);
+    --button-ripple-opacity: var(--button-ripple-medium-opacity);
+}
+
+.secondary {
+    background-color: var(--button-secondary-bg);
+    color: var(--button-secondary-text);
+}
+
+.secondary:hover {
+    background-color: var(--button-secondary-hover-bg);
+}
+
+.secondary:is(:disabled, [aria-disabled="true"]) {
+    background-color: var(--button-secondary-disabled-bg);
+    color: var(--button-secondary-disabled-text);
+}
+
+.danger {
+    background-color: var(--button-danger-bg);
+    color: var(--button-danger-text);
+}
+
+.danger:hover {
+    background-color: var(--button-danger-hover-bg);
+}
+
+.danger:is(:disabled, [aria-disabled="true"]) {
+    background-color: var(--button-danger-disabled-bg);
+    color: var(--button-danger-disabled-text);
+}
+
+.transparent,
+.outlined {
+    --button-ripple-mix: var(--button-ripple-soft-mix);
+    --button-ripple-opacity: var(--button-ripple-soft-opacity);
+}
+
+.transparent {
+    background-color: var(--button-transparent-bg);
+    color: var(--button-transparent-text);
+}
+
+.transparent:hover {
+    background-color: var(--button-transparent-hover-bg);
+}
+
+.transparent:is(:disabled, [aria-disabled="true"]) {
+    background-color: var(--button-transparent-bg);
+    color: var(--button-transparent-disabled-text);
+}
+
+.outlined {
+    border-color: var(--button-outlined-border);
+    background-color: var(--button-outlined-bg);
+    color: var(--button-outlined-text);
+}
+
+.outlined:is(:hover, :focus-visible) {
+    background-color: var(--button-outlined-hover-bg);
+}
+
+.outlined:is(:disabled, [aria-disabled="true"]) {
+    border-color: var(--button-outlined-disabled-border);
+    background-color: var(--button-outlined-bg);
+    color: var(--button-outlined-disabled-text);
+}
+
+.round {
+    border-radius: var(--button-round-radius);
+}
+
+.square,
+.round {
+    width: var(--button-current-height);
+    min-width: 0;
+    padding: 0;
+}
+
+.block {
+    display: flex;
+    width: 100%;
+}
+
+.content {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--button-content-gap);
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ripple {
+    position: absolute;
+    top: var(--button-ripple-y);
+    left: var(--button-ripple-x);
+    width: var(--button-ripple-size);
+    height: var(--button-ripple-size);
+    border-radius: 50%;
+    background-color: color-mix(in srgb, currentcolor var(--button-ripple-mix), transparent);
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.04);
+    pointer-events: none;
+}
+
+.rippling > .ripple {
+    animation:
+        rippleExpand var(--button-ripple-duration) cubic-bezier(0.2, 1.08, 0.3, 1),
+        rippleFade var(--button-ripple-duration) ease-out forwards;
+}
+
+@keyframes rippleExpand {
+    0% { transform: translate(-50%, -50%) scale(0.04); }
+    72% { transform: translate(-50%, -50%) scale(1.06); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes rippleFade {
+    0% { opacity: var(--button-ripple-opacity); }
+    100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rippling > .ripple { animation: none; }
+}

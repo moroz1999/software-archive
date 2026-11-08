@@ -1,0 +1,49 @@
+.panel {
+    --panel-active-padding: var(--panel-padding-md);
+
+    display: block;
+    background-color: var(--panel-bg);
+}
+
+.elevated { box-shadow: var(--panel-shadow); }
+.flat { border: var(--panel-flat-border); }
+
+.radiusSm { border-radius: var(--panel-radius-sm); }
+.radiusMd { border-radius: var(--panel-radius-md); }
+.radiusLg { border-radius: var(--panel-radius-lg); }
+.radiusXl { border-radius: var(--panel-radius-xl); }
+
+.paddingNone { --panel-active-padding: 0; }
+.paddingSm { --panel-active-padding: var(--panel-padding-sm); }
+.paddingMd { --panel-active-padding: var(--panel-padding-md); }
+.paddingLg { --panel-active-padding: var(--panel-padding-lg); }
+
+.surfaceDefault { background-color: var(--panel-bg); }
+.surfaceMuted { background-color: var(--panel-bg-muted); }
+.surfacePrimary { background-color: var(--panel-bg-primary); }
+
+/* A tinted surface is told apart by its fill, so a flat one drops the border. */
+.flat.surfaceMuted,
+.flat.surfacePrimary {
+    border: 0;
+}
+
+/* Edge-to-edge content (images) clipped by the panel corners. */
+.bleed { overflow: hidden; }
+
+.title {
+    margin-bottom: var(--panel-title-gap);
+    padding: var(--panel-active-padding) var(--panel-active-padding) 0;
+}
+
+.body {
+    padding: 0 var(--panel-active-padding) var(--panel-active-padding);
+}
+
+.body:first-child {
+    padding-top: var(--panel-active-padding);
+}
+
+.bleed > .body {
+    padding: 0;
+}

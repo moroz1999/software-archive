@@ -2,17 +2,25 @@ package com.archive.backend.software.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.jspecify.annotations.Nullable;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.UUID;
+import java.time.LocalDate;
 
 @Getter
 @AllArgsConstructor
 public class Software {
-    private final UUID id;
-    private String title;
-    private String description;
-    private final Instant createdAt;
-    private LocalDateTime releaseDate;
+    private final SoftwareId id;
+    private SoftwareTitle title;
+    private @Nullable SoftwareDescription description;
+    private @Nullable LocalDate releaseDate;
+
+    public static Software create(SoftwareId id, SoftwareTitle title, @Nullable SoftwareDescription description, @Nullable LocalDate releaseDate) {
+        return new Software(id, title, description, releaseDate);
+    }
+
+    public void edit(SoftwareTitle title, @Nullable SoftwareDescription description, @Nullable LocalDate releaseDate) {
+        this.title = title;
+        this.description = description;
+        this.releaseDate = releaseDate;
+    }
 }

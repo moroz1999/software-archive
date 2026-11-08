@@ -1,0 +1,29 @@
+:root {
+    /* Minimal height, inner padding, font size and line height. */
+    --textarea-min-height: 96px;
+    --textarea-padding: var(--space-8) var(--space-12);
+    --textarea-font-size: var(--font-size-md);
+    --textarea-line-height: var(--line-height-normal);
+
+    /* Border width and corner radius. */
+    --textarea-border-width: var(--border-width-thin);
+    --textarea-radius: var(--radius-lg);
+
+    /* Surface, text and border colors. */
+    --textarea-bg: var(--surface);
+    --textarea-text: var(--text-color);
+    --textarea-border-color: var(--border-color);
+
+    /* Keyboard focus: border color and ring. */
+    --textarea-focus-border-color: var(--focus-ring-color);
+    --textarea-focus-ring: 0 0 0 var(--border-width-thin) var(--focus-ring-color);
+
+    /* Border color of a textarea with an error. */
+    --textarea-invalid-border-color: var(--error-color);
+
+    /* Background of a disabled textarea. */
+    --textarea-disabled-bg: var(--background-deep);
+
+    /* Duration of border and focus transitions. */
+    --textarea-transition: var(--animation-sm);
+}

@@ -1,0 +1,9 @@
+:root {
+    /* Title bone: most of the card width, one title line high. */
+    --software-card-skeleton-title-width: 70%;
+    --software-card-skeleton-title-height: var(--space-24);
+
+    /* Year bone: four digits of a label line. */
+    --software-card-skeleton-year-width: var(--space-40);
+    --software-card-skeleton-year-height: var(--space-16);
+}

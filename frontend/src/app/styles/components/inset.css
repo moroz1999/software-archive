@@ -1,0 +1,19 @@
+:root {
+    /* No inset padding. */
+    --inset-padding-none: 0;
+
+    /* Extra-small inset padding. */
+    --inset-padding-xs: var(--space-4);
+
+    /* Small inset padding. */
+    --inset-padding-sm: var(--space-8);
+
+    /* Medium inset padding. */
+    --inset-padding-md: var(--space-12);
+
+    /* Large inset padding. */
+    --inset-padding-lg: var(--space-16);
+
+    /* Extra-large inset padding. */
+    --inset-padding-xl: var(--space-24);
+}

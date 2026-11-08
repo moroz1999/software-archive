@@ -1,0 +1,10 @@
+:root {
+    /* Fixed width of a card track on wide screens; narrow screens use one full-width column. */
+    --card-grid-column-width: 256px;
+
+    /* Vertical gap between card rows. */
+    --card-grid-row-gap: var(--space-32);
+
+    /* Minimal horizontal gap between card columns; extra space is spread between them. */
+    --card-grid-column-gap: var(--space-16);
+}

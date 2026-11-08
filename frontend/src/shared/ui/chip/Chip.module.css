@@ -1,0 +1,83 @@
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--chip-gap);
+    border-width: var(--chip-border-width);
+    border-style: solid;
+    border-color: transparent;
+    border-radius: var(--chip-radius);
+    font-weight: var(--chip-font-weight);
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+        background var(--chip-transition) ease,
+        border-color var(--chip-transition) ease;
+}
+
+.md {
+    padding: var(--chip-md-padding);
+    font-size: var(--chip-md-font-size);
+}
+
+.sm {
+    padding: var(--chip-sm-padding);
+    font-size: var(--chip-sm-font-size);
+}
+
+.opaque {
+    border-color: currentcolor;
+    background: transparent;
+}
+
+.opaque.neutral { color: var(--chip-neutral-opaque-text); }
+.opaque.primary { color: var(--chip-primary-opaque-text); }
+.opaque.danger { color: var(--chip-danger-opaque-text); }
+.opaque.artist { color: var(--chip-artist-opaque-text); }
+.opaque.code { color: var(--chip-code-opaque-text); }
+.opaque.intro { color: var(--chip-intro-opaque-text); }
+
+.filled.neutral {
+    border-color: var(--chip-neutral-filled-border);
+    background: var(--chip-neutral-filled-bg);
+    color: var(--chip-neutral-filled-text);
+}
+
+.filled.primary {
+    border-color: var(--chip-primary-filled-border);
+    background: var(--chip-primary-filled-bg);
+    color: var(--chip-primary-filled-text);
+}
+
+.filled.danger {
+    border-color: var(--chip-danger-filled-border);
+    background: var(--chip-danger-filled-bg);
+    color: var(--chip-danger-filled-text);
+}
+
+a.filled.neutral:hover { background: var(--chip-neutral-filled-hover-bg); }
+a.filled.primary:hover { background: var(--chip-primary-filled-hover-bg); }
+a.filled.danger:hover { background: var(--chip-danger-filled-hover-bg); }
+
+/* Technical chips: monospace, square corners, color set by the variant alone. */
+.mono,
+.monoOutline {
+    border-radius: var(--chip-mono-radius);
+    font-family: var(--chip-mono-font-family);
+    font-weight: var(--chip-mono-font-weight);
+}
+
+.mono {
+    border-color: var(--chip-mono-border);
+    background: var(--chip-mono-bg);
+    color: var(--chip-mono-text);
+}
+
+a.mono { color: var(--chip-mono-link-text); }
+a.mono:hover { background: var(--chip-mono-hover-bg); }
+
+.monoOutline {
+    border-style: dashed;
+    border-color: var(--chip-mono-outline-border);
+    background: transparent;
+    color: var(--chip-mono-outline-text);
+}

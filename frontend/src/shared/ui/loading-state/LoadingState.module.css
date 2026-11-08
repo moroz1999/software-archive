@@ -1,0 +1,40 @@
+.content {
+    transition:
+        opacity var(--loading-state-transition) ease,
+        filter var(--loading-state-transition) ease;
+}
+
+.loading {
+    opacity: var(--loading-state-opacity);
+    filter: blur(var(--loading-state-blur));
+    pointer-events: none;
+}
+
+/*
+ * The spinner pane lives outside the content (in a portal): a child would be blurred by the filter above.
+ * It is centred on the visible part of the content through the coordinates set from code.
+ */
+.pane {
+    --loading-state-spinner-x: 50%;
+    --loading-state-spinner-y: 50%;
+
+    position: fixed;
+    top: var(--loading-state-spinner-y);
+    left: var(--loading-state-spinner-x);
+    z-index: var(--loading-state-spinner-layer);
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    transition:
+        opacity var(--loading-state-spinner-leave) ease-in,
+        visibility 0s linear var(--loading-state-spinner-leave);
+}
+
+.visible {
+    opacity: 1;
+    visibility: visible;
+    transition:
+        opacity var(--loading-state-spinner-enter) ease-out var(--loading-state-spinner-delay),
+        visibility 0s linear;
+}

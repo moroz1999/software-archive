@@ -9,3 +9,6 @@ spring:
     show-sql: true
   flyway:
     enabled: true
+    # Fixtures are repeatable migrations applied only with the "fixtures" profile;
+    # a database seeded with them must still start without it.
+    ignore-migration-patterns: "*:future,repeatable:missing"

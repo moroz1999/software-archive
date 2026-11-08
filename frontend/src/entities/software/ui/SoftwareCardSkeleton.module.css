@@ -1,0 +1,14 @@
+.image {
+    aspect-ratio: 4 / 3;
+    border-radius: 0;
+}
+
+.title {
+    width: var(--software-card-skeleton-title-width);
+    height: var(--software-card-skeleton-title-height);
+}
+
+.year {
+    width: var(--software-card-skeleton-year-width);
+    height: var(--software-card-skeleton-year-height);
+}

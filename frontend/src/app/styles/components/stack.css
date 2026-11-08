@@ -1,0 +1,22 @@
+:root {
+    /* No vertical stack gap. */
+    --stack-gap-none: 0;
+
+    /* Extra-small vertical stack gap. */
+    --stack-gap-xs: var(--space-4);
+
+    /* Small vertical stack gap. */
+    --stack-gap-sm: var(--gap-sm);
+
+    /* Medium vertical stack gap. */
+    --stack-gap-md: var(--gap-md);
+
+    /* Large vertical stack gap. */
+    --stack-gap-lg: var(--gap-lg);
+
+    /* Extra-large vertical stack gap. */
+    --stack-gap-xl: var(--gap-xl);
+
+    /* Double extra-large vertical stack gap. */
+    --stack-gap-xxl: var(--gap-xxl);
+}

@@ -1,0 +1,100 @@
+:root {
+    /* Extra-small size: height, horizontal padding and font size. */
+    --button-xs-height: var(--space-24);
+    --button-xs-padding: 0 var(--space-8);
+    --button-xs-font-size: var(--font-size-xs);
+
+    /* Small size: height, horizontal padding and font size. */
+    --button-sm-height: 30px;
+    --button-sm-padding: 0 var(--space-12);
+    --button-sm-font-size: var(--font-size-sm);
+
+    /* Medium size: height, horizontal padding and font size. */
+    --button-md-height: 36px;
+    --button-md-padding: 0 var(--space-16);
+    --button-md-font-size: var(--font-size-md);
+
+    /* Gap between an icon and the label. */
+    --button-content-gap: var(--space-4);
+
+    /* Label font weight and line height. */
+    --button-font-weight: var(--font-weight-regular);
+    --button-line-height: 1;
+
+    /* Border width; the border is visible only in the outlined color. */
+    --button-border-width: var(--border-width-thin);
+
+    /* Corner radius of a regular and of a round button. */
+    --button-radius: var(--radius-lg);
+    --button-round-radius: var(--radius-pill);
+
+    /* Keyboard focus ring. */
+    --button-focus-ring: 0 0 0 var(--border-width-thick) var(--border-focused);
+
+    /* Duration of color transitions on hover and focus. */
+    --button-transition: 250ms;
+
+    /* Opacity of a disabled button. */
+    --button-disabled-opacity: 0.8;
+
+    /* Primary color: background, text, hover and disabled states. */
+    --button-primary-bg: var(--primary-500);
+    --button-primary-text: var(--white);
+    --button-primary-hover-bg: var(--primary-600);
+    --button-primary-disabled-bg: var(--primary-300);
+    --button-primary-disabled-text: var(--primary-700);
+
+    /* Secondary color: background, text, hover and disabled states. */
+    --button-secondary-bg: var(--secondary-500);
+    --button-secondary-text: var(--white);
+    --button-secondary-hover-bg: var(--secondary-600);
+    --button-secondary-disabled-bg: var(--secondary-300);
+    --button-secondary-disabled-text: var(--secondary-700);
+
+    /* Danger color: background, text, hover and disabled states. */
+    --button-danger-bg: var(--danger-400);
+    --button-danger-text: var(--white);
+    --button-danger-hover-bg: var(--danger-500);
+    --button-danger-disabled-bg: var(--danger-300);
+    --button-danger-disabled-text: var(--danger-800);
+
+    /* Transparent color: background, text, hover and disabled states. */
+    --button-transparent-bg: transparent;
+    --button-transparent-text: var(--text-color);
+    --button-transparent-hover-bg: var(--secondary-200);
+    --button-transparent-disabled-text: var(--secondary-500);
+
+    /* Outlined color: background, text, border, hover and disabled states. */
+    --button-outlined-bg: transparent;
+    --button-outlined-text: var(--text-color);
+    --button-outlined-border: var(--secondary-500);
+    --button-outlined-hover-bg: var(--secondary-200);
+    --button-outlined-disabled-text: var(--secondary-600);
+    --button-outlined-disabled-border: var(--secondary-700);
+
+    /* Ripple: duration, share of the text color in its fill and its starting opacity per color group. */
+    --button-ripple-duration: 560ms;
+    --button-ripple-strong-mix: 30%;
+    --button-ripple-strong-opacity: 0.46;
+    --button-ripple-medium-mix: 22%;
+    --button-ripple-medium-opacity: 0.34;
+    --button-ripple-soft-mix: 18%;
+    --button-ripple-soft-opacity: 0.28;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --button-secondary-bg: var(--secondary-200);
+        --button-secondary-hover-bg: var(--secondary-300);
+        --button-primary-disabled-bg: var(--primary-400);
+        --button-primary-disabled-text: var(--primary-900);
+        --button-secondary-disabled-bg: var(--secondary-500);
+        --button-secondary-disabled-text: var(--secondary-900);
+        --button-danger-disabled-bg: var(--danger-400);
+        --button-danger-disabled-text: var(--danger-900);
+        --button-transparent-disabled-text: var(--secondary-400);
+        --button-outlined-border: var(--secondary-400);
+        --button-outlined-disabled-text: var(--secondary-500);
+        --button-outlined-disabled-border: var(--secondary-300);
+    }
+}

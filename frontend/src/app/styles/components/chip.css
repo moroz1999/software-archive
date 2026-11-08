@@ -1,0 +1,72 @@
+:root {
+    /* Pill corner radius. */
+    --chip-radius: var(--radius-pill);
+
+    /* Border width. */
+    --chip-border-width: var(--border-width-thin);
+
+    /* Label font weight. */
+    --chip-font-weight: var(--font-weight-medium);
+
+    /* Gap between an icon and the label. */
+    --chip-gap: var(--space-4);
+
+    /* Hover transition duration of a linked chip. */
+    --chip-transition: var(--animation-xs);
+
+    /* Medium size: font size and padding. */
+    --chip-md-font-size: var(--font-size-xs);
+    --chip-md-padding: var(--space-2) var(--space-8);
+
+    /* Small size: font size and tighter padding. */
+    --chip-sm-font-size: var(--font-size-xs);
+    --chip-sm-padding: var(--space-2) var(--space-4);
+
+    /* Neutral opaque: muted text, border in the text color. */
+    --chip-neutral-opaque-text: var(--secondary-600);
+
+    /* Neutral filled: soft gray background. */
+    --chip-neutral-filled-text: var(--text-color);
+    --chip-neutral-filled-border: var(--secondary-200);
+    --chip-neutral-filled-bg: var(--secondary-100);
+    --chip-neutral-filled-hover-bg: var(--secondary-200);
+
+    /* Primary opaque: colored text, no fill. */
+    --chip-primary-opaque-text: var(--primary-600);
+
+    /* Primary filled: tinted blue background. */
+    --chip-primary-filled-text: var(--primary-700);
+    --chip-primary-filled-border: var(--primary-200);
+    --chip-primary-filled-bg: var(--primary-50);
+    --chip-primary-filled-hover-bg: var(--primary-100);
+
+    /* Danger opaque: red text, no fill (failures, refusals). */
+    --chip-danger-opaque-text: var(--danger-600);
+
+    /* Danger filled: tinted red background. */
+    --chip-danger-filled-text: var(--danger-600);
+    --chip-danger-filled-border: var(--danger-200);
+    --chip-danger-filled-bg: var(--danger-50);
+    --chip-danger-filled-hover-bg: var(--danger-100);
+
+    /* Role colors: artist, code and intro text. */
+    --chip-artist-opaque-text: var(--role-artist);
+    --chip-code-opaque-text: var(--role-code);
+    --chip-intro-opaque-text: var(--role-intro);
+
+    /* Technical chips: monospace face, square corners, regular weight. */
+    --chip-mono-font-family: var(--font-family-mono);
+    --chip-mono-font-weight: var(--font-weight-regular);
+    --chip-mono-radius: var(--radius-sm);
+
+    /* Mono filled: hardware and platform identifiers. */
+    --chip-mono-text: var(--text-color);
+    --chip-mono-border: var(--secondary-300);
+    --chip-mono-bg: var(--secondary-100);
+    --chip-mono-hover-bg: var(--secondary-200);
+    --chip-mono-link-text: var(--link-color);
+
+    /* Mono outline: dashed chip for formats and technical parameters. */
+    --chip-mono-outline-text: var(--text-light-color);
+    --chip-mono-outline-border: var(--secondary-400);
+}

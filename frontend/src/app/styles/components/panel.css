@@ -1,0 +1,47 @@
+:root {
+    /* Small corner radius. */
+    --panel-radius-sm: var(--radius-sm);
+
+    /* Medium corner radius. */
+    --panel-radius-md: var(--radius-md);
+
+    /* Large corner radius. */
+    --panel-radius-lg: var(--radius-lg);
+
+    /* Extra-large corner radius, used by cards. */
+    --panel-radius-xl: var(--radius-xl);
+
+    /* Small inner padding. */
+    --panel-padding-sm: var(--padding-sm);
+
+    /* Medium inner padding. */
+    --panel-padding-md: var(--padding-md);
+
+    /* Large inner padding. */
+    --panel-padding-lg: var(--padding-lg);
+
+    /* Space between the title and the body. */
+    --panel-title-gap: var(--space-12);
+
+    /* Border of a flat (nested) panel. */
+    --panel-flat-border: var(--border-light);
+
+    /* Default surface. */
+    --panel-bg: var(--surface);
+
+    /* Muted tinted surface of a nested panel. */
+    --panel-bg-muted: var(--secondary-100);
+
+    /* Primary tinted surface of a nested panel. */
+    --panel-bg-primary: var(--primary-100);
+
+    /* Shadow lifting an elevated panel off the page. */
+    --panel-shadow: var(--shadow-md);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --panel-bg-muted: var(--secondary-200);
+        --panel-bg-primary: var(--primary-200);
+    }
+}

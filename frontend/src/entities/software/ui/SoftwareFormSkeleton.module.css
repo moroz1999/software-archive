@@ -1,0 +1,19 @@
+.label {
+    width: var(--software-form-skeleton-label-width);
+    height: var(--software-form-skeleton-label-height);
+}
+
+.input {
+    width: 100%;
+    height: var(--software-form-skeleton-input-height);
+}
+
+.textarea {
+    width: 100%;
+    height: var(--software-form-skeleton-textarea-height);
+}
+
+.button {
+    width: var(--software-form-skeleton-button-width);
+    height: var(--software-form-skeleton-button-height);
+}

@@ -1,0 +1,16 @@
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, var(--card-grid-column-width));
+    justify-content: space-between;
+    gap: var(--card-grid-row-gap) var(--card-grid-column-gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* Mobile: narrower than 576px. */
+@media (width < 576px) {
+    .grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

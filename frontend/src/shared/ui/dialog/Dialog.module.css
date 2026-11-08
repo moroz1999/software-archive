@@ -1,0 +1,24 @@
+.backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: var(--dialog-layer);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--dialog-viewport-padding);
+    background: var(--dialog-backdrop-bg);
+}
+
+.dialog {
+    width: 100%;
+    max-width: var(--dialog-max-width);
+    padding: var(--dialog-padding);
+    border-radius: var(--dialog-radius);
+    background: var(--dialog-bg);
+    box-shadow: var(--dialog-shadow);
+    color: var(--dialog-text);
+}
+
+.dialog:focus {
+    outline: none;
+}

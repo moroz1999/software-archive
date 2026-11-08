@@ -1,0 +1,22 @@
+:root {
+    /* Opacity applied while displayed content is being refreshed. */
+    --loading-state-opacity: 0.55;
+
+    /* Blur applied together with the opacity; soft enough to keep the layout readable. */
+    --loading-state-blur: 1px;
+
+    /* Duration of the opacity and blur transition. */
+    --loading-state-transition: var(--animation-md);
+
+    /* Idle time before the overlay spinner starts to appear, so short reloads never flash it. */
+    --loading-state-spinner-delay: 350ms;
+
+    /* Fade-in of the overlay spinner: slow, it must not steal attention from the content. */
+    --loading-state-spinner-enter: 400ms;
+
+    /* Fade-out of the overlay spinner: quick, the fresh content is already there. */
+    --loading-state-spinner-leave: var(--animation-md);
+
+    /* Stacking layer of the overlay spinner. */
+    --loading-state-spinner-layer: var(--layer-overlay);
+}

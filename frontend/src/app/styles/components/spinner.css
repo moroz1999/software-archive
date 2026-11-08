@@ -1,0 +1,27 @@
+:root {
+    /* Spinner sizes from extra-small to extra-large. */
+    --spinner-size-xs: var(--space-16);
+    --spinner-size-sm: var(--space-24);
+    --spinner-size-md: var(--space-32);
+    --spinner-size-lg: var(--space-48);
+    --spinner-size-xl: var(--space-64);
+
+    /* Ring stroke width and the step between nested rings. */
+    --spinner-ring-width: var(--border-width-thin);
+    --spinner-ring-step: var(--space-4);
+    --spinner-ring-step-double: var(--space-8);
+
+    /* Colors of the outer, middle and inner rings. */
+    --spinner-ring-color-1: var(--primary-500);
+    --spinner-ring-color-2: var(--primary-400);
+    --spinner-ring-color-3: var(--primary-300);
+
+    /* Duration and easing of one turn. */
+    --spinner-speed: 1.2s;
+    --spinner-easing: cubic-bezier(0.5, 0, 0.5, 1);
+
+    /* Start offsets of the outer, middle and inner rings. */
+    --spinner-delay-1: -0.45s;
+    --spinner-delay-2: -0.3s;
+    --spinner-delay-3: -0.15s;
+}

@@ -1,0 +1,22 @@
+:root {
+    /* No horizontal row gap. */
+    --inline-gap-none: 0;
+
+    /* Extra-small horizontal row gap. */
+    --inline-gap-xs: var(--space-4);
+
+    /* Small horizontal row gap. */
+    --inline-gap-sm: var(--gap-sm);
+
+    /* Medium horizontal row gap. */
+    --inline-gap-md: var(--gap-md);
+
+    /* Large horizontal row gap. */
+    --inline-gap-lg: var(--gap-lg);
+
+    /* Extra-large horizontal row gap. */
+    --inline-gap-xl: var(--gap-xl);
+
+    /* Double extra-large horizontal row gap. */
+    --inline-gap-xxl: var(--gap-xxl);
+}

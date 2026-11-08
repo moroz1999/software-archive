@@ -1,0 +1,47 @@
+import {type Brand, titleProblem} from '../../../shared/lib';
+
+export type SoftwareId = Brand<string, 'SoftwareId'>;
+export type SoftwareTitle = Brand<string, 'SoftwareTitle'>;
+/** A calendar day, ISO `YYYY-MM-DD`, without time or time zone. */
+export type ReleaseDate = Brand<string, 'ReleaseDate'>;
+
+export interface Software {
+    readonly id: SoftwareId;
+    readonly title: SoftwareTitle;
+    readonly releaseDate: ReleaseDate | null;
+}
+
+/** One software with everything shown about it. */
+export interface SoftwareDetails extends Software {
+    readonly description: string | null;
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+export function toSoftwareId(raw: string): SoftwareId {
+    if (!UUID.test(raw)) {
+        throw new TypeError(`Invalid software id: ${raw}`);
+    }
+    return raw as SoftwareId;
+}
+
+/** The id in a raw value from outside (a URL), or null when it cannot be one. */
+export function parseSoftwareId(raw: string | undefined): SoftwareId | null {
+    return raw !== undefined && UUID.test(raw) ? toSoftwareId(raw) : null;
+}
+
+export function toSoftwareTitle(raw: string): SoftwareTitle {
+    const problem = titleProblem(raw);
+    if (problem !== null) {
+        throw new TypeError(`Invalid software title: ${problem}`);
+    }
+    return raw as SoftwareTitle;
+}
+
+export function toReleaseDate(raw: string): ReleaseDate {
+    if (!ISO_DATE.test(raw) || Number.isNaN(Date.parse(`${raw}T00:00:00Z`))) {
+        throw new TypeError(`Invalid release date: ${raw}`);
+    }
+    return raw as ReleaseDate;
+}
