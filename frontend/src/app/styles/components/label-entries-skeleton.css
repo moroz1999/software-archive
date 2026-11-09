@@ -1,0 +1,5 @@
+:root {
+    /* Bone of an entry's name: a short line of body text. */
+    --label-entries-skeleton-name-width: 60%;
+    --label-entries-skeleton-name-height: 20px;
+}

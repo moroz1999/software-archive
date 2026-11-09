@@ -8,7 +8,7 @@ function renderAt(path: string) {
 }
 
 describe(MainMenu, () => {
-    it('leads to the home page, the software and the authors', () => {
+    it('leads to the home page, the software, the authors and the groups', () => {
         renderAt('/');
 
         const menu = screen.getByRole('navigation', {name: 'Main menu'});
@@ -17,6 +17,7 @@ describe(MainMenu, () => {
         expect(screen.getByRole('link', {name: 'Home'})).toHaveAttribute('href', '/');
         expect(screen.getByRole('link', {name: 'Software'})).toHaveAttribute('href', '/software');
         expect(screen.getByRole('link', {name: 'Authors'})).toHaveAttribute('href', '/authors');
+        expect(screen.getByRole('link', {name: 'Groups'})).toHaveAttribute('href', '/groups');
     });
 
     it('marks only the home page on the home page', () => {
@@ -31,6 +32,8 @@ describe(MainMenu, () => {
         ['/software/00000000-0000-0000-0001-000000000001', 'Software'],
         ['/authors', 'Authors'],
         ['/authors/00000000-0000-0000-0003-000000000001', 'Authors'],
+        ['/groups', 'Groups'],
+        ['/groups/00000000-0000-0000-0005-000000000001', 'Groups'],
     ])('marks the section of %s', (path, section) => {
         renderAt(path);
 

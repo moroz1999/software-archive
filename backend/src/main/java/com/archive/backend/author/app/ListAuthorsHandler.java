@@ -1,6 +1,6 @@
 package com.archive.backend.author.app;
 
-import com.archive.backend.author.domain.AuthorLetter;
+import com.archive.backend.label.domain.LabelLetter;
 import com.archive.backend.author.read.AuthorCatalogEntry;
 import com.archive.backend.author.read.AuthorReadRepository;
 import com.archive.backend.geo.domain.CityId;
@@ -18,7 +18,7 @@ public class ListAuthorsHandler {
 
     @Transactional(readOnly = true)
     public Page<AuthorCatalogEntry> handle(ListAuthorsQuery q) {
-        AuthorLetter letter = q.letter();
+        LabelLetter letter = q.letter();
         CountryId country = q.country();
         CityId city = q.city();
         return reads.findCatalogPage(

@@ -1,4 +1,0 @@
-:root {
-    /* Narrowest width of a place filter, so the longest country names fit. */
-    --author-catalog-filter-min-width: 240px;
-}

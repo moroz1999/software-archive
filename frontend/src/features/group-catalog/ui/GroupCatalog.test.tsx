@@ -1,0 +1,251 @@
+import {afterEach, describe, expect, it, vi} from 'vitest';
+import {screen, within} from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import {createMemoryRouter, RouterProvider} from 'react-router';
+import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
+import {json, pageResponse, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
+import {GroupCatalogProvider} from '../model/GroupCatalogProvider';
+import {GroupCatalog} from './GroupCatalog';
+
+const CREW = '00000000-0000-0000-0005-000000000001';
+const BAND = '00000000-0000-0000-0005-000000000002';
+const FINLAND = '00000000-0000-0000-0002-000000000001';
+const NORWAY = '00000000-0000-0000-0002-000000000002';
+const HELSINKI = '00000000-0000-0000-0002-000000000101';
+
+/** Crew Ltd under its labels Crew and CRW; Band known only by its name. */
+const ENTRIES = [
+    {groupId: BAND, name: 'Band', groupName: null},
+    {groupId: CREW, name: 'Crew', groupName: 'Crew Ltd'},
+    {groupId: CREW, name: 'CRW', groupName: 'Crew Ltd'},
+];
+const COUNTRIES = [{id: FINLAND, name: 'Finland'}, {id: NORWAY, name: 'Norway'}];
+const FINNISH_CITIES = [{id: HELSINKI, name: 'Helsinki'}];
+
+const ALL = '/api/groups?page=0&size=100';
+
+function catalogPage(items: readonly unknown[], totalPages = 1, number = 0) {
+    return json(pageResponse(items, {size: 100, number, totalPages, totalElements: items.length}));
+}
+
+function routes(entries: Record<string, () => Response>): Map<string, () => Response> {
+    return new Map([['/api/countries', json(COUNTRIES)], [`/api/countries/${FINLAND}/cities`, json(FINNISH_CITIES)], ...Object.entries(entries)]);
+}
+
+function openCatalog(path = '/groups') {
+    const router = createMemoryRouter([
+        {path: '/groups', element: <GroupCatalogProvider><GroupCatalog/></GroupCatalogProvider>},
+    ], {initialEntries: [path]});
+    renderWithQueries(<RouterProvider router={router}/>);
+    return router;
+}
+
+/** What every entry says: its name and what is shown next to it. */
+async function entryLines(): Promise<string[]> {
+    const list = await screen.findByRole('list', {name: 'Groups'});
+    return within(list).getAllByRole('listitem').map((item) => item.textContent.replaceAll(/\s+/gu, ' ').trim());
+}
+
+async function entryNames(): Promise<string[]> {
+    const list = await screen.findByRole('list', {name: 'Groups'});
+    return within(list).getAllByRole('link').map((link) => link.textContent);
+}
+
+describe(GroupCatalog, () => {
+    const unsubscribers: (() => void)[] = [];
+
+    afterEach(() => {
+        vi.unstubAllGlobals();
+        unsubscribers.forEach((unsubscribe) => {
+            unsubscribe();
+        });
+        unsubscribers.length = 0;
+    });
+
+    it('shows a skeleton until the entries arrive', async () => {
+        stubFetchRoutes(routes({[ALL]: catalogPage(ENTRIES)}));
+        openCatalog();
+
+        expect(screen.getByTestId('group-catalog-skeleton')).toBeInTheDocument();
+        await expect(entryNames()).resolves.toStrictEqual(['Band', 'Crew', 'CRW']);
+        expect(screen.queryByTestId('group-catalog-skeleton')).not.toBeInTheDocument();
+    });
+
+    it('leads from every entry to its group', async () => {
+        stubFetchRoutes(routes({[ALL]: catalogPage(ENTRIES)}));
+        openCatalog();
+
+        const list = await screen.findByRole('list', {name: 'Groups'});
+
+        expect(within(list).getByRole('link', {name: 'CRW'})).toHaveAttribute('href', `/groups/${CREW}`);
+        expect(within(list).getByRole('link', {name: 'Band'})).toHaveAttribute('href', `/groups/${BAND}`);
+    });
+
+    it('names the name of the group next to every label, and nothing next to the name itself', async () => {
+        stubFetchRoutes(routes({[ALL]: catalogPage(ENTRIES)}));
+        openCatalog();
+
+        await expect(entryLines()).resolves.toStrictEqual(['Band', 'Crew Crew Ltd', 'CRW Crew Ltd']);
+    });
+
+    it('offers all letters, the current one marked, each keeping the place filters and starting from the first page', async () => {
+        const filtered = `/groups?letter=B&country=${FINLAND}&page=2`;
+        stubFetchRoutes(routes({[`/api/groups?page=1&size=100&letter=B&country=${FINLAND}`]: catalogPage(ENTRIES, 2, 1)}));
+        openCatalog(filtered);
+
+        const letters = await screen.findByRole('navigation', {name: 'First letter'});
+
+        expect(within(letters).getAllByRole('listitem')).toHaveLength(1 + 26 + 32 + 1);
+        expect(within(letters).getByRole('link', {name: 'B'})).toHaveAttribute('aria-current', 'page');
+        expect(within(letters).getByRole('link', {name: 'Я'})).toHaveAttribute('href', `/groups?letter=%D0%AF&country=${FINLAND}`);
+        expect(within(letters).getByRole('link', {name: '#'})).toHaveAttribute('href', `/groups?letter=%23&country=${FINLAND}`);
+        expect(within(letters).getByRole('link', {name: 'All'})).toHaveAttribute('href', `/groups?country=${FINLAND}`);
+    });
+
+    it('offers no city before a country is chosen', async () => {
+        stubFetchRoutes(routes({[ALL]: catalogPage(ENTRIES)}));
+        openCatalog();
+        await entryNames();
+
+        expect(screen.getByRole('combobox', {name: 'City'})).toBeDisabled();
+    });
+
+    it('narrows the catalog to the chosen country, then offers its cities', async () => {
+        stubFetchRoutes(routes({
+            [ALL]: catalogPage(ENTRIES),
+            [`/api/groups?page=0&size=100&country=${FINLAND}`]: catalogPage([ENTRIES[2]]),
+            [`/api/groups?page=0&size=100&country=${FINLAND}&city=${HELSINKI}`]: catalogPage([ENTRIES[0]]),
+        }));
+        const router = openCatalog();
+        await entryNames();
+
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Country'}), 'Finland');
+
+        await vi.waitFor(async () => {
+            await expect(entryNames()).resolves.toStrictEqual(['CRW']);
+        });
+
+        expect(router.state.location.search).toBe(`?country=${FINLAND}`);
+
+        const city = screen.getByRole('combobox', {name: 'City'});
+        await vi.waitFor(() => {
+            expect(city).toBeEnabled();
+        });
+        await userEvent.selectOptions(city, 'Helsinki');
+
+        await vi.waitFor(async () => {
+            await expect(entryNames()).resolves.toStrictEqual(['Band']);
+        });
+
+        expect(router.state.location.search).toBe(`?country=${FINLAND}&city=${HELSINKI}`);
+    });
+
+    it('forgets the city when the country changes', async () => {
+        stubFetchRoutes(routes({
+            [`/api/groups?page=0&size=100&country=${FINLAND}&city=${HELSINKI}`]: catalogPage(ENTRIES),
+            [`/api/groups?page=0&size=100&country=${NORWAY}`]: catalogPage([]),
+            [`/api/countries/${NORWAY}/cities`]: json([]),
+        }));
+        const router = openCatalog(`/groups?country=${FINLAND}&city=${HELSINKI}`);
+        await entryNames();
+
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Country'}), 'Norway');
+
+        expect(router.state.location.search).toBe(`?country=${NORWAY}`);
+    });
+
+    it('keeps the shown entries under a spinner, the controls locked, while another filter loads', async () => {
+        let answerFinland: (() => void) | undefined;
+        const fetchMock = stubFetchRoutes(routes({[ALL]: catalogPage(ENTRIES)}));
+        const original = fetchMock.getMockImplementation();
+        fetchMock.mockImplementation(async (input, init) => {
+            if (input === `/api/groups?page=0&size=100&country=${FINLAND}`) {
+                await new Promise<void>((resolve) => {
+                    answerFinland = resolve;
+                });
+                return catalogPage([ENTRIES[2]])();
+            }
+            return original === undefined ? Promise.reject(new Error('no stub')) : original(input, init);
+        });
+        openCatalog();
+        await entryNames();
+
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Country'}), 'Finland');
+
+        await vi.waitFor(() => {
+            expect(screen.getByTestId('loading-state-spinner')).toHaveAttribute('aria-hidden', 'false');
+        });
+
+        await expect(entryNames()).resolves.toStrictEqual(['Band', 'Crew', 'CRW']);
+        expect(within(screen.getByRole('navigation', {name: 'First letter'})).queryByRole('link')).not.toBeInTheDocument();
+
+        answerFinland?.();
+
+        await vi.waitFor(async () => {
+            await expect(entryNames()).resolves.toStrictEqual(['CRW']);
+        });
+
+        expect(screen.getByTestId('loading-state-spinner')).toHaveAttribute('aria-hidden', 'true');
+    });
+
+    it('leads to the other pages of the catalog', async () => {
+        stubFetchRoutes(routes({[`/api/groups?page=0&size=100&letter=A`]: catalogPage(ENTRIES, 3)}));
+        openCatalog('/groups?letter=A');
+
+        const pages = await screen.findByRole('navigation', {name: 'Pages'});
+
+        expect(within(pages).getByRole('link', {name: '2'})).toHaveAttribute('href', '/groups?letter=A&page=2');
+        expect(within(pages).getByText('1')).toHaveAttribute('aria-current', 'page');
+    });
+
+    it('says so when no group matches', async () => {
+        stubFetchRoutes(routes({[`/api/groups?page=0&size=100&letter=Q`]: catalogPage([])}));
+        openCatalog('/groups?letter=Q');
+
+        await expect(screen.findByText('No groups found.')).resolves.toBeInTheDocument();
+        expect(screen.queryByRole('navigation', {name: 'Pages'})).not.toBeInTheDocument();
+    });
+
+    it('never sends a filter that cannot be one', async () => {
+        const fetchMock = stubFetchRoutes(routes({[ALL]: catalogPage(ENTRIES)}));
+        openCatalog('/groups?letter=AB&country=42&page=x');
+
+        await entryNames();
+
+        expect(fetchMock.mock.calls.map(([url]) => url)).toContain(ALL);
+    });
+
+    it('hands a system error of the entries to the error dialog and shows nothing of its own', async () => {
+        const reports: SystemErrorReport[] = [];
+        unsubscribers.push(subscribeSystemErrors((report) => {
+            reports.push(report);
+        }));
+        stubFetchRoutes(routes({[ALL]: json({status: 500}, 500)}));
+        openCatalog();
+
+        await vi.waitFor(() => {
+            expect(reports).toHaveLength(1);
+        });
+
+        expect(reports[0]?.error.kind).toBe('server');
+        expect(screen.queryByTestId('group-catalog-skeleton')).not.toBeInTheDocument();
+        expect(screen.queryByRole('list', {name: 'Groups'})).not.toBeInTheDocument();
+    });
+
+    it('hands a system error of the countries to the error dialog and keeps the catalog', async () => {
+        const reports: SystemErrorReport[] = [];
+        unsubscribers.push(subscribeSystemErrors((report) => {
+            reports.push(report);
+        }));
+        stubFetchRoutes(new Map([[ALL, catalogPage(ENTRIES)], ['/api/countries', json({status: 500}, 500)]]));
+        openCatalog();
+
+        await expect(entryNames()).resolves.toStrictEqual(['Band', 'Crew', 'CRW']);
+
+        await vi.waitFor(() => {
+            expect(reports).toHaveLength(1);
+        });
+
+        expect(screen.getByRole('combobox', {name: 'Country'})).toBeDisabled();
+    });
+});

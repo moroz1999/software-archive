@@ -7,14 +7,16 @@ import {toAuthorId} from '@/entities/authors';
 import {AuthorView} from './AuthorView';
 
 const ID = '00000000-0000-0000-0003-000000000001';
+const CREW = '00000000-0000-0000-0005-000000000001';
+const BAND = '00000000-0000-0000-0005-000000000002';
 const ZED = {
     id: ID,
     name: 'Zed',
     realName: 'John Doe',
     notes: 'Coder since 1984\nand musician',
-    aliases: [{id: '00000000-0000-0000-0004-000000000001', name: 'Axe'}, {id: '00000000-0000-0000-0004-000000000002', name: 'Zed'}],
+    labels: [{id: '00000000-0000-0000-0004-000000000001', name: 'Axe'}, {id: '00000000-0000-0000-0004-000000000002', name: 'Zed'}],
     locations: [{country: 'Norway', city: null, primary: false}, {country: 'Finland', city: 'Helsinki', primary: true}],
-    groups: [{id: '00000000-0000-0000-0005-000000000001', name: 'Crew'}],
+    groups: [{id: CREW, name: 'Crew', as: 'Axe'}, {id: BAND, name: 'Band', as: null}],
 };
 
 function renderView() {
@@ -22,7 +24,7 @@ function renderView() {
 }
 
 function itemsOf(name: string): string[] {
-    return within(screen.getByRole('list', {name})).getAllByRole('listitem').map((item) => item.textContent);
+    return within(screen.getByRole('list', {name})).getAllByRole('listitem').map((item) => item.textContent.replaceAll(/\s+/gu, ' ').trim());
 }
 
 describe(AuthorView, () => {
@@ -52,10 +54,21 @@ describe(AuthorView, () => {
         await screen.findByRole('heading', {level: 1, name: 'Zed'});
 
         expect(screen.getByText('John Doe')).toBeInTheDocument();
-        expect(itemsOf('Aliases')).toStrictEqual(['Axe', 'Zed']);
-        expect(itemsOf('Groups')).toStrictEqual(['Crew']);
+        expect(itemsOf('Labels')).toStrictEqual(['Axe', 'Zed']);
         expect(screen.getByText('Coder since 1984')).toBeInTheDocument();
         expect(screen.getByText('and musician')).toBeInTheDocument();
+    });
+
+    it('leads to every group of the author, naming the label they were a member under unless it is the main name', async () => {
+        stubFetch(json(ZED));
+        renderView();
+
+        await screen.findByRole('heading', {level: 1, name: 'Zed'});
+        const groups = screen.getByRole('list', {name: 'Groups'});
+
+        expect(itemsOf('Groups')).toStrictEqual(['Crew as Axe', 'Band']);
+        expect(within(groups).getByRole('link', {name: 'Crew'})).toHaveAttribute('href', `/groups/${CREW}`);
+        expect(within(groups).getByRole('link', {name: 'Band'})).toHaveAttribute('href', `/groups/${BAND}`);
     });
 
     it('lists the primary location first, a city with its country', async () => {
@@ -68,7 +81,7 @@ describe(AuthorView, () => {
     });
 
     it('leaves out what is not known', async () => {
-        stubFetch(json({...ZED, realName: null, notes: null, aliases: [], locations: [], groups: []}));
+        stubFetch(json({...ZED, realName: null, notes: null, labels: [], locations: [], groups: []}));
         renderView();
 
         await screen.findByRole('heading', {level: 1, name: 'Zed'});

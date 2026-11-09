@@ -1,4 +1,5 @@
 import {AUTHORS_PATH} from '@/entities/authors';
+import {GROUPS_PATH} from '@/entities/groups';
 import {SOFTWARE_LIST_PATH} from '@/entities/software';
 import {HOME_PATH} from '@/shared/config';
 import {NavBar, NavBarLink} from '@/shared/ui/nav-bar';
@@ -10,6 +11,7 @@ export function MainMenu() {
             <NavBarLink href={HOME_PATH} end>Home</NavBarLink>
             <NavBarLink href={SOFTWARE_LIST_PATH}>Software</NavBarLink>
             <NavBarLink href={AUTHORS_PATH}>Authors</NavBarLink>
+            <NavBarLink href={GROUPS_PATH}>Groups</NavBarLink>
         </NavBar>
     );
 }

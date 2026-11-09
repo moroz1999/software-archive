@@ -1,7 +1,8 @@
 import {type ReactNode, useMemo} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {useNavigate, useSearchParams} from 'react-router';
-import {authorCatalogQuery, citiesQuery, countriesQuery} from '../api/catalog-queries';
+import {citiesQuery, countriesQuery} from '@/entities/locations';
+import {authorCatalogQuery} from '../api/catalog-queries';
 import {AuthorCatalogContext} from './author-catalog-context';
 import {type AuthorCatalogFilter, catalogHref, parseCatalogFilter} from './catalog-filter';
 

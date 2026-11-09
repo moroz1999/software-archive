@@ -1,11 +1,13 @@
 package com.archive.backend.author.infra;
 
-import com.archive.backend.author.read.AuthorAlias;
 import com.archive.backend.author.read.AuthorCatalogEntry;
 import com.archive.backend.author.read.AuthorDetails;
 import com.archive.backend.author.read.AuthorGroup;
+import com.archive.backend.author.read.AuthorLabel;
 import com.archive.backend.author.read.AuthorLocation;
 import com.archive.backend.author.read.AuthorReadRepository;
+import com.archive.backend.label.read.LetterFilterSql;
+import com.archive.backend.label.read.MainNameSql;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
@@ -17,13 +19,12 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
- * The author catalog and author pages straight from SQL: the catalog mixes people and their aliases, which no
+ * The author catalog and author pages straight from SQL: the catalog mixes people and their labels, which no
  * single table holds (docs/domain/authors.md).
  */
 @Repository
@@ -31,38 +32,20 @@ import java.util.UUID;
 public class JdbcAuthorReadRepository implements AuthorReadRepository {
 
     /**
-     * Every person with their main name and the alias it comes from: the display name alias, else the first alias
-     * by name, else the real name (then no alias).
-     */
-    private static final String NAMED_PEOPLE = """
-            WITH main_alias AS (
-                SELECT DISTINCT ON (a.person_id) a.person_id, a.id, a.name
-                FROM alias a
-                WHERE a.person_id IS NOT NULL
-                ORDER BY a.person_id, a.is_display_name DESC NULLS LAST, lower(a.name), a.id
-            ), named AS (
-                SELECT p.id AS person_id, COALESCE(m.name, p.real_name) AS main_name, m.id AS main_alias_id,
-                       p.real_name, p.notes
-                FROM person p
-                LEFT JOIN main_alias m ON m.person_id = p.id
-            )
-            """;
-
-    /**
-     * People under their main name, and their other aliases with the main name; the real name goes next to each,
+     * People under their main name, and their other labels with the main name; the real name goes next to each,
      * except next to a person shown under it.
      */
-    private static final String ENTRIES = NAMED_PEOPLE + """
+    private static final String ENTRIES = "WITH " + MainNameSql.PEOPLE + """
             , entries AS (
                 SELECT n.person_id, n.main_name AS name,
-                       CASE WHEN n.main_alias_id IS NULL THEN NULL ELSE n.real_name END AS real_name,
-                       NULL AS alias_of
-                FROM named n
+                       CASE WHEN n.main_label_id IS NULL THEN NULL ELSE n.real_name END AS real_name,
+                       NULL AS label_of
+                FROM named_person n
                 WHERE n.main_name IS NOT NULL
                 UNION ALL
-                SELECT n.person_id, a.name, n.real_name, n.main_name
-                FROM named n
-                JOIN alias a ON a.person_id = n.person_id AND a.id <> n.main_alias_id
+                SELECT n.person_id, l.name, n.real_name, n.main_name
+                FROM named_person n
+                JOIN label l ON l.person_id = n.person_id AND l.id <> n.main_label_id
             )
             """;
 
@@ -74,10 +57,6 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
                 WHERE l.entity_type = 'PERSON' AND l.entity_id = e.person_id AND %s
             )""";
 
-    private static final String REST_LETTER = "#";
-    /** First characters that are catalog letters; anything else is under the rest sign. */
-    private static final String LETTERS_PATTERN = "^[A-Za-zА-Яа-яЁё]";
-
     private final JdbcClient jdbc;
 
     @Override
@@ -85,13 +64,7 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
         List<String> conditions = new ArrayList<>();
         Map<String, Object> params = new HashMap<>();
         if (letter != null) {
-            if (REST_LETTER.equals(letter)) {
-                conditions.add("e.name !~ :lettersPattern");
-                params.put("lettersPattern", LETTERS_PATTERN);
-            } else {
-                conditions.add("left(e.name, 1) IN (:firstChars)");
-                params.put("firstChars", firstChars(letter));
-            }
+            conditions.add(LetterFilterSql.condition("e.name", letter, params));
         }
         if (countryId != null) {
             conditions.add(LOCATED.formatted("COALESCE(l.country_id, c.country_id) = :country"));
@@ -109,37 +82,28 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
                 .single();
         params.put("limit", pageable.getPageSize());
         params.put("offset", pageable.getOffset());
-        List<AuthorCatalogEntry> content = jdbc.sql(ENTRIES + "SELECT e.person_id, e.name, e.real_name, e.alias_of FROM entries e" + where
+        List<AuthorCatalogEntry> content = jdbc.sql(ENTRIES + "SELECT e.person_id, e.name, e.real_name, e.label_of FROM entries e" + where
                         + " ORDER BY lower(e.name), e.name, e.person_id LIMIT :limit OFFSET :offset")
                 .params(params)
-                .query((rs, row) -> new AuthorCatalogEntry(rs.getObject("person_id", UUID.class), rs.getString("name"), rs.getString("real_name"), rs.getString("alias_of")))
+                .query((rs, row) -> new AuthorCatalogEntry(rs.getObject("person_id", UUID.class), rs.getString("name"), rs.getString("real_name"), rs.getString("label_of")))
                 .list();
         return new PageImpl<>(content, pageable, total);
     }
 
     @Override
     public Optional<AuthorDetails> findById(UUID id) {
-        return jdbc.sql(NAMED_PEOPLE + "SELECT main_name, real_name, notes FROM named WHERE person_id = :id AND main_name IS NOT NULL")
+        return jdbc.sql("WITH " + MainNameSql.PEOPLE + "SELECT main_name, real_name, notes FROM named_person WHERE person_id = :id AND main_name IS NOT NULL")
                 .param("id", id)
                 .query((rs, row) -> new AuthorDetails(
                         id, rs.getString("main_name"), rs.getString("real_name"), rs.getString("notes"),
-                        aliases(id), locations(id), groups(id)))
+                        labels(id), locations(id), groups(id)))
                 .optional();
     }
 
-    /** The letter in both cases; Е also stands for Ё. */
-    private static List<String> firstChars(String letter) {
-        List<String> chars = new ArrayList<>(List.of(letter, letter.toLowerCase(Locale.ROOT)));
-        if ("Е".equals(letter)) {
-            chars.addAll(List.of("Ё", "ё"));
-        }
-        return chars;
-    }
-
-    private List<AuthorAlias> aliases(UUID personId) {
-        return jdbc.sql("SELECT id, name FROM alias WHERE person_id = :id ORDER BY lower(name), id")
+    private List<AuthorLabel> labels(UUID personId) {
+        return jdbc.sql("SELECT id, name FROM label WHERE person_id = :id ORDER BY lower(name), id")
                 .param("id", personId)
-                .query((rs, row) -> new AuthorAlias(rs.getObject("id", UUID.class), rs.getString("name")))
+                .query((rs, row) -> new AuthorLabel(rs.getObject("id", UUID.class), rs.getString("name")))
                 .list();
     }
 
@@ -158,18 +122,22 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
                 .list();
     }
 
-    /** The groups any alias of the person is a member of. */
+    /**
+     * Every membership of the person, the group under its main name, with the label they were a member under unless
+     * it is their main name.
+     */
     private List<AuthorGroup> groups(UUID personId) {
-        return jdbc.sql("""
-                        SELECT DISTINCT g.id, g.name
+        return jdbc.sql("WITH " + MainNameSql.PEOPLE + ", " + MainNameSql.GROUPS + """
+                        SELECT g.group_id, g.main_name, CASE WHEN l.name = p.main_name THEN NULL ELSE l.name END AS member_as
                         FROM group_member gm
-                        JOIN alias a ON a.id = gm.alias_id
-                        JOIN "group" g ON g.id = gm.group_id
-                        WHERE a.person_id = :id
-                        ORDER BY g.name, g.id
+                        JOIN label l ON l.id = gm.label_id
+                        JOIN named_person p ON p.person_id = l.person_id
+                        JOIN named_group g ON g.group_id = gm.group_id
+                        WHERE l.person_id = :id
+                        ORDER BY lower(g.main_name), g.group_id, lower(l.name), l.id
                         """)
                 .param("id", personId)
-                .query((rs, row) -> new AuthorGroup(rs.getObject("id", UUID.class), rs.getString("name")))
+                .query((rs, row) -> new AuthorGroup(rs.getObject("group_id", UUID.class), rs.getString("main_name"), rs.getString("member_as")))
                 .list();
     }
 }

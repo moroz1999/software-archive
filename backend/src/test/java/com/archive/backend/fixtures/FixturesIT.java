@@ -28,6 +28,8 @@ class FixturesIT {
 
     /** A fixture country with its 20 cities. */
     private static final String FINLAND = "00000000-0000-0000-0002-000000000006";
+    /** A fixture group with every kind of member and groups around it. */
+    private static final String BYTE_BRIGADE = "00000000-0000-0000-0005-000000000001";
 
     @Autowired
     private MockMvc mvc;
@@ -63,6 +65,25 @@ class FixturesIT {
         mvc.perform(get("/api/authors").param("size", "1000"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[?(@.realName == null)].name").value(contains("Ivan Petrov")));
+    }
+
+    @Test
+    void fixtureGroupsFillMoreThanOneCatalogPage() throws Exception {
+        mvc.perform(get("/api/groups").param("size", "100"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(100)))
+                .andExpect(jsonPath("$.page.totalPages").value(greaterThan(1)));
+    }
+
+    @Test
+    void aFixtureGroupHasMembersUnderFormerLabelsUnknownMembersAndGroupsAroundIt() throws Exception {
+        mvc.perform(get("/api/groups/{id}", BYTE_BRIGADE))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.labels", hasSize(greaterThan(1))))
+                .andExpect(jsonPath("$.members[?(@.personName != null)]", hasSize(greaterThan(0))))
+                .andExpect(jsonPath("$.members[?(@.personId == null)]", hasSize(greaterThan(0))))
+                .andExpect(jsonPath("$.memberGroups", hasSize(greaterThan(0))))
+                .andExpect(jsonPath("$.groups", hasSize(greaterThan(0))));
     }
 
     @Test

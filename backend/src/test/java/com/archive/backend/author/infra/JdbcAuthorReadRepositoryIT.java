@@ -1,7 +1,7 @@
 package com.archive.backend.author.infra;
 
 import com.archive.backend.TestcontainersConfiguration;
-import com.archive.backend.author.read.AuthorAlias;
+import com.archive.backend.author.read.AuthorLabel;
 import com.archive.backend.author.read.AuthorCatalogEntry;
 import com.archive.backend.author.read.AuthorDetails;
 import com.archive.backend.author.read.AuthorGroup;
@@ -34,18 +34,21 @@ class JdbcAuthorReadRepositoryIT {
     private static final UUID HELSINKI = id(11);
     private static final UUID TAMPERE = id(12);
 
-    /** Aliases Zed (display name) and Axe; located in Helsinki (primary) and Norway; member of Crew. */
+    /** Labels Zed (display name) and Axe; located in Helsinki (primary) and Norway; member of Crew as Axe and as Zed. */
     private static final UUID ZED = id(101);
-    /** Aliases Mona and Bob, none marked: Bob is the main name; located in Norway. */
+    /** Labels Mona and Bob, none marked: Bob is the main name; located in Norway. */
     private static final UUID BOB = id(102);
-    /** No aliases, only a real name; located in Tampere. */
+    /** No labels, only a real name; located in Tampere. */
     private static final UUID CARL = id(103);
     /** No name at all: not an author. */
     private static final UUID NAMELESS = id(104);
 
-    private static final UUID ZED_ALIAS = id(201);
-    private static final UUID AXE_ALIAS = id(202);
+    private static final UUID ZED_LABEL = id(201);
+    private static final UUID AXE_LABEL = id(202);
+    /** Known by its label Crew Label; Zed is a member of it under both labels. */
     private static final UUID CREW = id(301);
+    /** Known only by its name; Zed is a member of it under the main name. */
+    private static final UUID BAND = id(302);
 
     @Autowired
     private JdbcAuthorReadRepository reads;
@@ -60,14 +63,14 @@ class JdbcAuthorReadRepositoryIT {
 
         jdbc.update("INSERT INTO person (id, real_name, notes) VALUES (?, 'John Doe', 'Coder since 1984'), (?, NULL, NULL), (?, 'Carl Real', NULL), (?, NULL, NULL)",
                 ZED, BOB, CARL, NAMELESS);
-        jdbc.update("INSERT INTO \"group\" (id, name) VALUES (?, 'Crew')", CREW);
+        jdbc.update("INSERT INTO \"group\" (id, name) VALUES (?, 'Crew'), (?, 'Band')", CREW, BAND);
         jdbc.update("""
-                INSERT INTO alias (id, name, person_id, group_id, is_display_name) VALUES
+                INSERT INTO label (id, name, person_id, group_id, is_display_name) VALUES
                     (?, 'Zed', ?, NULL, TRUE), (?, 'Axe', ?, NULL, FALSE),
                     (gen_random_uuid(), 'Mona', ?, NULL, FALSE), (gen_random_uuid(), 'Bob', ?, NULL, FALSE),
-                    (gen_random_uuid(), 'Crew Alias', NULL, ?, TRUE)
-                """, ZED_ALIAS, ZED, AXE_ALIAS, ZED, BOB, BOB, CREW);
-        jdbc.update("INSERT INTO group_member (group_id, alias_id) VALUES (?, ?)", CREW, AXE_ALIAS);
+                    (gen_random_uuid(), 'Crew Label', NULL, ?, TRUE), (gen_random_uuid(), 'Nobody', NULL, NULL, FALSE)
+                """, ZED_LABEL, ZED, AXE_LABEL, ZED, BOB, BOB, CREW);
+        jdbc.update("INSERT INTO group_member (group_id, label_id) VALUES (?, ?), (?, ?), (?, ?)", CREW, AXE_LABEL, CREW, ZED_LABEL, BAND, ZED_LABEL);
         jdbc.update("""
                 INSERT INTO entity_location (entity_type, entity_id, city_id, country_id, is_primary) VALUES
                     ('PERSON', ?, NULL, ?, FALSE), ('PERSON', ?, ?, NULL, TRUE),
@@ -77,7 +80,7 @@ class JdbcAuthorReadRepositoryIT {
     }
 
     @Test
-    void listsPeopleUnderTheirMainNameAndTheirOtherAliasesByName() {
+    void listsPeopleUnderTheirMainNameAndTheirOtherLabelsByNameButNoLabelOfAGroupOrOfNobody() {
         Page<AuthorCatalogEntry> page = reads.findCatalogPage(null, null, null, FIRST_PAGE);
 
         assertThat(page.getContent()).containsExactly(
@@ -107,7 +110,7 @@ class JdbcAuthorReadRepositoryIT {
 
     @Test
     void filtersByTheFirstLetterInAnyCase() {
-        jdbc.update("INSERT INTO alias (name, person_id) VALUES ('mike', ?)", CARL);
+        jdbc.update("INSERT INTO label (name, person_id) VALUES ('mike', ?)", CARL);
 
         assertThat(reads.findCatalogPage("M", null, null, FIRST_PAGE).getContent())
                 .extracting(AuthorCatalogEntry::name).containsExactly("mike", "Mona");
@@ -115,7 +118,7 @@ class JdbcAuthorReadRepositoryIT {
 
     @Test
     void filtersByACyrillicLetterCountingYoAsYe() {
-        jdbc.update("INSERT INTO alias (name, person_id) VALUES ('Ёжик', ?), ('Енот', ?), ('Борис', ?)", CARL, CARL, CARL);
+        jdbc.update("INSERT INTO label (name, person_id) VALUES ('Ёжик', ?), ('Енот', ?), ('Борис', ?)", CARL, CARL, CARL);
 
         assertThat(reads.findCatalogPage("Е", null, null, FIRST_PAGE).getContent())
                 .extracting(AuthorCatalogEntry::name).containsExactlyInAnyOrder("Ёжик", "Енот");
@@ -123,7 +126,7 @@ class JdbcAuthorReadRepositoryIT {
 
     @Test
     void filtersNamesStartingWithAnythingElseByTheRestSign() {
-        jdbc.update("INSERT INTO alias (name, person_id) VALUES ('8bit', ?), ('Ärger', ?), ('_under', ?), ('Борис', ?)", CARL, CARL, CARL, CARL);
+        jdbc.update("INSERT INTO label (name, person_id) VALUES ('8bit', ?), ('Ärger', ?), ('_under', ?), ('Борис', ?)", CARL, CARL, CARL, CARL);
 
         assertThat(reads.findCatalogPage("#", null, null, FIRST_PAGE).getContent())
                 .extracting(AuthorCatalogEntry::name).containsExactlyInAnyOrder("8bit", "Ärger", "_under");
@@ -150,12 +153,12 @@ class JdbcAuthorReadRepositoryIT {
     }
 
     @Test
-    void readsTheDetailsOfAnAuthor() {
+    void readsTheDetailsOfAnAuthorWithTheGroupsUnderTheirMainNameAndTheLabelOfEveryMembership() {
         assertThat(reads.findById(ZED)).contains(new AuthorDetails(
                 ZED, "Zed", "John Doe", "Coder since 1984",
-                List.of(new AuthorAlias(AXE_ALIAS, "Axe"), new AuthorAlias(ZED_ALIAS, "Zed")),
+                List.of(new AuthorLabel(AXE_LABEL, "Axe"), new AuthorLabel(ZED_LABEL, "Zed")),
                 List.of(new AuthorLocation("Finland", "Helsinki", true), new AuthorLocation("Norway", null, false)),
-                List.of(new AuthorGroup(CREW, "Crew"))));
+                List.of(new AuthorGroup(BAND, "Band", null), new AuthorGroup(CREW, "Crew Label", "Axe"), new AuthorGroup(CREW, "Crew Label", null))));
     }
 
     @Test

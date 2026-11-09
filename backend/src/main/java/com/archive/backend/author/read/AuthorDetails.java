@@ -11,7 +11,7 @@ public record AuthorDetails(
         String name,
         @Nullable String realName,
         @Nullable String notes,
-        List<AuthorAlias> aliases,
+        List<AuthorLabel> labels,
         List<AuthorLocation> locations,
         List<AuthorGroup> groups
 ) {

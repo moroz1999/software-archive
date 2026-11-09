@@ -1,9 +1,14 @@
 import {getJson, mapResponse, readArray, readBoolean, readNullableString, readObject, readString} from '@/shared/api';
-import {type AuthorAlias, type AuthorDetails, type AuthorGroup, type AuthorId, type AuthorLocation, toAuthorId} from '../model/author';
+import {type AuthorDetails, type AuthorGroup, type AuthorId, type AuthorLabel, type AuthorLocation, toAuthorId} from '../model/author';
 
-function parseNamed(item: unknown, what: string): AuthorAlias | AuthorGroup {
-    const dto = readObject(item, what);
+function parseLabel(item: unknown): AuthorLabel {
+    const dto = readObject(item, 'label');
     return {id: readString(dto, 'id'), name: readString(dto, 'name')};
+}
+
+function parseGroup(item: unknown): AuthorGroup {
+    const dto = readObject(item, 'group');
+    return {id: readString(dto, 'id'), name: readString(dto, 'name'), as: readNullableString(dto, 'as')};
 }
 
 function parseLocation(item: unknown): AuthorLocation {
@@ -21,9 +26,9 @@ export async function fetchAuthor(id: AuthorId, signal: AbortSignal): Promise<Au
             name: readString(dto, 'name'),
             realName: readNullableString(dto, 'realName'),
             notes: readNullableString(dto, 'notes'),
-            aliases: readArray(dto['aliases'], 'aliases').map((item) => parseNamed(item, 'alias')),
+            labels: readArray(dto['labels'], 'labels').map(parseLabel),
             locations: readArray(dto['locations'], 'locations').map(parseLocation),
-            groups: readArray(dto['groups'], 'groups').map((item) => parseNamed(item, 'group')),
+            groups: readArray(dto['groups'], 'groups').map(parseGroup),
         };
     });
 }

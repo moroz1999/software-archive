@@ -6,7 +6,7 @@ import {json, renderWithQueries, stubFetch} from '@/shared/lib/test';
 import {loadAuthorViewPage, preloadAuthorViewPage} from '../index';
 
 const ID = '00000000-0000-0000-0003-000000000001';
-const ZED = {id: ID, name: 'Zed', realName: null, notes: null, aliases: [], locations: [], groups: []};
+const ZED = {id: ID, name: 'Zed', realName: null, notes: null, labels: [], locations: [], groups: []};
 
 describe('AuthorViewPage', () => {
     afterEach(() => {

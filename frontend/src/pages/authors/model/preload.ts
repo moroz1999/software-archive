@@ -1,6 +1,7 @@
 import type {QueryClient} from '@tanstack/react-query';
 import type {LoaderFunctionArgs, ShouldRevalidateFunctionArgs} from 'react-router';
-import {authorCatalogQuery, citiesQuery, countriesQuery, parseCatalogFilter} from '@/features/author-catalog';
+import {authorCatalogQuery, parseCatalogFilter} from '@/features/author-catalog';
+import {citiesQuery, countriesQuery} from '@/entities/locations';
 import {preloadView} from '@/shared/api';
 
 /** Route loader: the catalog of the address and its place filters are at the top of the page. */

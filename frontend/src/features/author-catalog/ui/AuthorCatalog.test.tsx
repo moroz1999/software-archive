@@ -16,14 +16,14 @@ const HELSINKI = '00000000-0000-0000-0002-000000000101';
 const CARL = '00000000-0000-0000-0003-000000000003';
 
 const ENTRIES = [
-    {personId: ZED, name: 'Axe', realName: 'John Doe', aliasOf: 'Zed'},
-    {personId: BOB, name: 'Bob', realName: null, aliasOf: null},
-    {personId: ZED, name: 'Zed', realName: 'John Doe', aliasOf: null},
+    {personId: ZED, name: 'Axe', realName: 'John Doe', labelOf: 'Zed'},
+    {personId: BOB, name: 'Bob', realName: null, labelOf: null},
+    {personId: ZED, name: 'Zed', realName: 'John Doe', labelOf: null},
 ];
-/** A person without a real name, with an alias; and a person known only by the real name. */
+/** A person without a real name, with a label; and a person known only by the real name. */
 const WITHOUT_REAL_NAMES = [
-    {personId: BOB, name: 'Mona', realName: null, aliasOf: 'Bob'},
-    {personId: CARL, name: 'Carl Real', realName: null, aliasOf: null},
+    {personId: BOB, name: 'Mona', realName: null, labelOf: 'Bob'},
+    {personId: CARL, name: 'Carl Real', realName: null, labelOf: null},
 ];
 const COUNTRIES = [{id: FINLAND, name: 'Finland'}, {id: NORWAY, name: 'Norway'}];
 const FINNISH_CITIES = [{id: HELSINKI, name: 'Helsinki'}];
@@ -87,18 +87,18 @@ describe(AuthorCatalog, () => {
         expect(within(list).getByRole('link', {name: 'Bob'})).toHaveAttribute('href', `/authors/${BOB}`);
     });
 
-    it('names the real name of the person next to the nickname and next to every alias', async () => {
+    it('names the real name of the person next to the nickname and next to every label', async () => {
         stubFetchRoutes(routes({[ALL]: catalogPage(ENTRIES)}));
         openCatalog();
 
         await expect(entryLines()).resolves.toStrictEqual(['Axe John Doe', 'Bob', 'Zed John Doe']);
     });
 
-    it('names the main name next to an alias of a person without a real name, and nothing next to a real name', async () => {
+    it('names the main name next to a label of a person without a real name, and nothing next to a real name', async () => {
         stubFetchRoutes(routes({[ALL]: catalogPage(WITHOUT_REAL_NAMES)}));
         openCatalog();
 
-        await expect(entryLines()).resolves.toStrictEqual(['Mona alias of Bob', 'Carl Real']);
+        await expect(entryLines()).resolves.toStrictEqual(['Mona label of Bob', 'Carl Real']);
     });
 
     it('offers all letters, the current one marked, each keeping the place filters and starting from the first page', async () => {

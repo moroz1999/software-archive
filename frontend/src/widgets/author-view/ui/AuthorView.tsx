@@ -1,9 +1,12 @@
 import type {ReactNode} from 'react';
-import {type AuthorDetails, AuthorDetailsProvider, type AuthorId, type AuthorLocation, useAuthorDetails} from '@/entities/authors';
+import {type AuthorDetails, AuthorDetailsProvider, type AuthorId, useAuthorDetails} from '@/entities/authors';
+import {locationText, primaryFirst} from '@/entities/locations';
+import {groupPath, toGroupId} from '@/entities/groups';
+import {Inline} from '@/shared/ui/inline';
 import {PageLayout} from '@/shared/ui/page-layout';
 import {Skeleton} from '@/shared/ui/skeleton';
 import {Stack} from '@/shared/ui/stack';
-import {Text} from '@/shared/ui/typography';
+import {Text, TextLink} from '@/shared/ui/typography';
 import {AuthorViewSkeleton} from './AuthorViewSkeleton';
 import styles from './AuthorView.module.css';
 
@@ -41,15 +44,6 @@ function LoadedView() {
     );
 }
 
-function locationText(location: AuthorLocation): string {
-    return [location.city, location.country].filter((part) => part !== null).join(', ');
-}
-
-/** The primary location leads; the others keep their order. */
-function primaryFirst(locations: readonly AuthorLocation[]): readonly AuthorLocation[] {
-    return [...locations.filter((location) => location.primary), ...locations.filter((location) => !location.primary)];
-}
-
 function Details({author}: {readonly author: AuthorDetails}) {
     const notes = author.notes?.split('\n').filter((line) => line.trim() !== '') ?? [];
     return (
@@ -57,22 +51,32 @@ function Details({author}: {readonly author: AuthorDetails}) {
             {author.realName !== null && (
                 <Section label="Real name"><Text>{author.realName}</Text></Section>
             )}
-            {author.aliases.length > 0 && (
-                <Section label="Aliases">
-                    <NamedList label="Aliases" items={author.aliases.map((alias) => ({key: alias.id, text: alias.name}))}/>
+            {author.labels.length > 0 && (
+                <Section label="Labels">
+                    <ItemList label="Labels">
+                        {author.labels.map((label) => <li key={label.id}><Text>{label.name}</Text></li>)}
+                    </ItemList>
                 </Section>
             )}
             {author.locations.length > 0 && (
                 <Section label="Locations">
-                    <NamedList
-                        label="Locations"
-                        items={primaryFirst(author.locations).map((location, index) => ({key: String(index), text: locationText(location)}))}
-                    />
+                    <ItemList label="Locations">
+                        {primaryFirst(author.locations).map((location, index) => <li key={index}><Text>{locationText(location)}</Text></li>)}
+                    </ItemList>
                 </Section>
             )}
             {author.groups.length > 0 && (
                 <Section label="Groups">
-                    <NamedList label="Groups" items={author.groups.map((group) => ({key: group.id, text: group.name}))}/>
+                    <ItemList label="Groups">
+                        {author.groups.map((group) => (
+                            <li key={`${group.id}-${group.as ?? ''}`}>
+                                <Inline gap="sm" align="baseline" wrap>
+                                    <Text><TextLink href={groupPath(toGroupId(group.id))}>{group.name}</TextLink></Text>
+                                    {group.as !== null && <>{' '}<Text variant="bodySm" tone="muted">as {group.as}</Text></>}
+                                </Inline>
+                            </li>
+                        ))}
+                    </ItemList>
                 </Section>
             )}
             {notes.length > 0 && (
@@ -95,15 +99,6 @@ function Section({label, children}: {readonly label: string; readonly children: 
     );
 }
 
-interface NamedItem {
-    readonly key: string;
-    readonly text: string;
-}
-
-function NamedList({label, items}: {readonly label: string; readonly items: readonly NamedItem[]}) {
-    return (
-        <Stack as="ul" gap="xs" ariaLabel={label}>
-            {items.map((item) => <li key={item.key}><Text>{item.text}</Text></li>)}
-        </Stack>
-    );
+function ItemList({label, children}: {readonly label: string; readonly children: ReactNode}) {
+    return <Stack as="ul" gap="xs" ariaLabel={label}>{children}</Stack>;
 }

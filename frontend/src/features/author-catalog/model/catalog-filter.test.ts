@@ -1,5 +1,6 @@
 import {describe, expect, it} from 'vitest';
-import {AUTHOR_LETTERS, catalogHref, parseCatalogFilter, toCityId, toCountryId} from './catalog-filter';
+import {toCityId, toCountryId} from '@/entities/locations';
+import {catalogHref, parseCatalogFilter} from './catalog-filter';
 
 const COUNTRY = '00000000-0000-0000-0002-000000000001';
 const CITY = '00000000-0000-0000-0002-000000000101';
@@ -50,15 +51,5 @@ describe(catalogHref, () => {
     it('writes every filter and the page counted from 1', () => {
         expect(catalogHref({letter: parse('letter=%23').letter, country: toCountryId(COUNTRY), city: toCityId(CITY), page: 1}))
             .toBe(`/authors?letter=%23&country=${COUNTRY}&city=${CITY}&page=2`);
-    });
-});
-
-describe('AUTHOR_LETTERS', () => {
-    it('are A–Z, А–Я without Ё, and # for the rest', () => {
-        expect(AUTHOR_LETTERS).toHaveLength(26 + 32 + 1);
-        expect(AUTHOR_LETTERS.slice(0, 2)).toStrictEqual(['A', 'B']);
-        expect(AUTHOR_LETTERS.slice(25, 28)).toStrictEqual(['Z', 'А', 'Б']);
-        expect(AUTHOR_LETTERS).not.toContain('Ё');
-        expect(AUTHOR_LETTERS.at(-1)).toBe('#');
     });
 });

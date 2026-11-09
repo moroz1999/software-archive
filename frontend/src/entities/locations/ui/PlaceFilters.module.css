@@ -1,0 +1,3 @@
+.filter {
+    min-width: var(--place-filters-min-width);
+}

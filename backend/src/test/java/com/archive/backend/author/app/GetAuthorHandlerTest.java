@@ -1,7 +1,7 @@
 package com.archive.backend.author.app;
 
 import com.archive.backend.author.domain.AuthorId;
-import com.archive.backend.author.read.AuthorAlias;
+import com.archive.backend.author.read.AuthorLabel;
 import com.archive.backend.author.read.AuthorDetails;
 import com.archive.backend.shared.domain.error.NotFoundException;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ class GetAuthorHandlerTest {
 
     @Test
     void returnsTheAuthor() {
-        AuthorDetails author = new AuthorDetails(ID, "Zed", "John Doe", null, List.of(new AuthorAlias(UUID.randomUUID(), "Zed")), List.of(), List.of());
+        AuthorDetails author = new AuthorDetails(ID, "Zed", "John Doe", null, List.of(new AuthorLabel(UUID.randomUUID(), "Zed")), List.of(), List.of());
         reads.add(author);
 
         assertThat(handler.handle(new GetAuthorQuery(new AuthorId(ID)))).isEqualTo(author);

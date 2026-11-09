@@ -5,14 +5,16 @@ import {isUuid} from '@/shared/lib/uuid';
 /** The id of an author: the person behind the names. */
 export type AuthorId = Brand<string, 'AuthorId'>;
 
-export interface AuthorAlias {
+export interface AuthorLabel {
     readonly id: string;
     readonly name: string;
 }
 
+/** A group the author was a member of, under its main name; `as` is the label they were a member under, unless it is their main name. */
 export interface AuthorGroup {
     readonly id: string;
     readonly name: string;
+    readonly as: string | null;
 }
 
 /** Where an author is located: a country, a city of it, or both. */
@@ -29,7 +31,7 @@ export interface AuthorDetails {
     readonly name: string;
     readonly realName: string | null;
     readonly notes: string | null;
-    readonly aliases: readonly AuthorAlias[];
+    readonly labels: readonly AuthorLabel[];
     /** The primary location first. */
     readonly locations: readonly AuthorLocation[];
     readonly groups: readonly AuthorGroup[];

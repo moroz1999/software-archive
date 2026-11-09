@@ -1,7 +1,8 @@
 import type {UseQueryResult} from '@tanstack/react-query';
+import type {City, Country} from '@/entities/locations';
 import type {Page} from '@/shared/api';
 import {createRequiredContext} from '@/shared/lib/context';
-import type {AuthorCatalogEntry, City, Country} from './catalog';
+import type {AuthorCatalogEntry} from './catalog';
 import type {AuthorCatalogFilter} from './catalog-filter';
 
 export interface AuthorCatalogState {

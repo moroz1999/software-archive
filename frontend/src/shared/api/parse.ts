@@ -24,6 +24,15 @@ export function readArray(value: unknown, what: string): readonly unknown[] {
     return value;
 }
 
+export function readStringArray(value: unknown, what: string): readonly string[] {
+    return readArray(value, what).map((item) => {
+        if (typeof item !== 'string') {
+            throw unexpected(`${what} holds a value that is not a string`);
+        }
+        return item;
+    });
+}
+
 export function readString(object: JsonObject, key: string): string {
     const value = object[key];
     if (typeof value !== 'string') {

@@ -12,7 +12,7 @@ A piece of software: the work itself, with its titles, languages, links and cred
 Detailed logic and structure: [domain/software.md](domain/software.md)
 
 ### authors
-Real people, groups and the aliases they are publicly known by.
+Real people, groups and the labels works are released under.
 Detailed logic and structure: [domain/authors.md](domain/authors.md)
 
 ### events

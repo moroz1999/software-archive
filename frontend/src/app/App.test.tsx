@@ -10,7 +10,12 @@ import {type AppRouter, createAppRouter} from './router';
 const ALPHA = {id: '00000000-0000-0000-0001-000000000001', title: 'Fixture Software Alpha', releaseDate: '1985-03-02'};
 const ALPHA_DETAILS = {...ALPHA, description: null};
 const ZED = '00000000-0000-0000-0003-000000000001';
-const ZED_DETAILS = {id: ZED, name: 'Zed', realName: null, notes: null, aliases: [], locations: [], groups: []};
+const CREW = '00000000-0000-0000-0005-000000000001';
+const ZED_DETAILS = {id: ZED, name: 'Zed', realName: null, notes: null, labels: [], locations: [], groups: [{id: CREW, name: 'Crew', as: null}]};
+const CREW_DETAILS = {
+    id: CREW, name: 'Crew', groupName: 'Crew Ltd', notes: null, types: [], labels: [], locations: [],
+    members: [{name: 'Zed', personId: ZED, personName: null}], memberGroups: [], groups: [],
+};
 
 describe(App, () => {
     const routers: AppRouter[] = [];
@@ -47,7 +52,7 @@ describe(App, () => {
         stubFetchRoutes(new Map([
             ['/api/software/latest?size=12', json(pageResponse([ALPHA], {size: 12}))],
             ['/api/software?page=0&size=20', json(pageResponse([ALPHA]))],
-            ['/api/authors?page=0&size=100', json(pageResponse([{personId: ZED, name: 'Zed', aliasOf: null}], {size: 100}))],
+            ['/api/authors?page=0&size=100', json(pageResponse([{personId: ZED, name: 'Zed', labelOf: null}], {size: 100}))],
             ['/api/countries', json([])],
             [`/api/authors/${ZED}`, json(ZED_DETAILS)],
         ]));
@@ -70,6 +75,46 @@ describe(App, () => {
 
         await expect(screen.findByRole('heading', {level: 1, name: 'Zed'})).resolves.toBeInTheDocument();
         expect(within(screen.getByRole('navigation', {name: 'Main menu'})).getByRole('link', {name: 'Authors'})).toHaveAttribute('aria-current', 'page');
+    });
+
+    it('opens the groups from the main menu, a group from the catalog and its members from the group', async () => {
+        stubFetchRoutes(new Map([
+            ['/api/software/latest?size=12', json(pageResponse([ALPHA], {size: 12}))],
+            ['/api/groups?page=0&size=100', json(pageResponse([{groupId: CREW, name: 'Crew', groupName: 'Crew Ltd'}], {size: 100}))],
+            ['/api/countries', json([])],
+            [`/api/groups/${CREW}`, json(CREW_DETAILS)],
+            [`/api/authors/${ZED}`, json(ZED_DETAILS)],
+        ]));
+
+        render(<App router={appRouter()} queryClient={queryClient}/>);
+
+        await screen.findByRole('heading', {level: 1, name: 'Recently added'});
+        await userEvent.click(within(screen.getByRole('navigation', {name: 'Main menu'})).getByRole('link', {name: 'Groups'}));
+
+        await expect(screen.findByRole('heading', {level: 1, name: 'Groups'})).resolves.toBeInTheDocument();
+
+        await userEvent.click(await screen.findByRole('link', {name: 'Crew'}));
+
+        await expect(screen.findByRole('heading', {level: 1, name: 'Crew'})).resolves.toBeInTheDocument();
+        expect(within(screen.getByRole('navigation', {name: 'Main menu'})).getByRole('link', {name: 'Groups'})).toHaveAttribute('aria-current', 'page');
+
+        await userEvent.click(within(screen.getByRole('list', {name: 'Members'})).getByRole('link', {name: 'Zed'}));
+
+        await expect(screen.findByRole('heading', {level: 1, name: 'Zed'})).resolves.toBeInTheDocument();
+
+        await userEvent.click(within(screen.getByRole('list', {name: 'Groups'})).getByRole('link', {name: 'Crew'}));
+
+        await expect(screen.findByRole('heading', {level: 1, name: 'Crew'})).resolves.toBeInTheDocument();
+    });
+
+    it('shows the not found page for a group that does not exist', async () => {
+        stubFetch(json({status: 404, code: 'group.not-found'}, 404));
+        window.history.replaceState(null, '', `/groups/${CREW}`);
+
+        render(<App router={appRouter()} queryClient={queryClient}/>);
+
+        await expect(screen.findByRole('heading', {level: 1, name: 'Not found'})).resolves.toBeInTheDocument();
+        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     });
 
     it('shows the not found page for an author who does not exist', async () => {
@@ -120,7 +165,7 @@ describe(App, () => {
         expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     });
 
-    it.each(['/software/42', '/software/42/edit', '/authors/42'])('shows the not found page for %s without asking the backend', async (path) => {
+    it.each(['/software/42', '/software/42/edit', '/authors/42', '/groups/42'])('shows the not found page for %s without asking the backend', async (path) => {
         const fetchMock = stubFetch(json(ALPHA_DETAILS));
         window.history.replaceState(null, '', path);
 

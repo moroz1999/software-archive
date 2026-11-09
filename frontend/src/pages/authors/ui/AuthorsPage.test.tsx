@@ -23,7 +23,7 @@ describe('AuthorsPage', () => {
 
     it('preloads the catalog of the address, the countries and the cities of the chosen country', async () => {
         const fetchMock = stubFetchRoutes(new Map([
-            [`/api/authors?page=0&size=100&letter=Z&country=${FINLAND}`, json(pageResponse([{personId: ZED, name: 'Zed', aliasOf: null}], {size: 100}))],
+            [`/api/authors?page=0&size=100&letter=Z&country=${FINLAND}`, json(pageResponse([{personId: ZED, name: 'Zed', labelOf: null}], {size: 100}))],
             ['/api/countries', json([{id: FINLAND, name: 'Finland'}])],
             [`/api/countries/${FINLAND}/cities`, json([])],
         ]));

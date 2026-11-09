@@ -1,0 +1,4 @@
+:root {
+    /* Narrowest width of a place filter, so the longest country names fit. */
+    --place-filters-min-width: 240px;
+}

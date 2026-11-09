@@ -1,7 +1,7 @@
 package com.archive.backend.author.web.mapper;
 
 import com.archive.backend.author.app.ListAuthorsQuery;
-import com.archive.backend.author.domain.AuthorLetter;
+import com.archive.backend.label.domain.LabelLetter;
 import com.archive.backend.author.read.AuthorCatalogEntry;
 import com.archive.backend.author.read.AuthorDetails;
 import com.archive.backend.author.web.dto.AuthorCatalogEntryDto;
@@ -25,7 +25,7 @@ public interface AuthorWebMapper {
 
     default ListAuthorsQuery toListQuery(@Nullable String letter, @Nullable UUID country, @Nullable UUID city, Pageable pageable) {
         return new ListAuthorsQuery(
-                letter == null ? null : new AuthorLetter(letter),
+                letter == null ? null : new LabelLetter(letter),
                 country == null ? null : new CountryId(country),
                 city == null ? null : new CityId(city),
                 pageable);

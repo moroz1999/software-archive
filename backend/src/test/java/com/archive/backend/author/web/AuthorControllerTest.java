@@ -5,9 +5,9 @@ import com.archive.backend.author.app.GetAuthorQuery;
 import com.archive.backend.author.app.ListAuthorsHandler;
 import com.archive.backend.author.app.ListAuthorsQuery;
 import com.archive.backend.author.domain.AuthorId;
-import com.archive.backend.author.domain.AuthorLetter;
+import com.archive.backend.label.domain.LabelLetter;
 import com.archive.backend.author.domain.AuthorNotFoundException;
-import com.archive.backend.author.read.AuthorAlias;
+import com.archive.backend.author.read.AuthorLabel;
 import com.archive.backend.author.read.AuthorCatalogEntry;
 import com.archive.backend.author.read.AuthorDetails;
 import com.archive.backend.author.read.AuthorGroup;
@@ -46,7 +46,7 @@ class AuthorControllerTest {
     private static final UUID ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID COUNTRY = UUID.fromString("00000000-0000-0000-0000-000000000002");
     private static final UUID CITY = UUID.fromString("00000000-0000-0000-0000-000000000003");
-    private static final UUID ALIAS = UUID.fromString("00000000-0000-0000-0000-000000000004");
+    private static final UUID LABEL = UUID.fromString("00000000-0000-0000-0000-000000000004");
     private static final UUID GROUP = UUID.fromString("00000000-0000-0000-0000-000000000005");
 
     @Autowired
@@ -68,8 +68,8 @@ class AuthorControllerTest {
                 .andExpect(jsonPath("$.content[0].personId").value(ID.toString()))
                 .andExpect(jsonPath("$.content[0].name").value("Axe"))
                 .andExpect(jsonPath("$.content[0].realName").value("John Doe"))
-                .andExpect(jsonPath("$.content[0].aliasOf").value("Zed"))
-                .andExpect(jsonPath("$.content[1].aliasOf").value(nullValue()))
+                .andExpect(jsonPath("$.content[0].labelOf").value("Zed"))
+                .andExpect(jsonPath("$.content[1].labelOf").value(nullValue()))
                 .andExpect(jsonPath("$.page.totalElements").value(2))
                 .andExpect(jsonPath("$.page.size").value(100));
     }
@@ -87,7 +87,7 @@ class AuthorControllerTest {
 
     @Test
     void listsTheCatalogWithFilters() throws Exception {
-        when(listHandler.handle(new ListAuthorsQuery(new AuthorLetter("Б"), new CountryId(COUNTRY), new CityId(CITY), PageRequest.of(1, 100))))
+        when(listHandler.handle(new ListAuthorsQuery(new LabelLetter("Б"), new CountryId(COUNTRY), new CityId(CITY), PageRequest.of(1, 100))))
                 .thenReturn(new PageImpl<>(List.of(new AuthorCatalogEntry(ID, "Борис", null, null)), PageRequest.of(1, 100), 101));
 
         mvc.perform(get("/api/authors")
@@ -102,7 +102,7 @@ class AuthorControllerTest {
     void answers400ForAnInvalidLetter() throws Exception {
         mvc.perform(get("/api/authors").param("letter", "AB"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("author.letter-invalid"));
+                .andExpect(jsonPath("$.code").value("label.letter-invalid"));
         verify(listHandler, never()).handle(any());
     }
 
@@ -122,9 +122,9 @@ class AuthorControllerTest {
     void returnsOneAuthor() throws Exception {
         when(getHandler.handle(new GetAuthorQuery(new AuthorId(ID)))).thenReturn(new AuthorDetails(
                 ID, "Zed", "John Doe", "Coder since 1984",
-                List.of(new AuthorAlias(ALIAS, "Zed")),
+                List.of(new AuthorLabel(LABEL, "Zed")),
                 List.of(new AuthorLocation("Finland", "Helsinki", true), new AuthorLocation("Norway", null, false)),
-                List.of(new AuthorGroup(GROUP, "Crew"))));
+                List.of(new AuthorGroup(GROUP, "Crew", "Axe"))));
 
         mvc.perform(get("/api/authors/{id}", ID))
                 .andExpect(status().isOk())
@@ -132,14 +132,15 @@ class AuthorControllerTest {
                 .andExpect(jsonPath("$.name").value("Zed"))
                 .andExpect(jsonPath("$.realName").value("John Doe"))
                 .andExpect(jsonPath("$.notes").value("Coder since 1984"))
-                .andExpect(jsonPath("$.aliases[0].id").value(ALIAS.toString()))
-                .andExpect(jsonPath("$.aliases[0].name").value("Zed"))
+                .andExpect(jsonPath("$.labels[0].id").value(LABEL.toString()))
+                .andExpect(jsonPath("$.labels[0].name").value("Zed"))
                 .andExpect(jsonPath("$.locations[0].country").value("Finland"))
                 .andExpect(jsonPath("$.locations[0].city").value("Helsinki"))
                 .andExpect(jsonPath("$.locations[0].primary").value(true))
                 .andExpect(jsonPath("$.locations[1].city").value(nullValue()))
                 .andExpect(jsonPath("$.groups[0].id").value(GROUP.toString()))
-                .andExpect(jsonPath("$.groups[0].name").value("Crew"));
+                .andExpect(jsonPath("$.groups[0].name").value("Crew"))
+                .andExpect(jsonPath("$.groups[0].as").value("Axe"));
     }
 
     @Test

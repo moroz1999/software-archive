@@ -1,9 +1,12 @@
 import type {QueryClient} from '@tanstack/react-query';
 import {createBrowserRouter, type RouteObject} from 'react-router';
 import {AUTHOR_ROUTE, AUTHORS_PATH} from '@/entities/authors';
+import {GROUP_ROUTE, GROUPS_PATH} from '@/entities/groups';
 import {SOFTWARE_EDIT_ROUTE, SOFTWARE_LIST_PATH, SOFTWARE_NEW_PATH, SOFTWARE_ROUTE} from '@/entities/software';
 import {loadAuthorViewPage, preloadAuthorViewPage} from '@/pages/author-view';
 import {loadAuthorsPage, preloadAuthorsPage, shouldPreloadAuthorsPage} from '@/pages/authors';
+import {loadGroupViewPage, preloadGroupViewPage} from '@/pages/group-view';
+import {loadGroupsPage, preloadGroupsPage, shouldPreloadGroupsPage} from '@/pages/groups';
 import {loadHomePage, preloadHomePage} from '@/pages/home';
 import {loadSoftwarePage, preloadSoftwarePage} from '@/pages/software';
 import {loadSoftwareEditPage, preloadSoftwareEditPage} from '@/pages/software-edit';
@@ -43,6 +46,14 @@ const routes = (queryClient: QueryClient): RouteObject[] => [{Component: AppLayo
             HydrateFallback: nothing,
         },
         {path: AUTHOR_ROUTE, loader: preloadAuthorViewPage(queryClient), lazy: {Component: loadAuthorViewPage}, HydrateFallback: nothing},
+        {
+            path: GROUPS_PATH,
+            loader: preloadGroupsPage(queryClient),
+            shouldRevalidate: shouldPreloadGroupsPage,
+            lazy: {Component: loadGroupsPage},
+            HydrateFallback: nothing,
+        },
+        {path: GROUP_ROUTE, loader: preloadGroupViewPage(queryClient), lazy: {Component: loadGroupViewPage}, HydrateFallback: nothing},
         {path: '*', loader: unknownAddress, Component: nothing},
     ]},
 ]}];

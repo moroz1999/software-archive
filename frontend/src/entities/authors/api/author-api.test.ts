@@ -10,9 +10,12 @@ const ZED = {
     name: 'Zed',
     realName: 'John Doe',
     notes: null,
-    aliases: [{id: '00000000-0000-0000-0004-000000000001', name: 'Zed'}],
+    labels: [{id: '00000000-0000-0000-0004-000000000001', name: 'Zed'}],
     locations: [{country: 'Finland', city: null, primary: true}],
-    groups: [{id: '00000000-0000-0000-0005-000000000001', name: 'Crew'}],
+    groups: [
+        {id: '00000000-0000-0000-0005-000000000001', name: 'Crew', as: 'Axe'},
+        {id: '00000000-0000-0000-0005-000000000002', name: 'Band', as: null},
+    ],
 };
 
 describe(fetchAuthor, () => {
@@ -34,7 +37,7 @@ describe(fetchAuthor, () => {
     });
 
     it('fails with a system error on a malformed answer', async () => {
-        stubFetch(json({...ZED, aliases: null}));
+        stubFetch(json({...ZED, labels: null}));
 
         await expect(fetchAuthor(ID, new AbortController().signal)).rejects.toBeInstanceOf(SystemError);
     });

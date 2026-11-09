@@ -1,98 +1,49 @@
 import {authorPath} from '@/entities/authors';
-import {Field} from '@/shared/ui/field';
+import {PlaceFilters} from '@/entities/locations';
+import {LabelEntriesSkeleton, LabelEntry, LetterFilter} from '@/entities/labels';
 import {Grid} from '@/shared/ui/grid';
-import {Inline} from '@/shared/ui/inline';
 import {LoadingState} from '@/shared/ui/loading-state';
-import {NavChip, NavChips} from '@/shared/ui/nav-chips';
 import {Pagination} from '@/shared/ui/pagination';
-import {Select} from '@/shared/ui/select';
 import {Stack} from '@/shared/ui/stack';
-import {Text, TextLink} from '@/shared/ui/typography';
+import {Text} from '@/shared/ui/typography';
 import {useAuthorCatalog} from '../model/author-catalog-context';
 import type {AuthorCatalogEntry} from '../model/catalog';
-import {AUTHOR_LETTERS, catalogHref, toCityId, toCountryId} from '../model/catalog-filter';
-import {AuthorCatalogSkeleton} from './AuthorCatalogSkeleton';
-import styles from './AuthorCatalog.module.css';
+import {catalogHref} from '../model/catalog-filter';
 
 /** The author catalog with its letters, place filters and pages, inside an AuthorCatalogProvider. */
 export function AuthorCatalog() {
+    const {filter, countries, cities, changing, show} = useAuthorCatalog();
     return (
         <Stack gap="lg">
-            <Letters/>
-            <PlaceFilters/>
+            <LetterFilter current={filter.letter} hrefOf={(letter) => catalogHref({...filter, letter, page: 0})} disabled={changing}/>
+            <PlaceFilters
+                country={filter.country}
+                city={filter.city}
+                countries={countries.data}
+                cities={cities.data}
+                disabled={changing}
+                onChange={(country, city) => {
+                    show({...filter, country, city, page: 0});
+                }}
+            />
             <Entries/>
         </Stack>
     );
 }
 
-function Letters() {
-    const {filter, changing} = useAuthorCatalog();
-    return (
-        <NavChips label="First letter">
-            <NavChip href={catalogHref({...filter, letter: null, page: 0})} active={filter.letter === null} disabled={changing}>All</NavChip>
-            {AUTHOR_LETTERS.map((letter) => (
-                <NavChip key={letter} href={catalogHref({...filter, letter, page: 0})} active={filter.letter === letter} disabled={changing}>
-                    {letter}
-                </NavChip>
-            ))}
-        </NavChips>
-    );
-}
-
-function PlaceFilters() {
-    const {filter, countries, cities, changing, show} = useAuthorCatalog();
-    const countryOptions = (countries.data ?? []).map((country) => ({value: country.id, label: country.name}));
-    const cityOptions = (cities.data ?? []).map((city) => ({value: city.id, label: city.name}));
-    return (
-        <Inline gap="md" wrap>
-            <Field label="Country" className={styles.filter}>
-                {(control) => (
-                    <Select
-                        id={control.id}
-                        value={filter.country ?? ''}
-                        onChange={(value) => {
-                            show({...filter, country: value === '' ? null : toCountryId(value), city: null, page: 0});
-                        }}
-                        options={countryOptions}
-                        placeholder="Any country"
-                        disabled={changing || countries.data === undefined}
-                    />
-                )}
-            </Field>
-            <Field label="City" className={styles.filter}>
-                {(control) => (
-                    <Select
-                        id={control.id}
-                        value={filter.city ?? ''}
-                        onChange={(value) => {
-                            show({...filter, city: value === '' ? null : toCityId(value), page: 0});
-                        }}
-                        options={cityOptions}
-                        placeholder="Any city"
-                        disabled={changing || cities.data === undefined}
-                    />
-                )}
-            </Field>
-        </Inline>
-    );
-}
-
-/** Next to an entry: the real name of the person, or for an alias of a person without one, the main name. */
-function EntryNote({entry}: {readonly entry: AuthorCatalogEntry}) {
+/** Next to an entry: the real name of the person, or for a label of a person without one, the main name. */
+function noteOf(entry: AuthorCatalogEntry): string | null {
     if (entry.realName !== null) {
-        return <Text variant="bodySm" tone="muted">{entry.realName}</Text>;
+        return entry.realName;
     }
-    if (entry.aliasOf !== null) {
-        return <Text variant="bodySm" tone="muted">alias of {entry.aliasOf}</Text>;
-    }
-    return null;
+    return entry.labelOf === null ? null : `label of ${entry.labelOf}`;
 }
 
 function Entries() {
     const {filter, entries, changing} = useAuthorCatalog();
 
     if (entries.isPending) {
-        return <div data-testid="author-catalog-skeleton"><AuthorCatalogSkeleton/></div>;
+        return <div data-testid="author-catalog-skeleton"><LabelEntriesSkeleton/></div>;
     }
     if (entries.isLoadingError) {
         // The error dialog shows why it failed (docs/error-handling.md).
@@ -107,11 +58,7 @@ function Entries() {
                 <Grid as="ul" ariaLabel="Authors" desktopColumns={4} tabletColumns={3} mobileColumns={1} gap="md">
                     {entries.data.items.map((entry) => (
                         <li key={`${entry.personId}-${entry.name}`}>
-                            <Inline gap="sm" align="baseline" wrap>
-                                <Text><TextLink href={authorPath(entry.personId)}>{entry.name}</TextLink></Text>
-                                {' '}
-                                <EntryNote entry={entry}/>
-                            </Inline>
+                            <LabelEntry name={entry.name} href={authorPath(entry.personId)} note={noteOf(entry)}/>
                         </li>
                     ))}
                 </Grid>

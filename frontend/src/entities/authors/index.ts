@@ -2,10 +2,10 @@ export {fetchAuthor} from './api/author-api';
 export {AUTHOR_QUERY_KEY, authorDetailsQuery} from './api/author-queries';
 export {AUTHOR_ROUTE, AUTHORS_PATH, authorPath} from './config/paths';
 export {
-    type AuthorAlias,
     type AuthorDetails,
     type AuthorGroup,
     type AuthorId,
+    type AuthorLabel,
     type AuthorLocation,
     parseAuthorId,
     requireAuthorId,

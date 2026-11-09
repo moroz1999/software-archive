@@ -1,0 +1,13 @@
+:root {
+    /* Title bone: a short name in the display line of a page heading. */
+    --group-view-title-bone-width: 240px;
+    --group-view-title-bone-height: var(--space-40);
+
+    /* Label bone: a short word of a section label. */
+    --group-view-label-bone-width: var(--space-64);
+    --group-view-label-bone-height: var(--space-16);
+
+    /* Line bone: a name or a place in a line of body text. */
+    --group-view-line-bone-width: 200px;
+    --group-view-line-bone-height: var(--space-20);
+}

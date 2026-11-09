@@ -1,0 +1,12 @@
+import type {QueryClient} from '@tanstack/react-query';
+import type {LoaderFunctionArgs} from 'react-router';
+import {groupDetailsQuery, requireGroupId} from '@/entities/groups';
+import {preloadView} from '@/shared/api';
+
+/** Route loader: the group's details are the block at the top of the page; a malformed id is a page that does not exist. */
+export function preloadGroupViewPage(queryClient: QueryClient): (args: LoaderFunctionArgs) => Promise<null> {
+    return ({params}) => {
+        const id = requireGroupId(params['id']);
+        return preloadView([queryClient.query(groupDetailsQuery(id))]);
+    };
+}

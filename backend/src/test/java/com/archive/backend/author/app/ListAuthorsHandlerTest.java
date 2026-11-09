@@ -1,6 +1,6 @@
 package com.archive.backend.author.app;
 
-import com.archive.backend.author.domain.AuthorLetter;
+import com.archive.backend.label.domain.LabelLetter;
 import com.archive.backend.author.read.AuthorCatalogEntry;
 import com.archive.backend.geo.domain.CityId;
 import com.archive.backend.geo.domain.CountryId;
@@ -34,7 +34,7 @@ class ListAuthorsHandlerTest {
         UUID country = UUID.randomUUID();
         UUID city = UUID.randomUUID();
 
-        handler.handle(new ListAuthorsQuery(new AuthorLetter("ё"), new CountryId(country), new CityId(city), PageRequest.of(0, 100)));
+        handler.handle(new ListAuthorsQuery(new LabelLetter("ё"), new CountryId(country), new CityId(city), PageRequest.of(0, 100)));
 
         assertThat(reads.lastFilter()).isEqualTo(new InMemoryAuthorReadRepository.Filter("Е", country, city));
     }

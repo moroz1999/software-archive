@@ -1,0 +1,4 @@
+.name {
+    width: var(--label-entries-skeleton-name-width);
+    height: var(--label-entries-skeleton-name-height);
+}
