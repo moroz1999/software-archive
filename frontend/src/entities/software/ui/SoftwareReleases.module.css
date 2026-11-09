@@ -1,0 +1,4 @@
+.releaseBone {
+    width: 100%;
+    height: var(--software-releases-bone-height);
+}

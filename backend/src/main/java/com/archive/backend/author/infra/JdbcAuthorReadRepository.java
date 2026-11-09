@@ -8,6 +8,7 @@ import com.archive.backend.author.read.AuthorLocation;
 import com.archive.backend.author.read.AuthorReadRepository;
 import com.archive.backend.label.read.LetterFilterSql;
 import com.archive.backend.label.read.MainNameSql;
+import com.archive.backend.label.read.PlatformFilterSql;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -60,7 +61,11 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
 
     @Override
     public Page<AuthorCatalogEntry> findCatalogPage(
-            @Nullable String letter, @Nullable UUID countryId, @Nullable UUID cityId, Pageable pageable) {
+            @Nullable String letter,
+            @Nullable UUID countryId,
+            @Nullable UUID cityId,
+            @Nullable String platform,
+            Pageable pageable) {
         List<String> conditions = new ArrayList<>();
         Map<String, Object> params = new HashMap<>();
         if (letter != null) {
@@ -73,6 +78,9 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
         if (cityId != null) {
             conditions.add(LOCATED.formatted("l.city_id = :city"));
             params.put("city", cityId);
+        }
+        if (platform != null) {
+            conditions.add(PlatformFilterSql.condition("e.person_id", "person_id", platform, params));
         }
         String where = conditions.isEmpty() ? "" : " WHERE " + String.join(" AND ", conditions);
 

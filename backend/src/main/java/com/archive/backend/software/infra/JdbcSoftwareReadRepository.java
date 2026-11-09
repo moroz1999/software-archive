@@ -1,0 +1,128 @@
+package com.archive.backend.software.infra;
+
+import com.archive.backend.software.read.SoftwareDetails;
+import com.archive.backend.software.read.SoftwareHardware;
+import com.archive.backend.software.read.SoftwarePlatform;
+import com.archive.backend.software.read.SoftwareReadRepository;
+import com.archive.backend.software.read.SoftwareRelease;
+import com.archive.backend.software.read.SoftwareSummary;
+import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.stereotype.Repository;
+
+/** Software with its platform, hardware and releases straight from SQL: they span several tables. */
+@Repository
+@RequiredArgsConstructor
+public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
+
+    /** Hardware in the order of its groups, then by name. */
+    private static final String HARDWARE_ORDER =
+            " ORDER BY array_position(ARRAY['computers', 'storage', 'dos', 'sound', 'controls', 'expansion'],"
+                    + " h.hardware_group), lower(h.name), h.code";
+
+    private final JdbcClient jdbc;
+
+    @Override
+    public Page<SoftwareSummary> findPage(@Nullable String platform, Pageable pageable) {
+        return page(platform, "lower(title), title, id", pageable);
+    }
+
+    @Override
+    public Page<SoftwareSummary> findLatest(@Nullable String platform, Pageable pageable) {
+        return page(platform, "created_at DESC, id", Pageable.ofSize(pageable.getPageSize()));
+    }
+
+    private Page<SoftwareSummary> page(@Nullable String platform, String order, Pageable pageable) {
+        Map<String, Object> params = new HashMap<>();
+        String where = "";
+        if (platform != null) {
+            where = " WHERE platform_code = :platform";
+            params.put("platform", platform);
+        }
+        long total = jdbc.sql("SELECT count(*) FROM software" + where)
+                .params(params)
+                .query(Long.class)
+                .single();
+        params.put("limit", pageable.getPageSize());
+        params.put("offset", pageable.getOffset());
+        List<SoftwareSummary> content = jdbc.sql("SELECT id, title, release_date FROM software" + where + " ORDER BY "
+                        + order + " LIMIT :limit OFFSET :offset")
+                .params(params)
+                .query((rs, row) -> new SoftwareSummary(
+                        rs.getObject("id", UUID.class), rs.getString("title"), day(rs, "release_date")))
+                .list();
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public Optional<SoftwareDetails> findById(UUID id) {
+        return jdbc.sql("""
+                        SELECT s.title, s.description, s.release_date, p.code, p.name
+                        FROM software s
+                        JOIN platform p ON p.code = s.platform_code
+                        WHERE s.id = :id
+                        """)
+                .param("id", id)
+                .query((rs, row) -> new SoftwareDetails(
+                        id,
+                        rs.getString("title"),
+                        rs.getString("description"),
+                        day(rs, "release_date"),
+                        new SoftwarePlatform(rs.getString("code"), rs.getString("name")),
+                        hardware("software_hardware", "software_id", id)))
+                .optional();
+    }
+
+    @Override
+    public List<SoftwareRelease> findReleases(UUID softwareId) {
+        return jdbc.sql("""
+                        SELECT r.id, COALESCE(r.title, s.title) AS title, r.version, r.type, r.release_date, r.description
+                        FROM software_release r
+                        JOIN software s ON s.id = r.software_id
+                        WHERE r.software_id = :id
+                        ORDER BY r.release_date NULLS LAST, lower(COALESCE(r.title, s.title)), r.id
+                        """)
+                .param("id", softwareId)
+                .query((rs, row) -> {
+                    UUID id = rs.getObject("id", UUID.class);
+                    return new SoftwareRelease(
+                            id,
+                            rs.getString("title"),
+                            rs.getString("version"),
+                            rs.getString("type"),
+                            day(rs, "release_date"),
+                            rs.getString("description"),
+                            hardware("software_release_hardware", "release_id", id));
+                })
+                .list();
+    }
+
+    /** The hardware attached to one row of the owner table. */
+    private List<SoftwareHardware> hardware(String table, String ownerColumn, UUID ownerId) {
+        return jdbc.sql("SELECT h.code, h.name, h.hardware_group FROM " + table
+                        + " x JOIN hardware h ON h.code = x.hardware_code WHERE x." + ownerColumn + " = :id"
+                        + HARDWARE_ORDER)
+                .param("id", ownerId)
+                .query((rs, row) -> new SoftwareHardware(
+                        rs.getString("code"), rs.getString("name"), rs.getString("hardware_group")))
+                .list();
+    }
+
+    private static @Nullable LocalDate day(ResultSet rs, String column) throws SQLException {
+        Date date = rs.getDate(column);
+        return date == null ? null : date.toLocalDate();
+    }
+}

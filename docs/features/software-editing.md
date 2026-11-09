@@ -1,6 +1,6 @@
 # Software Editing
 
-Adding, editing and deleting software ([domain/software.md](../domain/software.md)). Minimal for now: title, description and release date.
+Adding, editing and deleting software ([domain/software.md](../domain/software.md)). Minimal for now: title, platform, description and release date. Hardware and releases are not editable yet.
 
 ## Pages
 
@@ -12,7 +12,7 @@ Adding, editing and deleting software ([domain/software.md](../domain/software.m
 
 ## Form
 
-- Fields: Title (required, at most 255 characters), Description (multi-line), Release date (a full day).
+- Fields: Title (required, at most 255 characters), Platform (required, chosen from the archive's platforms; a new form starts with the platform of the switch, [platform-switch.md](platform-switch.md)), Description (multi-line), Release date (a full day).
 - Format rules are checked before sending; errors appear under their fields on submit and clear when the field is edited. Empty optional fields are sent as unknown (`null`).
 - While saving, the fields and the submit button are locked.
 
@@ -30,9 +30,9 @@ Adding, editing and deleting software ([domain/software.md](../domain/software.m
 
 | Call | Answer | Errors |
 |---|---|---|
-| `GET /api/software/{id}` | `200` `{id, title, description, releaseDate}` | `404 software.not-found`; `400` for a malformed id |
-| `POST /api/software` `{title, description, releaseDate}` | `201`, `Location: /api/software/{id}`, `{id}` | `400 title.required`, `400 title.too-long`, `400` for malformed JSON |
-| `PUT /api/software/{id}` `{title, description, releaseDate}` | `204` | `404 software.not-found`; the `400`s of `POST` |
+| `GET /api/software/{id}` | `200` `{id, title, description, releaseDate, platform: {code, name}, hardware: [{code, name, group}]}` | `404 software.not-found`; `400` for a malformed id |
+| `POST /api/software` `{title, platform, description, releaseDate}` | `201`, `Location: /api/software/{id}`, `{id}` | `400 title.required`, `400 title.too-long`, `400 platform.required`, `400 platform.code-invalid`, `400 software.platform-unknown`, `400` for malformed JSON |
+| `PUT /api/software/{id}` `{title, platform, description, releaseDate}` | `204` | `404 software.not-found`; the `400`s of `POST` |
 | `DELETE /api/software/{id}` | `204` | `404 software.not-found` |
 
-`description` and `releaseDate` are `null` when unknown; `releaseDate` is an ISO day.
+`platform` is a platform code; `description` and `releaseDate` are `null` when unknown; `releaseDate` is an ISO day.

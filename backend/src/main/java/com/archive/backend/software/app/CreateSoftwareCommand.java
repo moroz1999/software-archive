@@ -1,5 +1,6 @@
 package com.archive.backend.software.app;
 
+import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareTitle;
 import java.time.LocalDate;
@@ -8,4 +9,5 @@ import org.jspecify.annotations.Nullable;
 public record CreateSoftwareCommand(
         SoftwareTitle title,
         @Nullable SoftwareDescription description,
-        @Nullable LocalDate releaseDate) {}
+        @Nullable LocalDate releaseDate,
+        PlatformCode platform) {}

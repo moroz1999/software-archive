@@ -7,15 +7,20 @@ export interface NavBarProps {
     /** Accessible name of the navigation. */
     readonly label: string;
     readonly children: ReactNode;
+    /** Controls at the end of the bar, apart from the links. */
+    readonly actions?: ReactNode;
 }
 
-/** The bar of the app's sections over every page: a row of section links within the page width. */
-export function NavBar({label, children}: NavBarProps) {
+/** The bar of the app's sections over every page: a row of section links within the page width, controls at its end. */
+export function NavBar({label, children, actions}: NavBarProps) {
     return (
         <header className={styles.bar}>
-            <nav aria-label={label} className={styles.nav}>
-                <ul className={styles.list}>{children}</ul>
-            </nav>
+            <div className={styles.row}>
+                <nav aria-label={label}>
+                    <ul className={styles.list}>{children}</ul>
+                </nav>
+                {actions !== undefined && <div className={styles.actions}>{actions}</div>}
+            </div>
         </header>
     );
 }

@@ -19,6 +19,10 @@ Detailed logic and structure: [domain/authors.md](domain/authors.md)
 Demoparties and competitions, their compos and the placements of entries.
 Detailed logic and structure: [domain/events.md](domain/events.md)
 
+### hardware
+Platforms, the hardware software runs on, and the platform switch over the whole archive.
+Detailed logic and structure: [domain/hardware.md](domain/hardware.md)
+
 ### geo
 Countries and cities, and where authors and events are located.
 Detailed logic and structure: [domain/geo.md](domain/geo.md)

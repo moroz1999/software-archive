@@ -20,6 +20,11 @@
     box-shadow: var(--select-focus-ring);
 }
 
+.invalid,
+.invalid:focus-visible {
+    border-color: var(--select-invalid-border-color);
+}
+
 .select:disabled {
     background: var(--select-disabled-bg);
     cursor: not-allowed;

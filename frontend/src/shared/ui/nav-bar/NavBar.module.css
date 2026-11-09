@@ -5,10 +5,19 @@
     background: var(--nav-bar-bg);
 }
 
-.nav {
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--nav-bar-actions-gap);
     max-width: var(--nav-bar-max-width);
     margin: 0 auto;
     padding: var(--nav-bar-padding);
+}
+
+.actions {
+    width: var(--nav-bar-actions-width);
 }
 
 .list {

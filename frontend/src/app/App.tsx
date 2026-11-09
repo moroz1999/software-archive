@@ -1,5 +1,6 @@
 import {type QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {RouterProvider} from 'react-router';
+import {PlatformSelectionProvider} from '@/entities/platforms';
 import {SystemErrorDialog} from '@/widgets/system-error-dialog';
 import type {AppRouter} from './router';
 
@@ -16,7 +17,9 @@ export interface AppProps {
 export function App({router, queryClient}: AppProps) {
     return (
         <QueryClientProvider client={queryClient}>
-            <RouterProvider router={router}/>
+            <PlatformSelectionProvider>
+                <RouterProvider router={router}/>
+            </PlatformSelectionProvider>
             <SystemErrorDialog/>
         </QueryClientProvider>
     );

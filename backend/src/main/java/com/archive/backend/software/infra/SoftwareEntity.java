@@ -25,4 +25,7 @@ public class SoftwareEntity {
 
     @Column(name = "release_date")
     private LocalDate releaseDate;
+
+    @Column(name = "platform_code", nullable = false)
+    private String platformCode;
 }

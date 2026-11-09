@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
 import com.archive.backend.shared.web.ApiExceptionHandler;
@@ -26,13 +27,19 @@ import com.archive.backend.software.app.ListLatestSoftwareHandler;
 import com.archive.backend.software.app.ListLatestSoftwareQuery;
 import com.archive.backend.software.app.ListSoftwareHandler;
 import com.archive.backend.software.app.ListSoftwareQuery;
+import com.archive.backend.software.app.ListSoftwareReleasesHandler;
+import com.archive.backend.software.app.ListSoftwareReleasesQuery;
 import com.archive.backend.software.app.UpdateSoftwareCommand;
 import com.archive.backend.software.app.UpdateSoftwareHandler;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareNotFoundException;
+import com.archive.backend.software.domain.SoftwarePlatformUnknownException;
 import com.archive.backend.software.domain.SoftwareTitle;
 import com.archive.backend.software.read.SoftwareDetails;
+import com.archive.backend.software.read.SoftwareHardware;
+import com.archive.backend.software.read.SoftwarePlatform;
+import com.archive.backend.software.read.SoftwareRelease;
 import com.archive.backend.software.read.SoftwareSummary;
 import com.archive.backend.software.web.mapper.SoftwareWebMapperImpl;
 import java.time.LocalDate;
@@ -53,6 +60,8 @@ import org.springframework.test.web.servlet.MockMvc;
 class SoftwareControllerTest {
 
     private static final UUID ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    private static final UUID RELEASE = UUID.fromString("00000000-0000-0000-0000-000000000002");
+    private static final PlatformCode VECTOR = new PlatformCode("vector");
 
     @Autowired
     private MockMvc mvc;
@@ -65,6 +74,9 @@ class SoftwareControllerTest {
 
     @MockitoBean
     private GetSoftwareHandler getHandler;
+
+    @MockitoBean
+    private ListSoftwareReleasesHandler releasesHandler;
 
     @MockitoBean
     private CreateSoftwareHandler createHandler;
@@ -92,8 +104,35 @@ class SoftwareControllerTest {
     }
 
     @Test
+    void listsTheSoftwareOfAPlatform() throws Exception {
+        when(listHandler.handle(new ListSoftwareQuery(new PlatformCode("bk"), PageRequest.of(0, 20))))
+                .thenReturn(new PageImpl<>(List.of(new SoftwareSummary(ID, "Title", null)), PageRequest.of(0, 20), 1));
+
+        mvc.perform(get("/api/software").param("platform", "bk").param("size", "20"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].title").value("Title"));
+    }
+
+    @Test
+    void answers400ForAnInvalidPlatformOfTheList() throws Exception {
+        mvc.perform(get("/api/software").param("platform", "BK!"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("platform.code-invalid"));
+    }
+
+    @Test
+    void listsTheLatestSoftwareOfAPlatform() throws Exception {
+        when(latestHandler.handle(new ListLatestSoftwareQuery(new PlatformCode("msx"), PageRequest.of(0, 12))))
+                .thenReturn(new PageImpl<>(List.of(new SoftwareSummary(ID, "Title", null)), PageRequest.of(0, 12), 1));
+
+        mvc.perform(get("/api/software/latest").param("platform", "msx").param("size", "12"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].title").value("Title"));
+    }
+
+    @Test
     void listsTheLatestSoftware() throws Exception {
-        when(latestHandler.handle(new ListLatestSoftwareQuery(PageRequest.of(0, 12))))
+        when(latestHandler.handle(new ListLatestSoftwareQuery(null, PageRequest.of(0, 12))))
                 .thenReturn(new PageImpl<>(List.of(new SoftwareSummary(ID, "Title", null)), PageRequest.of(0, 12), 1));
 
         mvc.perform(get("/api/software/latest").param("size", "12"))
@@ -106,7 +145,13 @@ class SoftwareControllerTest {
     @Test
     void returnsOneSoftware() throws Exception {
         when(getHandler.handle(new GetSoftwareQuery(new SoftwareId(ID))))
-                .thenReturn(new SoftwareDetails(ID, "Elite", "Space trading", LocalDate.of(1985, 9, 20)));
+                .thenReturn(new SoftwareDetails(
+                        ID,
+                        "Elite",
+                        "Space trading",
+                        LocalDate.of(1985, 9, 20),
+                        new SoftwarePlatform("vector", "Vector"),
+                        List.of(new SoftwareHardware("vector06c", "Vector-06C", "computers"))));
 
         mvc.perform(get("/api/software/{id}", ID))
                 .andExpect(status().isOk())
@@ -114,6 +159,75 @@ class SoftwareControllerTest {
                 .andExpect(jsonPath("$.title").value("Elite"))
                 .andExpect(jsonPath("$.description").value("Space trading"))
                 .andExpect(jsonPath("$.releaseDate").value("1985-09-20"));
+    }
+
+    @Test
+    void returnsThePlatformAndTheHardwareOfOneSoftware() throws Exception {
+        when(getHandler.handle(new GetSoftwareQuery(new SoftwareId(ID))))
+                .thenReturn(new SoftwareDetails(
+                        ID,
+                        "Elite",
+                        null,
+                        null,
+                        new SoftwarePlatform("vector", "Vector"),
+                        List.of(new SoftwareHardware("vector06c", "Vector-06C", "computers"))));
+
+        mvc.perform(get("/api/software/{id}", ID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.platform.code").value("vector"))
+                .andExpect(jsonPath("$.platform.name").value("Vector"))
+                .andExpect(jsonPath("$.hardware[0].code").value("vector06c"))
+                .andExpect(jsonPath("$.hardware[0].name").value("Vector-06C"))
+                .andExpect(jsonPath("$.hardware[0].group").value("computers"));
+    }
+
+    @Test
+    void listsTheReleasesOfOneSoftware() throws Exception {
+        when(releasesHandler.handle(new ListSoftwareReleasesQuery(new SoftwareId(ID))))
+                .thenReturn(List.of(new SoftwareRelease(
+                        RELEASE,
+                        "Elite AY",
+                        "1.1",
+                        "mod",
+                        LocalDate.of(1990, 3, 1),
+                        "With AY music",
+                        List.of(new SoftwareHardware("ay8910", "AY-3-8910", "sound")))));
+
+        mvc.perform(get("/api/software/{id}/releases", ID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(RELEASE.toString()))
+                .andExpect(jsonPath("$[0].title").value("Elite AY"))
+                .andExpect(jsonPath("$[0].version").value("1.1"))
+                .andExpect(jsonPath("$[0].type").value("mod"))
+                .andExpect(jsonPath("$[0].releaseDate").value("1990-03-01"));
+    }
+
+    @Test
+    void sendsTheDescriptionAndTheHardwareOfARelease() throws Exception {
+        when(releasesHandler.handle(new ListSoftwareReleasesQuery(new SoftwareId(ID))))
+                .thenReturn(List.of(new SoftwareRelease(
+                        RELEASE,
+                        "Elite AY",
+                        null,
+                        "mod",
+                        null,
+                        "With AY music",
+                        List.of(new SoftwareHardware("ay8910", "AY-3-8910", "sound")))));
+
+        mvc.perform(get("/api/software/{id}/releases", ID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].description").value("With AY music"))
+                .andExpect(jsonPath("$[0].hardware[0].code").value("ay8910"))
+                .andExpect(jsonPath("$[0].hardware[0].group").value("sound"));
+    }
+
+    @Test
+    void answers404ForTheReleasesOfUnknownSoftware() throws Exception {
+        when(releasesHandler.handle(any(ListSoftwareReleasesQuery.class))).thenThrow(new SoftwareNotFoundException());
+
+        mvc.perform(get("/api/software/{id}/releases", ID))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("software.not-found"));
     }
 
     @Test
@@ -135,14 +249,15 @@ class SoftwareControllerTest {
         when(createHandler.handle(new CreateSoftwareCommand(
                         new SoftwareTitle("Elite"),
                         new SoftwareDescription("Space trading"),
-                        LocalDate.of(1985, 9, 20))))
+                        LocalDate.of(1985, 9, 20),
+                        VECTOR)))
                 .thenReturn(new SoftwareId(ID));
 
         mvc.perform(
                         post("/api/software")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(
-                                        "{\"title\":\"Elite\",\"description\":\"Space trading\",\"releaseDate\":\"1985-09-20\"}"))
+                                        "{\"title\":\"Elite\",\"description\":\"Space trading\",\"releaseDate\":\"1985-09-20\",\"platform\":\"vector\"}"))
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", "/api/software/" + ID))
                 .andExpect(jsonPath("$.id").value(ID.toString()));
@@ -150,13 +265,36 @@ class SoftwareControllerTest {
 
     @Test
     void createsSoftwareWithoutOptionalFields() throws Exception {
-        when(createHandler.handle(new CreateSoftwareCommand(new SoftwareTitle("Elite"), null, null)))
+        when(createHandler.handle(new CreateSoftwareCommand(new SoftwareTitle("Elite"), null, null, VECTOR)))
                 .thenReturn(new SoftwareId(ID));
+
+        mvc.perform(
+                        post("/api/software")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        "{\"title\":\"Elite\",\"description\":null,\"releaseDate\":null,\"platform\":\"vector\"}"))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void answers400ForAMissingPlatform() throws Exception {
+        mvc.perform(post("/api/software")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Elite\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("platform.required"));
+        verify(createHandler, never()).handle(any());
+    }
+
+    @Test
+    void answers400ForAnUnknownPlatform() throws Exception {
+        when(createHandler.handle(any(CreateSoftwareCommand.class))).thenThrow(new SoftwarePlatformUnknownException());
 
         mvc.perform(post("/api/software")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"title\":\"Elite\",\"description\":null,\"releaseDate\":null}"))
-                .andExpect(status().isCreated());
+                        .content("{\"title\":\"Elite\",\"platform\":\"zx\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("software.platform-unknown"));
     }
 
     @Test
@@ -197,14 +335,16 @@ class SoftwareControllerTest {
 
     @Test
     void updatesSoftware() throws Exception {
-        mvc.perform(put("/api/software/{id}", ID)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"title\":\"Elite Plus\",\"description\":null,\"releaseDate\":\"1987-01-01\"}"))
+        mvc.perform(
+                        put("/api/software/{id}", ID)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        "{\"title\":\"Elite Plus\",\"description\":null,\"releaseDate\":\"1987-01-01\",\"platform\":\"vector\"}"))
                 .andExpect(status().isNoContent());
 
         verify(updateHandler)
                 .handle(new UpdateSoftwareCommand(
-                        new SoftwareId(ID), new SoftwareTitle("Elite Plus"), null, LocalDate.of(1987, 1, 1)));
+                        new SoftwareId(ID), new SoftwareTitle("Elite Plus"), null, LocalDate.of(1987, 1, 1), VECTOR));
     }
 
     @Test
@@ -213,7 +353,7 @@ class SoftwareControllerTest {
 
         mvc.perform(put("/api/software/{id}", ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"title\":\"Elite\"}"))
+                        .content("{\"title\":\"Elite\",\"platform\":\"vector\"}"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("software.not-found"));
     }

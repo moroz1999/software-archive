@@ -1,6 +1,7 @@
 import {SoftwareDetailsProvider, SoftwareForm, type SoftwareId, SoftwareFormSkeleton, useSoftwareDetails} from '@/entities/software';
 import {DeleteSoftwareButton} from '@/features/software-delete';
 import {EditSoftwareProvider} from '@/features/software-edit';
+import {useSkeleton} from '@/shared/lib/skeleton';
 
 export interface SoftwareEditorProps {
     readonly id: SoftwareId;
@@ -21,8 +22,9 @@ export function SoftwareEditor(props: SoftwareEditorProps) {
 
 function LoadedEditor({id, onSaved, onDeleted}: SoftwareEditorProps) {
     const query = useSoftwareDetails();
+    const skeleton = useSkeleton(query);
 
-    if (query.isPending) {
+    if (skeleton || query.isPending) {
         return <div data-testid="software-editor-skeleton"><SoftwareFormSkeleton/></div>;
     }
     if (query.isLoadingError) {

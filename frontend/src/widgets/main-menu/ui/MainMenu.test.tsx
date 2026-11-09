@@ -1,13 +1,27 @@
-import {describe, expect, it} from 'vitest';
-import {render, screen} from '@testing-library/react';
+import {afterEach, describe, expect, it, vi} from 'vitest';
+import {screen} from '@testing-library/react';
 import {MemoryRouter} from 'react-router';
+import {PlatformSelectionProvider} from '@/entities/platforms';
+import {json, renderWithQueries, stubFetch} from '@/shared/lib/test';
 import {MainMenu} from './MainMenu';
 
 function renderAt(path: string) {
-    render(<MemoryRouter initialEntries={[path]}><MainMenu/></MemoryRouter>);
+    stubFetch(json([{code: 'vector', name: 'Vector'}]));
+    renderWithQueries(<PlatformSelectionProvider><MemoryRouter initialEntries={[path]}><MainMenu/></MemoryRouter></PlatformSelectionProvider>);
 }
 
 describe(MainMenu, () => {
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
+    it('holds the platform switch', async () => {
+        renderAt('/');
+
+        await expect(screen.findByRole('option', {name: 'Vector'})).resolves.toBeInTheDocument();
+        expect(screen.getByRole('combobox', {name: 'Platform'})).toHaveValue('');
+    });
+
     it('leads to the home page, the software, the authors and the groups', () => {
         renderAt('/');
 

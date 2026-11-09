@@ -1,7 +1,9 @@
 package com.archive.backend.software.app;
 
+import com.archive.backend.hardware.domain.PlatformRepository;
 import com.archive.backend.software.domain.Software;
 import com.archive.backend.software.domain.SoftwareId;
+import com.archive.backend.software.domain.SoftwarePlatformUnknownException;
 import com.archive.backend.software.domain.SoftwareRepository;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -14,10 +16,15 @@ public class CreateSoftwareHandler {
 
     private final SoftwareRepository repository;
 
+    private final PlatformRepository platforms;
+
     @Transactional
     public SoftwareId handle(CreateSoftwareCommand c) {
+        if (!platforms.exists(c.platform())) {
+            throw new SoftwarePlatformUnknownException();
+        }
         SoftwareId id = new SoftwareId(UUID.randomUUID());
-        repository.save(Software.create(id, c.title(), c.description(), c.releaseDate()));
+        repository.save(Software.create(id, c.title(), c.description(), c.releaseDate(), c.platform()));
         return id;
     }
 }

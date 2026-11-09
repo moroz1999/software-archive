@@ -7,3 +7,5 @@ export const TITLE_PROBLEM_MESSAGES: Readonly<Record<TitleProblem, string>> = {
 };
 
 export const RELEASE_DATE_INVALID_MESSAGE = 'Enter a full date.';
+
+export const PLATFORM_REQUIRED_MESSAGE = 'Choose a platform.';

@@ -96,7 +96,7 @@ class JdbcAuthorReadRepositoryIT {
 
     @Test
     void listsPeopleUnderTheirMainNameAndTheirOtherLabelsByNameButNoLabelOfAGroupOrOfNobody() {
-        Page<AuthorCatalogEntry> page = reads.findCatalogPage(null, null, null, FIRST_PAGE);
+        Page<AuthorCatalogEntry> page = reads.findCatalogPage(null, null, null, null, FIRST_PAGE);
 
         assertThat(page.getContent())
                 .containsExactly(
@@ -110,7 +110,7 @@ class JdbcAuthorReadRepositoryIT {
 
     @Test
     void namesTheRealNameNextToEveryEntryOfAPersonWhoHasOneButNotNextToItself() {
-        Page<AuthorCatalogEntry> page = reads.findCatalogPage(null, null, null, FIRST_PAGE);
+        Page<AuthorCatalogEntry> page = reads.findCatalogPage(null, null, null, null, FIRST_PAGE);
 
         assertThat(page.getContent())
                 .extracting(AuthorCatalogEntry::name, AuthorCatalogEntry::realName)
@@ -124,7 +124,7 @@ class JdbcAuthorReadRepositoryIT {
 
     @Test
     void readsTheRequestedPage() {
-        Page<AuthorCatalogEntry> page = reads.findCatalogPage(null, null, null, PageRequest.of(1, 2));
+        Page<AuthorCatalogEntry> page = reads.findCatalogPage(null, null, null, null, PageRequest.of(1, 2));
 
         assertThat(page.getContent()).extracting(AuthorCatalogEntry::name).containsExactly("Carl Real", "Mona");
         assertThat(page.getTotalElements()).isEqualTo(5);
@@ -134,7 +134,7 @@ class JdbcAuthorReadRepositoryIT {
     void filtersByTheFirstLetterInAnyCase() {
         jdbc.update("INSERT INTO label (name, person_id) VALUES ('mike', ?)", CARL);
 
-        assertThat(reads.findCatalogPage("M", null, null, FIRST_PAGE).getContent())
+        assertThat(reads.findCatalogPage("M", null, null, null, FIRST_PAGE).getContent())
                 .extracting(AuthorCatalogEntry::name)
                 .containsExactly("mike", "Mona");
     }
@@ -144,7 +144,7 @@ class JdbcAuthorReadRepositoryIT {
         jdbc.update(
                 "INSERT INTO label (name, person_id) VALUES ('Ёжик', ?), ('Енот', ?), ('Борис', ?)", CARL, CARL, CARL);
 
-        assertThat(reads.findCatalogPage("Е", null, null, FIRST_PAGE).getContent())
+        assertThat(reads.findCatalogPage("Е", null, null, null, FIRST_PAGE).getContent())
                 .extracting(AuthorCatalogEntry::name)
                 .containsExactlyInAnyOrder("Ёжик", "Енот");
     }
@@ -158,32 +158,63 @@ class JdbcAuthorReadRepositoryIT {
                 CARL,
                 CARL);
 
-        assertThat(reads.findCatalogPage("#", null, null, FIRST_PAGE).getContent())
+        assertThat(reads.findCatalogPage("#", null, null, null, FIRST_PAGE).getContent())
                 .extracting(AuthorCatalogEntry::name)
                 .containsExactlyInAnyOrder("8bit", "Ärger", "_under");
     }
 
     @Test
     void filtersByACountryOfAnyLocationGivenDirectlyOrThroughACity() {
-        assertThat(reads.findCatalogPage(null, FINLAND, null, FIRST_PAGE).getContent())
+        assertThat(reads.findCatalogPage(null, FINLAND, null, null, FIRST_PAGE).getContent())
                 .extracting(AuthorCatalogEntry::name)
                 .containsExactly("Axe", "Carl Real", "Zed");
-        assertThat(reads.findCatalogPage(null, NORWAY, null, FIRST_PAGE).getContent())
+        assertThat(reads.findCatalogPage(null, NORWAY, null, null, FIRST_PAGE).getContent())
                 .extracting(AuthorCatalogEntry::name)
                 .containsExactly("Axe", "Bob", "Mona", "Zed");
     }
 
     @Test
     void filtersByACity() {
-        assertThat(reads.findCatalogPage(null, null, TAMPERE, FIRST_PAGE).getContent())
+        assertThat(reads.findCatalogPage(null, null, TAMPERE, null, FIRST_PAGE).getContent())
                 .extracting(AuthorCatalogEntry::name)
                 .containsExactly("Carl Real");
     }
 
     @Test
     void combinesTheFilters() {
-        assertThat(reads.findCatalogPage("Z", FINLAND, HELSINKI, FIRST_PAGE).getContent())
+        assertThat(reads.findCatalogPage("Z", FINLAND, HELSINKI, null, FIRST_PAGE)
+                        .getContent())
                 .containsExactly(new AuthorCatalogEntry(ZED, "Zed", "John Doe", null));
+    }
+
+    @Test
+    void keepsOnlyThePeopleCreditedOnSoftwareOfThePlatformWithAllTheirEntries() {
+        credit();
+
+        assertThat(reads.findCatalogPage(null, null, null, "vector", FIRST_PAGE).getContent())
+                .extracting(AuthorCatalogEntry::name)
+                .containsExactly("Axe", "Zed");
+        assertThat(reads.findCatalogPage(null, null, null, "bk", FIRST_PAGE).getContent())
+                .extracting(AuthorCatalogEntry::name)
+                .containsExactly("Bob", "Mona");
+    }
+
+    @Test
+    void keepsNobodyForAPlatformWithoutCreditedPeople() {
+        credit();
+
+        assertThat(reads.findCatalogPage(null, null, null, "msx", FIRST_PAGE).getContent())
+                .isEmpty();
+    }
+
+    @Test
+    void combinesThePlatformWithTheOtherFilters() {
+        credit();
+
+        assertThat(reads.findCatalogPage("Z", NORWAY, null, "vector", FIRST_PAGE)
+                        .getContent())
+                .extracting(AuthorCatalogEntry::name)
+                .containsExactly("Zed");
     }
 
     @Test
@@ -225,6 +256,27 @@ class JdbcAuthorReadRepositoryIT {
     @Test
     void findsNothingForAnUnknownId() {
         assertThat(reads.findById(UUID.randomUUID())).isEmpty();
+    }
+
+    /**
+     * Elite on Vector is credited to Zed and to Crew Label, a group; Tetris on BK to Mona; Lines on MSX to Crew
+     * Label only.
+     */
+    private void credit() {
+        UUID elite = id(401);
+        UUID tetris = id(402);
+        UUID lines = id(403);
+        jdbc.update(
+                "INSERT INTO software (id, title, platform_code) VALUES (?, 'Elite', 'vector'), (?, 'Tetris', 'bk'), (?, 'Lines', 'msx')",
+                elite,
+                tetris,
+                lines);
+        jdbc.update("""
+                INSERT INTO software_contribution (software_id, label_id)
+                SELECT s, l.id FROM label l, (VALUES (?::uuid, 'Zed'), (?::uuid, 'Crew Label'), (?::uuid, 'Mona'),
+                    (?::uuid, 'Crew Label')) AS c(s, name)
+                WHERE l.name = c.name
+                """, elite, elite, tetris, lines);
     }
 
     private static UUID id(int n) {

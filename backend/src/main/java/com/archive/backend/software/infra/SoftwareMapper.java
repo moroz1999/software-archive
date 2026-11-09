@@ -1,5 +1,6 @@
 package com.archive.backend.software.infra;
 
+import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.software.domain.Software;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
@@ -12,9 +13,11 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface SoftwareMapper {
 
+    @Mapping(target = "platform", source = "platformCode")
     Software toDomain(SoftwareEntity entity);
 
     @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "platformCode", source = "platform")
     SoftwareEntity toEntity(Software domain);
 
     // Value objects <-> persistence scalars.
@@ -41,5 +44,13 @@ public interface SoftwareMapper {
 
     default @Nullable String fromDescription(@Nullable SoftwareDescription description) {
         return description == null ? null : description.value();
+    }
+
+    default @Nullable PlatformCode toPlatform(@Nullable String value) {
+        return value == null ? null : new PlatformCode(value);
+    }
+
+    default @Nullable String fromPlatform(@Nullable PlatformCode platform) {
+        return platform == null ? null : platform.value();
     }
 }

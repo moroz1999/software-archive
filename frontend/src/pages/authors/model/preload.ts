@@ -2,14 +2,15 @@ import type {QueryClient} from '@tanstack/react-query';
 import type {LoaderFunctionArgs, ShouldRevalidateFunctionArgs} from 'react-router';
 import {authorCatalogQuery, parseCatalogFilter} from '@/features/author-catalog';
 import {citiesQuery, countriesQuery} from '@/entities/locations';
+import {readSelectedPlatform} from '@/entities/platforms';
 import {preloadView} from '@/shared/api';
 
-/** Route loader: the catalog of the address and its place filters are at the top of the page. */
+/** Route loader: the catalog of the address and the chosen platform, and its place filters, are at the top of the page. */
 export function preloadAuthorsPage(queryClient: QueryClient): (args: LoaderFunctionArgs) => Promise<null> {
     return ({request}) => {
         const filter = parseCatalogFilter(new URL(request.url).searchParams);
         return preloadView([
-            queryClient.query(authorCatalogQuery(filter)),
+            queryClient.query(authorCatalogQuery(filter, readSelectedPlatform())),
             queryClient.query(countriesQuery()),
             ...(filter.country === null ? [] : [queryClient.query(citiesQuery(filter.country))]),
         ]);

@@ -7,7 +7,7 @@ import {json, noContent, renderWithQueries, stubFetch} from '@/shared/lib/test';
 import {loadSoftwareEditPage, preloadSoftwareEditPage} from '../index';
 
 const ID = '00000000-0000-0000-0001-000000000001';
-const ELITE = {id: ID, title: 'Elite', description: null, releaseDate: null};
+const ELITE = {id: ID, title: 'Elite', description: null, releaseDate: null, platform: {code: 'vector', name: 'Vector'}, hardware: []};
 
 function renderRoute(id: string) {
     const queryClient = createQueryClient();

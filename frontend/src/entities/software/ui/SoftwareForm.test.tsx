@@ -9,10 +9,12 @@ import {SoftwareForm} from './SoftwareForm';
 
 type FormProps = Omit<SoftwareFormProviderProps, 'onSubmit' | 'children'> & {readonly actions?: ReactNode};
 
+const PLATFORMS = [{code: 'agat', name: 'Agat'}, {code: 'bk', name: 'BK'}];
+
 function renderForm({actions, ...props}: FormProps = {}) {
     const onSubmit = vi.fn<(draft: SoftwareDraft) => void>();
     render(
-        <SoftwareFormProvider onSubmit={onSubmit} {...props}>
+        <SoftwareFormProvider onSubmit={onSubmit} platforms={PLATFORMS} {...props}>
             <SoftwareForm submitLabel="Save" actions={actions}/>
         </SoftwareFormProvider>,
     );
@@ -26,16 +28,33 @@ describe(SoftwareForm, () => {
         await userEvent.type(screen.getByRole('textbox', {name: 'Title'}), 'Elite');
         await userEvent.type(screen.getByRole('textbox', {name: 'Description'}), 'Space trading');
         await userEvent.type(screen.getByLabelText('Release date'), '1985-09-20');
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Platform'}), 'BK');
         await userEvent.click(screen.getByRole('button', {name: 'Save'}));
 
-        expect(onSubmit).toHaveBeenCalledExactlyOnceWith({title: 'Elite', description: 'Space trading', releaseDate: '1985-09-20'});
+        expect(onSubmit).toHaveBeenCalledExactlyOnceWith({title: 'Elite', description: 'Space trading', releaseDate: '1985-09-20', platform: 'bk'});
+    });
+
+    it('offers the platforms to choose from', () => {
+        renderForm();
+
+        expect(screen.getAllByRole('option').map((option) => option.textContent)).toStrictEqual(['Choose a platform', 'Agat', 'BK']);
+    });
+
+    it('does not submit without a platform and says so under the field', async () => {
+        const {onSubmit} = renderForm({initial: {title: 'Elite', description: '', releaseDate: '', platform: ''}});
+
+        await userEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        expect(onSubmit).not.toHaveBeenCalled();
+        expect(screen.getByRole('combobox', {name: 'Platform'})).toHaveAccessibleDescription('Choose a platform.');
     });
 
     it('starts from the given values', () => {
-        renderForm({initial: {title: 'Elite', description: '', releaseDate: '1985-09-20'}});
+        renderForm({initial: {title: 'Elite', description: '', releaseDate: '1985-09-20', platform: 'bk'}});
 
         expect(screen.getByRole('textbox', {name: 'Title'})).toHaveValue('Elite');
         expect(screen.getByLabelText('Release date')).toHaveValue('1985-09-20');
+        expect(screen.getByRole('combobox', {name: 'Platform'})).toHaveValue('bk');
     });
 
     it('does not submit without a title and says so under the field', async () => {
@@ -48,7 +67,7 @@ describe(SoftwareForm, () => {
     });
 
     it('does not submit a title longer than 255 characters', async () => {
-        const {onSubmit} = renderForm({initial: {title: 'a'.repeat(256), description: '', releaseDate: ''}});
+        const {onSubmit} = renderForm({initial: {title: 'a'.repeat(256), description: '', releaseDate: '', platform: 'bk'}});
 
         await userEvent.click(screen.getByRole('button', {name: 'Save'}));
 
@@ -60,6 +79,7 @@ describe(SoftwareForm, () => {
         renderForm({busy: true});
 
         expect(screen.getByRole('textbox', {name: 'Title'})).toBeDisabled();
+        expect(screen.getByRole('combobox', {name: 'Platform'})).toBeDisabled();
         expect(screen.getByRole('button', {name: 'Save'})).toBeDisabled();
     });
 

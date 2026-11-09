@@ -1,12 +1,14 @@
 import {type ReactNode, useState} from 'react';
 import {type BusinessError, businessErrorMessage, type BusinessMessages} from '@/shared/api';
-import {type SoftwareDraft, type SoftwareFormErrors, type SoftwareFormValues, toSoftwareFormValues, validateSoftwareForm} from './software-form';
+import {type PlatformChoice, type SoftwareDraft, type SoftwareFormErrors, type SoftwareFormValues, toSoftwareFormValues, validateSoftwareForm} from './software-form';
 import {type SoftwareFormRefusals, SoftwareFormContext, type SoftwareFormState} from './software-form-context';
 
 export interface SoftwareFormProviderProps {
     /** Called only with values that pass the format rules. */
     readonly onSubmit: (draft: SoftwareDraft) => void;
     readonly initial?: SoftwareFormValues;
+    /** The platforms to choose from. */
+    readonly platforms?: readonly PlatformChoice[];
     readonly busy?: boolean;
     /** Why the last submit was refused (docs/error-handling.md). */
     readonly error?: BusinessError | undefined;
@@ -15,7 +17,7 @@ export interface SoftwareFormProviderProps {
     readonly children: ReactNode;
 }
 
-const FIELDS: readonly string[] = ['title', 'description', 'releaseDate'] satisfies (keyof SoftwareFormValues)[];
+const FIELDS: readonly string[] = ['title', 'description', 'releaseDate', 'platform'] satisfies (keyof SoftwareFormValues)[];
 
 function isField(field: string): field is keyof SoftwareFormValues {
     return FIELDS.includes(field);
@@ -39,7 +41,7 @@ function splitRefusal(error: BusinessError | undefined, messages: BusinessMessag
 }
 
 /** The values of a software form being filled in, their format rules and why the last submit was refused. */
-export function SoftwareFormProvider({onSubmit, initial, busy = false, error, messages = {}, children}: SoftwareFormProviderProps) {
+export function SoftwareFormProvider({onSubmit, initial, platforms = [], busy = false, error, messages = {}, children}: SoftwareFormProviderProps) {
     const [values, setValues] = useState<SoftwareFormValues>(() => initial ?? toSoftwareFormValues());
     const [errors, setErrors] = useState<SoftwareFormErrors>({});
     // Fields edited since the refusal arrived: their refusal no longer applies. A new refusal starts afresh.
@@ -71,6 +73,7 @@ export function SoftwareFormProvider({onSubmit, initial, busy = false, error, me
                 setErrors(result.errors);
             }
         },
+        platforms,
         busy,
         error: refusal.form,
     };

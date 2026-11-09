@@ -109,7 +109,7 @@ class JdbcGroupReadRepositoryIT {
 
     @Test
     void listsGroupsUnderTheirMainNameAndTheirOtherLabelsByNameButNoLabelOfAPersonOrOfNobody() {
-        Page<GroupCatalogEntry> page = reads.findCatalogPage(null, null, null, FIRST_PAGE);
+        Page<GroupCatalogEntry> page = reads.findCatalogPage(null, null, null, null, FIRST_PAGE);
 
         assertThat(page.getContent())
                 .containsExactly(
@@ -125,13 +125,13 @@ class JdbcGroupReadRepositoryIT {
     void namesNoGroupNameNextToALabelThatIsTheGroupName() {
         jdbc.update("INSERT INTO label (name, group_id) VALUES ('Oldies', ?)", OLDIES);
 
-        assertThat(reads.findCatalogPage("O", null, null, FIRST_PAGE).getContent())
+        assertThat(reads.findCatalogPage("O", null, null, null, FIRST_PAGE).getContent())
                 .containsExactly(new GroupCatalogEntry(OLDIES, "Oldies", null));
     }
 
     @Test
     void readsTheRequestedPage() {
-        Page<GroupCatalogEntry> page = reads.findCatalogPage(null, null, null, PageRequest.of(1, 2));
+        Page<GroupCatalogEntry> page = reads.findCatalogPage(null, null, null, null, PageRequest.of(1, 2));
 
         assertThat(page.getContent()).extracting(GroupCatalogEntry::name).containsExactly("Crew", "CRW");
         assertThat(page.getTotalElements()).isEqualTo(5);
@@ -139,7 +139,7 @@ class JdbcGroupReadRepositoryIT {
 
     @Test
     void filtersByTheFirstLetterInAnyCase() {
-        assertThat(reads.findCatalogPage("C", null, null, FIRST_PAGE).getContent())
+        assertThat(reads.findCatalogPage("C", null, null, null, FIRST_PAGE).getContent())
                 .extracting(GroupCatalogEntry::name)
                 .containsExactly("Crew", "CRW");
     }
@@ -153,34 +153,65 @@ class JdbcGroupReadRepositoryIT {
                 BAND,
                 BAND);
 
-        assertThat(reads.findCatalogPage("Е", null, null, FIRST_PAGE).getContent())
+        assertThat(reads.findCatalogPage("Е", null, null, null, FIRST_PAGE).getContent())
                 .extracting(GroupCatalogEntry::name)
                 .containsExactlyInAnyOrder("Ёлки", "Енисей");
-        assertThat(reads.findCatalogPage("#", null, null, FIRST_PAGE).getContent())
+        assertThat(reads.findCatalogPage("#", null, null, null, FIRST_PAGE).getContent())
                 .extracting(GroupCatalogEntry::name)
                 .containsExactly("8bit");
     }
 
     @Test
     void filtersByACountryOfAnyLocationGivenDirectlyOrThroughACity() {
-        assertThat(reads.findCatalogPage(null, FINLAND, null, FIRST_PAGE).getContent())
+        assertThat(reads.findCatalogPage(null, FINLAND, null, null, FIRST_PAGE).getContent())
                 .extracting(GroupCatalogEntry::name)
                 .containsExactly("Band", "Crew", "CRW");
-        assertThat(reads.findCatalogPage(null, NORWAY, null, FIRST_PAGE).getContent())
+        assertThat(reads.findCatalogPage(null, NORWAY, null, null, FIRST_PAGE).getContent())
                 .extracting(GroupCatalogEntry::name)
                 .containsExactly("Crew", "CRW");
     }
 
     @Test
     void filtersByACity() {
-        assertThat(reads.findCatalogPage(null, null, TAMPERE, FIRST_PAGE).getContent())
+        assertThat(reads.findCatalogPage(null, null, TAMPERE, null, FIRST_PAGE).getContent())
                 .extracting(GroupCatalogEntry::name)
                 .containsExactly("Band");
     }
 
     @Test
     void combinesTheFilters() {
-        assertThat(reads.findCatalogPage("C", FINLAND, HELSINKI, FIRST_PAGE).getContent())
+        assertThat(reads.findCatalogPage("C", FINLAND, HELSINKI, null, FIRST_PAGE)
+                        .getContent())
+                .extracting(GroupCatalogEntry::name)
+                .containsExactly("Crew", "CRW");
+    }
+
+    @Test
+    void keepsOnlyTheGroupsCreditedOnSoftwareOfThePlatformWithAllTheirEntries() {
+        credit();
+
+        assertThat(reads.findCatalogPage(null, null, null, "vector", FIRST_PAGE).getContent())
+                .extracting(GroupCatalogEntry::name)
+                .containsExactly("Crew", "CRW");
+        assertThat(reads.findCatalogPage(null, null, null, "bk", FIRST_PAGE).getContent())
+                .extracting(GroupCatalogEntry::name)
+                .containsExactly("Alpha", "Zeta");
+    }
+
+    @Test
+    void keepsNoGroupForAPlatformWithoutCreditedGroups() {
+        credit();
+
+        assertThat(reads.findCatalogPage(null, null, null, "msx", FIRST_PAGE).getContent())
+                .isEmpty();
+    }
+
+    @Test
+    void combinesThePlatformWithTheOtherFilters() {
+        credit();
+
+        assertThat(reads.findCatalogPage("C", null, HELSINKI, "vector", FIRST_PAGE)
+                        .getContent())
                 .extracting(GroupCatalogEntry::name)
                 .containsExactly("Crew", "CRW");
     }
@@ -225,6 +256,27 @@ class JdbcGroupReadRepositoryIT {
     @Test
     void findsNothingForAnUnknownId() {
         assertThat(reads.findById(UUID.randomUUID())).isEmpty();
+    }
+
+    /**
+     * Elite on Vector is credited to CRW, a label of Crew, and to хакер федя, a member of Crew but a person's label;
+     * Tetris on BK to Zeta, a label of Oldies; Lines on MSX to хакер федя only.
+     */
+    private void credit() {
+        UUID elite = id(401);
+        UUID tetris = id(402);
+        UUID lines = id(403);
+        jdbc.update(
+                "INSERT INTO software (id, title, platform_code) VALUES (?, 'Elite', 'vector'), (?, 'Tetris', 'bk'), (?, 'Lines', 'msx')",
+                elite,
+                tetris,
+                lines);
+        jdbc.update("""
+                INSERT INTO software_contribution (software_id, label_id)
+                SELECT s, l.id FROM label l, (VALUES (?::uuid, 'CRW'), (?::uuid, 'хакер федя'), (?::uuid, 'Zeta'),
+                    (?::uuid, 'хакер федя')) AS c(s, name)
+                WHERE l.name = c.name
+                """, elite, elite, tetris, lines);
     }
 
     private static UUID id(int n) {

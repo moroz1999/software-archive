@@ -1,6 +1,6 @@
 # Home Page
 
-The home page (`/`, "Recently added") shows the fresh software ([domain/software.md](../domain/software.md#fresh-software)): the 12 most recently added, newest first, as the cards of the software list ([software-list.md](software-list.md#card)).
+The home page (`/`, "Recently added") shows the fresh software ([domain/software.md](../domain/software.md#fresh-software)): the 12 most recently added, newest first, of the platform chosen in the switch ([platform-switch.md](platform-switch.md)), as the cards of the software list ([software-list.md](software-list.md#card)).
 
 ## Loading and errors
 
@@ -9,4 +9,4 @@ The home page (`/`, "Recently added") shows the fresh software ([domain/software
 
 ## REST
 
-`GET /api/software/latest?size={n}` — the page contract of the software list, newest first; only the size is taken from the request.
+`GET /api/software/latest?size={n}&platform={code}` — the page contract of the software list, newest first; only the size and the platform are taken from the request.

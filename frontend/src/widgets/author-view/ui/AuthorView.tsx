@@ -9,6 +9,7 @@ import {Stack} from '@/shared/ui/stack';
 import {Text, TextLink} from '@/shared/ui/typography';
 import {AuthorViewSkeleton} from './AuthorViewSkeleton';
 import styles from './AuthorView.module.css';
+import {useSkeleton} from '@/shared/lib/skeleton';
 
 export interface AuthorViewProps {
     readonly id: AuthorId;
@@ -25,8 +26,9 @@ export function AuthorView({id}: AuthorViewProps) {
 
 function LoadedView() {
     const query = useAuthorDetails();
+    const skeleton = useSkeleton(query);
 
-    if (query.isPending) {
+    if (skeleton || query.isPending) {
         return (
             <PageLayout title={<Skeleton className={styles.titleBone}/>}>
                 <div data-testid="author-view-skeleton"><AuthorViewSkeleton/></div>

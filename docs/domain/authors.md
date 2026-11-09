@@ -27,6 +27,8 @@ The author catalog and the group catalog are where visitors find authors and gro
 - each other label of theirs appears as an entry of its own and leads to the same owner;
 - labels of nobody are in neither catalog.
 
+A catalog follows the platform switch ([hardware.md](hardware.md#platform-switch)): with a platform chosen it lists only the owners credited on software of that platform.
+
 Visitors narrow a catalog:
 - by the first letter of the entry's name: a Latin letter A–Z, a Cyrillic letter А–Я, or `#` for names starting with anything else (digits, symbols, other scripts). Case does not matter; Ё counts as Е;
 - by country and by city, where the owner is located (any of their locations). Cities to choose from are those of the chosen country.

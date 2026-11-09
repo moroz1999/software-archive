@@ -3,10 +3,11 @@ import {Button} from '@/shared/ui/button';
 import {Field} from '@/shared/ui/field';
 import {Inline} from '@/shared/ui/inline';
 import {Input} from '@/shared/ui/input';
+import {Select} from '@/shared/ui/select';
 import {Stack} from '@/shared/ui/stack';
 import {Textarea} from '@/shared/ui/textarea';
 import {Text} from '@/shared/ui/typography';
-import {RELEASE_DATE_INVALID_MESSAGE, TITLE_PROBLEM_MESSAGES} from '../config/messages';
+import {PLATFORM_REQUIRED_MESSAGE, RELEASE_DATE_INVALID_MESSAGE, TITLE_PROBLEM_MESSAGES} from '../config/messages';
 import {useSoftwareForm} from '../model/software-form-context';
 
 export interface SoftwareFormProps {
@@ -17,7 +18,7 @@ export interface SoftwareFormProps {
 
 /** The fields of software inside a SoftwareFormProvider, which holds their values and checks them. */
 export function SoftwareForm({submitLabel, actions}: SoftwareFormProps) {
-    const {values, errors, refusals, change, submit, busy, error} = useSoftwareForm();
+    const {values, errors, refusals, change, submit, platforms, busy, error} = useSoftwareForm();
 
     function onSubmit(event: SyntheticEvent) {
         event.preventDefault();
@@ -30,6 +31,18 @@ export function SoftwareForm({submitLabel, actions}: SoftwareFormProps) {
                 {error !== undefined && <Text role="alert" tone="danger">{error}</Text>}
                 <Field label="Title" error={errors.title === undefined ? refusals.title : TITLE_PROBLEM_MESSAGES[errors.title]}>
                     {(control) => <Input {...control} value={values.title} onChange={change('title')} disabled={busy}/>}
+                </Field>
+                <Field label="Platform" error={errors.platform === undefined ? refusals.platform : PLATFORM_REQUIRED_MESSAGE}>
+                    {(control) => (
+                        <Select
+                            {...control}
+                            value={values.platform}
+                            onChange={change('platform')}
+                            options={platforms.map((platform) => ({value: platform.code, label: platform.name}))}
+                            placeholder="Choose a platform"
+                            disabled={busy}
+                        />
+                    )}
                 </Field>
                 <Field label="Description" error={refusals.description}>
                     {(control) => <Textarea {...control} value={values.description} onChange={change('description')} disabled={busy}/>}

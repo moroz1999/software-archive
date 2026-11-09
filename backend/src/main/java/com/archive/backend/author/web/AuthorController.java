@@ -32,9 +32,10 @@ public class AuthorController {
             @RequestParam(required = false) @Nullable String letter,
             @RequestParam(required = false) @Nullable UUID country,
             @RequestParam(required = false) @Nullable UUID city,
+            @RequestParam(required = false) @Nullable String platform,
             Pageable pageable) {
         return listHandler
-                .handle(webMapper.toListQuery(letter, country, city, pageable))
+                .handle(webMapper.toListQuery(letter, country, city, platform, pageable))
                 .map(webMapper::toCatalogEntry);
     }
 

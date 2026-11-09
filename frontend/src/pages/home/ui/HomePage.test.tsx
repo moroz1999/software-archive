@@ -1,6 +1,7 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import {createMemoryRouter, RouterProvider} from 'react-router';
+import {PlatformSelectionProvider} from '@/entities/platforms';
 import {createQueryClient} from '@/shared/api';
 import {json, pageResponse, renderWithQueries, stubFetch} from '@/shared/lib/test';
 import {loadHomePage, preloadHomePage} from '../index';
@@ -18,7 +19,7 @@ describe('HomePage', () => {
         const router = createMemoryRouter([
             {path: '/', loader: preloadHomePage(queryClient), lazy: {Component: loadHomePage}, HydrateFallback: () => null},
         ], {initialEntries: ['/']});
-        renderWithQueries(<RouterProvider router={router}/>, queryClient);
+        renderWithQueries(<PlatformSelectionProvider><RouterProvider router={router}/></PlatformSelectionProvider>, queryClient);
 
         await expect(screen.findByRole('heading', {level: 1, name: 'Recently added'})).resolves.toBeInTheDocument();
         expect(screen.getByRole('article', {name: 'Elite'})).toBeInTheDocument();

@@ -18,7 +18,8 @@ class InMemoryAuthorReadRepository implements AuthorReadRepository {
     record Filter(
             @Nullable String letter,
             @Nullable UUID countryId,
-            @Nullable UUID cityId) {}
+            @Nullable UUID cityId,
+            @Nullable String platform) {}
 
     private final List<AuthorCatalogEntry> entries = new ArrayList<>();
     private final List<AuthorDetails> details = new ArrayList<>();
@@ -39,8 +40,12 @@ class InMemoryAuthorReadRepository implements AuthorReadRepository {
 
     @Override
     public Page<AuthorCatalogEntry> findCatalogPage(
-            @Nullable String letter, @Nullable UUID countryId, @Nullable UUID cityId, Pageable pageable) {
-        lastFilter = new Filter(letter, countryId, cityId);
+            @Nullable String letter,
+            @Nullable UUID countryId,
+            @Nullable UUID cityId,
+            @Nullable String platform,
+            Pageable pageable) {
+        lastFilter = new Filter(letter, countryId, cityId, platform);
         int from = (int) Math.min(pageable.getOffset(), entries.size());
         int to = Math.min(from + pageable.getPageSize(), entries.size());
         return new PageImpl<>(entries.subList(from, to), pageable, entries.size());

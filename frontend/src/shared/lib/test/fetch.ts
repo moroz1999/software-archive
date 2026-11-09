@@ -35,6 +35,27 @@ export function stubFetchRoutes(routes: Map<string, () => Response>): ReturnType
     return fetchMock;
 }
 
+/**
+ * Answers the fixed routes by their URL whenever they are asked, such as what every page loads, and every other fetch
+ * with the given responses in order, the last one repeating. Returns the mock of those other fetches only.
+ */
+export function stubFetchAround(fixed: Map<string, () => Response>, ...responses: (() => Response)[]): ReturnType<typeof vi.fn<typeof fetch>> {
+    const others = vi.fn<typeof fetch>();
+    responses.forEach((response, index) => {
+        if (index === responses.length - 1) {
+            others.mockImplementation(() => Promise.resolve(response()));
+        } else {
+            others.mockImplementationOnce(() => Promise.resolve(response()));
+        }
+    });
+    vi.stubGlobal('fetch', vi.fn<typeof fetch>((input, init) => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+        const response = fixed.get(url);
+        return response === undefined ? others(input, init) : Promise.resolve(response());
+    }));
+    return others;
+}
+
 export interface PageMeta {
     readonly size?: number;
     readonly number?: number;

@@ -1,6 +1,6 @@
-export {createSoftware, deleteSoftware, fetchSoftware, updateSoftware} from './api/software-api';
+export {createSoftware, deleteSoftware, fetchSoftware, fetchSoftwareReleases, updateSoftware} from './api/software-api';
 export {fetchLatestSoftware, fetchSoftwarePage} from './api/fetch-software-page';
-export {SOFTWARE_QUERY_KEY, softwareDetailsQuery} from './api/software-queries';
+export {SOFTWARE_QUERY_KEY, softwareDetailsQuery, softwareReleasesQuery} from './api/software-queries';
 export {
     SOFTWARE_EDIT_ROUTE,
     SOFTWARE_LIST_PATH,
@@ -11,24 +11,34 @@ export {
 } from './config/paths';
 export {releaseDayText} from './lib/release-day';
 export {releaseYear} from './lib/release-year';
+export {type ReleaseId, type ReleaseType, type SoftwareRelease} from './model/release';
 export {
+    type Hardware,
+    type HardwareGroup,
     type ReleaseDate,
     type Software,
     type SoftwareDetails,
     type SoftwareId,
+    type SoftwarePlatform,
+    type SoftwarePlatformCode,
     type SoftwareTitle,
     parseSoftwareId,
     requireSoftwareId,
     toReleaseDate,
     toSoftwareId,
+    toSoftwarePlatformCode,
     toSoftwareTitle,
 } from './model/software';
-export {type SoftwareDraft, type SoftwareFormValues, toSoftwareFormValues} from './model/software-form';
+export {type PlatformChoice, type SoftwareDraft, type SoftwareFormValues, toSoftwareFormValues} from './model/software-form';
 export {useSoftwareDetails} from './model/software-details-context';
 export {type SoftwareFormState, useSoftwareForm} from './model/software-form-context';
 export {SoftwareDetailsProvider, type SoftwareDetailsProviderProps} from './model/SoftwareDetailsProvider';
+export {useSoftwareReleases} from './model/software-releases-context';
+export {SoftwareReleasesProvider, type SoftwareReleasesProviderProps} from './model/SoftwareReleasesProvider';
 export {SoftwareFormProvider, type SoftwareFormProviderProps} from './model/SoftwareFormProvider';
 export {SoftwareCard, type SoftwareCardProps} from './ui/SoftwareCard';
 export {SoftwareCardSkeleton} from './ui/SoftwareCardSkeleton';
+export {HardwareList, type HardwareListProps} from './ui/HardwareList';
 export {SoftwareForm, type SoftwareFormProps} from './ui/SoftwareForm';
 export {SoftwareFormSkeleton} from './ui/SoftwareFormSkeleton';
+export {SoftwareReleases} from './ui/SoftwareReleases';

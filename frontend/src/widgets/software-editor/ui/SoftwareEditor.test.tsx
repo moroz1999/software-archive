@@ -6,7 +6,7 @@ import {type SoftwareId, toSoftwareId} from '@/entities/software';
 import {SoftwareEditor} from './SoftwareEditor';
 
 const ID = '00000000-0000-0000-0001-000000000001';
-const ELITE = {id: ID, title: 'Elite', description: 'Space trading', releaseDate: '1985-09-20'};
+const ELITE = {id: ID, title: 'Elite', description: 'Space trading', releaseDate: '1985-09-20', platform: {code: 'vector', name: 'Vector'}, hardware: []};
 
 describe(SoftwareEditor, () => {
     afterEach(() => {

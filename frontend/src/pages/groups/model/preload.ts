@@ -2,14 +2,15 @@ import type {QueryClient} from '@tanstack/react-query';
 import type {LoaderFunctionArgs, ShouldRevalidateFunctionArgs} from 'react-router';
 import {groupCatalogQuery, parseGroupCatalogFilter} from '@/features/group-catalog';
 import {citiesQuery, countriesQuery} from '@/entities/locations';
+import {readSelectedPlatform} from '@/entities/platforms';
 import {preloadView} from '@/shared/api';
 
-/** Route loader: the catalog of the address and its place filters are at the top of the page. */
+/** Route loader: the catalog of the address and the chosen platform, and its place filters, are at the top of the page. */
 export function preloadGroupsPage(queryClient: QueryClient): (args: LoaderFunctionArgs) => Promise<null> {
     return ({request}) => {
         const filter = parseGroupCatalogFilter(new URL(request.url).searchParams);
         return preloadView([
-            queryClient.query(groupCatalogQuery(filter)),
+            queryClient.query(groupCatalogQuery(filter, readSelectedPlatform())),
             queryClient.query(countriesQuery()),
             ...(filter.country === null ? [] : [queryClient.query(citiesQuery(filter.country))]),
         ]);

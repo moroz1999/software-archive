@@ -9,6 +9,7 @@ import {Text} from '@/shared/ui/typography';
 import {useAuthorCatalog} from '../model/author-catalog-context';
 import type {AuthorCatalogEntry} from '../model/catalog';
 import {catalogHref} from '../model/catalog-filter';
+import {useSkeleton} from '@/shared/lib/skeleton';
 
 /** The author catalog with its letters, place filters and pages, inside an AuthorCatalogProvider. */
 export function AuthorCatalog() {
@@ -41,8 +42,9 @@ function noteOf(entry: AuthorCatalogEntry): string | null {
 
 function Entries() {
     const {filter, entries, changing} = useAuthorCatalog();
+    const skeleton = useSkeleton(entries);
 
-    if (entries.isPending) {
+    if (skeleton || entries.isPending) {
         return <div data-testid="author-catalog-skeleton"><LabelEntriesSkeleton/></div>;
     }
     if (entries.isLoadingError) {

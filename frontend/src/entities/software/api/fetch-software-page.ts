@@ -5,6 +5,11 @@ const PAGE_SIZE = 20;
 /** Cards of the latest software on the home page. */
 const LATEST_SIZE = 12;
 
+/** The platform part of a list address; nothing for every platform. */
+function platformParam(platform: string | null): string {
+    return platform === null ? '' : `&platform=${encodeURIComponent(platform)}`;
+}
+
 function parseSoftware(item: unknown): Software {
     const dto = readObject(item, 'software');
     const releaseDate = readNullableString(dto, 'releaseDate');
@@ -15,14 +20,14 @@ function parseSoftware(item: unknown): Software {
     };
 }
 
-/** One page of the software list, newest contract of `GET /api/software`. */
-export async function fetchSoftwarePage(page: number, signal: AbortSignal): Promise<Page<Software>> {
-    const json = await getJson(`/api/software?page=${String(page)}&size=${String(PAGE_SIZE)}`, signal);
+/** One page of the software list, of the platform when one is given: `GET /api/software`. */
+export async function fetchSoftwarePage(page: number, platform: string | null, signal: AbortSignal): Promise<Page<Software>> {
+    const json = await getJson(`/api/software?page=${String(page)}&size=${String(PAGE_SIZE)}${platformParam(platform)}`, signal);
     return mapResponse(() => parsePage(json, parseSoftware));
 }
 
-/** The most recently added software, newest first: `GET /api/software/latest`. */
-export async function fetchLatestSoftware(signal: AbortSignal): Promise<Page<Software>> {
-    const json = await getJson(`/api/software/latest?size=${String(LATEST_SIZE)}`, signal);
+/** The most recently added software, newest first, of the platform when one is given: `GET /api/software/latest`. */
+export async function fetchLatestSoftware(platform: string | null, signal: AbortSignal): Promise<Page<Software>> {
+    const json = await getJson(`/api/software/latest?size=${String(LATEST_SIZE)}${platformParam(platform)}`, signal);
     return mapResponse(() => parsePage(json, parseSoftware));
 }

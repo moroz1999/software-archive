@@ -8,6 +8,7 @@ import {Stack} from '@/shared/ui/stack';
 import {Text} from '@/shared/ui/typography';
 import {groupCatalogHref} from '../model/catalog-filter';
 import {useGroupCatalog} from '../model/group-catalog-context';
+import {useSkeleton} from '@/shared/lib/skeleton';
 
 /** The group catalog with its letters, place filters and pages, inside a GroupCatalogProvider. */
 export function GroupCatalog() {
@@ -32,8 +33,9 @@ export function GroupCatalog() {
 
 function Entries() {
     const {filter, entries, changing} = useGroupCatalog();
+    const skeleton = useSkeleton(entries);
 
-    if (entries.isPending) {
+    if (skeleton || entries.isPending) {
         return <div data-testid="group-catalog-skeleton"><LabelEntriesSkeleton/></div>;
     }
     if (entries.isLoadingError) {

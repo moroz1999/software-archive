@@ -11,6 +11,10 @@ class InMemorySoftwareRepository implements SoftwareRepository {
 
     private final Map<SoftwareId, Software> items = new LinkedHashMap<>();
 
+    int count() {
+        return items.size();
+    }
+
     @Override
     public Optional<Software> findById(SoftwareId id) {
         return Optional.ofNullable(items.get(id));

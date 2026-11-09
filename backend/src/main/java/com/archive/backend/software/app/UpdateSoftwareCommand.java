@@ -1,5 +1,6 @@
 package com.archive.backend.software.app;
 
+import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareTitle;
@@ -10,4 +11,5 @@ public record UpdateSoftwareCommand(
         SoftwareId id,
         SoftwareTitle title,
         @Nullable SoftwareDescription description,
-        @Nullable LocalDate releaseDate) {}
+        @Nullable LocalDate releaseDate,
+        PlatformCode platform) {}

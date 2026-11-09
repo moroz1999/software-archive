@@ -3,14 +3,16 @@ import {CardGrid} from '@/shared/ui/card-grid';
 import {LoadingState} from '@/shared/ui/loading-state';
 import {Text} from '@/shared/ui/typography';
 import {useLatestSoftware} from '../model/latest-software-context';
+import {useSkeleton} from '@/shared/lib/skeleton';
 
 const SKELETON_CARDS = [1, 2, 3, 4, 5, 6, 7, 8];
 
 /** The latest software as cards, newest first, inside a LatestSoftwareProvider. */
 export function LatestSoftware() {
     const query = useLatestSoftware();
+    const skeleton = useSkeleton(query);
 
-    if (query.isPending) {
+    if (skeleton || query.isPending) {
         return (
             <div data-testid="latest-software-skeleton">
                 <CardGrid>

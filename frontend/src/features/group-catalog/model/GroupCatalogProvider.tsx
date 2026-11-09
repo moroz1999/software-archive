@@ -2,6 +2,7 @@ import {type ReactNode, useMemo} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {useNavigate, useSearchParams} from 'react-router';
 import {citiesQuery, countriesQuery} from '@/entities/locations';
+import {usePlatformSelection} from '@/entities/platforms';
 import {groupCatalogQuery} from '../api/catalog-queries';
 import {type GroupCatalogFilter, groupCatalogHref, parseGroupCatalogFilter} from './catalog-filter';
 import {GroupCatalogContext} from './group-catalog-context';
@@ -14,7 +15,8 @@ export function GroupCatalogProvider({children}: {readonly children: ReactNode})
     const [search] = useSearchParams();
     const navigate = useNavigate();
     const filter = useMemo(() => parseGroupCatalogFilter(search), [search]);
-    const entries = useQuery(groupCatalogQuery(filter));
+    const {platform} = usePlatformSelection();
+    const entries = useQuery(groupCatalogQuery(filter, platform));
     const countries = useQuery(countriesQuery());
     const cities = useQuery(citiesQuery(filter.country));
 

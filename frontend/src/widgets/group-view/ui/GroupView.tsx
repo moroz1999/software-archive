@@ -9,6 +9,7 @@ import {Stack} from '@/shared/ui/stack';
 import {Text, TextLink} from '@/shared/ui/typography';
 import {GroupViewSkeleton} from './GroupViewSkeleton';
 import styles from './GroupView.module.css';
+import {useSkeleton} from '@/shared/lib/skeleton';
 
 export interface GroupViewProps {
     readonly id: GroupId;
@@ -25,8 +26,9 @@ export function GroupView({id}: GroupViewProps) {
 
 function LoadedView() {
     const query = useGroupDetails();
+    const skeleton = useSkeleton(query);
 
-    if (query.isPending) {
+    if (skeleton || query.isPending) {
         return (
             <PageLayout title={<Skeleton className={styles.titleBone}/>}>
                 <div data-testid="group-view-skeleton"><GroupViewSkeleton/></div>

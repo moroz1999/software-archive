@@ -3,12 +3,12 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import {render, screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {createQueryClient} from '@/shared/api';
-import {json, noContent, pageResponse, stubFetch, stubFetchRoutes} from '@/shared/lib/test';
+import {json, noContent, pageResponse, stubFetchAround, stubFetchRoutes} from '@/shared/lib/test';
 import {App} from './App';
 import {type AppRouter, createAppRouter} from './router';
 
 const ALPHA = {id: '00000000-0000-0000-0001-000000000001', title: 'Fixture Software Alpha', releaseDate: '1985-03-02'};
-const ALPHA_DETAILS = {...ALPHA, description: null};
+const ALPHA_DETAILS = {...ALPHA, description: null, platform: {code: 'vector', name: 'Vector'}, hardware: []};
 const ZED = '00000000-0000-0000-0003-000000000001';
 const CREW = '00000000-0000-0000-0005-000000000001';
 const ZED_DETAILS = {id: ZED, name: 'Zed', realName: null, notes: null, labels: [], locations: [], groups: [{id: CREW, name: 'Crew', as: null}]};
@@ -16,6 +16,22 @@ const CREW_DETAILS = {
     id: CREW, name: 'Crew', groupName: 'Crew Ltd', notes: null, types: [], labels: [], locations: [],
     members: [{name: 'Zed', personId: ZED, personName: null}], memberGroups: [], groups: [],
 };
+
+/** What every page or the software page loads besides its own data: the platforms of the switch, the releases. */
+const AROUND = new Map([
+    ['/api/platforms', json([{code: 'vector', name: 'Vector'}])],
+    [`/api/software/${ALPHA.id}/releases`, json([])],
+]);
+
+/** Answers what every page loads, every other call with the responses in order. */
+function stubFetch(...responses: (() => Response)[]) {
+    return stubFetchAround(AROUND, ...responses);
+}
+
+/** Answers what every page loads and the given routes. */
+function stubRoutes(routes: [string, () => Response][]) {
+    return stubFetchRoutes(new Map([...AROUND, ...routes]));
+}
 
 describe(App, () => {
     const routers: AppRouter[] = [];
@@ -49,13 +65,13 @@ describe(App, () => {
     });
 
     it('opens the sections of the archive from the main menu, which stays over every page', async () => {
-        stubFetchRoutes(new Map([
+        stubRoutes([
             ['/api/software/latest?size=12', json(pageResponse([ALPHA], {size: 12}))],
             ['/api/software?page=0&size=20', json(pageResponse([ALPHA]))],
             ['/api/authors?page=0&size=100', json(pageResponse([{personId: ZED, name: 'Zed', labelOf: null}], {size: 100}))],
             ['/api/countries', json([])],
             [`/api/authors/${ZED}`, json(ZED_DETAILS)],
-        ]));
+        ]);
 
         render(<App router={appRouter()} queryClient={queryClient}/>);
 
@@ -78,13 +94,13 @@ describe(App, () => {
     });
 
     it('opens the groups from the main menu, a group from the catalog and its members from the group', async () => {
-        stubFetchRoutes(new Map([
+        stubRoutes([
             ['/api/software/latest?size=12', json(pageResponse([ALPHA], {size: 12}))],
             ['/api/groups?page=0&size=100', json(pageResponse([{groupId: CREW, name: 'Crew', groupName: 'Crew Ltd'}], {size: 100}))],
             ['/api/countries', json([])],
             [`/api/groups/${CREW}`, json(CREW_DETAILS)],
             [`/api/authors/${ZED}`, json(ZED_DETAILS)],
-        ]));
+        ]);
 
         render(<App router={appRouter()} queryClient={queryClient}/>);
 

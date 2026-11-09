@@ -1,15 +1,22 @@
 # Software
 
-A piece of software is the work itself, as it is known in the archive.
+Software (a production) is a release of a program: the work itself, as it is known in the archive.
 
+- It is for exactly one platform and has its base hardware — see [hardware.md](hardware.md).
 - It has a title, a description and a release date (a day, without time).
 - The title follows the common title rules (see the domain index). The description and the release date may be unknown.
 - Software can be added, edited and deleted. For now anyone can do it; access rules come later.
-- Deleting software deletes what belongs only to it: its alternative titles, languages, links and credits.
+- Deleting software deletes what belongs only to it: its releases, alternative titles, languages, links and credits.
 - It can be known under alternative titles; an alternative title can be tied to a language.
 - It lists the languages it is available in.
 - Languages — of the software and of its alternative titles — are chosen from the archive's fixed list of languages, each known by its code.
 - It carries links to the outside world. A link has one kind from a fixed list: general, homepage, store, video. A link is an absolute web address (http or https).
+
+## Releases
+A release (a version) is a version of the software. It never lives apart from its software.
+- It has a title, a version ("1.1"), a release type, a release date (a day) and a description. Everything but the type may be unknown; a release without a title is called by the title of its software.
+- Release types are a fixed list: original, rerelease, adaptation, localization, bugfix, mod, crack, mia (missing in action), corrupted, compilation, incomplete, demo version, unknown.
+- A release can be modified or adapted — other memory, another OS, added sound — and states its own hardware for that ([hardware.md](hardware.md#hardware-of-software-and-releases)).
 
 ## Credits
 

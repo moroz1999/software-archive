@@ -23,6 +23,13 @@ describe(NavBar, () => {
         expect(screen.getByRole('link', {name: 'Authors'})).toHaveAttribute('href', '/authors');
     });
 
+    it('holds controls apart from the links', () => {
+        render(<MemoryRouter><NavBar label="Main" actions={<span>Switch</span>}><NavBarLink href="/">Home</NavBarLink></NavBar></MemoryRouter>);
+
+        expect(screen.getByText('Switch')).toBeInTheDocument();
+        expect(screen.getByRole('navigation', {name: 'Main'})).not.toHaveTextContent('Switch');
+    });
+
     it('marks the link of the current section, including the pages inside it', () => {
         renderAt('/authors/42');
 

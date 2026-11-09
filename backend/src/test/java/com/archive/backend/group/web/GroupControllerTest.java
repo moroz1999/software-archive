@@ -24,6 +24,7 @@ import com.archive.backend.group.read.GroupLocation;
 import com.archive.backend.group.read.GroupMember;
 import com.archive.backend.group.read.RelatedGroup;
 import com.archive.backend.group.web.mapper.GroupWebMapperImpl;
+import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.label.domain.LabelLetter;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
@@ -62,7 +63,7 @@ class GroupControllerTest {
 
     @Test
     void listsTheCatalogWithoutFilters() throws Exception {
-        when(listHandler.handle(new ListGroupsQuery(null, null, null, PageRequest.of(0, 100))))
+        when(listHandler.handle(new ListGroupsQuery(null, null, null, null, PageRequest.of(0, 100))))
                 .thenReturn(new PageImpl<>(
                         List.of(
                                 new GroupCatalogEntry(ID, "Crew", "Crew Ltd"),
@@ -83,7 +84,11 @@ class GroupControllerTest {
     @Test
     void listsTheCatalogWithFilters() throws Exception {
         when(listHandler.handle(new ListGroupsQuery(
-                        new LabelLetter("С"), new CountryId(COUNTRY), new CityId(CITY), PageRequest.of(1, 100))))
+                        new LabelLetter("С"),
+                        new CountryId(COUNTRY),
+                        new CityId(CITY),
+                        new PlatformCode("vector"),
+                        PageRequest.of(1, 100))))
                 .thenReturn(
                         new PageImpl<>(List.of(new GroupCatalogEntry(ID, "Сцена", null)), PageRequest.of(1, 100), 101));
 
@@ -91,6 +96,7 @@ class GroupControllerTest {
                         .param("letter", "с")
                         .param("country", COUNTRY.toString())
                         .param("city", CITY.toString())
+                        .param("platform", "vector")
                         .param("page", "1")
                         .param("size", "100"))
                 .andExpect(status().isOk())
@@ -104,6 +110,13 @@ class GroupControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("label.letter-invalid"));
         verify(listHandler, never()).handle(any());
+    }
+
+    @Test
+    void answers400ForAnInvalidPlatform() throws Exception {
+        mvc.perform(get("/api/groups").param("platform", "BK!"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("platform.code-invalid"));
     }
 
     @Test

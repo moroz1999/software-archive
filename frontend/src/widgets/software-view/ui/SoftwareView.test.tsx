@@ -1,13 +1,36 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {screen} from '@testing-library/react';
+import {screen, within} from '@testing-library/react';
 import {MemoryRouter} from 'react-router';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
-import {json, renderWithQueries, stubFetch} from '@/shared/lib/test';
+import {json, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {toSoftwareId} from '@/entities/software';
 import {SoftwareView} from './SoftwareView';
 
 const ID = '00000000-0000-0000-0001-000000000001';
-const ELITE = {id: ID, title: 'Elite', description: 'Space trading\nand combat', releaseDate: '1984-09-20'};
+const VECTOR06C = {code: 'vector06c', name: 'Vector-06C', group: 'computers'};
+const BEEPER = {code: 'beeper', name: 'Beeper', group: 'sound'};
+const ELITE = {
+    id: ID,
+    title: 'Elite',
+    description: 'Space trading\nand combat',
+    releaseDate: '1984-09-20',
+    platform: {code: 'vector', name: 'Vector'},
+    hardware: [VECTOR06C, BEEPER],
+};
+const AY_MOD = {
+    id: '00000000-0000-0000-0007-000000000001',
+    title: 'Elite AY',
+    version: '1.1',
+    type: 'mod',
+    releaseDate: null,
+    description: null,
+    hardware: [VECTOR06C, {code: 'ay8910', name: 'AY-3-8910', group: 'sound'}],
+};
+
+/** Answers the details and the releases of the software. */
+function stubFetch(details: () => Response, releases: () => Response = json([AY_MOD])) {
+    return stubFetchRoutes(new Map([[`/api/software/${ID}`, details], [`/api/software/${ID}/releases`, releases]]));
+}
 
 function renderView(id: string) {
     renderWithQueries(<MemoryRouter><SoftwareView id={toSoftwareId(id)}/></MemoryRouter>);
@@ -41,6 +64,27 @@ describe(SoftwareView, () => {
         expect(screen.getByText('20 September 1984')).toBeInTheDocument();
         expect(screen.getByText('Space trading')).toBeInTheDocument();
         expect(screen.getByText('and combat')).toBeInTheDocument();
+    });
+
+    it('shows the platform and the hardware of the software by group', async () => {
+        stubFetch(json(ELITE));
+        renderView(ID);
+
+        const details = await screen.findByRole('region', {name: 'Hardware'});
+
+        expect(screen.getByText('Vector')).toBeInTheDocument();
+        expect(within(within(details).getByRole('group', {name: 'Computers'})).getByText('Vector-06C')).toBeInTheDocument();
+        expect(within(within(details).getByRole('group', {name: 'Sound'})).getByText('Beeper')).toBeInTheDocument();
+    });
+
+    it('shows the releases of the software with the hardware each one shows', async () => {
+        stubFetch(json(ELITE));
+        renderView(ID);
+
+        const releases = await screen.findByRole('region', {name: 'Releases'});
+        const release = await within(releases).findByRole('article', {name: 'Elite AY'});
+
+        expect(within(within(release).getByRole('group', {name: 'Sound'})).getByText('AY-3-8910')).toBeInTheDocument();
     });
 
     it('leads to the editing of the software', async () => {

@@ -7,4 +7,5 @@ import org.jspecify.annotations.Nullable;
 public record SoftwareRequestDto(
         @Nullable String title,
         @Nullable String description,
-        @Nullable LocalDate releaseDate) {}
+        @Nullable LocalDate releaseDate,
+        @Nullable String platform) {}

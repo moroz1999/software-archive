@@ -1,5 +1,6 @@
 package com.archive.backend.software.app;
 
+import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.software.read.SoftwareReadRepository;
 import com.archive.backend.software.read.SoftwareSummary;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ public class ListSoftwareHandler {
 
     @Transactional(readOnly = true)
     public Page<SoftwareSummary> handle(ListSoftwareQuery q) {
-        return reads.findPage(q.pageable());
+        PlatformCode platform = q.platform();
+        return reads.findPage(platform == null ? null : platform.value(), q.pageable());
     }
 }

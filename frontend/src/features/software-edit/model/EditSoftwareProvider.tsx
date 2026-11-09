@@ -1,5 +1,6 @@
 import type {ReactNode} from 'react';
-import {useMutation, useQueryClient} from '@tanstack/react-query';
+import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import {platformsQuery} from '@/entities/platforms';
 import {
     SOFTWARE_QUERY_KEY,
     type SoftwareDetails,
@@ -28,9 +29,12 @@ export function EditSoftwareProvider({software, onSaved, children}: EditSoftware
         },
     });
 
+    const platforms = useQuery(platformsQuery());
+
     return (
         <SoftwareFormProvider
             initial={toSoftwareFormValues(software)}
+            platforms={platforms.data ?? []}
             onSubmit={mutate}
             busy={isPending}
             error={businessErrorOf(error)}

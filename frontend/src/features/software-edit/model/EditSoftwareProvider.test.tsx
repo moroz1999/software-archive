@@ -1,9 +1,9 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {SoftwareForm, toReleaseDate, toSoftwareId, toSoftwareTitle} from '@/entities/software';
+import {SoftwareForm, toReleaseDate, toSoftwareId, toSoftwarePlatformCode, toSoftwareTitle} from '@/entities/software';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
-import {json, noContent, renderWithQueries, stubFetch} from '@/shared/lib/test';
+import {json, noContent, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {EditSoftwareProvider} from './EditSoftwareProvider';
 
 const SOFTWARE = {
@@ -11,7 +11,14 @@ const SOFTWARE = {
     title: toSoftwareTitle('Elite'),
     description: 'Space trading',
     releaseDate: toReleaseDate('1985-09-20'),
+    platform: {code: toSoftwarePlatformCode('vector'), name: 'Vector'},
+    hardware: [],
 };
+const PLATFORMS = json([{code: 'bk', name: 'BK'}, {code: 'vector', name: 'Vector'}]);
+
+function answer(software: () => Response) {
+    return stubFetchRoutes(new Map([['/api/platforms', PLATFORMS], [`/api/software/${SOFTWARE.id}`, software]]));
+}
 
 describe(EditSoftwareProvider, () => {
     afterEach(() => {
@@ -19,7 +26,7 @@ describe(EditSoftwareProvider, () => {
     });
 
     it('saves the edited software', async () => {
-        const fetchMock = stubFetch(noContent());
+        const fetchMock = answer(noContent());
         const onSaved = vi.fn<() => void>();
         renderWithQueries(<EditSoftwareProvider software={SOFTWARE} onSaved={onSaved}><SoftwareForm submitLabel="Save"/></EditSoftwareProvider>);
 
@@ -32,10 +39,9 @@ describe(EditSoftwareProvider, () => {
             expect(onSaved).toHaveBeenCalledExactlyOnceWith();
         });
 
-        expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/software/${SOFTWARE.id}`);
-        expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
+        expect(fetchMock.mock.calls.find(([url]) => url === `/api/software/${SOFTWARE.id}`)?.[1]).toMatchObject({
             method: 'PUT',
-            body: '{"title":"Elite Plus","description":"Space trading","releaseDate":"1985-09-20"}',
+            body: '{"title":"Elite Plus","description":"Space trading","releaseDate":"1985-09-20","platform":"vector"}',
         });
     });
 
@@ -45,7 +51,7 @@ describe(EditSoftwareProvider, () => {
         const unsubscribe = subscribeSystemErrors((report) => {
             reports.push(report);
         });
-        stubFetch(json({status: 422, code: 'software.title-taken', errors: [{field: 'title', code: 'software.title-taken'}]}, 422));
+        answer(json({status: 422, code: 'software.title-taken', errors: [{field: 'title', code: 'software.title-taken'}]}, 422));
         renderWithQueries(<EditSoftwareProvider software={SOFTWARE} onSaved={vi.fn<() => void>()}><SoftwareForm submitLabel="Save"/></EditSoftwareProvider>);
 
         await userEvent.click(screen.getByRole('button', {name: 'Save'}));

@@ -1,5 +1,15 @@
-import {deleteResource, getJson, mapResponse, postJson, putJson, readNullableString, readObject, readString} from '@/shared/api';
-import {type SoftwareDetails, type SoftwareId, toReleaseDate, toSoftwareId, toSoftwareTitle} from '../model/software';
+import {deleteResource, getJson, type JsonObject, mapResponse, postJson, putJson, readArray, readNullableString, readObject, readString} from '@/shared/api';
+import {type SoftwareRelease, toReleaseId, toReleaseType} from '../model/release';
+import {
+    type Hardware,
+    type SoftwareDetails,
+    type SoftwareId,
+    toHardwareGroup,
+    toReleaseDate,
+    toSoftwarePlatformCode,
+    toSoftwareId,
+    toSoftwareTitle,
+} from '../model/software';
 import type {SoftwareDraft} from '../model/software-form';
 
 function softwarePath(id: SoftwareId): string {
@@ -7,7 +17,14 @@ function softwarePath(id: SoftwareId): string {
 }
 
 function toBody(draft: SoftwareDraft): unknown {
-    return {title: draft.title, description: draft.description, releaseDate: draft.releaseDate};
+    return {title: draft.title, description: draft.description, releaseDate: draft.releaseDate, platform: draft.platform};
+}
+
+function parseHardware(dto: JsonObject): readonly Hardware[] {
+    return readArray(dto['hardware'], 'hardware').map((item) => {
+        const hardware = readObject(item, 'hardware item');
+        return {code: readString(hardware, 'code'), name: readString(hardware, 'name'), group: toHardwareGroup(readString(hardware, 'group'))};
+    });
 }
 
 /** One software with its details: `GET /api/software/{id}`. */
@@ -16,13 +33,34 @@ export async function fetchSoftware(id: SoftwareId, signal: AbortSignal): Promis
     return mapResponse(() => {
         const dto = readObject(json, 'software');
         const releaseDate = readNullableString(dto, 'releaseDate');
+        const platform = readObject(dto['platform'], 'platform');
         return {
             id: toSoftwareId(readString(dto, 'id')),
             title: toSoftwareTitle(readString(dto, 'title')),
             description: readNullableString(dto, 'description'),
             releaseDate: releaseDate === null ? null : toReleaseDate(releaseDate),
+            platform: {code: toSoftwarePlatformCode(readString(platform, 'code')), name: readString(platform, 'name')},
+            hardware: parseHardware(dto),
         };
     });
+}
+
+/** The releases of one software, each with the hardware it shows: `GET /api/software/{id}/releases`. */
+export async function fetchSoftwareReleases(id: SoftwareId, signal: AbortSignal): Promise<readonly SoftwareRelease[]> {
+    const json = await getJson(`${softwarePath(id)}/releases`, signal);
+    return mapResponse(() => readArray(json, 'releases').map((item) => {
+        const dto = readObject(item, 'release');
+        const releaseDate = readNullableString(dto, 'releaseDate');
+        return {
+            id: toReleaseId(readString(dto, 'id')),
+            title: readString(dto, 'title'),
+            version: readNullableString(dto, 'version'),
+            type: toReleaseType(readString(dto, 'type')),
+            releaseDate: releaseDate === null ? null : toReleaseDate(releaseDate),
+            description: readNullableString(dto, 'description'),
+            hardware: parseHardware(dto),
+        };
+    }));
 }
 
 /** Adds software to the archive and returns its id. */

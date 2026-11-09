@@ -1,6 +1,6 @@
 # Author Catalog
 
-The catalog at `/authors` ([domain/authors.md](../domain/authors.md#author-catalog)): entries in four columns (three on tablets, one on phones), 100 per page.
+The catalog at `/authors` ([domain/authors.md](../domain/authors.md#author-catalog)): entries in four columns (three on tablets, one on phones), 100 per page, only the authors credited on software of the platform chosen in the switch ([platform-switch.md](platform-switch.md)).
 
 The group catalog ([group-catalog.md](group-catalog.md)) works the same way. Their common parts are entities: `entities/labels` holds the letters, the letter filter, an entry and the skeleton of the entries; `entities/locations` holds the countries, the cities and the place filters.
 
@@ -25,6 +25,6 @@ The filter lives in the address — `/authors?letter=Б&country={id}&city={id}&p
 
 | Call | Answer | Errors |
 |---|---|---|
-| `GET /api/authors?letter=&country=&city=&page=&size=` | page of `{personId, name, realName, labelOf}`; `realName` `null` when unknown or when the entry is the real name, `labelOf` `null` for a main name | `400 label.letter-invalid`; `400` for a malformed id |
+| `GET /api/authors?letter=&country=&city=&platform=&page=&size=` | page of `{personId, name, realName, labelOf}`; `realName` `null` when unknown or when the entry is the real name, `labelOf` `null` for a main name | `400 label.letter-invalid`, `400 platform.code-invalid`; `400` for a malformed id |
 | `GET /api/countries` | `[{id, name}]` by name | |
 | `GET /api/countries/{id}/cities` | `[{id, name}]` by name; empty for an unknown country | `400` for a malformed id |

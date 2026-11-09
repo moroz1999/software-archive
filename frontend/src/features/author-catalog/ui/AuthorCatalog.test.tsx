@@ -2,6 +2,7 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {createMemoryRouter, RouterProvider} from 'react-router';
+import {PlatformSelectionProvider, PlatformSwitch} from '@/entities/platforms';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, pageResponse, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {AuthorCatalogProvider} from '../model/AuthorCatalogProvider';
@@ -35,12 +36,12 @@ function catalogPage(items: readonly unknown[], totalPages = 1, number = 0) {
 }
 
 function routes(entries: Record<string, () => Response>): Map<string, () => Response> {
-    return new Map([['/api/countries', json(COUNTRIES)], [`/api/countries/${FINLAND}/cities`, json(FINNISH_CITIES)], ...Object.entries(entries)]);
+    return new Map([['/api/platforms', json([{code: 'bk', name: 'BK'}, {code: 'msx', name: 'MSX'}])], ['/api/countries', json(COUNTRIES)], [`/api/countries/${FINLAND}/cities`, json(FINNISH_CITIES)], ...Object.entries(entries)]);
 }
 
 function openCatalog(path = '/authors') {
     const router = createMemoryRouter([
-        {path: '/authors', element: <AuthorCatalogProvider><AuthorCatalog/></AuthorCatalogProvider>},
+        {path: '/authors', element: <PlatformSelectionProvider><PlatformSwitch/><AuthorCatalogProvider><AuthorCatalog/></AuthorCatalogProvider></PlatformSelectionProvider>},
     ], {initialEntries: [path]});
     renderWithQueries(<RouterProvider router={router}/>);
     return router;
@@ -61,11 +62,25 @@ describe(AuthorCatalog, () => {
     const unsubscribers: (() => void)[] = [];
 
     afterEach(() => {
+        localStorage.clear();
         vi.unstubAllGlobals();
         unsubscribers.forEach((unsubscribe) => {
             unsubscribe();
         });
         unsubscribers.length = 0;
+    });
+
+    it('follows the platform switch', async () => {
+        localStorage.setItem('archive.platform', 'bk');
+        const fetchMock = stubFetchRoutes(routes({[`${ALL}&platform=bk`]: catalogPage(ENTRIES), [`${ALL}&platform=msx`]: catalogPage([])}));
+        openCatalog();
+
+        await screen.findByRole('list', {name: 'Authors'});
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Platform'}), await screen.findByRole('option', {name: 'MSX'}));
+
+        await vi.waitFor(() => {
+            expect(fetchMock.mock.calls.map(([url]) => url)).toContain(`${ALL}&platform=msx`);
+        });
     });
 
     it('shows a skeleton until the entries arrive', async () => {
@@ -250,7 +265,7 @@ describe(AuthorCatalog, () => {
         unsubscribers.push(subscribeSystemErrors((report) => {
             reports.push(report);
         }));
-        stubFetchRoutes(new Map([[ALL, catalogPage(ENTRIES)], ['/api/countries', json({status: 500}, 500)]]));
+        stubFetchRoutes(new Map([['/api/platforms', json([])], [ALL, catalogPage(ENTRIES)], ['/api/countries', json({status: 500}, 500)]]));
         openCatalog();
 
         await expect(entryNames()).resolves.toStrictEqual(['Axe', 'Bob', 'Zed']);

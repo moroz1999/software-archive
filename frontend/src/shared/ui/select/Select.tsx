@@ -16,13 +16,16 @@ export interface SelectProps {
     readonly placeholder: string;
     /** Accessible name when no label points to the select. */
     readonly ariaLabel?: string | undefined;
+    readonly invalid?: boolean | undefined;
+    /** Id of the element describing the select, such as its error. */
+    readonly describedBy?: string | undefined;
     readonly disabled?: boolean;
     /** External contour only; see docs/styles.md. */
     readonly className?: string;
 }
 
 /** A choice of one option out of a list, the placeholder standing for no choice. */
-export function Select({id, value, onChange, options, placeholder, ariaLabel, disabled, className}: SelectProps) {
+export function Select({id, value, onChange, options, placeholder, ariaLabel, invalid = false, describedBy, disabled, className}: SelectProps) {
     return (
         <select
             id={id}
@@ -31,8 +34,10 @@ export function Select({id, value, onChange, options, placeholder, ariaLabel, di
                 onChange(event.target.value);
             }}
             aria-label={ariaLabel}
+            aria-invalid={invalid}
+            aria-describedby={describedBy}
             disabled={disabled}
-            className={classNames(styles.select, className)}
+            className={classNames(styles.select, invalid && styles.invalid, className)}
         >
             <option value="">{placeholder}</option>
             {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}

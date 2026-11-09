@@ -7,6 +7,7 @@ import com.archive.backend.group.read.GroupCatalogEntry;
 import com.archive.backend.group.read.GroupDetails;
 import com.archive.backend.group.web.dto.GroupCatalogEntryDto;
 import com.archive.backend.group.web.dto.GroupDetailsDto;
+import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.label.domain.LabelLetter;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -23,11 +24,16 @@ public interface GroupWebMapper {
     // Request scalars -> value objects.
 
     default ListGroupsQuery toListQuery(
-            @Nullable String letter, @Nullable UUID country, @Nullable UUID city, Pageable pageable) {
+            @Nullable String letter,
+            @Nullable UUID country,
+            @Nullable UUID city,
+            @Nullable String platform,
+            Pageable pageable) {
         return new ListGroupsQuery(
                 letter == null ? null : new LabelLetter(letter),
                 country == null ? null : new CountryId(country),
                 city == null ? null : new CityId(city),
+                platform == null ? null : new PlatformCode(platform),
                 pageable);
     }
 }

@@ -7,6 +7,8 @@ export type SoftwareId = Brand<string, 'SoftwareId'>;
 export type SoftwareTitle = Brand<string, 'SoftwareTitle'>;
 /** A calendar day, ISO `YYYY-MM-DD`, without time or time zone. */
 export type ReleaseDate = Brand<string, 'ReleaseDate'>;
+/** The code of the platform software is for: `vector` (docs/domain/hardware.md). */
+export type SoftwarePlatformCode = Brand<string, 'SoftwarePlatformCode'>;
 
 export interface Software {
     readonly id: SoftwareId;
@@ -14,12 +16,33 @@ export interface Software {
     readonly releaseDate: ReleaseDate | null;
 }
 
-/** One software with everything shown about it. */
+/** One software with everything shown about it; its base hardware in the order of the groups. */
 export interface SoftwareDetails extends Software {
     readonly description: string | null;
+    readonly platform: SoftwarePlatform;
+    readonly hardware: readonly Hardware[];
+}
+
+/** The platform software is for, as the software shows it. */
+export interface SoftwarePlatform {
+    readonly code: SoftwarePlatformCode;
+    readonly name: string;
+}
+
+/** The groups hardware is shown under, in the order they are shown (docs/domain/hardware.md). */
+export const HARDWARE_GROUPS = ['computers', 'storage', 'dos', 'sound', 'controls', 'expansion'] as const;
+
+export type HardwareGroup = (typeof HARDWARE_GROUPS)[number];
+
+/** An item of the hardware reference book. */
+export interface Hardware {
+    readonly code: string;
+    readonly name: string;
+    readonly group: HardwareGroup;
 }
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const PLATFORM_CODE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
 
 export function toSoftwareId(raw: string): SoftwareId {
     if (!isUuid(raw)) {
@@ -55,4 +78,20 @@ export function toReleaseDate(raw: string): ReleaseDate {
         throw new TypeError(`Invalid release date: ${raw}`);
     }
     return raw as ReleaseDate;
+}
+
+export function toSoftwarePlatformCode(raw: string): SoftwarePlatformCode {
+    if (!PLATFORM_CODE.test(raw)) {
+        throw new TypeError(`Invalid platform code: ${raw}`);
+    }
+    return raw as SoftwarePlatformCode;
+}
+
+const HARDWARE_GROUP_SET: ReadonlySet<string> = new Set(HARDWARE_GROUPS);
+
+export function toHardwareGroup(raw: string): HardwareGroup {
+    if (!HARDWARE_GROUP_SET.has(raw)) {
+        throw new TypeError(`Invalid hardware group: ${raw}`);
+    }
+    return raw as HardwareGroup;
 }

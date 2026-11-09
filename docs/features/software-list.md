@@ -1,6 +1,6 @@
 # Software List
 
-The software page at `/software` ("Software" in the main menu, [main-menu.md](main-menu.md)) shows the archive's software as a grid of cards: the first page of 20, without pagination yet.
+The software page at `/software` ("Software" in the main menu, [main-menu.md](main-menu.md)) shows the archive's software as a grid of cards: the first page of 20, without pagination yet, of the platform chosen in the switch ([platform-switch.md](platform-switch.md)).
 
 ## Card
 
@@ -16,4 +16,4 @@ The software page at `/software` ("Software" in the main menu, [main-menu.md](ma
 
 ## REST
 
-`GET /api/software?page={n}&size={size}` — a page of software (`id`, `title`, `releaseDate` as an ISO day or `null`) with paging metadata.
+`GET /api/software?page={n}&size={size}&platform={code}` — a page of software (`id`, `title`, `releaseDate` as an ISO day or `null`) with paging metadata.

@@ -18,6 +18,9 @@
     --select-focus-border-color: var(--focus-ring-color);
     --select-focus-ring: 0 0 0 var(--border-width-thin) var(--focus-ring-color);
 
+    /* Border color of a select with an error. */
+    --select-invalid-border-color: var(--error-color);
+
     /* Background of a disabled select. */
     --select-disabled-bg: var(--background-deep);
 

@@ -1,6 +1,7 @@
 import type {ReactNode} from 'react';
-import {useMutation, useQueryClient} from '@tanstack/react-query';
-import {createSoftware, SOFTWARE_QUERY_KEY, SoftwareFormProvider, type SoftwareId} from '@/entities/software';
+import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import {platformsQuery, usePlatformSelection} from '@/entities/platforms';
+import {createSoftware, SOFTWARE_QUERY_KEY, SoftwareFormProvider, type SoftwareId, toSoftwareFormValues} from '@/entities/software';
 import {businessErrorOf} from '@/shared/api';
 import {createSoftwareMessages} from '../config/messages';
 
@@ -9,7 +10,10 @@ export interface CreateSoftwareProviderProps {
     readonly children: ReactNode;
 }
 
-/** Adding software: the form inside sends its draft here; the archive's software lists go stale once it is added. */
+/**
+ * Adding software: the form inside starts on the chosen platform and sends its draft here; the archive's software
+ * lists go stale once it is added.
+ */
 export function CreateSoftwareProvider({onCreated, children}: CreateSoftwareProviderProps) {
     const queryClient = useQueryClient();
     const {mutate, isPending, error} = useMutation({
@@ -20,8 +24,13 @@ export function CreateSoftwareProvider({onCreated, children}: CreateSoftwareProv
         },
     });
 
+    const platforms = useQuery(platformsQuery());
+    const {platform} = usePlatformSelection();
+
     return (
         <SoftwareFormProvider
+            initial={{...toSoftwareFormValues(), platform: platform ?? ''}}
+            platforms={platforms.data ?? []}
             onSubmit={mutate}
             busy={isPending}
             error={businessErrorOf(error)}

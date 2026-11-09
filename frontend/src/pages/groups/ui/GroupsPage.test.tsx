@@ -1,6 +1,7 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import {createMemoryRouter, RouterProvider} from 'react-router';
+import {PlatformSelectionProvider} from '@/entities/platforms';
 import {createQueryClient} from '@/shared/api';
 import {json, pageResponse, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {loadGroupsPage, preloadGroupsPage} from '../index';
@@ -13,7 +14,7 @@ function renderRoute(path: string) {
     const router = createMemoryRouter([
         {path: '/groups', loader: preloadGroupsPage(queryClient), lazy: {Component: loadGroupsPage}, HydrateFallback: () => null},
     ], {initialEntries: [path]});
-    renderWithQueries(<RouterProvider router={router}/>, queryClient);
+    renderWithQueries(<PlatformSelectionProvider><RouterProvider router={router}/></PlatformSelectionProvider>, queryClient);
 }
 
 describe('GroupsPage', () => {

@@ -23,6 +23,7 @@ import com.archive.backend.author.read.AuthorLocation;
 import com.archive.backend.author.web.mapper.AuthorWebMapperImpl;
 import com.archive.backend.geo.domain.CityId;
 import com.archive.backend.geo.domain.CountryId;
+import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.label.domain.LabelLetter;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
@@ -59,7 +60,7 @@ class AuthorControllerTest {
 
     @Test
     void listsTheCatalogWithoutFilters() throws Exception {
-        when(listHandler.handle(new ListAuthorsQuery(null, null, null, PageRequest.of(0, 100))))
+        when(listHandler.handle(new ListAuthorsQuery(null, null, null, null, PageRequest.of(0, 100))))
                 .thenReturn(new PageImpl<>(
                         List.of(
                                 new AuthorCatalogEntry(ID, "Axe", "John Doe", "Zed"),
@@ -80,7 +81,7 @@ class AuthorControllerTest {
 
     @Test
     void sendsNoRealNameWhenTheEntryIsTheRealName() throws Exception {
-        when(listHandler.handle(new ListAuthorsQuery(null, null, null, PageRequest.of(0, 100))))
+        when(listHandler.handle(new ListAuthorsQuery(null, null, null, null, PageRequest.of(0, 100))))
                 .thenReturn(new PageImpl<>(
                         List.of(new AuthorCatalogEntry(ID, "Carl Real", null, null)), PageRequest.of(0, 100), 1));
 
@@ -93,7 +94,11 @@ class AuthorControllerTest {
     @Test
     void listsTheCatalogWithFilters() throws Exception {
         when(listHandler.handle(new ListAuthorsQuery(
-                        new LabelLetter("Б"), new CountryId(COUNTRY), new CityId(CITY), PageRequest.of(1, 100))))
+                        new LabelLetter("Б"),
+                        new CountryId(COUNTRY),
+                        new CityId(CITY),
+                        new PlatformCode("vector"),
+                        PageRequest.of(1, 100))))
                 .thenReturn(new PageImpl<>(
                         List.of(new AuthorCatalogEntry(ID, "Борис", null, null)), PageRequest.of(1, 100), 101));
 
@@ -101,6 +106,7 @@ class AuthorControllerTest {
                         .param("letter", "б")
                         .param("country", COUNTRY.toString())
                         .param("city", CITY.toString())
+                        .param("platform", "vector")
                         .param("page", "1")
                         .param("size", "100"))
                 .andExpect(status().isOk())
@@ -114,6 +120,13 @@ class AuthorControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("label.letter-invalid"));
         verify(listHandler, never()).handle(any());
+    }
+
+    @Test
+    void answers400ForAnInvalidPlatform() throws Exception {
+        mvc.perform(get("/api/authors").param("platform", "BK!"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("platform.code-invalid"));
     }
 
     @Test

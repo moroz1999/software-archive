@@ -1,6 +1,7 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import {createMemoryRouter, RouterProvider} from 'react-router';
+import {PlatformSelectionProvider} from '@/entities/platforms';
 import {createQueryClient} from '@/shared/api';
 import {json, pageResponse, renderWithQueries, stubFetch} from '@/shared/lib/test';
 import {loadSoftwarePage, preloadSoftwarePage} from '../index';
@@ -12,7 +13,7 @@ function renderRoute() {
     const router = createMemoryRouter([
         {path: '/', loader: preloadSoftwarePage(queryClient), lazy: {Component: loadSoftwarePage}, HydrateFallback: () => null},
     ]);
-    renderWithQueries(<RouterProvider router={router}/>, queryClient);
+    renderWithQueries(<PlatformSelectionProvider><RouterProvider router={router}/></PlatformSelectionProvider>, queryClient);
 }
 
 describe('SoftwarePage', () => {

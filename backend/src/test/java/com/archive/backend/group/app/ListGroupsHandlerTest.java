@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.archive.backend.geo.domain.CityId;
 import com.archive.backend.geo.domain.CountryId;
 import com.archive.backend.group.read.GroupCatalogEntry;
+import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.label.domain.LabelLetter;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,8 @@ class ListGroupsHandlerTest {
         reads.add(new GroupCatalogEntry(group, "CRW", "Crew Ltd"));
         reads.add(new GroupCatalogEntry(group, "Crew", "Crew Ltd"));
 
-        Page<GroupCatalogEntry> page = handler.handle(new ListGroupsQuery(null, null, null, PageRequest.of(1, 1)));
+        Page<GroupCatalogEntry> page =
+                handler.handle(new ListGroupsQuery(null, null, null, null, PageRequest.of(1, 1)));
 
         assertThat(page.getContent()).containsExactly(new GroupCatalogEntry(group, "Crew", "Crew Ltd"));
         assertThat(page.getTotalElements()).isEqualTo(2);
@@ -34,15 +36,19 @@ class ListGroupsHandlerTest {
         UUID city = UUID.randomUUID();
 
         handler.handle(new ListGroupsQuery(
-                new LabelLetter("ё"), new CountryId(country), new CityId(city), PageRequest.of(0, 100)));
+                new LabelLetter("ё"),
+                new CountryId(country),
+                new CityId(city),
+                new PlatformCode("bk"),
+                PageRequest.of(0, 100)));
 
-        assertThat(reads.lastFilter()).isEqualTo(new InMemoryGroupReadRepository.Filter("Е", country, city));
+        assertThat(reads.lastFilter()).isEqualTo(new InMemoryGroupReadRepository.Filter("Е", country, city, "bk"));
     }
 
     @Test
     void asksWithoutFiltersWhenNoneIsGiven() {
-        handler.handle(new ListGroupsQuery(null, null, null, PageRequest.of(0, 100)));
+        handler.handle(new ListGroupsQuery(null, null, null, null, PageRequest.of(0, 100)));
 
-        assertThat(reads.lastFilter()).isEqualTo(new InMemoryGroupReadRepository.Filter(null, null, null));
+        assertThat(reads.lastFilter()).isEqualTo(new InMemoryGroupReadRepository.Filter(null, null, null, null));
     }
 }

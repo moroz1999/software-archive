@@ -26,6 +26,13 @@ describe(Select, () => {
         expect(onChange.mock.calls).toStrictEqual([['fi'], ['']]);
     });
 
+    it('marks an invalid choice and points to what describes it', () => {
+        render(<><Select id="country" ariaLabel="Country" value="" onChange={vi.fn()} options={OPTIONS} placeholder="Any country" invalid describedBy="country-error"/><span id="country-error">Choose one.</span></>);
+
+        expect(screen.getByRole('combobox', {name: 'Country'})).toBeInvalid();
+        expect(screen.getByRole('combobox', {name: 'Country'})).toHaveAccessibleDescription('Choose one.');
+    });
+
     it('can be disabled', () => {
         render(<Select id="city" ariaLabel="City" value="" onChange={vi.fn()} options={[]} placeholder="Any city" disabled/>);
 
