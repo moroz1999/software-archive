@@ -14,3 +14,6 @@ A piece of software is the work itself, as it is known in the archive.
 ## Credits
 
 Credits tell who made the software. A credit connects the software to an alias — the name the author was known by — with a role (code, graphics, music, etc.) and optional notes. Credits name the alias rather than the real person, so the archive shows the name under which the work was actually released.
+
+## Fresh software
+The home page shows the software most recently added to the archive, newest first.

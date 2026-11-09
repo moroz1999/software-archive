@@ -23,6 +23,8 @@ export interface GridProps {
     readonly align?: GridAlignment;
     readonly justify?: GridAlignment;
     readonly as?: 'div' | 'ul';
+    /** Accessible name, as of a list the grid holds. */
+    readonly ariaLabel?: string;
     /** External contour only; see docs/styles.md. */
     readonly className?: string;
 }
@@ -67,11 +69,13 @@ export function Grid({
     align = 'stretch',
     justify = 'stretch',
     as: Element = 'div',
+    ariaLabel,
     className,
 }: GridProps) {
     const tablet = tabletColumns ?? desktopColumns;
     return (
         <Element
+            aria-label={ariaLabel}
             className={classNames(
                 styles.grid,
                 desktopClass[desktopColumns],

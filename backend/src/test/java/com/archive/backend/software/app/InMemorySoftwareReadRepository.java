@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,6 +26,17 @@ class InMemorySoftwareReadRepository implements SoftwareReadRepository {
         int from = (int) Math.min(pageable.getOffset(), items.size());
         int to = Math.min(from + pageable.getPageSize(), items.size());
         List<SoftwareSummary> content = items.subList(from, to).stream()
+                .map(details -> new SoftwareSummary(details.id(), details.title(), details.releaseDate()))
+                .toList();
+        return new PageImpl<>(content, pageable, items.size());
+    }
+
+    /** Added last means newest. */
+    @Override
+    public Page<SoftwareSummary> findLatest(Pageable pageable) {
+        List<SoftwareDetails> newestFirst = new ArrayList<>(items);
+        Collections.reverse(newestFirst);
+        List<SoftwareSummary> content = newestFirst.stream().limit(pageable.getPageSize())
                 .map(details -> new SoftwareSummary(details.id(), details.title(), details.releaseDate()))
                 .toList();
         return new PageImpl<>(content, pageable, items.size());

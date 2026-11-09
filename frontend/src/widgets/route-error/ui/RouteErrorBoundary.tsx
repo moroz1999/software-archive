@@ -1,6 +1,6 @@
 import {isRouteErrorResponse, useRouteError} from 'react-router';
-import {SOFTWARE_LIST_PATH} from '@/entities/software';
 import {NotFoundError} from '@/shared/api';
+import {HOME_PATH} from '@/shared/config';
 import {Button} from '@/shared/ui/button';
 import {PageLayout} from '@/shared/ui/page-layout';
 import {Text} from '@/shared/ui/typography';
@@ -20,7 +20,7 @@ export function RouteErrorBoundary() {
         return (
             <PageLayout title="Not found">
                 <Text tone="muted">This page does not exist or has been deleted.</Text>
-                <Button href={SOFTWARE_LIST_PATH} color="secondary">Go to the software list</Button>
+                <Button href={HOME_PATH} color="secondary">Go to the home page</Button>
             </PageLayout>
         );
     }

@@ -29,6 +29,7 @@ Each domain is a package under `com.archive.backend`. A request passes four role
 ### Reads: a plain read model
 - Reading never loads domain entities. Entities exist to guard rules on change; a read changes nothing, so it gets a simple **read model**: records shaped for the response, with scalars.
 - The read side lives in the domain's `read` package: the read models and the read repository interface (`SoftwareReadRepository`). It is implemented in `infra` and does not depend on `domain`.
+- A read model that no single table holds (the author catalog mixes people and aliases) is read with plain SQL through `JdbcClient`: the adapter is `Jdbc{X}ReadRepository`.
 - A query (`GetSoftwareQuery` + `GetSoftwareHandler`) only asks the read repository and throws `NotFoundException` for a missing entity; the controller maps the read model to its DTO.
 - Domain entities and their repository serve only commands.
 

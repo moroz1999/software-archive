@@ -1,0 +1,26 @@
+:root {
+    /* Height, inner padding, font size and line height, as of an input. */
+    --select-height: 36px;
+    --select-padding: 0 var(--space-8);
+    --select-font-size: var(--font-size-md);
+    --select-line-height: var(--line-height-normal);
+
+    /* Border width and corner radius. */
+    --select-border-width: var(--border-width-thin);
+    --select-radius: var(--radius-lg);
+
+    /* Surface, text and border colors. */
+    --select-bg: var(--surface);
+    --select-text: var(--text-color);
+    --select-border-color: var(--border-color);
+
+    /* Keyboard focus: border color and ring. */
+    --select-focus-border-color: var(--focus-ring-color);
+    --select-focus-ring: 0 0 0 var(--border-width-thin) var(--focus-ring-color);
+
+    /* Background of a disabled select. */
+    --select-disabled-bg: var(--background-deep);
+
+    /* Duration of border and focus transitions. */
+    --select-transition: var(--animation-sm);
+}

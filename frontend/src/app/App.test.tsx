@@ -1,14 +1,16 @@
 import {StrictMode} from 'react';
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {render, screen} from '@testing-library/react';
+import {render, screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {createQueryClient} from '@/shared/api';
-import {json, noContent, pageResponse, stubFetch} from '@/shared/lib/test';
+import {json, noContent, pageResponse, stubFetch, stubFetchRoutes} from '@/shared/lib/test';
 import {App} from './App';
 import {type AppRouter, createAppRouter} from './router';
 
 const ALPHA = {id: '00000000-0000-0000-0001-000000000001', title: 'Fixture Software Alpha', releaseDate: '1985-03-02'};
 const ALPHA_DETAILS = {...ALPHA, description: null};
+const ZED = '00000000-0000-0000-0003-000000000001';
+const ZED_DETAILS = {id: ZED, name: 'Zed', realName: null, notes: null, aliases: [], locations: [], groups: []};
 
 describe(App, () => {
     const routers: AppRouter[] = [];
@@ -38,7 +40,46 @@ describe(App, () => {
         render(<StrictMode><App router={appRouter()} queryClient={queryClient}/></StrictMode>);
 
         await expect(screen.findByText('Fixture Software Alpha')).resolves.toBeInTheDocument();
-        expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/software?page=0&size=20', expect.anything());
+        expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/software/latest?size=12', expect.anything());
+    });
+
+    it('opens the sections of the archive from the main menu, which stays over every page', async () => {
+        stubFetchRoutes(new Map([
+            ['/api/software/latest?size=12', json(pageResponse([ALPHA], {size: 12}))],
+            ['/api/software?page=0&size=20', json(pageResponse([ALPHA]))],
+            ['/api/authors?page=0&size=100', json(pageResponse([{personId: ZED, name: 'Zed', aliasOf: null}], {size: 100}))],
+            ['/api/countries', json([])],
+            [`/api/authors/${ZED}`, json(ZED_DETAILS)],
+        ]));
+
+        render(<App router={appRouter()} queryClient={queryClient}/>);
+
+        await expect(screen.findByRole('heading', {level: 1, name: 'Recently added'})).resolves.toBeInTheDocument();
+
+        const menu = screen.getByRole('navigation', {name: 'Main menu'});
+
+        await userEvent.click(within(menu).getByRole('link', {name: 'Software'}));
+
+        await expect(screen.findByRole('heading', {level: 1, name: 'Software'})).resolves.toBeInTheDocument();
+
+        await userEvent.click(within(menu).getByRole('link', {name: 'Authors'}));
+
+        await expect(screen.findByRole('heading', {level: 1, name: 'Authors'})).resolves.toBeInTheDocument();
+
+        await userEvent.click(await screen.findByRole('link', {name: 'Zed'}));
+
+        await expect(screen.findByRole('heading', {level: 1, name: 'Zed'})).resolves.toBeInTheDocument();
+        expect(within(screen.getByRole('navigation', {name: 'Main menu'})).getByRole('link', {name: 'Authors'})).toHaveAttribute('aria-current', 'page');
+    });
+
+    it('shows the not found page for an author who does not exist', async () => {
+        stubFetch(json({status: 404, code: 'author.not-found'}, 404));
+        window.history.replaceState(null, '', `/authors/${ZED}`);
+
+        render(<App router={appRouter()} queryClient={queryClient}/>);
+
+        await expect(screen.findByRole('heading', {level: 1, name: 'Not found'})).resolves.toBeInTheDocument();
+        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     });
 
     it('recovers from a system error through the dialog retry', async () => {
@@ -79,7 +120,7 @@ describe(App, () => {
         expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     });
 
-    it.each(['/software/42', '/software/42/edit'])('shows the not found page for %s without asking the backend', async (path) => {
+    it.each(['/software/42', '/software/42/edit', '/authors/42'])('shows the not found page for %s without asking the backend', async (path) => {
         const fetchMock = stubFetch(json(ALPHA_DETAILS));
         window.history.replaceState(null, '', path);
 
@@ -96,6 +137,7 @@ describe(App, () => {
         render(<App router={appRouter()} queryClient={queryClient}/>);
 
         await expect(screen.findByRole('heading', {level: 1, name: 'Not found'})).resolves.toBeInTheDocument();
+        expect(screen.getByRole('navigation', {name: 'Main menu'})).toBeInTheDocument();
     });
 
     it('shows the not found page when the software is deleted meanwhile and then saved', async () => {

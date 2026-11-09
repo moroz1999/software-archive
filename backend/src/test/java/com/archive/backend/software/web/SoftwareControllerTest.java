@@ -9,6 +9,8 @@ import com.archive.backend.software.app.DeleteSoftwareCommand;
 import com.archive.backend.software.app.DeleteSoftwareHandler;
 import com.archive.backend.software.app.GetSoftwareQuery;
 import com.archive.backend.software.app.GetSoftwareHandler;
+import com.archive.backend.software.app.ListLatestSoftwareHandler;
+import com.archive.backend.software.app.ListLatestSoftwareQuery;
 import com.archive.backend.software.app.ListSoftwareQuery;
 import com.archive.backend.software.app.ListSoftwareHandler;
 import com.archive.backend.software.app.UpdateSoftwareCommand;
@@ -60,6 +62,9 @@ class SoftwareControllerTest {
     private ListSoftwareHandler listHandler;
 
     @MockitoBean
+    private ListLatestSoftwareHandler latestHandler;
+
+    @MockitoBean
     private GetSoftwareHandler getHandler;
 
     @MockitoBean
@@ -84,6 +89,18 @@ class SoftwareControllerTest {
                 .andExpect(jsonPath("$.page.totalElements").value(1))
                 .andExpect(jsonPath("$.page.number").value(0))
                 .andExpect(jsonPath("$.page.size").value(20));
+    }
+
+    @Test
+    void listsTheLatestSoftware() throws Exception {
+        when(latestHandler.handle(new ListLatestSoftwareQuery(PageRequest.of(0, 12))))
+                .thenReturn(new PageImpl<>(List.of(new SoftwareSummary(ID, "Title", null)), PageRequest.of(0, 12), 1));
+
+        mvc.perform(get("/api/software/latest").param("size", "12"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(ID.toString()))
+                .andExpect(jsonPath("$.content[0].title").value("Title"))
+                .andExpect(jsonPath("$.page.size").value(12));
     }
 
     @Test

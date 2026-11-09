@@ -20,13 +20,13 @@ Rules:
 - Slices of the same layer never import each other.
 - Every slice (`pages/software`, `features/software-list`, …) is a folder with a public API in `index.ts`. Code outside the slice imports only through that file — never by deep path.
 - Imports across layers and slices start at the root of the sources, `@/` (`@/entities/software`); relative paths stay inside a slice or a module and go up one level at most (`../model/…`).
-- `shared/ui` and `shared/lib` have no barrel: a component or a module is imported from its own folder or file (`@/shared/ui/button`, `@/shared/lib/context`), so a module pulls in only what it uses — into the bundle and into every test. A folder module keeps its `index.ts` (`shared/ui/button`, `shared/lib/test`). `shared/api` is one module with one public API, `@/shared/api`, as Steiger requires for segments other than `ui` and `lib`.
+- `shared/ui` and `shared/lib` have no barrel: a component or a module is imported from its own folder or file (`@/shared/ui/button`, `@/shared/lib/context`), so a module pulls in only what it uses — into the bundle and into every test. A folder module keeps its `index.ts` (`shared/ui/button`, `shared/lib/test`). `shared/api` is one module with one public API, `@/shared/api`, as Steiger requires for segments other than `ui` and `lib`; so is `shared/config` (`HOME_PATH`).
 - A page slice never exports its component statically: its `index.ts` exports the route loader and a `load…Page` function that imports the component dynamically (`lazy: {Component: loadSoftwarePage}` in the router). A static export would pull the page into the main bundle.
 - `package.json` declares `"sideEffects": ["**/*.css"]`: JS modules have no side effects. Public APIs re-export UI next to data calls, and a component importing its CSS module would otherwise count as a side effect and stay in the main bundle with everything it renders. Module-level code with side effects (subscriptions, global registrations) is therefore not allowed outside `app/`.
 - Inside a slice, code is split by segments: `ui/`, `model/`, `api/`, `lib/`, `config/`.
 - `app/` and `shared/` have no slices, only segments.
 - Domain knowledge never appears in `shared/`.
-- The rules are enforced by Steiger: `docker compose exec frontend npm run lint:fsd`. `fsd/insignificant-slice` is off: a young slice used by one page is not merged back into it. `fsd/repetitive-naming` is off: slices are named `{entity}-{action}` (`software-list`, `software-edit`), so they share the entity prefix.
+- The rules are enforced by Steiger: `docker compose exec frontend npm run lint:fsd`. `fsd/insignificant-slice` is off: a young slice used by one page is not merged back into it. `fsd/repetitive-naming` is off: slices are named `{entity}-{action}` (`software-list`, `software-edit`), so they share the entity prefix. Entity slices are named in the plural (`authors`; `software` is its own plural), as `fsd/inconsistent-naming` requires.
 
 ## Static checks
 

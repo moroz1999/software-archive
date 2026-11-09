@@ -65,6 +65,8 @@ Read ONLY the documents relevant to your task.
 
 ## COMMANDS
 
+`make` lists the everyday commands (`make up`, `make run-fixtures`, `make verify`, `make check`, …); they wrap the ones below.
+
 ```bash
 # Infrastructure (postgres, typesense, frontend dev server)
 docker compose up -d

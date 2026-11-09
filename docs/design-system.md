@@ -28,7 +28,8 @@ Built:
 - Layout: [Stack](design-system/stack.md), [Inline](design-system/inline.md), [Inset](design-system/inset.md), [Grid, GridItem](design-system/grid.md), [CardGrid](design-system/card-grid.md), [Panel](design-system/panel.md), [PageLayout](design-system/page-layout.md)
 - Content: [Text, Heading, Label, TextLink](design-system/typography.md), [Badge](design-system/badge.md), [Chip](design-system/chip.md), [ImagePlaceholder](design-system/image-placeholder.md)
 - Controls: [Button](design-system/button.md)
-- Forms: [Input, Textarea](design-system/input.md), [Field](design-system/field.md)
+- Navigation: [NavBar, NavBarLink](design-system/nav-bar.md), [NavChips, NavChip](design-system/nav-chips.md), [Pagination](design-system/pagination.md)
+- Forms: [Input, Textarea](design-system/input.md), [Select](design-system/select.md), [Field](design-system/field.md)
 - Loading: [Skeleton](design-system/skeletons.md), [Spinner](design-system/spinner.md), [LoadingState](design-system/loading-states.md)
 - Errors and overlays: [ErrorState](design-system/error-state.md), [Dialog, ErrorDialog](design-system/dialog.md), [ConfirmDialog](design-system/confirm-dialog.md)
 
@@ -59,14 +60,12 @@ Planned, built when a feature first needs them (each gets its document then):
 - `CloseButton` — close control
 - `Tabs` — tab navigation with content outlet
 - `Toggle` — segmented control, usable as a form control
-- `Pagination` — page navigation
-- `NavChips` — strip of link chips (A–Z, years) with one active
 - `PopoverMenuItem` — item of a popover menu
 - `IconPopover` — icon trigger with a popover of contextual actions
 
 ### Forms
 - `Form` — form layout: fields, labels, fieldsets, sections, actions
-- `Select`, `Checkbox`, `CheckboxField`, `CheckboxGroup`
+- `Checkbox`, `CheckboxField`, `CheckboxGroup`
 - `InputRange`, `MinMaxRange`
 - `TagsInput`, `TagsField`
 - `MultilangField` — value per language

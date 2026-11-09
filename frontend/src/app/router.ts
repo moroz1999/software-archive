@@ -1,26 +1,50 @@
 import type {QueryClient} from '@tanstack/react-query';
 import {createBrowserRouter, type RouteObject} from 'react-router';
+import {AUTHOR_ROUTE, AUTHORS_PATH} from '@/entities/authors';
 import {SOFTWARE_EDIT_ROUTE, SOFTWARE_LIST_PATH, SOFTWARE_NEW_PATH, SOFTWARE_ROUTE} from '@/entities/software';
+import {loadAuthorViewPage, preloadAuthorViewPage} from '@/pages/author-view';
+import {loadAuthorsPage, preloadAuthorsPage, shouldPreloadAuthorsPage} from '@/pages/authors';
+import {loadHomePage, preloadHomePage} from '@/pages/home';
 import {loadSoftwarePage, preloadSoftwarePage} from '@/pages/software';
 import {loadSoftwareEditPage, preloadSoftwareEditPage} from '@/pages/software-edit';
 import {loadSoftwareNewPage} from '@/pages/software-new';
 import {loadSoftwareViewPage, preloadSoftwareViewPage} from '@/pages/software-view';
+import {NotFoundError} from '@/shared/api';
+import {HOME_PATH} from '@/shared/config';
 import {RouteErrorBoundary} from '@/widgets/route-error';
+import {AppLayout} from './AppLayout';
 
 /** Nothing is shown while the first route preloads: the preload window is short (docs/data-loading.md). */
 const nothing = () => null;
+
+/** An address the app does not know: the not found page, under the main menu like every page. */
+const unknownAddress = () => {
+    throw new NotFoundError('page.not-found');
+};
 
 /**
  * Every page is its own chunk, loaded lazily. The loader stays in the main bundle, so the data calls of a
  * route start together with the download of its page, not after it (docs/data-loading.md).
  * Built anew for every router: React Router remembers a resolved lazy page on the route object itself.
- * The pages share one error boundary: it also answers addresses the app does not know.
+ * The pages share one error boundary inside the frame with the main menu; an unknown address reaches it too.
  */
-const routes = (queryClient: QueryClient): RouteObject[] => [{ErrorBoundary: RouteErrorBoundary, HydrateFallback: nothing, children: [
-    {path: SOFTWARE_LIST_PATH, loader: preloadSoftwarePage(queryClient), lazy: {Component: loadSoftwarePage}, HydrateFallback: nothing},
-    {path: SOFTWARE_NEW_PATH, lazy: {Component: loadSoftwareNewPage}, HydrateFallback: nothing},
-    {path: SOFTWARE_ROUTE, loader: preloadSoftwareViewPage(queryClient), lazy: {Component: loadSoftwareViewPage}, HydrateFallback: nothing},
-    {path: SOFTWARE_EDIT_ROUTE, loader: preloadSoftwareEditPage(queryClient), lazy: {Component: loadSoftwareEditPage}, HydrateFallback: nothing},
+const routes = (queryClient: QueryClient): RouteObject[] => [{Component: AppLayout, HydrateFallback: nothing, children: [
+    {ErrorBoundary: RouteErrorBoundary, HydrateFallback: nothing, children: [
+        {path: HOME_PATH, loader: preloadHomePage(queryClient), lazy: {Component: loadHomePage}, HydrateFallback: nothing},
+        {path: SOFTWARE_LIST_PATH, loader: preloadSoftwarePage(queryClient), lazy: {Component: loadSoftwarePage}, HydrateFallback: nothing},
+        {path: SOFTWARE_NEW_PATH, lazy: {Component: loadSoftwareNewPage}, HydrateFallback: nothing},
+        {path: SOFTWARE_ROUTE, loader: preloadSoftwareViewPage(queryClient), lazy: {Component: loadSoftwareViewPage}, HydrateFallback: nothing},
+        {path: SOFTWARE_EDIT_ROUTE, loader: preloadSoftwareEditPage(queryClient), lazy: {Component: loadSoftwareEditPage}, HydrateFallback: nothing},
+        {
+            path: AUTHORS_PATH,
+            loader: preloadAuthorsPage(queryClient),
+            shouldRevalidate: shouldPreloadAuthorsPage,
+            lazy: {Component: loadAuthorsPage},
+            HydrateFallback: nothing,
+        },
+        {path: AUTHOR_ROUTE, loader: preloadAuthorViewPage(queryClient), lazy: {Component: loadAuthorViewPage}, HydrateFallback: nothing},
+        {path: '*', loader: unknownAddress, Component: nothing},
+    ]},
 ]}];
 
 export type AppRouter = ReturnType<typeof createBrowserRouter>;

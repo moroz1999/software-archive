@@ -1,0 +1,36 @@
+:root {
+    /* Gap between the items. */
+    --pagination-gap: var(--space-4);
+
+    /* Item: size, padding, border, corner radius, text. */
+    --pagination-item-min-width: 36px;
+    --pagination-item-height: 36px;
+    --pagination-item-padding: 0 var(--space-12);
+    --pagination-item-border-width: var(--border-width-thin);
+    --pagination-item-border: var(--border-light);
+    --pagination-item-radius: var(--radius-lg);
+    --pagination-item-bg: var(--surface);
+    --pagination-item-text: var(--text-color);
+    --pagination-item-font-size: var(--font-size-sm);
+
+    /* Hovered item background. */
+    --pagination-item-hover-bg: var(--background-deep);
+
+    /* Current page: border, background, text and weight. */
+    --pagination-current-border: var(--primary-500);
+    --pagination-current-bg: var(--primary-500);
+    --pagination-current-text: var(--white);
+    --pagination-current-font-weight: var(--font-weight-medium);
+
+    /* Opacity of a locked item. */
+    --pagination-disabled-opacity: 0.5;
+
+    /* Ellipsis of skipped pages. */
+    --pagination-gap-text: var(--text-light-color);
+
+    /* Keyboard focus outline of an item. */
+    --pagination-focus-outline: var(--border-width-thick) solid var(--focus-ring-color);
+
+    /* Duration of the hover transition. */
+    --pagination-transition: var(--animation-xs);
+}

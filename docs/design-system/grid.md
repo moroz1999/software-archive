@@ -6,5 +6,5 @@
 - `rows`: `auto` (default) | 1–4 equal rows.
 - `gap` (default `md`), with `rowGap`/`columnGap` overriding it per axis.
 - `align`, `justify`: `start` | `center` | `end` | `stretch` (default).
-- `as`: `div` (default) | `ul`.
+- `as`: `div` (default) | `ul`; `ariaLabel` names it, as a list of what it holds.
 - `GridItem`: `desktopSpan` (default 1), `tabletSpan` and `mobileSpan` default to it. A cell may shrink below its content width, so truncated text inside it works.

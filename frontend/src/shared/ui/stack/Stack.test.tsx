@@ -3,6 +3,12 @@ import {render, screen} from '@testing-library/react';
 import {Stack} from './Stack';
 
 describe(Stack, () => {
+    it('can be a named list', () => {
+        render(<Stack as="ul" ariaLabel="Aliases"><li>Zed</li></Stack>);
+
+        expect(screen.getByRole('list', {name: 'Aliases'})).toHaveClass('stack');
+    });
+
     it('stacks its children with the medium gap by default', () => {
         const {container} = render(<Stack><span>One</span></Stack>);
 

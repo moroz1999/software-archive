@@ -11,5 +11,8 @@ public interface SoftwareReadRepository {
 
     Page<SoftwareSummary> findPage(Pageable pageable);
 
+    /** The most recently added software first; the sort of the pageable is ignored. */
+    Page<SoftwareSummary> findLatest(Pageable pageable);
+
     Optional<SoftwareDetails> findById(UUID id);
 }

@@ -1,5 +1,5 @@
 export {createSoftware, deleteSoftware, fetchSoftware, updateSoftware} from './api/software-api';
-export {fetchSoftwarePage} from './api/fetch-software-page';
+export {fetchLatestSoftware, fetchSoftwarePage} from './api/fetch-software-page';
 export {SOFTWARE_QUERY_KEY, softwareDetailsQuery} from './api/software-queries';
 export {
     SOFTWARE_EDIT_ROUTE,

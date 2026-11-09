@@ -10,6 +10,8 @@ export interface StackProps {
     readonly gap?: Gap;
     readonly align?: StackAlign;
     readonly as?: 'div' | 'section' | 'ul' | 'ol' | 'li';
+    /** Accessible name, as of a list the stack holds. */
+    readonly ariaLabel?: string;
     /** External contour only (margin, alignment); see docs/styles.md. */
     readonly className?: string;
 }
@@ -32,9 +34,9 @@ const alignClass: Readonly<Record<StackAlign, string>> = {
 };
 
 /** Vertical layout: children one under another with a gap from the scale. */
-export function Stack({children, gap = 'md', align, as: Element = 'div', className}: StackProps) {
+export function Stack({children, gap = 'md', align, as: Element = 'div', ariaLabel, className}: StackProps) {
     return (
-        <Element className={classNames(styles.stack, gapClass[gap], align !== undefined && alignClass[align], className)}>
+        <Element aria-label={ariaLabel} className={classNames(styles.stack, gapClass[gap], align !== undefined && alignClass[align], className)}>
             {children}
         </Element>
     );

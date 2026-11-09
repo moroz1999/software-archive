@@ -1,0 +1,47 @@
+.list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--nav-chips-gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--nav-chips-chip-min-width);
+    height: var(--nav-chips-chip-height);
+    padding: var(--nav-chips-chip-padding);
+    border-width: var(--nav-chips-chip-border-width);
+    border-style: solid;
+    border-color: var(--nav-chips-chip-border);
+    border-radius: var(--nav-chips-chip-radius);
+    background: var(--nav-chips-chip-bg);
+    color: var(--nav-chips-chip-text);
+    font-size: var(--nav-chips-chip-font-size);
+    font-weight: var(--nav-chips-chip-font-weight);
+    text-decoration: none;
+    transition: background var(--nav-chips-transition) ease, border-color var(--nav-chips-transition) ease;
+}
+
+a.chip:hover {
+    background: var(--nav-chips-chip-hover-bg);
+}
+
+a.chip:focus-visible {
+    outline: var(--nav-chips-focus-outline);
+}
+
+.active,
+a.active:hover {
+    border-color: var(--nav-chips-active-border);
+    background: var(--nav-chips-active-bg);
+    color: var(--nav-chips-active-text);
+}
+
+.disabled {
+    opacity: var(--nav-chips-disabled-opacity);
+    cursor: not-allowed;
+}

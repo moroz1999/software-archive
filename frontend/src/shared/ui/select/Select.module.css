@@ -1,0 +1,26 @@
+.select {
+    width: 100%;
+    height: var(--select-height);
+    padding: var(--select-padding);
+    border-width: var(--select-border-width);
+    border-style: solid;
+    border-color: var(--select-border-color);
+    border-radius: var(--select-radius);
+    outline: none;
+    background: var(--select-bg);
+    color: var(--select-text);
+    font-family: inherit;
+    font-size: var(--select-font-size);
+    line-height: var(--select-line-height);
+    transition: border-color var(--select-transition) ease-in-out, box-shadow var(--select-transition) ease-in-out;
+}
+
+.select:focus-visible {
+    border-color: var(--select-focus-border-color);
+    box-shadow: var(--select-focus-ring);
+}
+
+.select:disabled {
+    background: var(--select-disabled-bg);
+    cursor: not-allowed;
+}

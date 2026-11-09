@@ -21,9 +21,33 @@ export function json(body: unknown, status = 200): () => Response {
     });
 }
 
-/** A one-page backend page response holding the given items. */
-export function pageResponse(items: readonly unknown[]): unknown {
-    return {content: items, page: {size: 20, number: 0, totalElements: items.length, totalPages: 1}};
+/**
+ * Answers every fetch by its URL; the routes may change while the test runs. A URL without a route fails like
+ * a network failure, so a call the test did not expect shows up as a system error.
+ */
+export function stubFetchRoutes(routes: Map<string, () => Response>): ReturnType<typeof vi.fn<typeof fetch>> {
+    const fetchMock = vi.fn<typeof fetch>((input) => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+        const response = routes.get(url);
+        return response === undefined ? Promise.reject(new TypeError(`Unexpected fetch: ${url}`)) : Promise.resolve(response());
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    return fetchMock;
+}
+
+export interface PageMeta {
+    readonly size?: number;
+    readonly number?: number;
+    readonly totalElements?: number;
+    readonly totalPages?: number;
+}
+
+/** A backend page response holding the given items; one page of 20 unless told otherwise. */
+export function pageResponse(items: readonly unknown[], meta: PageMeta = {}): unknown {
+    return {
+        content: items,
+        page: {size: 20, number: 0, totalElements: items.length, totalPages: 1, ...meta},
+    };
 }
 
 /** An empty successful response, as for an update or a delete. */

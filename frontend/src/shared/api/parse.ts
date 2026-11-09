@@ -51,6 +51,14 @@ export function readNumber(object: JsonObject, key: string): number {
     return value;
 }
 
+export function readBoolean(object: JsonObject, key: string): boolean {
+    const value = object[key];
+    if (typeof value !== 'boolean') {
+        throw unexpected(`"${key}" is not a boolean`);
+    }
+    return value;
+}
+
 /** Runs a mapper over raw data; any failure means the server sent something this client does not understand. */
 export function mapResponse<T>(map: () => T): T {
     try {

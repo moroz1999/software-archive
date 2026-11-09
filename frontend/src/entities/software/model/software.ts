@@ -1,6 +1,7 @@
 import {NotFoundError} from '@/shared/api';
 import {type Brand} from '@/shared/lib/brand';
 import {titleProblem} from '@/shared/lib/title';
+import {isUuid} from '@/shared/lib/uuid';
 
 export type SoftwareId = Brand<string, 'SoftwareId'>;
 export type SoftwareTitle = Brand<string, 'SoftwareTitle'>;
@@ -18,11 +19,10 @@ export interface SoftwareDetails extends Software {
     readonly description: string | null;
 }
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export function toSoftwareId(raw: string): SoftwareId {
-    if (!UUID.test(raw)) {
+    if (!isUuid(raw)) {
         throw new TypeError(`Invalid software id: ${raw}`);
     }
     return raw as SoftwareId;
@@ -30,7 +30,7 @@ export function toSoftwareId(raw: string): SoftwareId {
 
 /** The id in a raw value from outside (a URL), or null when it cannot be one. */
 export function parseSoftwareId(raw: string | undefined): SoftwareId | null {
-    return raw !== undefined && UUID.test(raw) ? toSoftwareId(raw) : null;
+    return raw !== undefined && isUuid(raw) ? toSoftwareId(raw) : null;
 }
 
 /** The id of a page's software from its URL; one that cannot be an id means the page does not exist. */

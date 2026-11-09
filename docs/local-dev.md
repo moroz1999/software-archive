@@ -8,6 +8,8 @@ cd backend && ./mvnw spring-boot:run                                       # emp
 cd backend && ./mvnw spring-boot:run -Dspring-boot.run.profiles=fixtures   # with fixture data
 ```
 
+The same through the root `Makefile`: `make up`, `make run`, `make run-fixtures` (cleans the build first, so a renamed fixture file left in `target/` is not applied); `make wsl-up` for a backend inside WSL; `make` lists everything.
+
 A database once seeded with fixtures keeps them and still starts without the profile.
 
 | Service | URL |

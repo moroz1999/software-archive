@@ -5,6 +5,8 @@ import com.archive.backend.software.app.CreateSoftwareHandler;
 import com.archive.backend.software.app.DeleteSoftwareHandler;
 import com.archive.backend.software.app.GetSoftwareQuery;
 import com.archive.backend.software.app.GetSoftwareHandler;
+import com.archive.backend.software.app.ListLatestSoftwareHandler;
+import com.archive.backend.software.app.ListLatestSoftwareQuery;
 import com.archive.backend.software.app.ListSoftwareQuery;
 import com.archive.backend.software.app.ListSoftwareHandler;
 import com.archive.backend.software.app.UpdateSoftwareHandler;
@@ -38,6 +40,7 @@ import java.util.UUID;
 public class SoftwareController {
 
     private final ListSoftwareHandler listHandler;
+    private final ListLatestSoftwareHandler latestHandler;
     private final GetSoftwareHandler getHandler;
     private final CreateSoftwareHandler createHandler;
     private final UpdateSoftwareHandler updateHandler;
@@ -47,6 +50,12 @@ public class SoftwareController {
     @GetMapping
     public Page<SoftwareListItemDto> list(Pageable pageable) {
         return listHandler.handle(new ListSoftwareQuery(pageable)).map(webMapper::toListItem);
+    }
+
+    /** The most recently added software; only the page size is taken from the request. */
+    @GetMapping("/latest")
+    public Page<SoftwareListItemDto> latest(Pageable pageable) {
+        return latestHandler.handle(new ListLatestSoftwareQuery(pageable)).map(webMapper::toListItem);
     }
 
     @GetMapping("/{id}")

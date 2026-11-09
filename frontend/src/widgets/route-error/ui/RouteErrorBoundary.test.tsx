@@ -8,7 +8,7 @@ function renderAt(path: string, loader: () => unknown) {
     const router = createMemoryRouter([{
         ErrorBoundary: RouteErrorBoundary,
         children: [
-            {path: '/', element: <p>Software list</p>},
+            {path: '/', element: <p>Home</p>},
             {path: '/broken', loader, element: <p>Never shown</p>},
         ],
     }], {initialEntries: [path]});
@@ -33,10 +33,10 @@ describe(RouteErrorBoundary, () => {
         await expect(screen.findByRole('heading', {level: 1, name: 'Not found'})).resolves.toBeInTheDocument();
     });
 
-    it('leads from the not found page to the software list', async () => {
+    it('leads from the not found page to the home page', async () => {
         renderAt('/nowhere', nothing);
 
-        await expect(screen.findByRole('link', {name: 'Go to the software list'})).resolves.toHaveAttribute('href', '/');
+        await expect(screen.findByRole('link', {name: 'Go to the home page'})).resolves.toHaveAttribute('href', '/');
     });
 
     it('shows a page of its own for anything else that breaks', async () => {

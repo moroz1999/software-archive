@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
@@ -38,6 +39,19 @@ class JpaSoftwareReadRepositoryIT {
 
         assertThat(page.getContent()).containsExactly(new SoftwareSummary(ID, "Elite", LocalDate.of(1985, 9, 20)));
         assertThat(page.getTotalElements()).isEqualTo(1);
+    }
+
+    @Test
+    void readsTheLatestAddedSoftwareFirstWhateverSortIsAsked() {
+        UUID older = UUID.fromString("00000000-0000-0000-0000-000000000002");
+        UUID newest = UUID.fromString("00000000-0000-0000-0000-000000000003");
+        jdbc.update("INSERT INTO software (id, title, created_at) VALUES (?, 'Older', TIMESTAMPTZ '2020-01-01 00:00Z'), (?, 'Newest', TIMESTAMPTZ '2024-01-01 00:00Z'), (?, 'Middle', TIMESTAMPTZ '2022-01-01 00:00Z')",
+                older, newest, ID);
+
+        Page<SoftwareSummary> page = reads.findLatest(PageRequest.of(0, 2, Sort.by("title")));
+
+        assertThat(page.getContent()).extracting(SoftwareSummary::title).containsExactly("Newest", "Middle");
+        assertThat(page.getTotalElements()).isEqualTo(3);
     }
 
     @Test

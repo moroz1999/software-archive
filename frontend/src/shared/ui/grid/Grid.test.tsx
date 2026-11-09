@@ -11,6 +11,12 @@ describe(Grid, () => {
         );
     });
 
+    it('can be a named list', () => {
+        render(<Grid as="ul" ariaLabel="Authors"><li>One</li></Grid>);
+
+        expect(screen.getByRole('list', {name: 'Authors'})).toHaveClass('grid');
+    });
+
     it('falls back from mobile to tablet to desktop columns', () => {
         const {container} = render(<Grid desktopColumns={4} tabletColumns={2}><span>One</span></Grid>);
 

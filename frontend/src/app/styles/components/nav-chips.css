@@ -1,0 +1,33 @@
+:root {
+    /* Gap between the chips. */
+    --nav-chips-gap: var(--space-4);
+
+    /* Chip: size, padding, border, corner radius, text. */
+    --nav-chips-chip-min-width: 32px;
+    --nav-chips-chip-height: 28px;
+    --nav-chips-chip-padding: 0 var(--space-8);
+    --nav-chips-chip-border-width: var(--border-width-thin);
+    --nav-chips-chip-border: var(--border-light);
+    --nav-chips-chip-radius: var(--radius-md);
+    --nav-chips-chip-bg: var(--surface);
+    --nav-chips-chip-text: var(--text-color);
+    --nav-chips-chip-font-size: var(--font-size-sm);
+    --nav-chips-chip-font-weight: var(--font-weight-medium);
+
+    /* Hovered chip background. */
+    --nav-chips-chip-hover-bg: var(--background-deep);
+
+    /* Active chip: border, background and text. */
+    --nav-chips-active-border: var(--primary-500);
+    --nav-chips-active-bg: var(--primary-500);
+    --nav-chips-active-text: var(--white);
+
+    /* Opacity of a locked chip. */
+    --nav-chips-disabled-opacity: 0.5;
+
+    /* Keyboard focus outline of a chip. */
+    --nav-chips-focus-outline: var(--border-width-thick) solid var(--focus-ring-color);
+
+    /* Duration of the hover transition. */
+    --nav-chips-transition: var(--animation-xs);
+}

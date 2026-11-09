@@ -30,7 +30,7 @@ JUnit 5 with `spring-boot-starter-test`.
 
 Vitest + React Testing Library. Tests sit next to the code: `{Component}.test.tsx`.
 Tests run inside the `frontend` container, which owns `node_modules`: `docker compose exec frontend npm test`.
-- Network is stubbed with the helpers from `shared/lib/test` (`stubFetch`, `json`, `pageResponse`); test data is declared in the test itself — domain data never goes to `shared`.
+- Network is stubbed with the helpers from `shared/lib/test` (`stubFetch` answers in order, `stubFetchRoutes` by URL for blocks loading in parallel; `json`, `pageResponse`); test data is declared in the test itself — domain data never goes to `shared`.
 - Components that load or change data are rendered with `renderWithQueries(ui)` (`shared/lib/test`): every test gets a fresh query client, so no cache leaks between tests. Page tests create the client themselves and pass it to the route loader and to `renderWithQueries`.
 - System error paths are tested by subscribing with `subscribeSystemErrors` or by rendering `App`, which mounts the error dialog.
 Query elements the way a user finds them (role, label, text), not by CSS class or test id when an accessible query exists.
@@ -44,8 +44,7 @@ Query elements the way a user finds them (role, label, text), not by CSS class o
 Fixtures are the shared data set for e2e tests and for working with a filled local database.
 
 - **Every feature adds fixtures for the data it introduces**, in the same task, so its e2e scenarios have something to work with.
-- One file per domain: `backend/src/main/resources/db/fixtures/R__{domain}.sql` (Flyway repeatable migrations).
+- One file per domain: `backend/src/main/resources/db/fixtures/R__{n}_{domain}.sql` (Flyway repeatable migrations). Flyway applies them in the order of their names, so `{n}` puts a domain after the ones its rows refer to (authors' locations refer to geo).
 - Fixtures are applied only with the `fixtures` profile, on top of the schema migrations.
-- Rows have fixed UUIDs so tests can reference them, and are written as `INSERT … ON CONFLICT (id) DO UPDATE`: editing a fixture file re-applies it without duplicates.
-- Titles start with `Fixture` so fixture data is never mistaken for real data.
+- Rows have fixed UUIDs so tests can reference them; large sets (geo, authors) derive them by a rule written at the top of the file, and are written as `INSERT … ON CONFLICT (id) DO UPDATE`: editing a fixture file re-applies it without duplicates.
 - `FixturesIT` checks that the data set loads and is served by the API; extend it when a domain gets fixtures.

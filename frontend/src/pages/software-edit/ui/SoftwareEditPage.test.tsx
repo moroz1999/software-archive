@@ -12,7 +12,7 @@ const ELITE = {id: ID, title: 'Elite', description: null, releaseDate: null};
 function renderRoute(id: string) {
     const queryClient = createQueryClient();
     const router = createMemoryRouter([
-        {path: '/', element: <p>Software list</p>},
+        {path: '/software', element: <p>Software list</p>},
         {path: '/software/:id', element: <p>Software view</p>},
         {path: '/software/:id/edit', loader: preloadSoftwareEditPage(queryClient), lazy: {Component: loadSoftwareEditPage}, HydrateFallback: () => null},
     ], {initialEntries: [`/software/${id}/edit`]});

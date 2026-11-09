@@ -1,0 +1,14 @@
+.titleBone {
+    width: var(--author-view-title-bone-width);
+    height: var(--author-view-title-bone-height);
+}
+
+.labelBone {
+    width: var(--author-view-label-bone-width);
+    height: var(--author-view-label-bone-height);
+}
+
+.lineBone {
+    width: var(--author-view-line-bone-width);
+    height: var(--author-view-line-bone-height);
+}

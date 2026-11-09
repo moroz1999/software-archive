@@ -1,0 +1,35 @@
+:root {
+    /* Surface of the bar and its bottom border. */
+    --nav-bar-bg: var(--surface);
+    --nav-bar-border-width: var(--border-width-thin);
+    --nav-bar-border-color: var(--border-light);
+
+    /* Width of the links row, the same as the page content, and its padding. */
+    --nav-bar-max-width: 1200px;
+    --nav-bar-padding: var(--space-8) var(--space-16);
+
+    /* Gap between the links. */
+    --nav-bar-gap: var(--space-4);
+
+    /* Link: height, padding, corner radius, text. */
+    --nav-bar-link-height: 36px;
+    --nav-bar-link-padding: 0 var(--space-12);
+    --nav-bar-link-radius: var(--radius-lg);
+    --nav-bar-link-font-size: var(--font-size-md);
+    --nav-bar-link-font-weight: var(--font-weight-medium);
+    --nav-bar-link-text: var(--text-light-color);
+
+    /* Hovered link: background and text. */
+    --nav-bar-link-hover-bg: var(--background-deep);
+    --nav-bar-link-hover-text: var(--text-color);
+
+    /* Link of the current section: background and text. */
+    --nav-bar-link-active-bg: var(--primary-50);
+    --nav-bar-link-active-text: var(--primary-700);
+
+    /* Keyboard focus outline of a link. */
+    --nav-bar-focus-outline: var(--border-width-thick) solid var(--focus-ring-color);
+
+    /* Duration of the hover transition. */
+    --nav-bar-transition: var(--animation-xs);
+}
