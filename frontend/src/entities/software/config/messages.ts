@@ -1,4 +1,4 @@
-import type {TitleProblem} from '../../../shared/lib';
+import type {TitleProblem} from '@/shared/lib/title';
 
 /** Texts of format errors of the software form. */
 export const TITLE_PROBLEM_MESSAGES: Readonly<Record<TitleProblem, string>> = {

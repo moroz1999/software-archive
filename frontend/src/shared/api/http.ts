@@ -1,7 +1,7 @@
-import {BusinessError, type BusinessStatus, type FieldError, SystemError} from './errors';
+import {BusinessError, type BusinessStatus, type FieldError, NotFoundError, SystemError} from './errors';
 import {isObject, type JsonObject} from './parse';
 
-const BUSINESS_STATUSES: readonly number[] = [404, 409, 422] satisfies BusinessStatus[];
+const BUSINESS_STATUSES: readonly number[] = [409, 422] satisfies BusinessStatus[];
 
 function isBusinessStatus(status: number): status is BusinessStatus {
     return BUSINESS_STATUSES.includes(status);
@@ -30,10 +30,12 @@ async function readBody(response: Response): Promise<unknown> {
 
 async function toError(response: Response): Promise<Error> {
     const {status} = response;
-    if (isBusinessStatus(status)) {
+    if (status === 404 || isBusinessStatus(status)) {
         const problem = await readBody(response);
         if (isObject(problem) && typeof problem['code'] === 'string') {
-            return new BusinessError(status, problem['code'], readFieldErrors(problem));
+            return status === 404
+                ? new NotFoundError(problem['code'])
+                : new BusinessError(status, problem['code'], readFieldErrors(problem));
         }
     }
     return new SystemError('server', `HTTP ${String(status)}`);
@@ -68,7 +70,7 @@ function withJson(method: 'POST' | 'PUT', body: unknown): RequestInit {
 }
 
 /**
- * GETs JSON from the backend. Like every call here, fails with BusinessError or SystemError only
+ * GETs JSON from the backend. Like every call here, fails with NotFoundError, BusinessError or SystemError only
  * (docs/error-handling.md); an aborted request rejects with the original AbortError.
  */
 export async function getJson(path: string, signal?: AbortSignal): Promise<unknown> {

@@ -1,2 +1,4 @@
 export {preloadSoftwareEditPage} from './model/preload';
-export {SoftwareEditPage} from './ui/SoftwareEditPage';
+
+/** The page component, loaded on first use: never export it statically, or it lands in the main bundle. */
+export const loadSoftwareEditPage = () => import('./ui/SoftwareEditPage').then((module) => module.SoftwareEditPage);

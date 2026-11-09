@@ -1,6 +1,6 @@
 import {type ReactNode, useEffect, useRef, useState} from 'react';
 import {createPortal} from 'react-dom';
-import {classNames} from '../../lib';
+import {classNames} from '@/shared/lib/class-names';
 import {Spinner} from '../spinner';
 import styles from './LoadingState.module.css';
 

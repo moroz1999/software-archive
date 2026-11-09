@@ -1,4 +1,4 @@
-import {classNames} from '../../lib';
+import {classNames} from '@/shared/lib/class-names';
 import styles from './Textarea.module.css';
 
 export interface TextareaProps {

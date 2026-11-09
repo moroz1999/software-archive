@@ -1,15 +1,17 @@
 import {useNavigate} from 'react-router';
-import {SOFTWARE_LIST_PATH} from '../../../entities/software';
-import {CreateSoftwareForm} from '../../../features/software-create';
-import {PageLayout} from '../../../shared/ui';
+import {SOFTWARE_LIST_PATH, SoftwareForm} from '@/entities/software';
+import {CreateSoftwareProvider} from '@/features/software-create';
+import {PageLayout} from '@/shared/ui/page-layout';
 
 export function SoftwareNewPage() {
     const navigate = useNavigate();
     return (
         <PageLayout title="Add software">
-            <CreateSoftwareForm onCreated={() => {
+            <CreateSoftwareProvider onCreated={() => {
                 void navigate(SOFTWARE_LIST_PATH);
-            }}/>
+            }}>
+                <SoftwareForm submitLabel="Add software"/>
+            </CreateSoftwareProvider>
         </PageLayout>
     );
 }

@@ -1,5 +1,5 @@
 import {useEffect, useRef} from 'react';
-import {classNames} from '../../lib';
+import {classNames} from '@/shared/lib/class-names';
 import {trackVisibility} from './visibility';
 import styles from './Skeleton.module.css';
 

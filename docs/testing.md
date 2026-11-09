@@ -31,6 +31,7 @@ JUnit 5 with `spring-boot-starter-test`.
 Vitest + React Testing Library. Tests sit next to the code: `{Component}.test.tsx`.
 Tests run inside the `frontend` container, which owns `node_modules`: `docker compose exec frontend npm test`.
 - Network is stubbed with the helpers from `shared/lib/test` (`stubFetch`, `json`, `pageResponse`); test data is declared in the test itself — domain data never goes to `shared`.
+- Components that load or change data are rendered with `renderWithQueries(ui)` (`shared/lib/test`): every test gets a fresh query client, so no cache leaks between tests. Page tests create the client themselves and pass it to the route loader and to `renderWithQueries`.
 - System error paths are tested by subscribing with `subscribeSystemErrors` or by rendering `App`, which mounts the error dialog.
 Query elements the way a user finds them (role, label, text), not by CSS class or test id when an accessible query exists.
 - Exception: design system atoms (`shared/ui`) promise markup — the element, its classes, its attributes — so their tests may read the rendered DOM node and its classes (CSS module class names are not scoped in tests).

@@ -1,8 +1,9 @@
 import {useState} from 'react';
-import {deleteSoftware, type Software} from '../../../entities/software';
-import {businessErrorMessage, useAction} from '../../../shared/api';
-import {Button, ConfirmDialog} from '../../../shared/ui';
-import {deleteSoftwareMessages} from '../config/messages';
+import type {Software} from '@/entities/software';
+import {Button} from '@/shared/ui/button';
+import {ConfirmDialog} from '@/shared/ui/confirm-dialog';
+import {useDeleteSoftware} from '../model/delete-software-context';
+import {DeleteSoftwareProvider} from '../model/DeleteSoftwareProvider';
 
 export interface DeleteSoftwareButtonProps {
     readonly software: Software;
@@ -11,11 +12,17 @@ export interface DeleteSoftwareButtonProps {
 
 /** Deletes software from the archive after asking. */
 export function DeleteSoftwareButton({software, onDeleted}: DeleteSoftwareButtonProps) {
+    return (
+        <DeleteSoftwareProvider software={software} onDeleted={onDeleted}>
+            <DeleteWithConfirmation/>
+        </DeleteSoftwareProvider>
+    );
+}
+
+function DeleteWithConfirmation() {
+    const {software, remove, deleting, deleted, error} = useDeleteSoftware();
+    // Whether the confirmation is open is the dialog's own UI state, not business state.
     const [asking, setAsking] = useState(false);
-    const {state, run} = useAction(() => deleteSoftware(software.id), () => {
-        setAsking(false);
-        onDeleted();
-    });
 
     return (
         <>
@@ -25,15 +32,15 @@ export function DeleteSoftwareButton({software, onDeleted}: DeleteSoftwareButton
                 Delete
             </Button>
             <ConfirmDialog
-                open={asking}
+                open={asking && !deleted}
                 title="Delete software"
                 confirmLabel="Delete for good"
-                onConfirm={run}
+                onConfirm={remove}
                 onCancel={() => {
                     setAsking(false);
                 }}
-                busy={state.status === 'running'}
-                error={state.status === 'business-error' ? businessErrorMessage(state.error, deleteSoftwareMessages) : undefined}
+                busy={deleting}
+                error={error}
             >
                 Delete “{software.title}” from the archive?
             </ConfirmDialog>

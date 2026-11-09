@@ -1,5 +1,9 @@
 import {useId} from 'react';
-import {Heading, ImagePlaceholder, Inset, Panel, Stack, Text, TextLink} from '../../../shared/ui';
+import {ImagePlaceholder} from '@/shared/ui/image-placeholder';
+import {Inset} from '@/shared/ui/inset';
+import {Panel} from '@/shared/ui/panel';
+import {Stack} from '@/shared/ui/stack';
+import {Heading, Text, TextLink} from '@/shared/ui/typography';
 import {releaseYear} from '../lib/release-year';
 import type {Software} from '../model/software';
 

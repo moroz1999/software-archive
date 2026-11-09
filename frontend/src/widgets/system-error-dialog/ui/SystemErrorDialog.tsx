@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
-import {subscribeSystemErrors, type SystemErrorKind, type SystemErrorReport} from '../../../shared/api';
-import {ErrorDialog} from '../../../shared/ui';
+import {subscribeSystemErrors, type SystemErrorKind, type SystemErrorReport} from '@/shared/api';
+import {ErrorDialog} from '@/shared/ui/dialog';
 
 const MESSAGES: Readonly<Record<SystemErrorKind, string>> = {
     network: 'The server could not be reached. Check your connection and try again.',

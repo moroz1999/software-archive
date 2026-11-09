@@ -1,11 +1,11 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {render, screen} from '@testing-library/react';
+import {screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {createMemoryRouter, RouterProvider} from 'react-router';
-import {json, stubFetch} from '../../../shared/lib/test';
-import {SoftwareNewPage} from '../index';
+import {json, renderWithQueries, stubFetch} from '@/shared/lib/test';
+import {loadSoftwareNewPage} from '../index';
 
-describe(SoftwareNewPage, () => {
+describe('SoftwareNewPage', () => {
     afterEach(() => {
         vi.unstubAllGlobals();
     });
@@ -14,11 +14,11 @@ describe(SoftwareNewPage, () => {
         stubFetch(json({id: '00000000-0000-0000-0001-000000000001'}, 201));
         const router = createMemoryRouter([
             {path: '/', element: <p>Software list</p>},
-            {path: '/software/new', Component: SoftwareNewPage},
+            {path: '/software/new', lazy: {Component: loadSoftwareNewPage}, HydrateFallback: () => null},
         ], {initialEntries: ['/software/new']});
-        render(<RouterProvider router={router}/>);
+        renderWithQueries(<RouterProvider router={router}/>);
 
-        expect(screen.getByRole('heading', {level: 1, name: 'Add software'})).toBeInTheDocument();
+        await expect(screen.findByRole('heading', {level: 1, name: 'Add software'})).resolves.toBeInTheDocument();
 
         await userEvent.type(screen.getByRole('textbox', {name: 'Title'}), 'Elite');
         await userEvent.click(screen.getByRole('button', {name: 'Add software'}));

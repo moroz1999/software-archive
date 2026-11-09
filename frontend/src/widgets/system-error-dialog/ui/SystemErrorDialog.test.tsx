@@ -1,7 +1,7 @@
 import {describe, expect, it, vi} from 'vitest';
 import {act, render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {reportSystemError, SystemError} from '../../../shared/api';
+import {reportSystemError, SystemError} from '@/shared/api';
 import {SystemErrorDialog} from './SystemErrorDialog';
 
 describe(SystemErrorDialog, () => {

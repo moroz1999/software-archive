@@ -1,5 +1,5 @@
 import type {ReactNode} from 'react';
-import {classNames} from '../../lib';
+import {classNames} from '@/shared/lib/class-names';
 import type {Gap} from '../stack';
 import styles from './Grid.module.css';
 

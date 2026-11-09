@@ -1,5 +1,5 @@
 import {type ReactNode, useId} from 'react';
-import {classNames} from '../../lib';
+import {classNames} from '@/shared/lib/class-names';
 import {Heading} from '../typography';
 import styles from './Panel.module.css';
 

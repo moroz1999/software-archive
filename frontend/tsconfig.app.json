@@ -31,7 +31,10 @@
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "erasableSyntaxOnly": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    /* `@/` is the root of the sources: imports across layers and slices start there (docs/frontend.md) */
+    "paths": {"@/*": ["./src/*"]}
   },
   "include": ["src"]
 }

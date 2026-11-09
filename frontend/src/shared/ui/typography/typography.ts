@@ -1,4 +1,4 @@
-import {classNames} from '../../lib';
+import {classNames} from '@/shared/lib/class-names';
 import styles from './Typography.module.css';
 
 export type TypographyVariant = 'display' | 'headline' | 'title' | 'body' | 'bodySm' | 'mono' | 'caption' | 'label';

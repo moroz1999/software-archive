@@ -1,10 +1,12 @@
+import type {QueryClient} from '@tanstack/react-query';
 import type {LoaderFunctionArgs} from 'react-router';
-import {parseSoftwareId} from '../../../entities/software';
-import {preloadView} from '../../../shared/api';
-import {softwareDetailsRequest} from '../../../widgets/software-editor';
+import {requireSoftwareId, softwareDetailsQuery} from '@/entities/software';
+import {preloadView} from '@/shared/api';
 
-/** Route loader: the software's details are the block at the top of the page; a malformed id loads nothing. */
-export function preloadSoftwareEditPage({params}: LoaderFunctionArgs): Promise<null> {
-    const id = parseSoftwareId(params['id']);
-    return preloadView(id === null ? [] : [softwareDetailsRequest.for(id)]);
+/** Route loader: the software's details are the block at the top of the page; a malformed id is a page that does not exist. */
+export function preloadSoftwareEditPage(queryClient: QueryClient): (args: LoaderFunctionArgs) => Promise<null> {
+    return ({params}) => {
+        const id = requireSoftwareId(params['id']);
+        return preloadView([queryClient.query(softwareDetailsQuery(id))]);
+    };
 }

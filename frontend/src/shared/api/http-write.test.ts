@@ -62,10 +62,10 @@ describe(putJson, () => {
         });
     });
 
-    it('turns a 404 with a code into a business error', async () => {
+    it('turns a 404 with a code into a not found error', async () => {
         respond(404, {status: 404, code: 'software.not-found'});
 
-        await expect(putJson('/api/x/1', {})).rejects.toMatchObject({status: 404, code: 'software.not-found'});
+        await expect(putJson('/api/x/1', {})).rejects.toMatchObject({name: 'NotFoundError', code: 'software.not-found'});
     });
 });
 

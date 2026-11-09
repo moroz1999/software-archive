@@ -1,6 +1,6 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {BusinessError, SystemError} from '../../../shared/api';
-import {json, noContent, stubFetch} from '../../../shared/lib/test';
+import {SystemError} from '@/shared/api';
+import {json, noContent, stubFetch} from '@/shared/lib/test';
 import {toReleaseDate, toSoftwareId, toSoftwareTitle} from '../model/software';
 import {createSoftware, deleteSoftware, fetchSoftware, updateSoftware} from './software-api';
 
@@ -21,10 +21,10 @@ describe(fetchSoftware, () => {
         expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/software/${ID}`);
     });
 
-    it('passes a not found error on as a business error', async () => {
+    it('passes a not found error on', async () => {
         stubFetch(json({status: 404, code: 'software.not-found'}, 404));
 
-        await expect(fetchSoftware(ID, new AbortController().signal)).rejects.toBeInstanceOf(BusinessError);
+        await expect(fetchSoftware(ID, new AbortController().signal)).rejects.toMatchObject({name: 'NotFoundError'});
     });
 
     it('fails with a system error on a malformed answer', async () => {

@@ -1,6 +1,6 @@
 import type {ReactNode} from 'react';
 import {Link} from 'react-router';
-import {isAppHref} from '../../lib';
+import {isAppHref} from '@/shared/lib/href';
 import {type TypographyTone, typographyToneClassName} from './typography';
 
 export interface TextLinkProps {

@@ -1,15 +1,17 @@
 # Error Handling
 
-Every feature handles all its error paths, not only the happy one, and the user always sees a proper message. An error the user can act on appears next to what caused it; an error the user cannot fix appears in a modal.
+Every feature handles all its error paths, not only the happy one, and the user always sees a proper message. An error the user can act on appears next to what caused it; a missing entity replaces the page; an error the user cannot fix appears in a modal.
 
-## Two kinds of errors
+## Three kinds of errors
 
-| | Business error | System error |
-|---|---|---|
-| Meaning | The request is correct, but the domain refuses its substance: not found, conflict, business rule violated | Something is broken: server failure, network down, an incorrect request, unexpected response |
-| HTTP | `404`, `409`, `422` | `400`, `5xx`, network failure, any response that is not a valid error body |
-| Shown | Inline, next to the component or form that triggered the action | Modal dialog |
-| User can | Fix the input or choose another action | Retry or come back later |
+| | Business error | Not found | System error |
+|---|---|---|---|
+| Meaning | The request is correct, but the domain refuses its substance: conflict, business rule violated | What the page is about does not exist: deleted, never existed, a malformed id, an unknown address | Something is broken: server failure, network down, an incorrect request, unexpected response |
+| HTTP | `409`, `422` | `404` with a problem `code` | `400`, `5xx`, network failure, any response that is not a valid error body |
+| Shown | Inline, next to the component or form that triggered the action | The not found page, in place of the page | Modal dialog |
+| User can | Fix the input or choose another action | Go elsewhere | Retry or come back later |
+
+Not found is not a business error: there is nothing to fix or choose, and every page meets it the same way, so it is handled in one place instead of in every block.
 
 ## Backend
 
@@ -52,13 +54,13 @@ Every error is a `ProblemDetail` (RFC 9457, `application/problem+json`) with ext
 
 ## Frontend
 
-- The API client in `shared/api` (`getJson`) fails only with `BusinessError` (`status`, `code`, `fieldErrors`) — for `404`/`409`/`422` whose body has a `code` — or `SystemError` with a `kind`: `network`, `server` (any other status, including a `404` without `code`), `response` (a body the client cannot read or map).
-- Slices load data with `useRequest` and run user actions (save, delete) with `useAction(action, onSuccess)`: both return business errors in their state and report system errors with a retry through `reportSystemError`; the slice never sees them. The retry of an action repeats it with the same input.
+- The API client in `shared/api` (`getJson`) fails only with `NotFoundError` (`code`) — for a `404` whose body has a `code` —, `BusinessError` (`status`, `code`, `fieldErrors`) — for `409`/`422` whose body has a `code` — or `SystemError` with a `kind`: `network`, `server` (any other status, including a `404` without `code`), `response` (a body the client cannot read or map).
+- **Not found** is never handled by slices. The query client throws a `NotFoundError` of any query or mutation into rendering (`throwOnError`), and the route error boundary (`widgets/route-error`, around every route) shows the not found page. The same page answers an address the app does not know and an id in the URL that cannot be one: the route loader and the page parse it with `require…Id`, which throws `NotFoundError`, so a malformed id is never sent to the backend. Anything else that breaks rendering shows the boundary's "Something went wrong" page.
+- Slices load data with TanStack Query queries and run user actions (save, delete) as mutations, in their providers. The query client (`createQueryClient()`) reports every system error of a query or a mutation through `reportSystemError` with a retry — the retry of a query loads it again, the retry of a mutation repeats it with the same input — so slices never handle them. Business errors are shown only by writes: a mutation keeps its business error for the form or dialog that ran it (`businessErrorOf(error)`), while a business error of a read goes to the dialog like a breakage — a read whose business error must be shown inline (a lock, say) gets its own handling when it appears. Nothing is retried automatically.
 - Form format rules (required, length, pattern) are validated on the frontend before sending and shown under the fields; they are the same rules the backend enforces.
-- **Business errors** are handled by the slice that made the request and shown where the action happened:
-  - field errors under their fields, form-level errors at the top of the form;
-  - errors of a component's own action (a button, a list load) inside that component;
-  - "not found" for a page's main entity as the page's not-found state.
+- **Business errors** of a write are shown where the action happened:
+  - in a form: an error naming a field of the form under that field, until the field is edited; anything else at the top of the form. The form's provider takes the business error as it is and the slice's texts, and splits it;
+  - in a dialog (a delete confirmation): inside the dialog.
 - **System errors** are not handled by slices. They go to the `system-error-dialog` widget, mounted once by `App`, which explains the failure by its kind and offers retry where the action can be repeated.
 - User-facing texts are chosen on the frontend by `code`: `businessErrorMessage(error, messages)` takes the slice's texts (its `config/messages.ts`) and falls back to a generic text for the status.
 

@@ -1,6 +1,6 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {getJson} from './http';
-import {BusinessError, SystemError} from './errors';
+import {BusinessError, NotFoundError, SystemError} from './errors';
 
 function respond(status: number, body: unknown, contentType = 'application/problem+json') {
     vi.stubGlobal('fetch', vi.fn<typeof fetch>().mockResolvedValue(
@@ -19,7 +19,16 @@ describe(getJson, () => {
         await expect(getJson('/api/x')).resolves.toStrictEqual({value: 1});
     });
 
-    it.each([404, 409, 422])('turns %i with a problem code into a business error', async (status) => {
+    it('turns a 404 with a problem code into a not found error', async () => {
+        respond(404, {status: 404, code: 'software.not-found'});
+
+        const request = getJson('/api/x');
+
+        await expect(request).rejects.toBeInstanceOf(NotFoundError);
+        await expect(request).rejects.toMatchObject({code: 'software.not-found'});
+    });
+
+    it.each([409, 422])('turns %i with a problem code into a business error', async (status) => {
         respond(status, {status, code: 'software.title-taken', errors: [{field: 'title', code: 'software.title-taken'}]});
 
         const request = getJson('/api/x');

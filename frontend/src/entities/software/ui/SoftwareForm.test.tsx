@@ -1,12 +1,21 @@
+import type {ReactNode} from 'react';
 import {describe, expect, it, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import {BusinessError} from '@/shared/api';
 import type {SoftwareDraft} from '../model/software-form';
+import {SoftwareFormProvider, type SoftwareFormProviderProps} from '../model/SoftwareFormProvider';
 import {SoftwareForm} from './SoftwareForm';
 
-function renderForm(props: Partial<Parameters<typeof SoftwareForm>[0]> = {}) {
+type FormProps = Omit<SoftwareFormProviderProps, 'onSubmit' | 'children'> & {readonly actions?: ReactNode};
+
+function renderForm({actions, ...props}: FormProps = {}) {
     const onSubmit = vi.fn<(draft: SoftwareDraft) => void>();
-    render(<SoftwareForm submitLabel="Save" onSubmit={onSubmit} {...props}/>);
+    render(
+        <SoftwareFormProvider onSubmit={onSubmit} {...props}>
+            <SoftwareForm submitLabel="Save" actions={actions}/>
+        </SoftwareFormProvider>,
+    );
     return {onSubmit};
 }
 
@@ -54,10 +63,34 @@ describe(SoftwareForm, () => {
         expect(screen.getByRole('button', {name: 'Save'})).toBeDisabled();
     });
 
-    it('shows an error of the whole form at its top', () => {
-        renderForm({error: 'This software has been deleted.'});
+    it('shows a business error of the whole form at its top', () => {
+        renderForm({error: new BusinessError(409, 'software.changed', [])});
 
-        expect(screen.getByRole('alert')).toHaveTextContent('This software has been deleted.');
+        expect(screen.getByRole('alert')).toHaveTextContent('This item was changed in the meantime. Reload and try again.');
+    });
+
+    it('shows a business error of a field under that field, in the slice\'s words', () => {
+        renderForm({
+            error: new BusinessError(422, 'software.title-taken', [{field: 'title', code: 'software.title-taken'}]),
+            messages: {'software.title-taken': 'This title is already taken.'},
+        });
+
+        expect(screen.getByRole('textbox', {name: 'Title'})).toHaveAccessibleDescription('This title is already taken.');
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+
+    it('clears a business error of a field once the field is edited', async () => {
+        renderForm({error: new BusinessError(422, 'software.title-taken', [{field: 'title', code: 'software.title-taken'}])});
+
+        await userEvent.type(screen.getByRole('textbox', {name: 'Title'}), 'x');
+
+        expect(screen.getByRole('textbox', {name: 'Title'})).not.toHaveAccessibleDescription();
+    });
+
+    it('shows a business error of a field the form does not have at its top', () => {
+        renderForm({error: new BusinessError(422, 'software.year-locked', [{field: 'year', code: 'software.year-locked'}])});
+
+        expect(screen.getByRole('alert')).toHaveTextContent('The request was refused.');
     });
 
     it('shows extra actions next to the submit button', () => {

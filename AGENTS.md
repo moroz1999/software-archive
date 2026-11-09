@@ -58,7 +58,7 @@ Read ONLY the documents relevant to your task.
 - **[docs/backend.md](docs/backend.md)** - DDD: controllers, use cases, domain services, repositories; mapping, persistence
 
 ### Frontend (React)
-- **[docs/frontend.md](docs/frontend.md)** - Strict Feature-Sliced Design, static checks, value objects, errors
+- **[docs/frontend.md](docs/frontend.md)** - Strict Feature-Sliced Design, state in providers and context, static checks, value objects, errors
 - **[docs/styles.md](docs/styles.md)** - Styling rules: component variables → semantic theme → base tokens; typography, layout, CSS Modules, the Stylelint plugin
 - **[docs/data-loading.md](docs/data-loading.md)** - Route preload with a 300 ms window, lazy loading by viewport, skeletons on first load, spinners for pagination/filters
 - **[docs/design-system.md](docs/design-system.md)** - Own design system: principles and component set in `shared/ui`

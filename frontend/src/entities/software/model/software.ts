@@ -1,4 +1,6 @@
-import {type Brand, titleProblem} from '../../../shared/lib';
+import {NotFoundError} from '@/shared/api';
+import {type Brand} from '@/shared/lib/brand';
+import {titleProblem} from '@/shared/lib/title';
 
 export type SoftwareId = Brand<string, 'SoftwareId'>;
 export type SoftwareTitle = Brand<string, 'SoftwareTitle'>;
@@ -29,6 +31,15 @@ export function toSoftwareId(raw: string): SoftwareId {
 /** The id in a raw value from outside (a URL), or null when it cannot be one. */
 export function parseSoftwareId(raw: string | undefined): SoftwareId | null {
     return raw !== undefined && UUID.test(raw) ? toSoftwareId(raw) : null;
+}
+
+/** The id of a page's software from its URL; one that cannot be an id means the page does not exist. */
+export function requireSoftwareId(raw: string | undefined): SoftwareId {
+    const id = parseSoftwareId(raw);
+    if (id === null) {
+        throw new NotFoundError('software.not-found');
+    }
+    return id;
 }
 
 export function toSoftwareTitle(raw: string): SoftwareTitle {

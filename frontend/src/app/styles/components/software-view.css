@@ -1,0 +1,13 @@
+:root {
+    /* Title bone: a short title in the display line of a page heading. */
+    --software-view-title-bone-width: 320px;
+    --software-view-title-bone-height: var(--space-40);
+
+    /* Label bone: a short word of a label line. */
+    --software-view-label-bone-width: var(--space-64);
+    --software-view-label-bone-height: var(--space-16);
+
+    /* Text bones: a line of body text; the release day takes a short one. */
+    --software-view-line-bone-width: 160px;
+    --software-view-text-bone-height: var(--space-20);
+}

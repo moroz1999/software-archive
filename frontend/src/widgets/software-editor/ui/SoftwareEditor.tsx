@@ -1,50 +1,39 @@
-import {parseSoftwareId, type SoftwareId, SoftwareFormSkeleton} from '../../../entities/software';
-import {DeleteSoftwareButton} from '../../../features/software-delete';
-import {EditSoftwareForm} from '../../../features/software-edit';
-import {businessErrorMessage, useRequest} from '../../../shared/api';
-import {ErrorState, Text} from '../../../shared/ui';
-import {softwareDetailsRequest} from '../api/software-details-request';
-import {softwareEditorMessages} from '../config/messages';
+import {SoftwareDetailsProvider, SoftwareForm, type SoftwareId, SoftwareFormSkeleton, useSoftwareDetails} from '@/entities/software';
+import {DeleteSoftwareButton} from '@/features/software-delete';
+import {EditSoftwareProvider} from '@/features/software-edit';
 
 export interface SoftwareEditorProps {
-    /** The id from the URL, not yet checked. */
-    readonly id: string | undefined;
-    /** Called once the software is saved or deleted. */
-    readonly onDone: () => void;
+    readonly id: SoftwareId;
+    /** Called with the software once it is saved. */
+    readonly onSaved: (id: SoftwareId) => void;
+    /** Called once the software is deleted. */
+    readonly onDeleted: () => void;
 }
-
-const NOT_FOUND = softwareEditorMessages['software.not-found'];
 
 /** Editing of one software: its form, saving and deleting. */
-export function SoftwareEditor({id, onDone}: SoftwareEditorProps) {
-    const softwareId = parseSoftwareId(id);
-    if (softwareId === null) {
-        return <Text tone="muted">{NOT_FOUND}</Text>;
-    }
-    return <LoadedEditor key={softwareId} id={softwareId} onDone={onDone}/>;
+export function SoftwareEditor(props: SoftwareEditorProps) {
+    return (
+        <SoftwareDetailsProvider key={props.id} id={props.id}>
+            <LoadedEditor {...props}/>
+        </SoftwareDetailsProvider>
+    );
 }
 
-function LoadedEditor({id, onDone}: {readonly id: SoftwareId; readonly onDone: () => void}) {
-    const {state, reload} = useRequest(softwareDetailsRequest.for(id));
+function LoadedEditor({id, onSaved, onDeleted}: SoftwareEditorProps) {
+    const query = useSoftwareDetails();
 
-    switch (state.status) {
-        case 'loading':
-            return <div data-testid="software-editor-skeleton"><SoftwareFormSkeleton/></div>;
-        case 'system-error':
-            // Shown by the system error dialog (docs/error-handling.md).
-            return null;
-        case 'business-error':
-            if (state.error.status === 404) {
-                return <Text tone="muted">{businessErrorMessage(state.error, softwareEditorMessages)}</Text>;
-            }
-            return <ErrorState message={businessErrorMessage(state.error, softwareEditorMessages)} onRetry={reload}/>;
-        case 'success':
-            return (
-                <EditSoftwareForm
-                    software={state.data}
-                    onSaved={onDone}
-                    actions={<DeleteSoftwareButton software={state.data} onDeleted={onDone}/>}
-                />
-            );
+    if (query.isPending) {
+        return <div data-testid="software-editor-skeleton"><SoftwareFormSkeleton/></div>;
     }
+    if (query.isLoadingError) {
+        // The error dialog shows why it failed (docs/error-handling.md).
+        return null;
+    }
+    return (
+        <EditSoftwareProvider software={query.data} onSaved={() => {
+            onSaved(id);
+        }}>
+            <SoftwareForm submitLabel="Save" actions={<DeleteSoftwareButton software={query.data} onDeleted={onDeleted}/>}/>
+        </EditSoftwareProvider>
+    );
 }

@@ -1,4 +1,4 @@
-import {classNames} from '../../lib';
+import {classNames} from '@/shared/lib/class-names';
 import styles from './ImagePlaceholder.module.css';
 
 export type ImageRatio = '4:3' | '1:1';

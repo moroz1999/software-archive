@@ -21,7 +21,7 @@ The project has its own design system. All its components live in `frontend/src/
 
 ## Components
 
-All components live in `frontend/src/shared/ui/`, one folder each with an `index.ts`; import them from `shared/ui`. Design tokens and themes are in `frontend/src/app/styles/`.
+All components live in `frontend/src/shared/ui/`, one folder each with an `index.ts`; import each from its folder (`@/shared/ui/button`) — `shared/ui` has no barrel. Design tokens and themes are in `frontend/src/app/styles/`.
 
 Built:
 

@@ -1,19 +1,21 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {render, screen} from '@testing-library/react';
+import {screen} from '@testing-library/react';
 import {createMemoryRouter, RouterProvider} from 'react-router';
-import {json, pageResponse, stubFetch} from '../../../shared/lib/test';
-import {preloadSoftwarePage, SoftwarePage} from '../index';
+import {createQueryClient} from '@/shared/api';
+import {json, pageResponse, renderWithQueries, stubFetch} from '@/shared/lib/test';
+import {loadSoftwarePage, preloadSoftwarePage} from '../index';
 
 const ALPHA = {id: '00000000-0000-0000-0001-000000000001', title: 'Fixture Software Alpha', releaseDate: '1985-03-02'};
 
 function renderRoute() {
+    const queryClient = createQueryClient();
     const router = createMemoryRouter([
-        {path: '/', loader: preloadSoftwarePage, Component: SoftwarePage, HydrateFallback: () => null},
+        {path: '/', loader: preloadSoftwarePage(queryClient), lazy: {Component: loadSoftwarePage}, HydrateFallback: () => null},
     ]);
-    render(<RouterProvider router={router}/>);
+    renderWithQueries(<RouterProvider router={router}/>, queryClient);
 }
 
-describe(SoftwarePage, () => {
+describe('SoftwarePage', () => {
     afterEach(() => {
         vi.unstubAllGlobals();
     });
@@ -27,13 +29,13 @@ describe(SoftwarePage, () => {
         await expect(screen.findByRole('article', {name: 'Fixture Software Alpha'})).resolves.toBeInTheDocument();
     });
 
-    it('offers to add software and leads from a card to its editing', async () => {
+    it('offers to add software and leads from a card to its software', async () => {
         stubFetch(json(pageResponse([ALPHA])));
 
         renderRoute();
 
         await expect(screen.findByRole('link', {name: 'Add software'})).resolves.toHaveAttribute('href', '/software/new');
-        await expect(screen.findByRole('link', {name: 'Fixture Software Alpha'})).resolves.toHaveAttribute('href', `/software/${ALPHA.id}/edit`);
+        await expect(screen.findByRole('link', {name: 'Fixture Software Alpha'})).resolves.toHaveAttribute('href', `/software/${ALPHA.id}`);
     });
 
     it('appears with its data and no skeleton when the preload makes it in time', async () => {

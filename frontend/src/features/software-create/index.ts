@@ -1,1 +1,1 @@
-export {CreateSoftwareForm, type CreateSoftwareFormProps} from './ui/CreateSoftwareForm';
+export {CreateSoftwareProvider, type CreateSoftwareProviderProps} from './model/CreateSoftwareProvider';

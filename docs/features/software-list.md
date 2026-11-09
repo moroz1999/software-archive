@@ -5,7 +5,7 @@ The home page shows the archive's software as a grid of cards: the first page of
 ## Card
 
 - A 4:3 picture slot. Software has no screenshots yet, so every card shows the image placeholder there.
-- The title in one line, cut with an ellipsis when too long.
+- The title in one line, cut with an ellipsis when too long; it leads to the software's page ([software-view.md](software-view.md)).
 - The release year under it, muted; nothing when the release date is unknown.
 
 ## Loading and errors

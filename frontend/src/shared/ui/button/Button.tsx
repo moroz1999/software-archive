@@ -1,6 +1,7 @@
 import {type MouseEvent, type PointerEvent, type ReactNode, useEffect, useRef, useState} from 'react';
 import {Link} from 'react-router';
-import {classNames, isAppHref} from '../../lib';
+import {classNames} from '@/shared/lib/class-names';
+import {isAppHref} from '@/shared/lib/href';
 import styles from './Button.module.css';
 
 export type ButtonSize = 'xs' | 'sm' | 'md';

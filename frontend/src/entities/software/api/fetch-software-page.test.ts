@@ -1,6 +1,6 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {SystemError} from '../../../shared/api';
-import {json, pageResponse, stubFetch} from '../../../shared/lib/test';
+import {SystemError} from '@/shared/api';
+import {json, pageResponse, stubFetch} from '@/shared/lib/test';
 import {fetchSoftwarePage} from './fetch-software-page';
 
 const ALPHA = {id: '00000000-0000-0000-0001-000000000001', title: 'Fixture Software Alpha', releaseDate: '1985-03-02'};

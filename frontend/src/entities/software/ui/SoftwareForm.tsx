@@ -1,55 +1,40 @@
-import {type ReactNode, type SyntheticEvent, useState} from 'react';
-import {Button, Field, Inline, Input, Stack, Text, Textarea} from '../../../shared/ui';
+import type {ReactNode, SyntheticEvent} from 'react';
+import {Button} from '@/shared/ui/button';
+import {Field} from '@/shared/ui/field';
+import {Inline} from '@/shared/ui/inline';
+import {Input} from '@/shared/ui/input';
+import {Stack} from '@/shared/ui/stack';
+import {Textarea} from '@/shared/ui/textarea';
+import {Text} from '@/shared/ui/typography';
 import {RELEASE_DATE_INVALID_MESSAGE, TITLE_PROBLEM_MESSAGES} from '../config/messages';
-import {type SoftwareDraft, type SoftwareFormErrors, type SoftwareFormValues, toSoftwareFormValues, validateSoftwareForm} from '../model/software-form';
+import {useSoftwareForm} from '../model/software-form-context';
 
 export interface SoftwareFormProps {
     readonly submitLabel: string;
-    /** Called only with values that pass the format rules. */
-    readonly onSubmit: (draft: SoftwareDraft) => void;
-    readonly initial?: SoftwareFormValues;
-    /** Saving runs: the form is locked. */
-    readonly busy?: boolean;
-    /** A business error of the whole form, shown at its top. */
-    readonly error?: string | undefined;
     /** More buttons next to the submit button. */
     readonly actions?: ReactNode;
 }
 
-/** The fields of software, checked before they are submitted. */
-export function SoftwareForm({submitLabel, onSubmit, initial, busy = false, error, actions}: SoftwareFormProps) {
-    const [values, setValues] = useState<SoftwareFormValues>(() => initial ?? toSoftwareFormValues());
-    const [errors, setErrors] = useState<SoftwareFormErrors>({});
+/** The fields of software inside a SoftwareFormProvider, which holds their values and checks them. */
+export function SoftwareForm({submitLabel, actions}: SoftwareFormProps) {
+    const {values, errors, refusals, change, submit, busy, error} = useSoftwareForm();
 
-    function change(field: keyof SoftwareFormValues) {
-        return (value: string) => {
-            setValues((current) => ({...current, [field]: value}));
-            setErrors((current) => (field in current ? {...current, [field]: undefined} : current));
-        };
-    }
-
-    function submit(event: SyntheticEvent) {
+    function onSubmit(event: SyntheticEvent) {
         event.preventDefault();
-        const result = validateSoftwareForm(values);
-        if (result.ok) {
-            setErrors({});
-            onSubmit(result.draft);
-        } else {
-            setErrors(result.errors);
-        }
+        submit();
     }
 
     return (
-        <form noValidate onSubmit={submit}>
+        <form noValidate onSubmit={onSubmit}>
             <Stack gap="lg">
                 {error !== undefined && <Text role="alert" tone="danger">{error}</Text>}
-                <Field label="Title" error={errors.title === undefined ? undefined : TITLE_PROBLEM_MESSAGES[errors.title]}>
+                <Field label="Title" error={errors.title === undefined ? refusals.title : TITLE_PROBLEM_MESSAGES[errors.title]}>
                     {(control) => <Input {...control} value={values.title} onChange={change('title')} disabled={busy}/>}
                 </Field>
-                <Field label="Description">
+                <Field label="Description" error={refusals.description}>
                     {(control) => <Textarea {...control} value={values.description} onChange={change('description')} disabled={busy}/>}
                 </Field>
-                <Field label="Release date" error={errors.releaseDate === undefined ? undefined : RELEASE_DATE_INVALID_MESSAGE}>
+                <Field label="Release date" error={errors.releaseDate === undefined ? refusals.releaseDate : RELEASE_DATE_INVALID_MESSAGE}>
                     {(control) => <Input {...control} type="date" value={values.releaseDate} onChange={change('releaseDate')} disabled={busy}/>}
                 </Field>
                 <Inline gap="sm" justify="between" wrap>

@@ -1,4 +1,4 @@
-import {type TitleProblem, titleProblem} from '../../../shared/lib';
+import {type TitleProblem, titleProblem} from '@/shared/lib/title';
 import {type ReleaseDate, type SoftwareDetails, type SoftwareTitle, toReleaseDate, toSoftwareTitle} from './software';
 
 /** What the software form holds while it is being filled: raw text of every field. */

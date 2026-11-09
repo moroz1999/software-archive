@@ -1,4 +1,4 @@
-import {classNames} from '../../lib';
+import {classNames} from '@/shared/lib/class-names';
 import styles from './Spinner.module.css';
 
 export type SpinnerSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';

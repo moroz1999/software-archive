@@ -1,6 +1,7 @@
 import type {ReactNode} from 'react';
 import {Link} from 'react-router';
-import {classNames, isAppHref} from '../../lib';
+import {classNames} from '@/shared/lib/class-names';
+import {isAppHref} from '@/shared/lib/href';
 import styles from './Chip.module.css';
 
 export type ChipVariant = 'opaque' | 'filled' | 'mono' | 'mono-outline';

@@ -1,8 +1,9 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {render, screen} from '@testing-library/react';
+import {screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {toReleaseDate, toSoftwareId, toSoftwareTitle} from '../../../entities/software';
-import {json, noContent, stubFetch} from '../../../shared/lib/test';
+import {toReleaseDate, toSoftwareId, toSoftwareTitle} from '@/entities/software';
+import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
+import {json, noContent, renderWithQueries, stubFetch} from '@/shared/lib/test';
 import {DeleteSoftwareButton} from './DeleteSoftwareButton';
 
 const SOFTWARE = {
@@ -20,7 +21,7 @@ describe(DeleteSoftwareButton, () => {
     it('deletes the software after confirmation', async () => {
         const fetchMock = stubFetch(noContent());
         const onDeleted = vi.fn<() => void>();
-        render(<DeleteSoftwareButton software={SOFTWARE} onDeleted={onDeleted}/>);
+        renderWithQueries(<DeleteSoftwareButton software={SOFTWARE} onDeleted={onDeleted}/>);
 
         await userEvent.click(screen.getByRole('button', {name: 'Delete'}));
 
@@ -37,7 +38,7 @@ describe(DeleteSoftwareButton, () => {
 
     it('deletes nothing when cancelled', async () => {
         const fetchMock = stubFetch(noContent());
-        render(<DeleteSoftwareButton software={SOFTWARE} onDeleted={vi.fn<() => void>()}/>);
+        renderWithQueries(<DeleteSoftwareButton software={SOFTWARE} onDeleted={vi.fn<() => void>()}/>);
 
         await userEvent.click(screen.getByRole('button', {name: 'Delete'}));
         await userEvent.click(screen.getByRole('button', {name: 'Cancel'}));
@@ -46,15 +47,21 @@ describe(DeleteSoftwareButton, () => {
         expect(fetchMock).not.toHaveBeenCalled();
     });
 
-    it('says so in the dialog when the software is already gone', async () => {
-        stubFetch(json({status: 404, code: 'software.not-found'}, 404));
-        const onDeleted = vi.fn<() => void>();
-        render(<DeleteSoftwareButton software={SOFTWARE} onDeleted={onDeleted}/>);
+
+    it('shows a refusal inside the confirmation, not in the error dialog', async () => {
+        const reports: SystemErrorReport[] = [];
+        const unsubscribe = subscribeSystemErrors((report) => {
+            reports.push(report);
+        });
+        stubFetch(json({status: 409, code: 'software.changed'}, 409));
+        renderWithQueries(<DeleteSoftwareButton software={SOFTWARE} onDeleted={vi.fn<() => void>()}/>);
 
         await userEvent.click(screen.getByRole('button', {name: 'Delete'}));
         await userEvent.click(screen.getByRole('button', {name: 'Delete for good'}));
 
-        await expect(screen.findByRole('alert')).resolves.toHaveTextContent('This software has already been deleted.');
-        expect(onDeleted).not.toHaveBeenCalled();
+        await expect(screen.findByRole('alert')).resolves.toHaveTextContent('This item was changed in the meantime. Reload and try again.');
+        expect(reports).toHaveLength(0);
+
+        unsubscribe();
     });
 });

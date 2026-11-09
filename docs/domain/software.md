@@ -8,7 +8,8 @@ A piece of software is the work itself, as it is known in the archive.
 - Deleting software deletes what belongs only to it: its alternative titles, languages, links and credits.
 - It can be known under alternative titles; an alternative title can be tied to a language.
 - It lists the languages it is available in.
-- It carries links to the outside world. A link has one kind from a fixed list: general, homepage, store, video.
+- Languages — of the software and of its alternative titles — are chosen from the archive's fixed list of languages, each known by its code.
+- It carries links to the outside world. A link has one kind from a fixed list: general, homepage, store, video. A link is an absolute web address (http or https).
 
 ## Credits
 

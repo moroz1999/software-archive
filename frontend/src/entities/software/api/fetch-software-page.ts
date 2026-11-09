@@ -1,4 +1,4 @@
-import {getJson, mapResponse, type Page, parsePage, readNullableString, readObject, readString} from '../../../shared/api';
+import {getJson, mapResponse, type Page, parsePage, readNullableString, readObject, readString} from '@/shared/api';
 import {type Software, toReleaseDate, toSoftwareId, toSoftwareTitle} from '../model/software';
 
 const PAGE_SIZE = 20;

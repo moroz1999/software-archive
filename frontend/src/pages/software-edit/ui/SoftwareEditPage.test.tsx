@@ -1,22 +1,25 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {render, screen} from '@testing-library/react';
+import {screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {createMemoryRouter, RouterProvider} from 'react-router';
-import {json, noContent, stubFetch} from '../../../shared/lib/test';
-import {preloadSoftwareEditPage, SoftwareEditPage} from '../index';
+import {createQueryClient} from '@/shared/api';
+import {json, noContent, renderWithQueries, stubFetch} from '@/shared/lib/test';
+import {loadSoftwareEditPage, preloadSoftwareEditPage} from '../index';
 
 const ID = '00000000-0000-0000-0001-000000000001';
 const ELITE = {id: ID, title: 'Elite', description: null, releaseDate: null};
 
 function renderRoute(id: string) {
+    const queryClient = createQueryClient();
     const router = createMemoryRouter([
         {path: '/', element: <p>Software list</p>},
-        {path: '/software/:id/edit', loader: preloadSoftwareEditPage, Component: SoftwareEditPage, HydrateFallback: () => null},
+        {path: '/software/:id', element: <p>Software view</p>},
+        {path: '/software/:id/edit', loader: preloadSoftwareEditPage(queryClient), lazy: {Component: loadSoftwareEditPage}, HydrateFallback: () => null},
     ], {initialEntries: [`/software/${id}/edit`]});
-    render(<RouterProvider router={router}/>);
+    renderWithQueries(<RouterProvider router={router}/>, queryClient);
 }
 
-describe(SoftwareEditPage, () => {
+describe('SoftwareEditPage', () => {
     afterEach(() => {
         vi.unstubAllGlobals();
     });
@@ -32,13 +35,13 @@ describe(SoftwareEditPage, () => {
         expect(screen.queryByTestId('software-editor-skeleton')).not.toBeInTheDocument();
     });
 
-    it('returns to the list after saving', async () => {
+    it('returns to the software after saving', async () => {
         stubFetch(json(ELITE), noContent());
         renderRoute(ID);
 
         await userEvent.click(await screen.findByRole('button', {name: 'Save'}));
 
-        await expect(screen.findByText('Software list')).resolves.toBeInTheDocument();
+        await expect(screen.findByText('Software view')).resolves.toBeInTheDocument();
     });
 
     it('returns to the list after deleting', async () => {
@@ -51,11 +54,4 @@ describe(SoftwareEditPage, () => {
         await expect(screen.findByText('Software list')).resolves.toBeInTheDocument();
     });
 
-    it('says so for unknown software', async () => {
-        stubFetch(json({status: 404, code: 'software.not-found'}, 404));
-
-        renderRoute(ID);
-
-        await expect(screen.findByText('Software not found.')).resolves.toBeInTheDocument();
-    });
 });

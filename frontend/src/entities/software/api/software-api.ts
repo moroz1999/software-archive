@@ -1,4 +1,4 @@
-import {deleteResource, getJson, mapResponse, postJson, putJson, readNullableString, readObject, readString} from '../../../shared/api';
+import {deleteResource, getJson, mapResponse, postJson, putJson, readNullableString, readObject, readString} from '@/shared/api';
 import {type SoftwareDetails, type SoftwareId, toReleaseDate, toSoftwareId, toSoftwareTitle} from '../model/software';
 import type {SoftwareDraft} from '../model/software-form';
 

@@ -1,1 +1,1 @@
-export {EditSoftwareForm, type EditSoftwareFormProps} from './ui/EditSoftwareForm';
+export {EditSoftwareProvider, type EditSoftwareProviderProps} from './model/EditSoftwareProvider';

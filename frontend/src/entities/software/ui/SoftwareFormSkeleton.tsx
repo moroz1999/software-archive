@@ -1,4 +1,5 @@
-import {Skeleton, Stack} from '../../../shared/ui';
+import {Skeleton} from '@/shared/ui/skeleton';
+import {Stack} from '@/shared/ui/stack';
 import styles from './SoftwareFormSkeleton.module.css';
 
 /** Loading placeholder shaped like SoftwareForm: three labelled fields and the buttons. */

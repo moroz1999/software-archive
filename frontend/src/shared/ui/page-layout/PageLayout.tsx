@@ -4,7 +4,8 @@ import {Heading} from '../typography';
 import styles from './PageLayout.module.css';
 
 export interface PageLayoutProps {
-    readonly title: string;
+    /** The page's level 1 heading: its text, or a skeleton bone while it loads. */
+    readonly title: ReactNode;
     /** Buttons of the page, next to its title. */
     readonly actions?: ReactNode;
     /** Independent content blocks of the page. */

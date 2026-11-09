@@ -6,9 +6,9 @@ Adding, editing and deleting software ([domain/software.md](../domain/software.m
 
 | Page | Path | Content |
 |---|---|---|
-| Software list | `/` | "Add software" next to the page title; a card's title leads to the software's editing |
+| Software list | `/` | "Add software" next to the page title; a card's title leads to the software's page ([software-view.md](software-view.md)), whose "Edit" leads to the editing |
 | Add software | `/software/new` | Empty form, "Add software" submits; back to the list after adding |
-| Edit software | `/software/{id}/edit` | Form with the software's values, "Save" and "Delete"; back to the list after saving or deleting |
+| Edit software | `/software/{id}/edit` | Form with the software's values, "Save" and "Delete"; back to the software's page after saving, to the list after deleting |
 
 ## Form
 
@@ -23,8 +23,7 @@ Adding, editing and deleting software ([domain/software.md](../domain/software.m
 ## Loading and errors
 
 - The edit page preloads the software's details ([data-loading.md](../data-loading.md)): within 300 ms the form appears filled, otherwise a form skeleton first.
-- Unknown software, and an id in the URL that cannot be one, show "Software not found." in place of the form; a malformed id is never sent to the backend.
-- Business errors ([error-handling.md](../error-handling.md)): software deleted in the meantime shows "This software has been deleted." at the top of the form when saving, "This software has already been deleted." inside the confirmation when deleting.
+- Unknown software, an id in the URL that cannot be one, and software deleted in the meantime — found out on saving or deleting — show the not found page ([error-handling.md](../error-handling.md)); a malformed id is never sent to the backend.
 - System errors go to the error dialog; its Retry repeats the same save or delete with the same values, and the form keeps what was typed.
 
 ## REST

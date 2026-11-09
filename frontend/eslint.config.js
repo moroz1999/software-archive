@@ -8,6 +8,22 @@ import vitest from '@vitest/eslint-plugin';
 import testingLibrary from 'eslint-plugin-testing-library';
 import tseslint from 'typescript-eslint';
 
+/** How modules reach each other (see docs/frontend.md): `@/` across layers and slices, no barrels in shared/ui and shared/lib. */
+const importPathPatterns = [
+    {
+        regex: '^@/shared/(ui|lib)$',
+        message: 'shared/ui and shared/lib have no barrels: import the component folder (@/shared/ui/button) or the module (@/shared/lib/context).',
+    },
+    {
+        regex: '^(\\.\\./){2,}',
+        message: 'Reach other slices and segments from the root: @/layer/...',
+    },
+    {
+        regex: '^(\\.\\./)+(app|pages|widgets|features|entities|shared)(/|$)',
+        message: 'Reach other layers from the root: @/layer/...',
+    },
+];
+
 export default tseslint.config(
     {ignores: ['dist', 'src/**/*.module.css.d.ts']},
 
@@ -58,10 +74,13 @@ export default tseslint.config(
 
             // Global CSS only in app/; components use CSS Modules.
             'no-restricted-imports': ['error', {
-                patterns: [{
-                    regex: '^(?!.*\\.module\\.css$).*\\.css$',
-                    message: 'Import only *.module.css; global styles live in app/.',
-                }],
+                patterns: [
+                    ...importPathPatterns,
+                    {
+                        regex: '^(?!.*\\.module\\.css$).*\\.css$',
+                        message: 'Import only *.module.css; global styles live in app/.',
+                    },
+                ],
             }],
 
             // Styling goes through CSS Modules and the design system (see docs/frontend.md, docs/design-system.md).
@@ -95,7 +114,7 @@ export default tseslint.config(
     {
         files: ['src/app/**/*.{ts,tsx}'],
         rules: {
-            'no-restricted-imports': 'off',
+            'no-restricted-imports': ['error', {patterns: importPathPatterns}],
         },
     },
 
