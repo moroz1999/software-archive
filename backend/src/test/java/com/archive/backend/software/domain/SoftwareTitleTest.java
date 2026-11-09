@@ -1,11 +1,11 @@
 package com.archive.backend.software.domain;
 
-import com.archive.backend.shared.domain.error.InvalidValueException;
-import com.archive.backend.shared.domain.Title;
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import com.archive.backend.shared.domain.Title;
+import com.archive.backend.shared.domain.error.InvalidValueException;
+import org.junit.jupiter.api.Test;
 
 class SoftwareTitleTest {
 
@@ -17,7 +17,8 @@ class SoftwareTitleTest {
     @Test
     void followsTheTitleRules() {
         assertThatThrownBy(() -> new SoftwareTitle("a".repeat(256)))
-                .isInstanceOfSatisfying(InvalidValueException.class, e -> assertThat(e.code()).isEqualTo("title.too-long"));
+                .isInstanceOfSatisfying(
+                        InvalidValueException.class, e -> assertThat(e.code()).isEqualTo("title.too-long"));
     }
 
     @Test

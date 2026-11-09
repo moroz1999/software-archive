@@ -1,8 +1,12 @@
 package com.archive.backend.software.infra;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.archive.backend.TestcontainersConfiguration;
 import com.archive.backend.software.read.SoftwareDetails;
 import com.archive.backend.software.read.SoftwareSummary;
+import java.time.LocalDate;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -12,11 +16,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.JdbcTemplate;
-
-import java.time.LocalDate;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -45,8 +44,11 @@ class JpaSoftwareReadRepositoryIT {
     void readsTheLatestAddedSoftwareFirstWhateverSortIsAsked() {
         UUID older = UUID.fromString("00000000-0000-0000-0000-000000000002");
         UUID newest = UUID.fromString("00000000-0000-0000-0000-000000000003");
-        jdbc.update("INSERT INTO software (id, title, created_at) VALUES (?, 'Older', TIMESTAMPTZ '2020-01-01 00:00Z'), (?, 'Newest', TIMESTAMPTZ '2024-01-01 00:00Z'), (?, 'Middle', TIMESTAMPTZ '2022-01-01 00:00Z')",
-                older, newest, ID);
+        jdbc.update(
+                "INSERT INTO software (id, title, created_at) VALUES (?, 'Older', TIMESTAMPTZ '2020-01-01 00:00Z'), (?, 'Newest', TIMESTAMPTZ '2024-01-01 00:00Z'), (?, 'Middle', TIMESTAMPTZ '2022-01-01 00:00Z')",
+                older,
+                newest,
+                ID);
 
         Page<SoftwareSummary> page = reads.findLatest(PageRequest.of(0, 2, Sort.by("title")));
 
@@ -58,7 +60,8 @@ class JpaSoftwareReadRepositoryIT {
     void readsTheDetailsOfOneSoftware() {
         insert();
 
-        assertThat(reads.findById(ID)).contains(new SoftwareDetails(ID, "Elite", "Space trading", LocalDate.of(1985, 9, 20)));
+        assertThat(reads.findById(ID))
+                .contains(new SoftwareDetails(ID, "Elite", "Space trading", LocalDate.of(1985, 9, 20)));
     }
 
     @Test
@@ -67,6 +70,8 @@ class JpaSoftwareReadRepositoryIT {
     }
 
     private void insert() {
-        jdbc.update("INSERT INTO software (id, title, description, release_date) VALUES (?, 'Elite', 'Space trading', DATE '1985-09-20')", ID);
+        jdbc.update(
+                "INSERT INTO software (id, title, description, release_date) VALUES (?, 'Elite', 'Space trading', DATE '1985-09-20')",
+                ID);
     }
 }

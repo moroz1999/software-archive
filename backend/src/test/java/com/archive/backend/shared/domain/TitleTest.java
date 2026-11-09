@@ -1,10 +1,10 @@
 package com.archive.backend.shared.domain;
 
-import com.archive.backend.shared.domain.error.InvalidValueException;
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import com.archive.backend.shared.domain.error.InvalidValueException;
+import org.junit.jupiter.api.Test;
 
 class TitleTest {
 
@@ -28,7 +28,8 @@ class TitleTest {
     @Test
     void rejectsABlankTitle() {
         assertThatThrownBy(() -> new BookTitle("  "))
-                .isInstanceOfSatisfying(InvalidValueException.class, e -> assertThat(e.code()).isEqualTo("title.required"));
+                .isInstanceOfSatisfying(
+                        InvalidValueException.class, e -> assertThat(e.code()).isEqualTo("title.required"));
     }
 
     @Test
@@ -39,7 +40,8 @@ class TitleTest {
     @Test
     void rejectsATitleLongerThan255Characters() {
         assertThatThrownBy(() -> new BookTitle("a".repeat(256)))
-                .isInstanceOfSatisfying(InvalidValueException.class, e -> assertThat(e.code()).isEqualTo("title.too-long"));
+                .isInstanceOfSatisfying(
+                        InvalidValueException.class, e -> assertThat(e.code()).isEqualTo("title.too-long"));
     }
 
     @Test

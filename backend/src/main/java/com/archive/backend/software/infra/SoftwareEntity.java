@@ -1,11 +1,10 @@
 package com.archive.backend.software.infra;
 
 import jakarta.persistence.*;
-import lombok.Data;
-
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
+import lombok.Data;
 
 @Entity
 @Table(name = "software")

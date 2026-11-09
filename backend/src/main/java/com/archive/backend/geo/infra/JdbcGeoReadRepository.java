@@ -3,12 +3,11 @@ package com.archive.backend.geo.infra;
 import com.archive.backend.geo.read.CityItem;
 import com.archive.backend.geo.read.CountryItem;
 import com.archive.backend.geo.read.GeoReadRepository;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
-import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor

@@ -79,6 +79,9 @@ cd backend && ./mvnw spring-boot:run -Dspring-boot.run.profiles=fixtures
 cd backend && ./mvnw test
 cd backend && ./mvnw verify
 
+# Backend: format the Java sources (every build does it too)
+cd backend && ./mvnw spotless:apply
+
 # Frontend: run inside the container (it owns node_modules)
 docker compose exec frontend npm run check      # types + ESLint + Stylelint + Steiger + tests
 docker compose exec frontend npm test

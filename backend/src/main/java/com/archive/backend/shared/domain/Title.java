@@ -2,7 +2,6 @@ package com.archive.backend.shared.domain;
 
 import com.archive.backend.shared.domain.ddd.ValueObject;
 import com.archive.backend.shared.domain.error.InvalidValueException;
-
 import java.util.Objects;
 
 /**
@@ -23,7 +22,8 @@ public abstract class Title {
             throw new InvalidValueException("title.required", "A title must not be blank.");
         }
         if (value.length() > MAX_LENGTH) {
-            throw new InvalidValueException("title.too-long", "A title must be at most " + MAX_LENGTH + " characters long.");
+            throw new InvalidValueException(
+                    "title.too-long", "A title must be at most " + MAX_LENGTH + " characters long.");
         }
         this.value = value;
     }

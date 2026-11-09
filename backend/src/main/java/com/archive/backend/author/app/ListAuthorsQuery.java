@@ -1,10 +1,13 @@
 package com.archive.backend.author.app;
 
-import com.archive.backend.label.domain.LabelLetter;
 import com.archive.backend.geo.domain.CityId;
 import com.archive.backend.geo.domain.CountryId;
+import com.archive.backend.label.domain.LabelLetter;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Pageable;
 
-public record ListAuthorsQuery(@Nullable LabelLetter letter, @Nullable CountryId country, @Nullable CityId city, Pageable pageable) {
-}
+public record ListAuthorsQuery(
+        @Nullable LabelLetter letter,
+        @Nullable CountryId country,
+        @Nullable CityId city,
+        Pageable pageable) {}

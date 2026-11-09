@@ -1,9 +1,8 @@
 package com.archive.backend.author.web.dto;
 
-import org.jspecify.annotations.Nullable;
-
 import java.util.List;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 public record AuthorDetailsDto(
         UUID id,
@@ -12,15 +11,12 @@ public record AuthorDetailsDto(
         @Nullable String notes,
         List<LabelDto> labels,
         List<LocationDto> locations,
-        List<GroupDto> groups
-) {
+        List<GroupDto> groups) {
 
-    public record LabelDto(UUID id, String name) {
-    }
+    public record LabelDto(UUID id, String name) {}
 
-    public record LocationDto(@Nullable String country, @Nullable String city, boolean primary) {
-    }
+    public record LocationDto(
+            @Nullable String country, @Nullable String city, boolean primary) {}
 
-    public record GroupDto(UUID id, String name, @Nullable String as) {
-    }
+    public record GroupDto(UUID id, String name, @Nullable String as) {}
 }

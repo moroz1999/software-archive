@@ -1,9 +1,8 @@
 package com.archive.backend.group.read;
 
-import org.jspecify.annotations.Nullable;
-
 import java.util.List;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 /** One group with everything shown on its page. */
 public record GroupDetails(
@@ -16,6 +15,4 @@ public record GroupDetails(
         List<GroupLocation> locations,
         List<GroupMember> members,
         List<RelatedGroup> memberGroups,
-        List<RelatedGroup> groups
-) {
-}
+        List<RelatedGroup> groups) {}

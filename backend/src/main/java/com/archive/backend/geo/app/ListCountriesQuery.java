@@ -1,4 +1,3 @@
 package com.archive.backend.geo.app;
 
-public record ListCountriesQuery() {
-}
+public record ListCountriesQuery() {}

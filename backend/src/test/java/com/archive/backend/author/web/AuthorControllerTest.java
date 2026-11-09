@@ -1,35 +1,5 @@
 package com.archive.backend.author.web;
 
-import com.archive.backend.author.app.GetAuthorHandler;
-import com.archive.backend.author.app.GetAuthorQuery;
-import com.archive.backend.author.app.ListAuthorsHandler;
-import com.archive.backend.author.app.ListAuthorsQuery;
-import com.archive.backend.author.domain.AuthorId;
-import com.archive.backend.label.domain.LabelLetter;
-import com.archive.backend.author.domain.AuthorNotFoundException;
-import com.archive.backend.author.read.AuthorLabel;
-import com.archive.backend.author.read.AuthorCatalogEntry;
-import com.archive.backend.author.read.AuthorDetails;
-import com.archive.backend.author.read.AuthorGroup;
-import com.archive.backend.author.read.AuthorLocation;
-import com.archive.backend.author.web.mapper.AuthorWebMapperImpl;
-import com.archive.backend.geo.domain.CityId;
-import com.archive.backend.geo.domain.CountryId;
-import com.archive.backend.shared.config.SecurityConfig;
-import com.archive.backend.shared.config.WebConfig;
-import com.archive.backend.shared.web.ApiExceptionHandler;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.List;
-import java.util.UUID;
-
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -38,6 +8,35 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.archive.backend.author.app.GetAuthorHandler;
+import com.archive.backend.author.app.GetAuthorQuery;
+import com.archive.backend.author.app.ListAuthorsHandler;
+import com.archive.backend.author.app.ListAuthorsQuery;
+import com.archive.backend.author.domain.AuthorId;
+import com.archive.backend.author.domain.AuthorNotFoundException;
+import com.archive.backend.author.read.AuthorCatalogEntry;
+import com.archive.backend.author.read.AuthorDetails;
+import com.archive.backend.author.read.AuthorGroup;
+import com.archive.backend.author.read.AuthorLabel;
+import com.archive.backend.author.read.AuthorLocation;
+import com.archive.backend.author.web.mapper.AuthorWebMapperImpl;
+import com.archive.backend.geo.domain.CityId;
+import com.archive.backend.geo.domain.CountryId;
+import com.archive.backend.label.domain.LabelLetter;
+import com.archive.backend.shared.config.SecurityConfig;
+import com.archive.backend.shared.config.WebConfig;
+import com.archive.backend.shared.web.ApiExceptionHandler;
+import java.util.List;
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(AuthorController.class)
 @Import({SecurityConfig.class, WebConfig.class, AuthorWebMapperImpl.class, ApiExceptionHandler.class})
@@ -61,7 +60,12 @@ class AuthorControllerTest {
     @Test
     void listsTheCatalogWithoutFilters() throws Exception {
         when(listHandler.handle(new ListAuthorsQuery(null, null, null, PageRequest.of(0, 100))))
-                .thenReturn(new PageImpl<>(List.of(new AuthorCatalogEntry(ID, "Axe", "John Doe", "Zed"), new AuthorCatalogEntry(ID, "Zed", "John Doe", null)), PageRequest.of(0, 100), 2));
+                .thenReturn(new PageImpl<>(
+                        List.of(
+                                new AuthorCatalogEntry(ID, "Axe", "John Doe", "Zed"),
+                                new AuthorCatalogEntry(ID, "Zed", "John Doe", null)),
+                        PageRequest.of(0, 100),
+                        2));
 
         mvc.perform(get("/api/authors").param("page", "0").param("size", "100"))
                 .andExpect(status().isOk())
@@ -77,7 +81,8 @@ class AuthorControllerTest {
     @Test
     void sendsNoRealNameWhenTheEntryIsTheRealName() throws Exception {
         when(listHandler.handle(new ListAuthorsQuery(null, null, null, PageRequest.of(0, 100))))
-                .thenReturn(new PageImpl<>(List.of(new AuthorCatalogEntry(ID, "Carl Real", null, null)), PageRequest.of(0, 100), 1));
+                .thenReturn(new PageImpl<>(
+                        List.of(new AuthorCatalogEntry(ID, "Carl Real", null, null)), PageRequest.of(0, 100), 1));
 
         mvc.perform(get("/api/authors").param("page", "0").param("size", "100"))
                 .andExpect(status().isOk())
@@ -87,12 +92,17 @@ class AuthorControllerTest {
 
     @Test
     void listsTheCatalogWithFilters() throws Exception {
-        when(listHandler.handle(new ListAuthorsQuery(new LabelLetter("Б"), new CountryId(COUNTRY), new CityId(CITY), PageRequest.of(1, 100))))
-                .thenReturn(new PageImpl<>(List.of(new AuthorCatalogEntry(ID, "Борис", null, null)), PageRequest.of(1, 100), 101));
+        when(listHandler.handle(new ListAuthorsQuery(
+                        new LabelLetter("Б"), new CountryId(COUNTRY), new CityId(CITY), PageRequest.of(1, 100))))
+                .thenReturn(new PageImpl<>(
+                        List.of(new AuthorCatalogEntry(ID, "Борис", null, null)), PageRequest.of(1, 100), 101));
 
         mvc.perform(get("/api/authors")
-                        .param("letter", "б").param("country", COUNTRY.toString()).param("city", CITY.toString())
-                        .param("page", "1").param("size", "100"))
+                        .param("letter", "б")
+                        .param("country", COUNTRY.toString())
+                        .param("city", CITY.toString())
+                        .param("page", "1")
+                        .param("size", "100"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].name").value("Борис"))
                 .andExpect(jsonPath("$.page.number").value(1));
@@ -108,23 +118,27 @@ class AuthorControllerTest {
 
     @Test
     void answers400ForAMalformedCountry() throws Exception {
-        mvc.perform(get("/api/authors").param("country", "not-a-uuid"))
-                .andExpect(status().isBadRequest());
+        mvc.perform(get("/api/authors").param("country", "not-a-uuid")).andExpect(status().isBadRequest());
     }
 
     @Test
     void answers400ForAMalformedCity() throws Exception {
-        mvc.perform(get("/api/authors").param("city", "not-a-uuid"))
-                .andExpect(status().isBadRequest());
+        mvc.perform(get("/api/authors").param("city", "not-a-uuid")).andExpect(status().isBadRequest());
     }
 
     @Test
     void returnsOneAuthor() throws Exception {
-        when(getHandler.handle(new GetAuthorQuery(new AuthorId(ID)))).thenReturn(new AuthorDetails(
-                ID, "Zed", "John Doe", "Coder since 1984",
-                List.of(new AuthorLabel(LABEL, "Zed")),
-                List.of(new AuthorLocation("Finland", "Helsinki", true), new AuthorLocation("Norway", null, false)),
-                List.of(new AuthorGroup(GROUP, "Crew", "Axe"))));
+        when(getHandler.handle(new GetAuthorQuery(new AuthorId(ID))))
+                .thenReturn(new AuthorDetails(
+                        ID,
+                        "Zed",
+                        "John Doe",
+                        "Coder since 1984",
+                        List.of(new AuthorLabel(LABEL, "Zed")),
+                        List.of(
+                                new AuthorLocation("Finland", "Helsinki", true),
+                                new AuthorLocation("Norway", null, false)),
+                        List.of(new AuthorGroup(GROUP, "Crew", "Axe"))));
 
         mvc.perform(get("/api/authors/{id}", ID))
                 .andExpect(status().isOk())
@@ -154,7 +168,6 @@ class AuthorControllerTest {
 
     @Test
     void answers400ForAMalformedId() throws Exception {
-        mvc.perform(get("/api/authors/{id}", "not-a-uuid"))
-                .andExpect(status().isBadRequest());
+        mvc.perform(get("/api/authors/{id}", "not-a-uuid")).andExpect(status().isBadRequest());
     }
 }

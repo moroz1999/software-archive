@@ -36,6 +36,5 @@ public final class MainNameSql {
             )
             """;
 
-    private MainNameSql() {
-    }
+    private MainNameSql() {}
 }

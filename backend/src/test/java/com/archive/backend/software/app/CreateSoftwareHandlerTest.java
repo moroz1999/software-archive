@@ -1,13 +1,12 @@
 package com.archive.backend.software.app;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareTitle;
-import org.junit.jupiter.api.Test;
-
 import java.time.LocalDate;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class CreateSoftwareHandlerTest {
 
@@ -16,7 +15,8 @@ class CreateSoftwareHandlerTest {
 
     @Test
     void storesNewSoftwareUnderANewId() {
-        SoftwareId id = handler.handle(new CreateSoftwareCommand(new SoftwareTitle("Elite"), new SoftwareDescription("Space trading"), LocalDate.of(1985, 9, 20)));
+        SoftwareId id = handler.handle(new CreateSoftwareCommand(
+                new SoftwareTitle("Elite"), new SoftwareDescription("Space trading"), LocalDate.of(1985, 9, 20)));
 
         assertThat(repository.findById(id)).hasValueSatisfying(software -> {
             assertThat(software.getTitle()).isEqualTo(new SoftwareTitle("Elite"));

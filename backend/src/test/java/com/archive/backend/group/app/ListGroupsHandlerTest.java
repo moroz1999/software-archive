@@ -1,16 +1,15 @@
 package com.archive.backend.group.app;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.archive.backend.geo.domain.CityId;
 import com.archive.backend.geo.domain.CountryId;
 import com.archive.backend.group.read.GroupCatalogEntry;
 import com.archive.backend.label.domain.LabelLetter;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class ListGroupsHandlerTest {
 
@@ -34,7 +33,8 @@ class ListGroupsHandlerTest {
         UUID country = UUID.randomUUID();
         UUID city = UUID.randomUUID();
 
-        handler.handle(new ListGroupsQuery(new LabelLetter("ё"), new CountryId(country), new CityId(city), PageRequest.of(0, 100)));
+        handler.handle(new ListGroupsQuery(
+                new LabelLetter("ё"), new CountryId(country), new CityId(city), PageRequest.of(0, 100)));
 
         assertThat(reads.lastFilter()).isEqualTo(new InMemoryGroupReadRepository.Filter("Е", country, city));
     }

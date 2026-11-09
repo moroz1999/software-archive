@@ -1,13 +1,12 @@
 package com.archive.backend.geo.app;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.archive.backend.geo.domain.CountryId;
 import com.archive.backend.geo.read.CityItem;
 import com.archive.backend.geo.read.CountryItem;
-import org.junit.jupiter.api.Test;
-
 import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class ListCitiesHandlerTest {
 
@@ -26,6 +25,7 @@ class ListCitiesHandlerTest {
 
     @Test
     void returnsNoCitiesForAnUnknownCountry() {
-        assertThat(handler.handle(new ListCitiesQuery(new CountryId(UUID.randomUUID())))).isEmpty();
+        assertThat(handler.handle(new ListCitiesQuery(new CountryId(UUID.randomUUID()))))
+                .isEmpty();
     }
 }

@@ -8,6 +8,12 @@ import com.archive.backend.author.read.AuthorLocation;
 import com.archive.backend.author.read.AuthorReadRepository;
 import com.archive.backend.label.read.LetterFilterSql;
 import com.archive.backend.label.read.MainNameSql;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
@@ -15,13 +21,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 
 /**
  * The author catalog and author pages straight from SQL: the catalog mixes people and their labels, which no
@@ -60,7 +59,8 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
     private final JdbcClient jdbc;
 
     @Override
-    public Page<AuthorCatalogEntry> findCatalogPage(@Nullable String letter, @Nullable UUID countryId, @Nullable UUID cityId, Pageable pageable) {
+    public Page<AuthorCatalogEntry> findCatalogPage(
+            @Nullable String letter, @Nullable UUID countryId, @Nullable UUID cityId, Pageable pageable) {
         List<String> conditions = new ArrayList<>();
         Map<String, Object> params = new HashMap<>();
         if (letter != null) {
@@ -82,21 +82,33 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
                 .single();
         params.put("limit", pageable.getPageSize());
         params.put("offset", pageable.getOffset());
-        List<AuthorCatalogEntry> content = jdbc.sql(ENTRIES + "SELECT e.person_id, e.name, e.real_name, e.label_of FROM entries e" + where
-                        + " ORDER BY lower(e.name), e.name, e.person_id LIMIT :limit OFFSET :offset")
+        List<AuthorCatalogEntry> content = jdbc.sql(
+                        ENTRIES + "SELECT e.person_id, e.name, e.real_name, e.label_of FROM entries e" + where
+                                + " ORDER BY lower(e.name), e.name, e.person_id LIMIT :limit OFFSET :offset")
                 .params(params)
-                .query((rs, row) -> new AuthorCatalogEntry(rs.getObject("person_id", UUID.class), rs.getString("name"), rs.getString("real_name"), rs.getString("label_of")))
+                .query((rs, row) -> new AuthorCatalogEntry(
+                        rs.getObject("person_id", UUID.class),
+                        rs.getString("name"),
+                        rs.getString("real_name"),
+                        rs.getString("label_of")))
                 .list();
         return new PageImpl<>(content, pageable, total);
     }
 
     @Override
     public Optional<AuthorDetails> findById(UUID id) {
-        return jdbc.sql("WITH " + MainNameSql.PEOPLE + "SELECT main_name, real_name, notes FROM named_person WHERE person_id = :id AND main_name IS NOT NULL")
+        return jdbc.sql(
+                        "WITH " + MainNameSql.PEOPLE
+                                + "SELECT main_name, real_name, notes FROM named_person WHERE person_id = :id AND main_name IS NOT NULL")
                 .param("id", id)
                 .query((rs, row) -> new AuthorDetails(
-                        id, rs.getString("main_name"), rs.getString("real_name"), rs.getString("notes"),
-                        labels(id), locations(id), groups(id)))
+                        id,
+                        rs.getString("main_name"),
+                        rs.getString("real_name"),
+                        rs.getString("notes"),
+                        labels(id),
+                        locations(id),
+                        groups(id)))
                 .optional();
     }
 
@@ -118,7 +130,8 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
                         ORDER BY COALESCE(l.is_primary, FALSE) DESC, co.name, ci.name
                         """)
                 .param("id", personId)
-                .query((rs, row) -> new AuthorLocation(rs.getString("country"), rs.getString("city"), rs.getBoolean("is_primary")))
+                .query((rs, row) ->
+                        new AuthorLocation(rs.getString("country"), rs.getString("city"), rs.getBoolean("is_primary")))
                 .list();
     }
 
@@ -137,7 +150,8 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
                         ORDER BY lower(g.main_name), g.group_id, lower(l.name), l.id
                         """)
                 .param("id", personId)
-                .query((rs, row) -> new AuthorGroup(rs.getObject("group_id", UUID.class), rs.getString("main_name"), rs.getString("member_as")))
+                .query((rs, row) -> new AuthorGroup(
+                        rs.getObject("group_id", UUID.class), rs.getString("main_name"), rs.getString("member_as")))
                 .list();
     }
 }

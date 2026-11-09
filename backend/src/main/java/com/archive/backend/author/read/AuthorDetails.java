@@ -1,9 +1,8 @@
 package com.archive.backend.author.read;
 
-import org.jspecify.annotations.Nullable;
-
 import java.util.List;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 /** One author with everything shown on their page. */
 public record AuthorDetails(
@@ -13,6 +12,4 @@ public record AuthorDetails(
         @Nullable String notes,
         List<AuthorLabel> labels,
         List<AuthorLocation> locations,
-        List<AuthorGroup> groups
-) {
-}
+        List<AuthorGroup> groups) {}

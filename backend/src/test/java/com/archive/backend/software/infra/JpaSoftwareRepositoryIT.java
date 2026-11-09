@@ -1,21 +1,20 @@
 package com.archive.backend.software.infra;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.archive.backend.TestcontainersConfiguration;
 import com.archive.backend.software.domain.Software;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareTitle;
+import java.time.LocalDate;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-
-import java.time.LocalDate;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -35,7 +34,8 @@ class JpaSoftwareRepositoryIT {
 
     @Test
     void storesNewSoftwareUnderItsId() {
-        repository.save(Software.create(ID, new SoftwareTitle("Elite"), new SoftwareDescription("Space trading"), LocalDate.of(1985, 9, 20)));
+        repository.save(Software.create(
+                ID, new SoftwareTitle("Elite"), new SoftwareDescription("Space trading"), LocalDate.of(1985, 9, 20)));
         jpa.flush();
 
         assertThat(repository.findById(ID)).hasValueSatisfying(software -> {
@@ -43,7 +43,9 @@ class JpaSoftwareRepositoryIT {
             assertThat(software.getDescription()).isEqualTo(new SoftwareDescription("Space trading"));
             assertThat(software.getReleaseDate()).isEqualTo(LocalDate.of(1985, 9, 20));
         });
-        assertThat(jdbc.queryForObject("SELECT created_at IS NOT NULL FROM software WHERE id = ?", Boolean.class, ID.value())).isTrue();
+        assertThat(jdbc.queryForObject(
+                        "SELECT created_at IS NOT NULL FROM software WHERE id = ?", Boolean.class, ID.value()))
+                .isTrue();
     }
 
     @Test
@@ -56,7 +58,8 @@ class JpaSoftwareRepositoryIT {
         repository.save(software);
         jpa.flush();
 
-        assertThat(jdbc.queryForObject("SELECT title FROM software WHERE id = ?", String.class, ID.value())).isEqualTo("Elite Plus");
+        assertThat(jdbc.queryForObject("SELECT title FROM software WHERE id = ?", String.class, ID.value()))
+                .isEqualTo("Elite Plus");
     }
 
     @Test
@@ -70,14 +73,20 @@ class JpaSoftwareRepositoryIT {
         jpa.flush();
         jdbc.update("INSERT INTO software_alternative_titles (title, software_id) VALUES ('Элита', ?)", ID.value());
         jdbc.update("INSERT INTO software_languages (software_id, language) VALUES (?, 'en')", ID.value());
-        jdbc.update("INSERT INTO software_links (url, type, software_id) VALUES ('https://example.com', 'homepage', ?)", ID.value());
+        jdbc.update(
+                "INSERT INTO software_links (url, type, software_id) VALUES ('https://example.com', 'homepage', ?)",
+                ID.value());
 
         repository.delete(repository.findById(ID).orElseThrow());
         jpa.flush();
 
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM software WHERE id = ?", Integer.class, ID.value())).isZero();
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM software_alternative_titles", Integer.class)).isZero();
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM software_languages", Integer.class)).isZero();
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM software_links", Integer.class)).isZero();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM software WHERE id = ?", Integer.class, ID.value()))
+                .isZero();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM software_alternative_titles", Integer.class))
+                .isZero();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM software_languages", Integer.class))
+                .isZero();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM software_links", Integer.class))
+                .isZero();
     }
 }

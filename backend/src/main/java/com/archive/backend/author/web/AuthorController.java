@@ -7,6 +7,7 @@ import com.archive.backend.author.domain.AuthorId;
 import com.archive.backend.author.web.dto.AuthorCatalogEntryDto;
 import com.archive.backend.author.web.dto.AuthorDetailsDto;
 import com.archive.backend.author.web.mapper.AuthorWebMapper;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
@@ -16,8 +17,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/authors")
@@ -33,9 +32,10 @@ public class AuthorController {
             @RequestParam(required = false) @Nullable String letter,
             @RequestParam(required = false) @Nullable UUID country,
             @RequestParam(required = false) @Nullable UUID city,
-            Pageable pageable
-    ) {
-        return listHandler.handle(webMapper.toListQuery(letter, country, city, pageable)).map(webMapper::toCatalogEntry);
+            Pageable pageable) {
+        return listHandler
+                .handle(webMapper.toListQuery(letter, country, city, pageable))
+                .map(webMapper::toCatalogEntry);
     }
 
     @GetMapping("/{id}")

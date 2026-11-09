@@ -1,15 +1,14 @@
 package com.archive.backend.software.app;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.software.domain.Software;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareTitle;
-import org.junit.jupiter.api.Test;
-
 import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.jupiter.api.Test;
 
 class DeleteSoftwareHandlerTest {
 
@@ -30,6 +29,7 @@ class DeleteSoftwareHandlerTest {
     @Test
     void failsWhenTheSoftwareDoesNotExist() {
         assertThatThrownBy(() -> handler.handle(new DeleteSoftwareCommand(ID)))
-                .isInstanceOfSatisfying(NotFoundException.class, e -> assertThat(e.code()).isEqualTo("software.not-found"));
+                .isInstanceOfSatisfying(
+                        NotFoundException.class, e -> assertThat(e.code()).isEqualTo("software.not-found"));
     }
 }

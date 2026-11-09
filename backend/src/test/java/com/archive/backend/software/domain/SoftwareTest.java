@@ -1,11 +1,10 @@
 package com.archive.backend.software.domain;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
 import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class SoftwareTest {
 
@@ -13,7 +12,8 @@ class SoftwareTest {
 
     @Test
     void isCreatedWithItsTitleDescriptionAndReleaseDate() {
-        Software software = Software.create(ID, new SoftwareTitle("Elite"), new SoftwareDescription("Space trading"), LocalDate.of(1985, 9, 20));
+        Software software = Software.create(
+                ID, new SoftwareTitle("Elite"), new SoftwareDescription("Space trading"), LocalDate.of(1985, 9, 20));
 
         assertThat(software.getId()).isEqualTo(ID);
         assertThat(software.getTitle()).isEqualTo(new SoftwareTitle("Elite"));
@@ -23,7 +23,8 @@ class SoftwareTest {
 
     @Test
     void editingReplacesTitleDescriptionAndReleaseDate() {
-        Software software = Software.create(ID, new SoftwareTitle("Elite"), new SoftwareDescription("Space trading"), LocalDate.of(1985, 9, 20));
+        Software software = Software.create(
+                ID, new SoftwareTitle("Elite"), new SoftwareDescription("Space trading"), LocalDate.of(1985, 9, 20));
 
         software.edit(new SoftwareTitle("Elite Plus"), null, null);
 

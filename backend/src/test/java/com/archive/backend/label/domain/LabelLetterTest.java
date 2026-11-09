@@ -1,13 +1,13 @@
 package com.archive.backend.label.domain;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.archive.backend.shared.domain.error.InvalidValueException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class LabelLetterTest {
 
@@ -27,7 +27,8 @@ class LabelLetterTest {
     @ValueSource(strings = {"", " ", "AB", "1", "Ä", "-"})
     void refusesAnythingElse(String raw) {
         assertThatThrownBy(() -> new LabelLetter(raw))
-                .isInstanceOfSatisfying(InvalidValueException.class, e -> assertThat(e.code()).isEqualTo("label.letter-invalid"));
+                .isInstanceOfSatisfying(
+                        InvalidValueException.class, e -> assertThat(e.code()).isEqualTo("label.letter-invalid"));
     }
 
     @Test

@@ -2,7 +2,6 @@ package com.archive.backend.label.domain;
 
 import com.archive.backend.shared.domain.ddd.ValueObject;
 import com.archive.backend.shared.domain.error.InvalidValueException;
-
 import java.util.Locale;
 import java.util.Objects;
 

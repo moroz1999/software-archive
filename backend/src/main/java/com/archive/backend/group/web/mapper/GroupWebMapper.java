@@ -8,11 +8,10 @@ import com.archive.backend.group.read.GroupDetails;
 import com.archive.backend.group.web.dto.GroupCatalogEntryDto;
 import com.archive.backend.group.web.dto.GroupDetailsDto;
 import com.archive.backend.label.domain.LabelLetter;
+import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.mapstruct.Mapper;
 import org.springframework.data.domain.Pageable;
-
-import java.util.UUID;
 
 @Mapper(componentModel = "spring")
 public interface GroupWebMapper {
@@ -23,7 +22,8 @@ public interface GroupWebMapper {
 
     // Request scalars -> value objects.
 
-    default ListGroupsQuery toListQuery(@Nullable String letter, @Nullable UUID country, @Nullable UUID city, Pageable pageable) {
+    default ListGroupsQuery toListQuery(
+            @Nullable String letter, @Nullable UUID country, @Nullable UUID city, Pageable pageable) {
         return new ListGroupsQuery(
                 letter == null ? null : new LabelLetter(letter),
                 country == null ? null : new CountryId(country),

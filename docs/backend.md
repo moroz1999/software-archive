@@ -69,6 +69,7 @@ Use cases and the domain signal failures by throwing business exceptions; one `@
 
 All run on every build; nothing is suppressed to get a change through.
 
+- **Formatter** — palantir-java-format through Spotless. Every build formats the Java sources before compiling them (`process-sources`), so code is never reviewed or committed unformatted; `make format` (`./mvnw spotless:apply`) does it alone. Unused imports are removed.
 - **Compiler** — `-Xlint:all -Werror` (only `processing` is off: annotations without a processor are normal). Any warning fails the build.
 - **Error Prone + NullAway** — run inside `javac` (`.mvn/jvm.config` opens the compiler internals they need). Everything in `com.archive.backend` is non-null unless marked `@Nullable` (`org.jspecify.annotations.Nullable`). Generated sources (MapStruct) are excluded.
 - **ArchUnit** — `architecture/ArchitectureTest`, part of `./mvnw test`. It enforces:

@@ -2,5 +2,4 @@ package com.archive.backend.software.app;
 
 import org.springframework.data.domain.Pageable;
 
-public record ListSoftwareQuery(Pageable pageable) {
-}
+public record ListSoftwareQuery(Pageable pageable) {}

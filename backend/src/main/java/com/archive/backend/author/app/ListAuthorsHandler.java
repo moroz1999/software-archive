@@ -1,10 +1,10 @@
 package com.archive.backend.author.app;
 
-import com.archive.backend.label.domain.LabelLetter;
 import com.archive.backend.author.read.AuthorCatalogEntry;
 import com.archive.backend.author.read.AuthorReadRepository;
 import com.archive.backend.geo.domain.CityId;
 import com.archive.backend.geo.domain.CountryId;
+import com.archive.backend.label.domain.LabelLetter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;

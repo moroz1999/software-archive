@@ -1,5 +1,7 @@
 package com.archive.backend.group.infra;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.archive.backend.TestcontainersConfiguration;
 import com.archive.backend.group.read.GroupCatalogEntry;
 import com.archive.backend.group.read.GroupDetails;
@@ -7,6 +9,8 @@ import com.archive.backend.group.read.GroupLabel;
 import com.archive.backend.group.read.GroupLocation;
 import com.archive.backend.group.read.GroupMember;
 import com.archive.backend.group.read.RelatedGroup;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,11 +20,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
-
-import java.util.List;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -59,13 +58,24 @@ class JdbcGroupReadRepositoryIT {
     @BeforeEach
     void insert() {
         jdbc.update("INSERT INTO country (id, name) VALUES (?, 'Finland'), (?, 'Norway')", FINLAND, NORWAY);
-        jdbc.update("INSERT INTO city (id, name, country_id) VALUES (?, 'Helsinki', ?), (?, 'Tampere', ?)", HELSINKI, FINLAND, TAMPERE, FINLAND);
+        jdbc.update(
+                "INSERT INTO city (id, name, country_id) VALUES (?, 'Helsinki', ?), (?, 'Tampere', ?)",
+                HELSINKI,
+                FINLAND,
+                TAMPERE,
+                FINLAND);
 
         jdbc.update("INSERT INTO person (id, real_name) VALUES (?, 'Fyodor Ivanko'), (?, NULL)", FEDYA, ZED);
-        jdbc.update("INSERT INTO \"group\" (id, name, notes) VALUES (?, 'Crew Ltd', 'Since 1990'), (?, 'Band', NULL), (?, 'Oldies', NULL)",
-                CREW, BAND, OLDIES);
+        jdbc.update(
+                "INSERT INTO \"group\" (id, name, notes) VALUES (?, 'Crew Ltd', 'Since 1990'), (?, 'Band', NULL), (?, 'Oldies', NULL)",
+                CREW,
+                BAND,
+                OLDIES);
         jdbc.update("INSERT INTO group_type (code) VALUES ('demogroup'), ('label')");
-        jdbc.update("INSERT INTO group_group_type (group_id, group_type_code) VALUES (?, 'label'), (?, 'demogroup')", CREW, CREW);
+        jdbc.update(
+                "INSERT INTO group_group_type (group_id, group_type_code) VALUES (?, 'label'), (?, 'demogroup')",
+                CREW,
+                CREW);
         jdbc.update("""
                 INSERT INTO label (id, name, person_id, group_id, is_display_name) VALUES
                     (?, 'Crew', NULL, ?, TRUE), (?, 'CRW', NULL, ?, FALSE),
@@ -76,9 +86,20 @@ class JdbcGroupReadRepositoryIT {
                     (?, 'MASTERSOFT', ?, NULL, TRUE), (?, 'хакер федя', ?, NULL, FALSE),
                     (?, 'Zed', ?, NULL, FALSE), (?, 'Ghost', NULL, NULL, FALSE)
                 """, id(211), FEDYA, id(212), FEDYA, id(213), ZED, id(214));
-        jdbc.update("INSERT INTO group_member (group_id, label_id) VALUES (?, ?), (?, ?), (?, ?)",
-                CREW, id(212), CREW, id(213), CREW, id(214));
-        jdbc.update("INSERT INTO group_member_group (group_id, member_group_id) VALUES (?, ?), (?, ?)", CREW, BAND, OLDIES, CREW);
+        jdbc.update(
+                "INSERT INTO group_member (group_id, label_id) VALUES (?, ?), (?, ?), (?, ?)",
+                CREW,
+                id(212),
+                CREW,
+                id(213),
+                CREW,
+                id(214));
+        jdbc.update(
+                "INSERT INTO group_member_group (group_id, member_group_id) VALUES (?, ?), (?, ?)",
+                CREW,
+                BAND,
+                OLDIES,
+                CREW);
         jdbc.update("""
                 INSERT INTO entity_location (entity_type, entity_id, city_id, country_id, is_primary) VALUES
                     ('GROUP', ?, NULL, ?, FALSE), ('GROUP', ?, ?, NULL, TRUE),
@@ -90,12 +111,13 @@ class JdbcGroupReadRepositoryIT {
     void listsGroupsUnderTheirMainNameAndTheirOtherLabelsByNameButNoLabelOfAPersonOrOfNobody() {
         Page<GroupCatalogEntry> page = reads.findCatalogPage(null, null, null, FIRST_PAGE);
 
-        assertThat(page.getContent()).containsExactly(
-                new GroupCatalogEntry(OLDIES, "Alpha", "Oldies"),
-                new GroupCatalogEntry(BAND, "Band", null),
-                new GroupCatalogEntry(CREW, "Crew", "Crew Ltd"),
-                new GroupCatalogEntry(CREW, "CRW", "Crew Ltd"),
-                new GroupCatalogEntry(OLDIES, "Zeta", "Oldies"));
+        assertThat(page.getContent())
+                .containsExactly(
+                        new GroupCatalogEntry(OLDIES, "Alpha", "Oldies"),
+                        new GroupCatalogEntry(BAND, "Band", null),
+                        new GroupCatalogEntry(CREW, "Crew", "Crew Ltd"),
+                        new GroupCatalogEntry(CREW, "CRW", "Crew Ltd"),
+                        new GroupCatalogEntry(OLDIES, "Zeta", "Oldies"));
         assertThat(page.getTotalElements()).isEqualTo(5);
     }
 
@@ -118,55 +140,86 @@ class JdbcGroupReadRepositoryIT {
     @Test
     void filtersByTheFirstLetterInAnyCase() {
         assertThat(reads.findCatalogPage("C", null, null, FIRST_PAGE).getContent())
-                .extracting(GroupCatalogEntry::name).containsExactly("Crew", "CRW");
+                .extracting(GroupCatalogEntry::name)
+                .containsExactly("Crew", "CRW");
     }
 
     @Test
     void filtersByACyrillicLetterCountingYoAsYeAndTheRestSign() {
-        jdbc.update("INSERT INTO label (name, group_id) VALUES ('Ёлки', ?), ('Енисей', ?), ('8bit', ?), ('Борис', ?)", BAND, BAND, BAND, BAND);
+        jdbc.update(
+                "INSERT INTO label (name, group_id) VALUES ('Ёлки', ?), ('Енисей', ?), ('8bit', ?), ('Борис', ?)",
+                BAND,
+                BAND,
+                BAND,
+                BAND);
 
         assertThat(reads.findCatalogPage("Е", null, null, FIRST_PAGE).getContent())
-                .extracting(GroupCatalogEntry::name).containsExactlyInAnyOrder("Ёлки", "Енисей");
+                .extracting(GroupCatalogEntry::name)
+                .containsExactlyInAnyOrder("Ёлки", "Енисей");
         assertThat(reads.findCatalogPage("#", null, null, FIRST_PAGE).getContent())
-                .extracting(GroupCatalogEntry::name).containsExactly("8bit");
+                .extracting(GroupCatalogEntry::name)
+                .containsExactly("8bit");
     }
 
     @Test
     void filtersByACountryOfAnyLocationGivenDirectlyOrThroughACity() {
         assertThat(reads.findCatalogPage(null, FINLAND, null, FIRST_PAGE).getContent())
-                .extracting(GroupCatalogEntry::name).containsExactly("Band", "Crew", "CRW");
+                .extracting(GroupCatalogEntry::name)
+                .containsExactly("Band", "Crew", "CRW");
         assertThat(reads.findCatalogPage(null, NORWAY, null, FIRST_PAGE).getContent())
-                .extracting(GroupCatalogEntry::name).containsExactly("Crew", "CRW");
+                .extracting(GroupCatalogEntry::name)
+                .containsExactly("Crew", "CRW");
     }
 
     @Test
     void filtersByACity() {
         assertThat(reads.findCatalogPage(null, null, TAMPERE, FIRST_PAGE).getContent())
-                .extracting(GroupCatalogEntry::name).containsExactly("Band");
+                .extracting(GroupCatalogEntry::name)
+                .containsExactly("Band");
     }
 
     @Test
     void combinesTheFilters() {
         assertThat(reads.findCatalogPage("C", FINLAND, HELSINKI, FIRST_PAGE).getContent())
-                .extracting(GroupCatalogEntry::name).containsExactly("Crew", "CRW");
+                .extracting(GroupCatalogEntry::name)
+                .containsExactly("Crew", "CRW");
     }
 
     @Test
     void readsTheDetailsOfAGroup() {
-        assertThat(reads.findById(CREW)).contains(new GroupDetails(
-                CREW, "Crew", "Crew Ltd", "Since 1990", List.of("demogroup", "label"),
-                List.of(new GroupLabel(CREW_LABEL, "Crew"), new GroupLabel(CRW_LABEL, "CRW")),
-                List.of(new GroupLocation("Finland", "Helsinki", true), new GroupLocation("Norway", null, false)),
-                List.of(new GroupMember("Ghost", null, null), new GroupMember("Zed", ZED, null), new GroupMember("хакер федя", FEDYA, "MASTERSOFT")),
-                List.of(new RelatedGroup(BAND, "Band")),
-                List.of(new RelatedGroup(OLDIES, "Alpha"))));
+        assertThat(reads.findById(CREW))
+                .contains(new GroupDetails(
+                        CREW,
+                        "Crew",
+                        "Crew Ltd",
+                        "Since 1990",
+                        List.of("demogroup", "label"),
+                        List.of(new GroupLabel(CREW_LABEL, "Crew"), new GroupLabel(CRW_LABEL, "CRW")),
+                        List.of(
+                                new GroupLocation("Finland", "Helsinki", true),
+                                new GroupLocation("Norway", null, false)),
+                        List.of(
+                                new GroupMember("Ghost", null, null),
+                                new GroupMember("Zed", ZED, null),
+                                new GroupMember("хакер федя", FEDYA, "MASTERSOFT")),
+                        List.of(new RelatedGroup(BAND, "Band")),
+                        List.of(new RelatedGroup(OLDIES, "Alpha"))));
     }
 
     @Test
     void readsAGroupKnownOnlyByItsName() {
-        assertThat(reads.findById(BAND)).contains(new GroupDetails(
-                BAND, "Band", "Band", null, List.of(), List.of(), List.of(new GroupLocation("Finland", "Tampere", true)),
-                List.of(), List.of(), List.of(new RelatedGroup(CREW, "Crew"))));
+        assertThat(reads.findById(BAND))
+                .contains(new GroupDetails(
+                        BAND,
+                        "Band",
+                        "Band",
+                        null,
+                        List.of(),
+                        List.of(),
+                        List.of(new GroupLocation("Finland", "Tampere", true)),
+                        List.of(),
+                        List.of(),
+                        List.of(new RelatedGroup(CREW, "Crew"))));
     }
 
     @Test

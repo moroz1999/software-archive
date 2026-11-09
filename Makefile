@@ -5,7 +5,7 @@ MVNW := cd backend && ./mvnw
 FRONTEND := docker compose exec frontend npm run
 
 .DEFAULT_GOAL := help
-.PHONY: help up down wsl-up run run-fixtures clean test verify check test-front lint typecheck build
+.PHONY: help up down wsl-up run run-fixtures clean format test verify check test-front lint typecheck build
 
 help: ## List the commands
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
@@ -32,6 +32,9 @@ run-fixtures: ## Run the backend with the fixture data set; cleans the build so 
 
 clean: ## Clean the backend build
 	$(MVNW) clean
+
+format: ## Format the backend Java sources (every backend build does it too)
+	$(MVNW) spotless:apply
 
 test: ## Backend unit tests
 	$(MVNW) test

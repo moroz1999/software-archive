@@ -1,11 +1,16 @@
 package com.archive.backend.author.infra;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
+
 import com.archive.backend.TestcontainersConfiguration;
-import com.archive.backend.author.read.AuthorLabel;
 import com.archive.backend.author.read.AuthorCatalogEntry;
 import com.archive.backend.author.read.AuthorDetails;
 import com.archive.backend.author.read.AuthorGroup;
+import com.archive.backend.author.read.AuthorLabel;
 import com.archive.backend.author.read.AuthorLocation;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,12 +20,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
-
-import java.util.List;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
 
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -59,10 +58,19 @@ class JdbcAuthorReadRepositoryIT {
     @BeforeEach
     void insert() {
         jdbc.update("INSERT INTO country (id, name) VALUES (?, 'Finland'), (?, 'Norway')", FINLAND, NORWAY);
-        jdbc.update("INSERT INTO city (id, name, country_id) VALUES (?, 'Helsinki', ?), (?, 'Tampere', ?)", HELSINKI, FINLAND, TAMPERE, FINLAND);
+        jdbc.update(
+                "INSERT INTO city (id, name, country_id) VALUES (?, 'Helsinki', ?), (?, 'Tampere', ?)",
+                HELSINKI,
+                FINLAND,
+                TAMPERE,
+                FINLAND);
 
-        jdbc.update("INSERT INTO person (id, real_name, notes) VALUES (?, 'John Doe', 'Coder since 1984'), (?, NULL, NULL), (?, 'Carl Real', NULL), (?, NULL, NULL)",
-                ZED, BOB, CARL, NAMELESS);
+        jdbc.update(
+                "INSERT INTO person (id, real_name, notes) VALUES (?, 'John Doe', 'Coder since 1984'), (?, NULL, NULL), (?, 'Carl Real', NULL), (?, NULL, NULL)",
+                ZED,
+                BOB,
+                CARL,
+                NAMELESS);
         jdbc.update("INSERT INTO \"group\" (id, name) VALUES (?, 'Crew'), (?, 'Band')", CREW, BAND);
         jdbc.update("""
                 INSERT INTO label (id, name, person_id, group_id, is_display_name) VALUES
@@ -70,7 +78,14 @@ class JdbcAuthorReadRepositoryIT {
                     (gen_random_uuid(), 'Mona', ?, NULL, FALSE), (gen_random_uuid(), 'Bob', ?, NULL, FALSE),
                     (gen_random_uuid(), 'Crew Label', NULL, ?, TRUE), (gen_random_uuid(), 'Nobody', NULL, NULL, FALSE)
                 """, ZED_LABEL, ZED, AXE_LABEL, ZED, BOB, BOB, CREW);
-        jdbc.update("INSERT INTO group_member (group_id, label_id) VALUES (?, ?), (?, ?), (?, ?)", CREW, AXE_LABEL, CREW, ZED_LABEL, BAND, ZED_LABEL);
+        jdbc.update(
+                "INSERT INTO group_member (group_id, label_id) VALUES (?, ?), (?, ?), (?, ?)",
+                CREW,
+                AXE_LABEL,
+                CREW,
+                ZED_LABEL,
+                BAND,
+                ZED_LABEL);
         jdbc.update("""
                 INSERT INTO entity_location (entity_type, entity_id, city_id, country_id, is_primary) VALUES
                     ('PERSON', ?, NULL, ?, FALSE), ('PERSON', ?, ?, NULL, TRUE),
@@ -83,12 +98,13 @@ class JdbcAuthorReadRepositoryIT {
     void listsPeopleUnderTheirMainNameAndTheirOtherLabelsByNameButNoLabelOfAGroupOrOfNobody() {
         Page<AuthorCatalogEntry> page = reads.findCatalogPage(null, null, null, FIRST_PAGE);
 
-        assertThat(page.getContent()).containsExactly(
-                new AuthorCatalogEntry(ZED, "Axe", "John Doe", "Zed"),
-                new AuthorCatalogEntry(BOB, "Bob", null, null),
-                new AuthorCatalogEntry(CARL, "Carl Real", null, null),
-                new AuthorCatalogEntry(BOB, "Mona", null, "Bob"),
-                new AuthorCatalogEntry(ZED, "Zed", "John Doe", null));
+        assertThat(page.getContent())
+                .containsExactly(
+                        new AuthorCatalogEntry(ZED, "Axe", "John Doe", "Zed"),
+                        new AuthorCatalogEntry(BOB, "Bob", null, null),
+                        new AuthorCatalogEntry(CARL, "Carl Real", null, null),
+                        new AuthorCatalogEntry(BOB, "Mona", null, "Bob"),
+                        new AuthorCatalogEntry(ZED, "Zed", "John Doe", null));
         assertThat(page.getTotalElements()).isEqualTo(5);
     }
 
@@ -96,8 +112,14 @@ class JdbcAuthorReadRepositoryIT {
     void namesTheRealNameNextToEveryEntryOfAPersonWhoHasOneButNotNextToItself() {
         Page<AuthorCatalogEntry> page = reads.findCatalogPage(null, null, null, FIRST_PAGE);
 
-        assertThat(page.getContent()).extracting(AuthorCatalogEntry::name, AuthorCatalogEntry::realName).containsExactly(
-                tuple("Axe", "John Doe"), tuple("Bob", null), tuple("Carl Real", null), tuple("Mona", null), tuple("Zed", "John Doe"));
+        assertThat(page.getContent())
+                .extracting(AuthorCatalogEntry::name, AuthorCatalogEntry::realName)
+                .containsExactly(
+                        tuple("Axe", "John Doe"),
+                        tuple("Bob", null),
+                        tuple("Carl Real", null),
+                        tuple("Mona", null),
+                        tuple("Zed", "John Doe"));
     }
 
     @Test
@@ -113,37 +135,49 @@ class JdbcAuthorReadRepositoryIT {
         jdbc.update("INSERT INTO label (name, person_id) VALUES ('mike', ?)", CARL);
 
         assertThat(reads.findCatalogPage("M", null, null, FIRST_PAGE).getContent())
-                .extracting(AuthorCatalogEntry::name).containsExactly("mike", "Mona");
+                .extracting(AuthorCatalogEntry::name)
+                .containsExactly("mike", "Mona");
     }
 
     @Test
     void filtersByACyrillicLetterCountingYoAsYe() {
-        jdbc.update("INSERT INTO label (name, person_id) VALUES ('Ёжик', ?), ('Енот', ?), ('Борис', ?)", CARL, CARL, CARL);
+        jdbc.update(
+                "INSERT INTO label (name, person_id) VALUES ('Ёжик', ?), ('Енот', ?), ('Борис', ?)", CARL, CARL, CARL);
 
         assertThat(reads.findCatalogPage("Е", null, null, FIRST_PAGE).getContent())
-                .extracting(AuthorCatalogEntry::name).containsExactlyInAnyOrder("Ёжик", "Енот");
+                .extracting(AuthorCatalogEntry::name)
+                .containsExactlyInAnyOrder("Ёжик", "Енот");
     }
 
     @Test
     void filtersNamesStartingWithAnythingElseByTheRestSign() {
-        jdbc.update("INSERT INTO label (name, person_id) VALUES ('8bit', ?), ('Ärger', ?), ('_under', ?), ('Борис', ?)", CARL, CARL, CARL, CARL);
+        jdbc.update(
+                "INSERT INTO label (name, person_id) VALUES ('8bit', ?), ('Ärger', ?), ('_under', ?), ('Борис', ?)",
+                CARL,
+                CARL,
+                CARL,
+                CARL);
 
         assertThat(reads.findCatalogPage("#", null, null, FIRST_PAGE).getContent())
-                .extracting(AuthorCatalogEntry::name).containsExactlyInAnyOrder("8bit", "Ärger", "_under");
+                .extracting(AuthorCatalogEntry::name)
+                .containsExactlyInAnyOrder("8bit", "Ärger", "_under");
     }
 
     @Test
     void filtersByACountryOfAnyLocationGivenDirectlyOrThroughACity() {
         assertThat(reads.findCatalogPage(null, FINLAND, null, FIRST_PAGE).getContent())
-                .extracting(AuthorCatalogEntry::name).containsExactly("Axe", "Carl Real", "Zed");
+                .extracting(AuthorCatalogEntry::name)
+                .containsExactly("Axe", "Carl Real", "Zed");
         assertThat(reads.findCatalogPage(null, NORWAY, null, FIRST_PAGE).getContent())
-                .extracting(AuthorCatalogEntry::name).containsExactly("Axe", "Bob", "Mona", "Zed");
+                .extracting(AuthorCatalogEntry::name)
+                .containsExactly("Axe", "Bob", "Mona", "Zed");
     }
 
     @Test
     void filtersByACity() {
         assertThat(reads.findCatalogPage(null, null, TAMPERE, FIRST_PAGE).getContent())
-                .extracting(AuthorCatalogEntry::name).containsExactly("Carl Real");
+                .extracting(AuthorCatalogEntry::name)
+                .containsExactly("Carl Real");
     }
 
     @Test
@@ -154,17 +188,33 @@ class JdbcAuthorReadRepositoryIT {
 
     @Test
     void readsTheDetailsOfAnAuthorWithTheGroupsUnderTheirMainNameAndTheLabelOfEveryMembership() {
-        assertThat(reads.findById(ZED)).contains(new AuthorDetails(
-                ZED, "Zed", "John Doe", "Coder since 1984",
-                List.of(new AuthorLabel(AXE_LABEL, "Axe"), new AuthorLabel(ZED_LABEL, "Zed")),
-                List.of(new AuthorLocation("Finland", "Helsinki", true), new AuthorLocation("Norway", null, false)),
-                List.of(new AuthorGroup(BAND, "Band", null), new AuthorGroup(CREW, "Crew Label", "Axe"), new AuthorGroup(CREW, "Crew Label", null))));
+        assertThat(reads.findById(ZED))
+                .contains(new AuthorDetails(
+                        ZED,
+                        "Zed",
+                        "John Doe",
+                        "Coder since 1984",
+                        List.of(new AuthorLabel(AXE_LABEL, "Axe"), new AuthorLabel(ZED_LABEL, "Zed")),
+                        List.of(
+                                new AuthorLocation("Finland", "Helsinki", true),
+                                new AuthorLocation("Norway", null, false)),
+                        List.of(
+                                new AuthorGroup(BAND, "Band", null),
+                                new AuthorGroup(CREW, "Crew Label", "Axe"),
+                                new AuthorGroup(CREW, "Crew Label", null))));
     }
 
     @Test
     void readsAnAuthorKnownOnlyByTheRealName() {
-        assertThat(reads.findById(CARL)).contains(new AuthorDetails(
-                CARL, "Carl Real", "Carl Real", null, List.of(), List.of(new AuthorLocation("Finland", "Tampere", true)), List.of()));
+        assertThat(reads.findById(CARL))
+                .contains(new AuthorDetails(
+                        CARL,
+                        "Carl Real",
+                        "Carl Real",
+                        null,
+                        List.of(),
+                        List.of(new AuthorLocation("Finland", "Tampere", true)),
+                        List.of()));
     }
 
     @Test

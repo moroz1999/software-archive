@@ -14,8 +14,7 @@ public final class LetterFilterSql {
     /** First characters that are catalog letters; anything else is under the rest sign. */
     private static final String LETTERS_PATTERN = "^[A-Za-zА-Яа-яЁё]";
 
-    private LetterFilterSql() {
-    }
+    private LetterFilterSql() {}
 
     /** The condition on {@code column} for {@code letter}, adding the parameters it needs to {@code params}. */
     public static String condition(String column, String letter, Map<String, Object> params) {

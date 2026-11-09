@@ -9,6 +9,12 @@ import com.archive.backend.group.read.GroupReadRepository;
 import com.archive.backend.group.read.RelatedGroup;
 import com.archive.backend.label.read.LetterFilterSql;
 import com.archive.backend.label.read.MainNameSql;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
@@ -16,13 +22,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 
 /**
  * The group catalog and group pages straight from SQL: the catalog mixes groups and their labels, which no single
@@ -64,7 +63,8 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
     private final JdbcClient jdbc;
 
     @Override
-    public Page<GroupCatalogEntry> findCatalogPage(@Nullable String letter, @Nullable UUID countryId, @Nullable UUID cityId, Pageable pageable) {
+    public Page<GroupCatalogEntry> findCatalogPage(
+            @Nullable String letter, @Nullable UUID countryId, @Nullable UUID cityId, Pageable pageable) {
         List<String> conditions = new ArrayList<>();
         Map<String, Object> params = new HashMap<>();
         if (letter != null) {
@@ -90,19 +90,28 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
                         + "SELECT e.group_id, e.name, CASE WHEN e.name = e.group_name THEN NULL ELSE e.group_name END AS group_name FROM entries e"
                         + where + " ORDER BY lower(e.name), e.name, e.group_id LIMIT :limit OFFSET :offset")
                 .params(params)
-                .query((rs, row) -> new GroupCatalogEntry(rs.getObject("group_id", UUID.class), rs.getString("name"), rs.getString("group_name")))
+                .query((rs, row) -> new GroupCatalogEntry(
+                        rs.getObject("group_id", UUID.class), rs.getString("name"), rs.getString("group_name")))
                 .list();
         return new PageImpl<>(content, pageable, total);
     }
 
     @Override
     public Optional<GroupDetails> findById(UUID id) {
-        return jdbc.sql("WITH " + MainNameSql.GROUPS + "SELECT main_name, group_name, notes FROM named_group WHERE group_id = :id")
+        return jdbc.sql("WITH " + MainNameSql.GROUPS
+                        + "SELECT main_name, group_name, notes FROM named_group WHERE group_id = :id")
                 .param("id", id)
                 .query((rs, row) -> new GroupDetails(
-                        id, rs.getString("main_name"), rs.getString("group_name"), rs.getString("notes"),
-                        types(id), labels(id), locations(id), members(id),
-                        related(id, "member_group_id", "group_id"), related(id, "group_id", "member_group_id")))
+                        id,
+                        rs.getString("main_name"),
+                        rs.getString("group_name"),
+                        rs.getString("notes"),
+                        types(id),
+                        labels(id),
+                        locations(id),
+                        members(id),
+                        related(id, "member_group_id", "group_id"),
+                        related(id, "group_id", "member_group_id")))
                 .optional();
     }
 
@@ -131,7 +140,8 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
                         ORDER BY COALESCE(l.is_primary, FALSE) DESC, co.name, ci.name
                         """)
                 .param("id", groupId)
-                .query((rs, row) -> new GroupLocation(rs.getString("country"), rs.getString("city"), rs.getBoolean("is_primary")))
+                .query((rs, row) ->
+                        new GroupLocation(rs.getString("country"), rs.getString("city"), rs.getBoolean("is_primary")))
                 .list();
     }
 
@@ -146,7 +156,8 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
                         ORDER BY lower(l.name), l.id
                         """)
                 .param("id", groupId)
-                .query((rs, row) -> new GroupMember(rs.getString("name"), rs.getObject("person_id", UUID.class), rs.getString("person_name")))
+                .query((rs, row) -> new GroupMember(
+                        rs.getString("name"), rs.getObject("person_id", UUID.class), rs.getString("person_name")))
                 .list();
     }
 

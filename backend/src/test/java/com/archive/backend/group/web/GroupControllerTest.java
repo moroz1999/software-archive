@@ -1,5 +1,14 @@
 package com.archive.backend.group.web;
 
+import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.archive.backend.geo.domain.CityId;
 import com.archive.backend.geo.domain.CountryId;
 import com.archive.backend.group.app.GetGroupHandler;
@@ -19,6 +28,8 @@ import com.archive.backend.label.domain.LabelLetter;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
 import com.archive.backend.shared.web.ApiExceptionHandler;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -27,18 +38,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.List;
-import java.util.UUID;
-
-import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(GroupController.class)
 @Import({SecurityConfig.class, WebConfig.class, GroupWebMapperImpl.class, ApiExceptionHandler.class})
@@ -64,8 +63,12 @@ class GroupControllerTest {
     @Test
     void listsTheCatalogWithoutFilters() throws Exception {
         when(listHandler.handle(new ListGroupsQuery(null, null, null, PageRequest.of(0, 100))))
-                .thenReturn(new PageImpl<>(List.of(new GroupCatalogEntry(ID, "Crew", "Crew Ltd"), new GroupCatalogEntry(INNER, "Band", null)),
-                        PageRequest.of(0, 100), 2));
+                .thenReturn(new PageImpl<>(
+                        List.of(
+                                new GroupCatalogEntry(ID, "Crew", "Crew Ltd"),
+                                new GroupCatalogEntry(INNER, "Band", null)),
+                        PageRequest.of(0, 100),
+                        2));
 
         mvc.perform(get("/api/groups").param("page", "0").param("size", "100"))
                 .andExpect(status().isOk())
@@ -79,12 +82,17 @@ class GroupControllerTest {
 
     @Test
     void listsTheCatalogWithFilters() throws Exception {
-        when(listHandler.handle(new ListGroupsQuery(new LabelLetter("С"), new CountryId(COUNTRY), new CityId(CITY), PageRequest.of(1, 100))))
-                .thenReturn(new PageImpl<>(List.of(new GroupCatalogEntry(ID, "Сцена", null)), PageRequest.of(1, 100), 101));
+        when(listHandler.handle(new ListGroupsQuery(
+                        new LabelLetter("С"), new CountryId(COUNTRY), new CityId(CITY), PageRequest.of(1, 100))))
+                .thenReturn(
+                        new PageImpl<>(List.of(new GroupCatalogEntry(ID, "Сцена", null)), PageRequest.of(1, 100), 101));
 
         mvc.perform(get("/api/groups")
-                        .param("letter", "с").param("country", COUNTRY.toString()).param("city", CITY.toString())
-                        .param("page", "1").param("size", "100"))
+                        .param("letter", "с")
+                        .param("country", COUNTRY.toString())
+                        .param("city", CITY.toString())
+                        .param("page", "1")
+                        .param("size", "100"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].name").value("Сцена"))
                 .andExpect(jsonPath("$.page.number").value(1));
@@ -100,25 +108,32 @@ class GroupControllerTest {
 
     @Test
     void answers400ForAMalformedCountry() throws Exception {
-        mvc.perform(get("/api/groups").param("country", "not-a-uuid"))
-                .andExpect(status().isBadRequest());
+        mvc.perform(get("/api/groups").param("country", "not-a-uuid")).andExpect(status().isBadRequest());
     }
 
     @Test
     void answers400ForAMalformedCity() throws Exception {
-        mvc.perform(get("/api/groups").param("city", "not-a-uuid"))
-                .andExpect(status().isBadRequest());
+        mvc.perform(get("/api/groups").param("city", "not-a-uuid")).andExpect(status().isBadRequest());
     }
 
     @Test
     void returnsOneGroup() throws Exception {
-        when(getHandler.handle(new GetGroupQuery(new GroupId(ID)))).thenReturn(new GroupDetails(
-                ID, "Crew", "Crew Ltd", "Since 1990", List.of("demogroup"),
-                List.of(new GroupLabel(LABEL, "Crew")),
-                List.of(new GroupLocation("Finland", "Helsinki", true), new GroupLocation("Norway", null, false)),
-                List.of(new GroupMember("хакер федя", PERSON, "MASTERSOFT"), new GroupMember("Ghost", null, null)),
-                List.of(new RelatedGroup(INNER, "Band")),
-                List.of(new RelatedGroup(OUTER, "Alpha"))));
+        when(getHandler.handle(new GetGroupQuery(new GroupId(ID))))
+                .thenReturn(new GroupDetails(
+                        ID,
+                        "Crew",
+                        "Crew Ltd",
+                        "Since 1990",
+                        List.of("demogroup"),
+                        List.of(new GroupLabel(LABEL, "Crew")),
+                        List.of(
+                                new GroupLocation("Finland", "Helsinki", true),
+                                new GroupLocation("Norway", null, false)),
+                        List.of(
+                                new GroupMember("хакер федя", PERSON, "MASTERSOFT"),
+                                new GroupMember("Ghost", null, null)),
+                        List.of(new RelatedGroup(INNER, "Band")),
+                        List.of(new RelatedGroup(OUTER, "Alpha"))));
 
         mvc.perform(get("/api/groups/{id}", ID))
                 .andExpect(status().isOk())
@@ -153,7 +168,6 @@ class GroupControllerTest {
 
     @Test
     void answers400ForAMalformedId() throws Exception {
-        mvc.perform(get("/api/groups/{id}", "not-a-uuid"))
-                .andExpect(status().isBadRequest());
+        mvc.perform(get("/api/groups/{id}", "not-a-uuid")).andExpect(status().isBadRequest());
     }
 }
