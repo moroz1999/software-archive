@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -80,12 +81,20 @@ class JdbcAuthorReadRepositoryIT {
         Page<AuthorCatalogEntry> page = reads.findCatalogPage(null, null, null, FIRST_PAGE);
 
         assertThat(page.getContent()).containsExactly(
-                new AuthorCatalogEntry(ZED, "Axe", "Zed"),
-                new AuthorCatalogEntry(BOB, "Bob", null),
-                new AuthorCatalogEntry(CARL, "Carl Real", null),
-                new AuthorCatalogEntry(BOB, "Mona", "Bob"),
-                new AuthorCatalogEntry(ZED, "Zed", null));
+                new AuthorCatalogEntry(ZED, "Axe", "John Doe", "Zed"),
+                new AuthorCatalogEntry(BOB, "Bob", null, null),
+                new AuthorCatalogEntry(CARL, "Carl Real", null, null),
+                new AuthorCatalogEntry(BOB, "Mona", null, "Bob"),
+                new AuthorCatalogEntry(ZED, "Zed", "John Doe", null));
         assertThat(page.getTotalElements()).isEqualTo(5);
+    }
+
+    @Test
+    void namesTheRealNameNextToEveryEntryOfAPersonWhoHasOneButNotNextToItself() {
+        Page<AuthorCatalogEntry> page = reads.findCatalogPage(null, null, null, FIRST_PAGE);
+
+        assertThat(page.getContent()).extracting(AuthorCatalogEntry::name, AuthorCatalogEntry::realName).containsExactly(
+                tuple("Axe", "John Doe"), tuple("Bob", null), tuple("Carl Real", null), tuple("Mona", null), tuple("Zed", "John Doe"));
     }
 
     @Test
@@ -137,7 +146,7 @@ class JdbcAuthorReadRepositoryIT {
     @Test
     void combinesTheFilters() {
         assertThat(reads.findCatalogPage("Z", FINLAND, HELSINKI, FIRST_PAGE).getContent())
-                .containsExactly(new AuthorCatalogEntry(ZED, "Zed", null));
+                .containsExactly(new AuthorCatalogEntry(ZED, "Zed", "John Doe", null));
     }
 
     @Test

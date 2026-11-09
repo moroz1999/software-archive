@@ -9,6 +9,7 @@ import {Select} from '@/shared/ui/select';
 import {Stack} from '@/shared/ui/stack';
 import {Text, TextLink} from '@/shared/ui/typography';
 import {useAuthorCatalog} from '../model/author-catalog-context';
+import type {AuthorCatalogEntry} from '../model/catalog';
 import {AUTHOR_LETTERS, catalogHref, toCityId, toCountryId} from '../model/catalog-filter';
 import {AuthorCatalogSkeleton} from './AuthorCatalogSkeleton';
 import styles from './AuthorCatalog.module.css';
@@ -76,6 +77,17 @@ function PlaceFilters() {
     );
 }
 
+/** Next to an entry: the real name of the person, or for an alias of a person without one, the main name. */
+function EntryNote({entry}: {readonly entry: AuthorCatalogEntry}) {
+    if (entry.realName !== null) {
+        return <Text variant="bodySm" tone="muted">{entry.realName}</Text>;
+    }
+    if (entry.aliasOf !== null) {
+        return <Text variant="bodySm" tone="muted">alias of {entry.aliasOf}</Text>;
+    }
+    return null;
+}
+
 function Entries() {
     const {filter, entries, changing} = useAuthorCatalog();
 
@@ -95,10 +107,11 @@ function Entries() {
                 <Grid as="ul" ariaLabel="Authors" desktopColumns={4} tabletColumns={3} mobileColumns={1} gap="md">
                     {entries.data.items.map((entry) => (
                         <li key={`${entry.personId}-${entry.name}`}>
-                            <Stack gap="none">
+                            <Inline gap="sm" align="baseline" wrap>
                                 <Text><TextLink href={authorPath(entry.personId)}>{entry.name}</TextLink></Text>
-                                {entry.aliasOf !== null && <Text variant="caption" tone="muted">alias of {entry.aliasOf}</Text>}
-                            </Stack>
+                                {' '}
+                                <EntryNote entry={entry}/>
+                            </Inline>
                         </li>
                     ))}
                 </Grid>

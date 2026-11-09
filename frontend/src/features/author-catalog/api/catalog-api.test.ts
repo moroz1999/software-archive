@@ -14,12 +14,18 @@ describe(fetchAuthorCatalogPage, () => {
     });
 
     it('asks for a page of 100 entries without filters', async () => {
-        const fetchMock = stubFetch(json(pageResponse([{personId: PERSON, name: 'Axe', aliasOf: 'Zed'}, {personId: PERSON, name: 'Zed', aliasOf: null}], {size: 100})));
+        const fetchMock = stubFetch(json(pageResponse([
+            {personId: PERSON, name: 'Axe', realName: 'John Doe', aliasOf: 'Zed'},
+            {personId: PERSON, name: 'Zed', realName: null, aliasOf: null},
+        ], {size: 100})));
 
         const page = await fetchAuthorCatalogPage(parseCatalogFilter(new URLSearchParams()), new AbortController().signal);
 
         expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/authors?page=0&size=100');
-        expect(page.items).toStrictEqual([{personId: PERSON, name: 'Axe', aliasOf: 'Zed'}, {personId: PERSON, name: 'Zed', aliasOf: null}]);
+        expect(page.items).toStrictEqual([
+            {personId: PERSON, name: 'Axe', realName: 'John Doe', aliasOf: 'Zed'},
+            {personId: PERSON, name: 'Zed', realName: null, aliasOf: null},
+        ]);
     });
 
     it('asks with the filters and the page', async () => {
@@ -31,7 +37,7 @@ describe(fetchAuthorCatalogPage, () => {
     });
 
     it('fails with a system error on a malformed answer', async () => {
-        stubFetch(json(pageResponse([{personId: 'nope', name: 'Axe', aliasOf: null}])));
+        stubFetch(json(pageResponse([{personId: 'nope', name: 'Axe', realName: null, aliasOf: null}])));
 
         await expect(fetchAuthorCatalogPage(parseCatalogFilter(new URLSearchParams()), new AbortController().signal)).rejects.toBeInstanceOf(SystemError);
     });

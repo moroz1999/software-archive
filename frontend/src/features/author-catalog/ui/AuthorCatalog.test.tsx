@@ -13,10 +13,17 @@ const FINLAND = '00000000-0000-0000-0002-000000000001';
 const NORWAY = '00000000-0000-0000-0002-000000000002';
 const HELSINKI = '00000000-0000-0000-0002-000000000101';
 
+const CARL = '00000000-0000-0000-0003-000000000003';
+
 const ENTRIES = [
-    {personId: ZED, name: 'Axe', aliasOf: 'Zed'},
-    {personId: BOB, name: 'Bob', aliasOf: null},
-    {personId: ZED, name: 'Zed', aliasOf: null},
+    {personId: ZED, name: 'Axe', realName: 'John Doe', aliasOf: 'Zed'},
+    {personId: BOB, name: 'Bob', realName: null, aliasOf: null},
+    {personId: ZED, name: 'Zed', realName: 'John Doe', aliasOf: null},
+];
+/** A person without a real name, with an alias; and a person known only by the real name. */
+const WITHOUT_REAL_NAMES = [
+    {personId: BOB, name: 'Mona', realName: null, aliasOf: 'Bob'},
+    {personId: CARL, name: 'Carl Real', realName: null, aliasOf: null},
 ];
 const COUNTRIES = [{id: FINLAND, name: 'Finland'}, {id: NORWAY, name: 'Norway'}];
 const FINNISH_CITIES = [{id: HELSINKI, name: 'Helsinki'}];
@@ -37,6 +44,12 @@ function openCatalog(path = '/authors') {
     ], {initialEntries: [path]});
     renderWithQueries(<RouterProvider router={router}/>);
     return router;
+}
+
+/** What every entry says: its name and what is shown next to it. */
+async function entryLines(): Promise<string[]> {
+    const list = await screen.findByRole('list', {name: 'Authors'});
+    return within(list).getAllByRole('listitem').map((item) => item.textContent.replaceAll(/\s+/gu, ' ').trim());
 }
 
 async function entryNames(): Promise<string[]> {
@@ -64,7 +77,7 @@ describe(AuthorCatalog, () => {
         expect(screen.queryByTestId('author-catalog-skeleton')).not.toBeInTheDocument();
     });
 
-    it('leads from every entry to its person and names the main name of an alias', async () => {
+    it('leads from every entry to its person', async () => {
         stubFetchRoutes(routes({[ALL]: catalogPage(ENTRIES)}));
         openCatalog();
 
@@ -72,8 +85,20 @@ describe(AuthorCatalog, () => {
 
         expect(within(list).getByRole('link', {name: 'Axe'})).toHaveAttribute('href', `/authors/${ZED}`);
         expect(within(list).getByRole('link', {name: 'Bob'})).toHaveAttribute('href', `/authors/${BOB}`);
-        expect(within(list).getByText('alias of Zed')).toBeInTheDocument();
-        expect(within(list).getAllByText(/alias of/u)).toHaveLength(1);
+    });
+
+    it('names the real name of the person next to the nickname and next to every alias', async () => {
+        stubFetchRoutes(routes({[ALL]: catalogPage(ENTRIES)}));
+        openCatalog();
+
+        await expect(entryLines()).resolves.toStrictEqual(['Axe John Doe', 'Bob', 'Zed John Doe']);
+    });
+
+    it('names the main name next to an alias of a person without a real name, and nothing next to a real name', async () => {
+        stubFetchRoutes(routes({[ALL]: catalogPage(WITHOUT_REAL_NAMES)}));
+        openCatalog();
+
+        await expect(entryLines()).resolves.toStrictEqual(['Mona alias of Bob', 'Carl Real']);
     });
 
     it('offers all letters, the current one marked, each keeping the place filters and starting from the first page', async () => {

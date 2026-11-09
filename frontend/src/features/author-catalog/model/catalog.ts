@@ -5,6 +5,8 @@ import type {CityId, CountryId} from './catalog-filter';
 export interface AuthorCatalogEntry {
     readonly personId: AuthorId;
     readonly name: string;
+    /** The real name of the person, shown next to the entry; null when unknown or when it is the entry's name. */
+    readonly realName: string | null;
     readonly aliasOf: string | null;
 }
 

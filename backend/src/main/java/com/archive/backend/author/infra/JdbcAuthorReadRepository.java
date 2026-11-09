@@ -48,14 +48,19 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
             )
             """;
 
-    /** People under their main name, and their other aliases with the main name. */
+    /**
+     * People under their main name, and their other aliases with the main name; the real name goes next to each,
+     * except next to a person shown under it.
+     */
     private static final String ENTRIES = NAMED_PEOPLE + """
             , entries AS (
-                SELECT n.person_id, n.main_name AS name, NULL AS alias_of
+                SELECT n.person_id, n.main_name AS name,
+                       CASE WHEN n.main_alias_id IS NULL THEN NULL ELSE n.real_name END AS real_name,
+                       NULL AS alias_of
                 FROM named n
                 WHERE n.main_name IS NOT NULL
                 UNION ALL
-                SELECT n.person_id, a.name, n.main_name
+                SELECT n.person_id, a.name, n.real_name, n.main_name
                 FROM named n
                 JOIN alias a ON a.person_id = n.person_id AND a.id <> n.main_alias_id
             )
@@ -104,10 +109,10 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
                 .single();
         params.put("limit", pageable.getPageSize());
         params.put("offset", pageable.getOffset());
-        List<AuthorCatalogEntry> content = jdbc.sql(ENTRIES + "SELECT e.person_id, e.name, e.alias_of FROM entries e" + where
+        List<AuthorCatalogEntry> content = jdbc.sql(ENTRIES + "SELECT e.person_id, e.name, e.real_name, e.alias_of FROM entries e" + where
                         + " ORDER BY lower(e.name), e.name, e.person_id LIMIT :limit OFFSET :offset")
                 .params(params)
-                .query((rs, row) -> new AuthorCatalogEntry(rs.getObject("person_id", UUID.class), rs.getString("name"), rs.getString("alias_of")))
+                .query((rs, row) -> new AuthorCatalogEntry(rs.getObject("person_id", UUID.class), rs.getString("name"), rs.getString("real_name"), rs.getString("alias_of")))
                 .list();
         return new PageImpl<>(content, pageable, total);
     }

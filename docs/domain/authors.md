@@ -20,6 +20,7 @@ A person is shown under one main name: the alias marked as the display name; wit
 The catalog is where visitors find authors. It lists people and their aliases mixed together, sorted by name, 100 entries per page:
 - a person appears under their main name;
 - each other alias of a person appears as an entry of its own, with the main name it belongs to; it leads to the same person;
+- the real name of the person stands next to every entry of theirs, unless the entry is the real name itself; an alias of a person without a real name shows the main name it belongs to instead;
 - aliases of groups are not authors and are not listed.
 
 Visitors narrow the catalog:

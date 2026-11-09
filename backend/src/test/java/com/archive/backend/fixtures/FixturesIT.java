@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
@@ -55,6 +56,13 @@ class FixturesIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(100)))
                 .andExpect(jsonPath("$.page.totalPages").value(greaterThan(1)));
+    }
+
+    @Test
+    void everyFixtureAuthorHasARealNameButTheOneKnownOnlyByIt() throws Exception {
+        mvc.perform(get("/api/authors").param("size", "1000"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[?(@.realName == null)].name").value(contains("Ivan Petrov")));
     }
 
     @Test

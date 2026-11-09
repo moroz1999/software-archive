@@ -8,7 +8,12 @@ const PAGE_SIZE = 100;
 
 function parseEntry(item: unknown): AuthorCatalogEntry {
     const dto = readObject(item, 'catalog entry');
-    return {personId: toAuthorId(readString(dto, 'personId')), name: readString(dto, 'name'), aliasOf: readNullableString(dto, 'aliasOf')};
+    return {
+        personId: toAuthorId(readString(dto, 'personId')),
+        name: readString(dto, 'name'),
+        realName: readNullableString(dto, 'realName'),
+        aliasOf: readNullableString(dto, 'aliasOf'),
+    };
 }
 
 /** A page of the catalog: `GET /api/authors`, with the filters that are set. */

@@ -61,12 +61,13 @@ class AuthorControllerTest {
     @Test
     void listsTheCatalogWithoutFilters() throws Exception {
         when(listHandler.handle(new ListAuthorsQuery(null, null, null, PageRequest.of(0, 100))))
-                .thenReturn(new PageImpl<>(List.of(new AuthorCatalogEntry(ID, "Axe", "Zed"), new AuthorCatalogEntry(ID, "Zed", null)), PageRequest.of(0, 100), 2));
+                .thenReturn(new PageImpl<>(List.of(new AuthorCatalogEntry(ID, "Axe", "John Doe", "Zed"), new AuthorCatalogEntry(ID, "Zed", "John Doe", null)), PageRequest.of(0, 100), 2));
 
         mvc.perform(get("/api/authors").param("page", "0").param("size", "100"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].personId").value(ID.toString()))
                 .andExpect(jsonPath("$.content[0].name").value("Axe"))
+                .andExpect(jsonPath("$.content[0].realName").value("John Doe"))
                 .andExpect(jsonPath("$.content[0].aliasOf").value("Zed"))
                 .andExpect(jsonPath("$.content[1].aliasOf").value(nullValue()))
                 .andExpect(jsonPath("$.page.totalElements").value(2))
@@ -74,9 +75,20 @@ class AuthorControllerTest {
     }
 
     @Test
+    void sendsNoRealNameWhenTheEntryIsTheRealName() throws Exception {
+        when(listHandler.handle(new ListAuthorsQuery(null, null, null, PageRequest.of(0, 100))))
+                .thenReturn(new PageImpl<>(List.of(new AuthorCatalogEntry(ID, "Carl Real", null, null)), PageRequest.of(0, 100), 1));
+
+        mvc.perform(get("/api/authors").param("page", "0").param("size", "100"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].name").value("Carl Real"))
+                .andExpect(jsonPath("$.content[0].realName").value(nullValue()));
+    }
+
+    @Test
     void listsTheCatalogWithFilters() throws Exception {
         when(listHandler.handle(new ListAuthorsQuery(new AuthorLetter("Б"), new CountryId(COUNTRY), new CityId(CITY), PageRequest.of(1, 100))))
-                .thenReturn(new PageImpl<>(List.of(new AuthorCatalogEntry(ID, "Борис", null)), PageRequest.of(1, 100), 101));
+                .thenReturn(new PageImpl<>(List.of(new AuthorCatalogEntry(ID, "Борис", null, null)), PageRequest.of(1, 100), 101));
 
         mvc.perform(get("/api/authors")
                         .param("letter", "б").param("country", COUNTRY.toString()).param("city", CITY.toString())
