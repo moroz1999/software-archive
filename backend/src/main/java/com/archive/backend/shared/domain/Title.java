@@ -32,7 +32,9 @@ public abstract class Title {
         return value;
     }
 
-    /** Titles of different kinds are never equal, even with the same text: hence the class, not instanceof. */
+    /**
+     * Titles of different kinds are never equal, even with the same text: hence the class, not instanceof.
+     */
     @Override
     @SuppressWarnings("EqualsGetClass")
     public final boolean equals(Object other) {

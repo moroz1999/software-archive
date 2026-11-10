@@ -11,7 +11,11 @@ const ID = '00000000-0000-0000-0001-000000000001';
 const PLATFORMS = json([{code: 'agat', name: 'Agat'}, {code: 'bk', name: 'BK'}]);
 
 function answer(software: () => Response) {
-    return stubFetchRoutes(new Map([['/api/platforms', PLATFORMS], ['/api/software', software]]));
+    return stubFetchRoutes(new Map([
+        ['/api/platforms', PLATFORMS],
+        ['/api/hardware?platform=bk', json([{code: 'bk0011m', name: 'BK-0011M', group: 'computers'}])],
+        ['/api/software', software],
+    ]));
 }
 
 async function fill(title: string) {
@@ -45,7 +49,7 @@ describe(CreateSoftwareProvider, () => {
 
         expect(fetchMock.mock.calls.find(([url]) => url === '/api/software')?.[1]).toMatchObject({
             method: 'POST',
-            body: '{"title":"Elite","description":null,"releaseDate":null,"platform":"bk"}',
+            body: '{"title":"Elite","description":null,"releaseDate":null,"platform":"bk","hardware":[]}',
         });
     });
 
@@ -100,5 +104,18 @@ describe(CreateSoftwareProvider, () => {
 
         await expect(screen.findByRole('alert')).resolves.toHaveTextContent('This item was changed in the meantime. Reload and try again.');
         expect(reports).toHaveLength(0);
+    });
+
+    it('says why the hardware was refused under the hardware', async () => {
+        answer(json({status: 422, code: 'hardware.unknown', errors: [{field: 'hardware', code: 'hardware.unknown'}]}, 422));
+        renderWithQueries(<PlatformSelectionProvider><CreateSoftwareProvider onCreated={vi.fn<(id: string) => void>()}><SoftwareForm submitLabel="Add software"/></CreateSoftwareProvider></PlatformSelectionProvider>);
+
+        await fill('Elite');
+        await userEvent.click(await screen.findByRole('checkbox', {name: 'BK-0011M'}));
+        await userEvent.click(screen.getByRole('button', {name: 'Add software'}));
+
+        await vi.waitFor(() => {
+            expect(screen.getByRole('group', {name: 'Hardware'})).toHaveAccessibleDescription('Choose hardware of the platform of the software.');
+        });
     });
 });

@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
-/** One software with everything shown about it; its base hardware by group, then by name. */
+/**
+ * One software with everything shown about it; its base hardware by group, then by name.
+ */
 public record SoftwareDetails(
         UUID id,
         String title,

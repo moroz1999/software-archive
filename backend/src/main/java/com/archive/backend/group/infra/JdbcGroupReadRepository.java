@@ -32,7 +32,9 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class JdbcGroupReadRepository implements GroupReadRepository {
 
-    /** Groups under their main name, and their other labels; the group's name goes next to each, unless it is the entry. */
+    /**
+     * Groups under their main name, and their other labels; the group's name goes next to each, unless it is the entry.
+     */
     private static final String ENTRIES = "WITH " + MainNameSql.GROUPS + """
             , entries AS (
                 SELECT n.group_id, n.main_name AS name, n.group_name
@@ -44,7 +46,9 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
             )
             """;
 
-    /** The country of a location: given directly, or the one of its city. */
+    /**
+     * The country of a location: given directly, or the one of its city.
+     */
     private static final String LOCATED = """
             EXISTS (
                 SELECT 1 FROM entity_location l
@@ -52,7 +56,9 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
                 WHERE l.entity_type = 'GROUP' AND l.entity_id = e.group_id AND %s
             )""";
 
-    /** The groups related to one, under their main name. */
+    /**
+     * The groups related to one, under their main name.
+     */
     private static final String RELATED = "WITH " + MainNameSql.GROUPS + """
             SELECT n.group_id, n.main_name
             FROM group_member_group r
@@ -137,7 +143,9 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
                 .list();
     }
 
-    /** The primary location first. */
+    /**
+     * The primary location first.
+     */
     private List<GroupLocation> locations(UUID groupId) {
         return jdbc.sql("""
                         SELECT co.name AS country, ci.name AS city, COALESCE(l.is_primary, FALSE) AS is_primary
@@ -153,7 +161,9 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
                 .list();
     }
 
-    /** The members under the labels they were members under, with the person's main name when it is another one. */
+    /**
+     * The members under the labels they were members under, with the person's main name when it is another one.
+     */
     private List<GroupMember> members(UUID groupId) {
         return jdbc.sql("WITH " + MainNameSql.PEOPLE + """
                         SELECT l.name, l.person_id, CASE WHEN p.main_name = l.name THEN NULL ELSE p.main_name END AS person_name
@@ -169,7 +179,9 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
                 .list();
     }
 
-    /** The groups on the {@code shown} side of the relation, where the group is on the {@code given} side. */
+    /**
+     * The groups on the {@code shown} side of the relation, where the group is on the {@code given} side.
+     */
     private List<RelatedGroup> related(UUID groupId, String shown, String given) {
         return jdbc.sql(RELATED.formatted(shown, given))
                 .param("id", groupId)

@@ -1,3 +1,4 @@
+import {NotFoundError} from '@/shared/api';
 import type {Brand} from '@/shared/lib/brand';
 import {isUuid} from '@/shared/lib/uuid';
 import type {Hardware, ReleaseDate} from './software';
@@ -34,6 +35,17 @@ export interface SoftwareRelease {
     readonly hardware: readonly Hardware[];
 }
 
+/** A release as it states itself, to edit it: its own title, if any, and only its own hardware. */
+export interface ReleaseDetails {
+    readonly id: ReleaseId;
+    readonly title: string | null;
+    readonly version: string | null;
+    readonly type: ReleaseType;
+    readonly releaseDate: ReleaseDate | null;
+    readonly description: string | null;
+    readonly hardware: readonly Hardware[];
+}
+
 export function toReleaseId(raw: string): ReleaseId {
     if (!isUuid(raw)) {
         throw new TypeError(`Invalid release id: ${raw}`);
@@ -48,4 +60,12 @@ export function toReleaseType(raw: string): ReleaseType {
         throw new TypeError(`Invalid release type: ${raw}`);
     }
     return raw as ReleaseType;
+}
+
+/** The id of a page's release from its URL; one that cannot be an id means the page does not exist. */
+export function requireReleaseId(raw: string | undefined): ReleaseId {
+    if (raw === undefined || !isUuid(raw)) {
+        throw new NotFoundError('release.not-found');
+    }
+    return toReleaseId(raw);
 }

@@ -3,6 +3,7 @@ package com.archive.backend.software.infra;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.software.read.ReleaseDetails;
 import com.archive.backend.software.read.SoftwareDetails;
 import com.archive.backend.software.read.SoftwareHardware;
 import com.archive.backend.software.read.SoftwarePlatform;
@@ -151,5 +152,23 @@ class JdbcSoftwareReadRepositoryIT {
 
     private static UUID id(int n) {
         return UUID.fromString("00000000-0000-0000-0000-%012d".formatted(n));
+    }
+
+    @Test
+    void readsAReleaseAsItStatesItself() {
+        assertThat(reads.findRelease(ELITE, AY_MOD))
+                .contains(new ReleaseDetails(
+                        AY_MOD, "Elite AY", "1.1", "mod", LocalDate.of(1990, 3, 1), "With AY music", List.of(AY)));
+    }
+
+    @Test
+    void readsAReleaseWithoutATitleOfItsOwnOrHardware() {
+        assertThat(reads.findRelease(ELITE, ORIGINAL))
+                .contains(new ReleaseDetails(ORIGINAL, null, null, "original", null, null, List.of()));
+    }
+
+    @Test
+    void readsNoReleaseOfOtherSoftware() {
+        assertThat(reads.findRelease(TETRIS, AY_MOD)).isEmpty();
     }
 }

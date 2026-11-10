@@ -9,7 +9,7 @@ import {
     toSoftwareTitle,
 } from './software';
 
-/** What the software form holds while it is being filled: raw text of every field. */
+/** What the software form holds while it is being filled: raw text of every field, the codes of the chosen hardware. */
 export interface SoftwareFormValues {
     readonly title: string;
     readonly description: string;
@@ -17,6 +17,8 @@ export interface SoftwareFormValues {
     readonly releaseDate: string;
     /** The code of the chosen platform, or empty. */
     readonly platform: string;
+    /** The codes of the checked hardware. */
+    readonly hardware: readonly string[];
 }
 
 /** A platform the form offers. */
@@ -31,6 +33,7 @@ export interface SoftwareDraft {
     readonly description: string | null;
     readonly releaseDate: ReleaseDate | null;
     readonly platform: SoftwarePlatformCode;
+    readonly hardware: readonly string[];
 }
 
 export interface SoftwareFormErrors {
@@ -71,6 +74,7 @@ export function validateSoftwareForm(values: SoftwareFormValues): SoftwareFormRe
             description: description === '' ? null : values.description,
             releaseDate: values.releaseDate === '' ? null : toReleaseDate(values.releaseDate),
             platform: toSoftwarePlatformCode(values.platform),
+            hardware: values.hardware,
         },
     };
 }
@@ -82,5 +86,6 @@ export function toSoftwareFormValues(software?: SoftwareDetails): SoftwareFormVa
         description: software?.description ?? '',
         releaseDate: software?.releaseDate ?? '',
         platform: software?.platform.code ?? '',
+        hardware: software?.hardware.map((item) => item.code) ?? [],
     };
 }

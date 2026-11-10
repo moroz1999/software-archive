@@ -6,7 +6,9 @@ export interface InputProps {
     readonly value: string;
     /** The new text, not the event. */
     readonly onChange: (value: string) => void;
-    readonly type?: 'text' | 'date';
+    readonly type?: 'text' | 'date' | 'search';
+    /** A hint shown while the input is empty. */
+    readonly placeholder?: string;
     /** Accessible name when no label points to the input. */
     readonly ariaLabel?: string | undefined;
     readonly invalid?: boolean | undefined;
@@ -19,7 +21,7 @@ export interface InputProps {
 }
 
 /** One-line text or date input. */
-export function Input({id, value, onChange, type = 'text', ariaLabel, invalid = false, describedBy, disabled, maxLength, className}: InputProps) {
+export function Input({id, value, onChange, type = 'text', ariaLabel, invalid = false, describedBy, disabled, maxLength, placeholder, className}: InputProps) {
     return (
         <input
             id={id}
@@ -33,6 +35,7 @@ export function Input({id, value, onChange, type = 'text', ariaLabel, invalid = 
             aria-describedby={describedBy}
             disabled={disabled}
             maxLength={maxLength}
+            placeholder={placeholder}
             className={classNames(styles.input, invalid && styles.invalid, className)}
         />
     );

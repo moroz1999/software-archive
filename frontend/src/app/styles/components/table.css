@@ -1,0 +1,20 @@
+:root {
+    /* Text of the cells. */
+    --table-text: var(--text-color);
+    --table-font-size: var(--font-size-sm);
+    --table-line-height: var(--line-height-normal);
+
+    /* Rows end edge to edge with a thin rule. */
+    --table-row-border: var(--border-width-thin) solid var(--border-color);
+    --table-cell-padding: var(--space-8) var(--space-12);
+
+    /* Column names: muted and smaller than the data. */
+    --table-header-text: var(--text-light-color);
+    --table-header-font-size: var(--font-size-xs);
+    --table-header-font-weight: var(--font-weight-medium);
+
+    /* A sorting column name. */
+    --table-sort-hover-text: var(--text-color);
+    --table-sort-focus-outline: var(--border-width-thin) solid var(--focus-ring-color);
+    --table-sort-focus-offset: var(--space-2);
+}

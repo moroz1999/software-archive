@@ -3,11 +3,13 @@ package com.archive.backend.software.app;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.archive.backend.hardware.domain.HardwareSet;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.software.domain.Software;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareTitle;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +23,8 @@ class DeleteSoftwareHandlerTest {
 
     @Test
     void removesTheSoftware() {
-        repository.save(Software.create(ID, new SoftwareTitle("Elite"), null, null, VECTOR));
+        repository.save(
+                Software.create(ID, new SoftwareTitle("Elite"), null, null, HardwareSet.restore(VECTOR, Set.of())));
 
         handler.handle(new DeleteSoftwareCommand(ID));
 

@@ -57,7 +57,9 @@ public class SoftwareController {
         return listHandler.handle(webMapper.toListQuery(platform, pageable)).map(webMapper::toListItem);
     }
 
-    /** The most recently added software; only the page size is taken from the request. */
+    /**
+     * The most recently added software; only the page size is taken from the request.
+     */
     @GetMapping("/latest")
     public Page<SoftwareListItemDto> latest(
             @RequestParam(required = false) @Nullable String platform, Pageable pageable) {
@@ -69,7 +71,9 @@ public class SoftwareController {
         return webMapper.toDetails(getHandler.handle(new GetSoftwareQuery(new SoftwareId(id))));
     }
 
-    /** The releases of the software, each with the hardware it shows. */
+    /**
+     * The releases of the software, each with the hardware it shows.
+     */
     @GetMapping("/{id}/releases")
     public List<SoftwareReleaseDto> releases(@PathVariable UUID id) {
         return webMapper.toReleases(releasesHandler.handle(new ListSoftwareReleasesQuery(new SoftwareId(id))));

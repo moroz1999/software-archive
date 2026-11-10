@@ -1,5 +1,6 @@
 package com.archive.backend.software.app;
 
+import com.archive.backend.software.read.ReleaseDetails;
 import com.archive.backend.software.read.SoftwareDetails;
 import com.archive.backend.software.read.SoftwareReadRepository;
 import com.archive.backend.software.read.SoftwareRelease;
@@ -21,6 +22,7 @@ class InMemorySoftwareReadRepository implements SoftwareReadRepository {
 
     private final List<SoftwareDetails> items = new ArrayList<>();
     private final Map<UUID, List<SoftwareRelease>> releases = new HashMap<>();
+    private final Map<UUID, List<ReleaseDetails>> releaseDetails = new HashMap<>();
     private @Nullable String lastPlatform;
 
     void add(SoftwareDetails details) {
@@ -29,6 +31,10 @@ class InMemorySoftwareReadRepository implements SoftwareReadRepository {
 
     void addReleases(UUID softwareId, SoftwareRelease... ofSoftware) {
         releases.put(softwareId, List.of(ofSoftware));
+    }
+
+    void addRelease(UUID softwareId, ReleaseDetails release) {
+        releaseDetails.computeIfAbsent(softwareId, key -> new ArrayList<>()).add(release);
     }
 
     @Nullable
@@ -68,5 +74,12 @@ class InMemorySoftwareReadRepository implements SoftwareReadRepository {
     @Override
     public List<SoftwareRelease> findReleases(UUID softwareId) {
         return releases.getOrDefault(softwareId, List.of());
+    }
+
+    @Override
+    public Optional<ReleaseDetails> findRelease(UUID softwareId, UUID releaseId) {
+        return releaseDetails.getOrDefault(softwareId, List.of()).stream()
+                .filter(release -> release.id().equals(releaseId))
+                .findFirst();
     }
 }

@@ -49,7 +49,9 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
             )
             """;
 
-    /** The country of a location: given directly, or the one of its city. */
+    /**
+     * The country of a location: given directly, or the one of its city.
+     */
     private static final String LOCATED = """
             EXISTS (
                 SELECT 1 FROM entity_location l
@@ -127,7 +129,9 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
                 .list();
     }
 
-    /** The primary location first. */
+    /**
+     * The primary location first.
+     */
     private List<AuthorLocation> locations(UUID personId) {
         return jdbc.sql("""
                         SELECT co.name AS country, ci.name AS city, COALESCE(l.is_primary, FALSE) AS is_primary

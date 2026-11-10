@@ -1,5 +1,6 @@
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
 import {Chip} from './Chip';
 
@@ -26,5 +27,26 @@ describe(Chip, () => {
         render(<Chip href="https://example.com">Site</Chip>);
 
         expect(screen.getByRole('link', {name: 'Site'})).toHaveAttribute('href', 'https://example.com');
+    });
+
+    it('can be removed by its own button', async () => {
+        const onRemove = vi.fn<() => void>();
+        render(<Chip onRemove={onRemove}>AY-3-8910</Chip>);
+
+        await userEvent.click(screen.getByRole('button', {name: 'Remove AY-3-8910'}));
+
+        expect(onRemove).toHaveBeenCalledExactlyOnceWith();
+    });
+
+    it('names its remove button by the given text', () => {
+        render(<Chip onRemove={vi.fn<() => void>()} removeLabel="Drop the AY">AY-3-8910</Chip>);
+
+        expect(screen.getByRole('button', {name: 'Drop the AY'})).toBeInTheDocument();
+    });
+
+    it('can lock its remove button', () => {
+        render(<Chip onRemove={vi.fn<() => void>()} disabled>AY-3-8910</Chip>);
+
+        expect(screen.getByRole('button', {name: 'Remove AY-3-8910'})).toBeDisabled();
     });
 });

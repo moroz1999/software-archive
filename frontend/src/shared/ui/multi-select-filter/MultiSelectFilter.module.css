@@ -1,0 +1,58 @@
+.filter {
+    display: flex;
+    flex-direction: column;
+    gap: var(--multi-select-filter-gap);
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.legend {
+    margin-bottom: var(--multi-select-filter-legend-space);
+    padding: 0;
+    color: var(--multi-select-filter-legend-text);
+    font-size: var(--multi-select-filter-legend-font-size);
+    line-height: var(--multi-select-filter-legend-line-height);
+}
+
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--multi-select-filter-chips-gap);
+}
+
+/* The options scroll inside a box of their own so a long list keeps the form short. */
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--multi-select-filter-list-gap);
+    max-height: var(--multi-select-filter-list-max-height);
+    padding: var(--multi-select-filter-list-padding);
+    overflow: auto;
+    border-width: var(--multi-select-filter-list-border-width);
+    border-style: solid;
+    border-color: var(--multi-select-filter-list-border-color);
+    border-radius: var(--multi-select-filter-list-radius);
+    background: var(--multi-select-filter-list-bg);
+}
+
+.group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--multi-select-filter-group-gap);
+}
+
+.groupName {
+    color: var(--multi-select-filter-group-name-text);
+    font-size: var(--multi-select-filter-group-name-font-size);
+    font-weight: var(--multi-select-filter-group-name-font-weight);
+    letter-spacing: var(--multi-select-filter-group-name-letter-spacing);
+    text-transform: uppercase;
+}
+
+.options {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--multi-select-filter-option-min-width), 1fr));
+    gap: var(--multi-select-filter-options-gap);
+}

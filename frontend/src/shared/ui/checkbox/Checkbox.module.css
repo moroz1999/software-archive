@@ -1,0 +1,27 @@
+.checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--checkbox-gap);
+    color: var(--checkbox-text);
+    font-size: var(--checkbox-font-size);
+    line-height: var(--checkbox-line-height);
+    cursor: pointer;
+}
+
+.box {
+    width: var(--checkbox-size);
+    height: var(--checkbox-size);
+    margin: 0;
+    accent-color: var(--checkbox-accent);
+    cursor: inherit;
+}
+
+.box:focus-visible {
+    outline: var(--checkbox-focus-outline);
+    outline-offset: var(--checkbox-focus-offset);
+}
+
+.disabled {
+    color: var(--checkbox-disabled-text);
+    cursor: not-allowed;
+}

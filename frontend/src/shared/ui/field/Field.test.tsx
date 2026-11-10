@@ -18,4 +18,10 @@ describe(Field, () => {
         expect(input).toHaveAttribute('aria-invalid', 'true');
         expect(input).toHaveAccessibleDescription('Enter a title.');
     });
+
+    it('shows a hint under the control, before its error', () => {
+        render(<Field label="Platform" hint="Remove the hardware first." error="Choose a platform.">{(control) => <Input {...control} value="" onChange={vi.fn<(value: string) => void>()}/>}</Field>);
+
+        expect(screen.getByRole('textbox', {name: 'Platform'})).toHaveAccessibleDescription('Remove the hardware first. Choose a platform.');
+    });
 });

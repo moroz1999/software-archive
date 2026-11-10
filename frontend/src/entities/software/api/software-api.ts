@@ -1,4 +1,4 @@
-import {deleteResource, getJson, type JsonObject, mapResponse, postJson, putJson, readArray, readNullableString, readObject, readString} from '@/shared/api';
+import {deleteResource, getJson, mapResponse, postJson, putJson, readArray, readNullableString, readObject, readString} from '@/shared/api';
 import {type SoftwareRelease, toReleaseId, toReleaseType} from '../model/release';
 import {
     type Hardware,
@@ -17,11 +17,12 @@ function softwarePath(id: SoftwareId): string {
 }
 
 function toBody(draft: SoftwareDraft): unknown {
-    return {title: draft.title, description: draft.description, releaseDate: draft.releaseDate, platform: draft.platform};
+    return {title: draft.title, description: draft.description, releaseDate: draft.releaseDate, platform: draft.platform, hardware: draft.hardware};
 }
 
-function parseHardware(dto: JsonObject): readonly Hardware[] {
-    return readArray(dto['hardware'], 'hardware').map((item) => {
+/** The hardware of a release or software, or of a platform's reference book. */
+export function parseHardwareList(raw: unknown): readonly Hardware[] {
+    return readArray(raw, 'hardware').map((item) => {
         const hardware = readObject(item, 'hardware item');
         return {code: readString(hardware, 'code'), name: readString(hardware, 'name'), group: toHardwareGroup(readString(hardware, 'group'))};
     });
@@ -40,7 +41,7 @@ export async function fetchSoftware(id: SoftwareId, signal: AbortSignal): Promis
             description: readNullableString(dto, 'description'),
             releaseDate: releaseDate === null ? null : toReleaseDate(releaseDate),
             platform: {code: toSoftwarePlatformCode(readString(platform, 'code')), name: readString(platform, 'name')},
-            hardware: parseHardware(dto),
+            hardware: parseHardwareList(dto['hardware']),
         };
     });
 }
@@ -58,7 +59,7 @@ export async function fetchSoftwareReleases(id: SoftwareId, signal: AbortSignal)
             type: toReleaseType(readString(dto, 'type')),
             releaseDate: releaseDate === null ? null : toReleaseDate(releaseDate),
             description: readNullableString(dto, 'description'),
-            hardware: parseHardware(dto),
+            hardware: parseHardwareList(dto['hardware']),
         };
     }));
 }

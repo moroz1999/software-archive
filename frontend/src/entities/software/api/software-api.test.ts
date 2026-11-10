@@ -10,6 +10,7 @@ const DRAFT = {
     description: null,
     releaseDate: toReleaseDate('1985-09-20'),
     platform: toSoftwarePlatformCode('vector'),
+    hardware: ['vector06c', 'ay8910'],
 };
 const VECTOR = {code: 'vector', name: 'Vector'};
 const VECTOR06C = {code: 'vector06c', name: 'Vector-06C', group: 'computers'};
@@ -87,7 +88,7 @@ describe(createSoftware, () => {
         expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/software');
         expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
             method: 'POST',
-            body: '{"title":"Elite","description":null,"releaseDate":"1985-09-20","platform":"vector"}',
+            body: '{"title":"Elite","description":null,"releaseDate":"1985-09-20","platform":"vector","hardware":["vector06c","ay8910"]}',
         });
     });
 });
@@ -104,7 +105,7 @@ describe(updateSoftware, () => {
         expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/software/${ID}`);
         expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
             method: 'PUT',
-            body: '{"title":"Elite","description":null,"releaseDate":"1985-09-20","platform":"vector"}',
+            body: '{"title":"Elite","description":null,"releaseDate":"1985-09-20","platform":"vector","hardware":["vector06c","ay8910"]}',
         });
     });
 });

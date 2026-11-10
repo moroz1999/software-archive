@@ -1,0 +1,20 @@
+:root {
+    /* Box size and the gap to its label. */
+    --checkbox-size: 16px;
+    --checkbox-gap: var(--space-8);
+
+    /* Label text. */
+    --checkbox-text: var(--text-color);
+    --checkbox-font-size: var(--font-size-md);
+    --checkbox-line-height: var(--line-height-normal);
+
+    /* Color of a checked box. */
+    --checkbox-accent: var(--link-color);
+
+    /* Keyboard focus. */
+    --checkbox-focus-outline: var(--border-width-thin) solid var(--focus-ring-color);
+    --checkbox-focus-offset: var(--space-2);
+
+    /* Label of a disabled checkbox. */
+    --checkbox-disabled-text: var(--text-light-color);
+}

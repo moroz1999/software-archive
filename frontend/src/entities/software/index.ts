@@ -1,7 +1,12 @@
+export {createRelease, deleteRelease, fetchPlatformHardware, fetchSoftwareRelease, updateRelease} from './api/release-api';
 export {createSoftware, deleteSoftware, fetchSoftware, fetchSoftwareReleases, updateSoftware} from './api/software-api';
 export {fetchLatestSoftware, fetchSoftwarePage} from './api/fetch-software-page';
-export {SOFTWARE_QUERY_KEY, softwareDetailsQuery, softwareReleasesQuery} from './api/software-queries';
+export {platformHardwareQuery, querySoftwareWithHardware, SOFTWARE_QUERY_KEY, softwareDetailsQuery, softwareReleaseQuery, softwareReleasesQuery} from './api/software-queries';
 export {
+    RELEASE_EDIT_ROUTE,
+    RELEASE_NEW_ROUTE,
+    releaseEditPath,
+    releaseNewPath,
     SOFTWARE_EDIT_ROUTE,
     SOFTWARE_LIST_PATH,
     SOFTWARE_NEW_PATH,
@@ -11,7 +16,14 @@ export {
 } from './config/paths';
 export {releaseDayText} from './lib/release-day';
 export {releaseYear} from './lib/release-year';
-export {type ReleaseId, type ReleaseType, type SoftwareRelease} from './model/release';
+export {type ReleaseDetails, type ReleaseId, type ReleaseType, requireReleaseId, type SoftwareRelease, toReleaseId} from './model/release';
+export {type ReleaseDraft, type ReleaseFormValues, toReleaseFormValues} from './model/release-form';
+export {type ReleaseFormState, useReleaseForm} from './model/release-form-context';
+export {ReleaseFormProvider, type ReleaseFormProviderProps} from './model/ReleaseFormProvider';
+export {useReleaseDetails} from './model/release-details-context';
+export {ReleaseDetailsProvider, type ReleaseDetailsProviderProps} from './model/ReleaseDetailsProvider';
+export {usePlatformHardware} from './model/platform-hardware-context';
+export {PlatformHardwareProvider, type PlatformHardwareProviderProps} from './model/PlatformHardwareProvider';
 export {
     type Hardware,
     type HardwareGroup,
@@ -41,4 +53,5 @@ export {SoftwareCardSkeleton} from './ui/SoftwareCardSkeleton';
 export {HardwareList, type HardwareListProps} from './ui/HardwareList';
 export {SoftwareForm, type SoftwareFormProps} from './ui/SoftwareForm';
 export {SoftwareFormSkeleton} from './ui/SoftwareFormSkeleton';
-export {SoftwareReleases} from './ui/SoftwareReleases';
+export {ReleaseForm, type ReleaseFormProps} from './ui/ReleaseForm';
+export {SoftwareReleases, type SoftwareReleasesProps} from './ui/SoftwareReleases';

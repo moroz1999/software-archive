@@ -1,4 +1,34 @@
 :root {
-    /* Release bone: a release with its facts and a few lines of hardware. */
-    --software-releases-bone-height: 96px;
+    /* Fixed widths of the columns but the title: wide enough for a year, a version, a type, a few hardware names, "Edit". */
+    --software-releases-year-column-width: 64px;
+    --software-releases-version-column-width: 88px;
+    --software-releases-type-column-width: 120px;
+    --software-releases-hardware-column-width: 30%;
+    --software-releases-actions-column-width: 88px;
+
+    /* The View toggle: two options on its track (toggle.css). */
+    --software-releases-toggle-bone-width: 128px;
+    --software-releases-toggle-bone-height: calc(28px + 2 * var(--space-2));
+
+    /* Lines of text the bones stand for: body text, table cells, a card title, the facts of a card. */
+    --software-releases-body-line: calc(var(--font-size-md) * var(--line-height-normal));
+    --software-releases-cell-line: calc(var(--font-size-sm) * var(--line-height-normal));
+    --software-releases-card-title-line: calc(var(--font-size-lg) * var(--line-height-heading));
+    --software-releases-facts-line: calc(var(--font-size-sm) * var(--line-height-compact));
+
+    /* Bone widths: like a typical title, year, version, hardware name and the facts of a card. */
+    --software-releases-title-bone-width: 60%;
+    --software-releases-year-bone-width: var(--space-32);
+    --software-releases-version-bone-width: var(--space-24);
+    --software-releases-hardware-bone-width: 72px;
+    --software-releases-card-title-bone-width: 60%;
+    --software-releases-facts-bone-width: 40%;
+
+    /* A badge of a type or of hardware: one line of its text, its padding and border (badge.css). */
+    --software-releases-badge-bone-width: 56px;
+    --software-releases-badge-bone-height: calc(var(--font-size-xs) + 2 * var(--space-2) + 2 * var(--border-width-thin));
+
+    /* The "Edit" button, medium size (button.css). */
+    --software-releases-button-bone-width: 60px;
+    --software-releases-button-bone-height: 36px;
 }

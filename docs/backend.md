@@ -23,6 +23,10 @@ Each domain is a package under `com.archive.backend`. A request passes four role
 
 ### Domain services and model (`domain`)
 - Business rules belong to the domain model first. A domain service holds a rule only when it does not belong to a single entity.
+- An invariant of an entity that needs data outside its aggregate (a reference book) is never checked by the use case. A factory domain service checks that data once and builds an **always-valid value object** nothing else can build; the entity accepts only that value object and checks the rest itself, so the type holds the invariant and no use case can forget it. Example: `HardwareSets` builds a `HardwareSet`, and `Software` keeps the hardware of every release on its own platform.
+- Such data comes through a port declared in `domain` and named after what it is (`HardwareCatalog`), implemented in `infra`. A `Repository` is only ever the collection of an aggregate.
+- The repository adapter restores always-valid value objects read back from storage with their `restore` factory: they were checked when stored. ArchUnit forbids `restore` outside `infra`.
+- Domain services are plain classes; `shared/config/DomainServicesConfig` makes them Spring beans.
 - Pure Java: no Spring web, JPA or other infrastructure dependencies.
 - Grouped by concept, never by kind of class: an entity, its value objects, its repository interface and its exceptions sit together (`Software`, `SoftwareTitle`, `SoftwareRepository`, `SoftwareNotFoundException`). A growing domain is split by aggregate (`software/domain/release`). Packages such as `exceptions`, `vo`, `entities`, `models`, `services` are forbidden.
 
@@ -52,7 +56,7 @@ Use cases and the domain signal failures by throwing business exceptions; one `@
 - `shared/domain/error` — the taxonomy of business errors: `BusinessException` and its kinds (`NotFoundException`, `ConflictException`, `RuleViolationException`, `InvalidValueException`), mapped as a whole by `ApiExceptionHandler`.
 - `shared/domain/ddd` — DDD building-block markers: `@ValueObject`.
 - `shared/web` — `ApiExceptionHandler`, the only exception → REST status mapping.
-- `shared/config` — `SecurityConfig`; `WebConfig` fixes the page JSON contract: `{content: [...], page: {size, number, totalElements, totalPages}}`.
+- `shared/config` — `SecurityConfig`; `DomainServicesConfig` registers the domain services; `WebConfig` fixes the page JSON contract: `{content: [...], page: {size, number, totalElements, totalPages}}`.
 
 ## Mapping
 
@@ -89,7 +93,8 @@ All run on every build; nothing is suppressed to get a change through.
 | `@RestController`s live in `web` and end with `Controller` | `controllersLiveInWeb` |
 | `@Service`s in `app` end with `Handler` | `useCasesAreHandlers` |
 | Exceptions in `domain`/`app` extend `BusinessException` | `exceptionsAreBusinessExceptions` |
-| `@ValueObject`s live in `domain` and are records, abstract shared value objects of the shared kernel, or final cases of one | `valueObjectsAreDomainRecords` |
+| `@ValueObject`s live in `domain` and are records, enums, abstract shared value objects of the shared kernel, final cases of one, or final classes without public constructors (always-valid, built by their factory) | `valueObjectsAreDomainRecords` |
+| `HardwareSet.restore` is called only in `infra` | `hardwareSetsAreRestoredOnlyInInfra` |
 | No scalar fields (`String`, `UUID`, numbers, booleans) in `domain`/`app` classes except value objects and exceptions | `noScalarsInDomainAndCommands` |
 
 Not checkable by ArchUnit, left to review: controllers and use cases never catch exceptions to build responses.

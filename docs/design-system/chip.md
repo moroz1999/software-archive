@@ -6,3 +6,4 @@
 - `color` for `opaque` and `filled`: `neutral` (default) | `primary` | `danger`; role colors `artist` | `code` | `intro` for `opaque`.
 - `size`: `sm` | `md` (default).
 - `href` makes it a link; a path of this app is navigated client-side.
+- `onRemove` gives it a remove button, named "Remove" and its text or by `removeLabel`; `disabled` locks it.

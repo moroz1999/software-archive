@@ -16,6 +16,12 @@ export interface ChipProps {
     readonly size?: ChipSize;
     /** Makes the chip a link; a path of this app is navigated client-side. */
     readonly href?: string;
+    /** Gives the chip a button that removes it. */
+    readonly onRemove?: () => void;
+    /** The name of the remove button; "Remove" and the chip's text by default. */
+    readonly removeLabel?: string;
+    /** Locks the remove button. */
+    readonly disabled?: boolean;
     /** External contour only; see docs/styles.md. */
     readonly className?: string;
 }
@@ -30,8 +36,26 @@ const colorClass: Readonly<Record<ChipColor, string>> = {
 const sizeClass: Readonly<Record<ChipSize, string>> = {sm: styles.sm, md: styles.md};
 
 /** A compact tag: a category, a role, a technical identifier. */
-export function Chip({children, variant = 'opaque', color = 'neutral', size = 'md', href, className}: ChipProps) {
+export function Chip({children, variant = 'opaque', color = 'neutral', size = 'md', href, onRemove, removeLabel, disabled = false, className}: ChipProps) {
     const chipClass = classNames(styles.chip, variantClass[variant], colorClass[color], sizeClass[size], className);
+    if (onRemove !== undefined) {
+        return (
+            <span className={chipClass}>
+                {children}
+                <button
+                    type="button"
+                    className={styles.remove}
+                    aria-label={removeLabel ?? `Remove ${typeof children === 'string' ? children : ''}`.trim()}
+                    onClick={() => {
+                        onRemove();
+                    }}
+                    disabled={disabled}
+                >
+                    ×
+                </button>
+            </span>
+        );
+    }
     if (href === undefined) {
         return <span className={chipClass}>{children}</span>;
     }

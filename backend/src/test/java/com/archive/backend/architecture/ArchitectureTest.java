@@ -8,6 +8,8 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noFields;
 import static com.tngtech.archunit.library.Architectures.layeredArchitecture;
 
+import com.archive.backend.hardware.domain.HardwareSet;
+import com.archive.backend.hardware.domain.PlatformCode;
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
@@ -169,28 +171,44 @@ class ArchitectureTest {
     private static final ArchRule valueObjectsAreDomainRecords = classes()
             .that()
             .areAnnotatedWith(VALUE_OBJECT)
-            .should(new ArchCondition<JavaClass>("be records, abstract shared value objects or final cases of one") {
-                @Override
-                public void check(JavaClass type, ConditionEvents events) {
-                    boolean record = type.isRecord();
-                    boolean abstractShared = type.getModifiers().contains(JavaModifier.ABSTRACT)
-                            && type.getPackageName().equals(SHARED_KERNEL);
-                    boolean finalCase = type.getModifiers().contains(JavaModifier.FINAL)
-                            && type.getRawSuperclass()
-                                    .map(s -> s.isAnnotatedWith(VALUE_OBJECT)
-                                            && s.getModifiers().contains(JavaModifier.ABSTRACT))
-                                    .orElse(false);
-                    if (!record && !abstractShared && !finalCase) {
-                        events.add(SimpleConditionEvent.violated(
-                                type,
-                                type.getName()
-                                        + " is not a record, an abstract shared value object or a final case of one"));
-                    }
-                }
-            })
+            .should(
+                    new ArchCondition<JavaClass>(
+                            "be records, enums, abstract shared value objects, final cases of one or"
+                                    + " final classes built only by their factory") {
+                        @Override
+                        public void check(JavaClass type, ConditionEvents events) {
+                            boolean record = type.isRecord() || type.isEnum();
+                            boolean abstractShared = type.getModifiers().contains(JavaModifier.ABSTRACT)
+                                    && type.getPackageName().equals(SHARED_KERNEL);
+                            boolean finalCase = type.getModifiers().contains(JavaModifier.FINAL)
+                                    && type.getRawSuperclass()
+                                            .map(s -> s.isAnnotatedWith(VALUE_OBJECT)
+                                                    && s.getModifiers().contains(JavaModifier.ABSTRACT))
+                                            .orElse(false);
+                            boolean builtByFactory = type.getModifiers().contains(JavaModifier.FINAL)
+                                    && type.getConstructors().stream()
+                                            .noneMatch(constructor ->
+                                                    constructor.getModifiers().contains(JavaModifier.PUBLIC));
+                            if (!record && !abstractShared && !finalCase && !builtByFactory) {
+                                events.add(SimpleConditionEvent.violated(
+                                        type,
+                                        type.getName()
+                                                + " is not a record, an enum, an abstract shared value object, a final case of one"
+                                                + " or a final class built only by its factory"));
+                            }
+                        }
+                    })
             .andShould()
             .resideInAPackage("..domain..")
             .allowEmptyShould(true);
+
+    private static final ArchRule hardwareSetsAreRestoredOnlyInInfra = noClasses()
+            .that()
+            .resideOutsideOfPackages("..hardware.domain..", "..infra..")
+            .should()
+            .callMethod(HardwareSet.class, "restore", PlatformCode.class, Set.class)
+            .because("a hardware set is checked against the reference book by its factory; only a set read back from"
+                    + " storage, checked when it was stored, is restored without it (docs/backend.md)");
 
     private static final ArchRule noScalarsInDomainAndCommands = noFields()
             .that(
@@ -382,6 +400,11 @@ class ArchitectureTest {
     @Test
     void valueObjectsAreDomainRecords() {
         valueObjectsAreDomainRecords.check(CLASSES);
+    }
+
+    @Test
+    void hardwareSetsAreRestoredOnlyInInfra() {
+        hardwareSetsAreRestoredOnlyInInfra.check(CLASSES);
     }
 
     @Test

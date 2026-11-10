@@ -6,7 +6,9 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-/** Reads groups as plain read models (docs/backend.md). */
+/**
+ * Reads groups as plain read models (docs/backend.md).
+ */
 public interface GroupReadRepository {
 
     /**
@@ -20,6 +22,8 @@ public interface GroupReadRepository {
             @Nullable String platform,
             Pageable pageable);
 
-    /** A group; nothing for an unknown one. */
+    /**
+     * A group; nothing for an unknown one.
+     */
     Optional<GroupDetails> findById(UUID id);
 }

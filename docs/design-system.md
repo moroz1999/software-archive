@@ -26,10 +26,10 @@ All components live in `frontend/src/shared/ui/`, one folder each with an `index
 Built:
 
 - Layout: [Stack](design-system/stack.md), [Inline](design-system/inline.md), [Inset](design-system/inset.md), [Grid, GridItem](design-system/grid.md), [CardGrid](design-system/card-grid.md), [Panel](design-system/panel.md), [PageLayout](design-system/page-layout.md)
-- Content: [Text, Heading, Label, TextLink](design-system/typography.md), [Badge](design-system/badge.md), [Chip](design-system/chip.md), [ImagePlaceholder](design-system/image-placeholder.md)
-- Controls: [Button](design-system/button.md)
+- Content: [Text, Heading, Label, TextLink](design-system/typography.md), [Badge](design-system/badge.md), [Chip](design-system/chip.md), [ImagePlaceholder](design-system/image-placeholder.md), [Table](design-system/table.md)
+- Controls: [Button](design-system/button.md), [Toggle](design-system/toggle.md)
 - Navigation: [NavBar, NavBarLink](design-system/nav-bar.md), [NavChips, NavChip](design-system/nav-chips.md), [Pagination](design-system/pagination.md)
-- Forms: [Input, Textarea](design-system/input.md), [Select](design-system/select.md), [Field](design-system/field.md)
+- Forms: [Input, Textarea](design-system/input.md), [Select](design-system/select.md), [Field](design-system/field.md), [Checkbox](design-system/checkbox.md), [MultiSelectFilter](design-system/multi-select-filter.md)
 - Loading: [Skeleton](design-system/skeletons.md), [Spinner](design-system/spinner.md), [LoadingState](design-system/loading-states.md)
 - Errors and overlays: [ErrorState](design-system/error-state.md), [Dialog, ErrorDialog](design-system/dialog.md), [ConfirmDialog](design-system/confirm-dialog.md)
 
@@ -43,7 +43,6 @@ Planned, built when a feature first needs them (each gets its document then):
 
 ### Typography and content
 - `Preformatted` — fixed-width text with its own horizontal scroll
-- `Table` — table with edge-to-edge rows
 - `ItemData` — grouped key-value panel
 - `ListItem` — pickable row with a second line and trailing actions
 - `Tree` — collapsible tree of rows with row actions
@@ -59,19 +58,18 @@ Planned, built when a feature first needs them (each gets its document then):
 - `ButtonControls` — group of buttons
 - `CloseButton` — close control
 - `Tabs` — tab navigation with content outlet
-- `Toggle` — segmented control, usable as a form control
 - `PopoverMenuItem` — item of a popover menu
 - `IconPopover` — icon trigger with a popover of contextual actions
 
 ### Forms
 - `Form` — form layout: fields, labels, fieldsets, sections, actions
-- `Checkbox`, `CheckboxField`, `CheckboxGroup`
+- `CheckboxField`
 - `InputRange`, `MinMaxRange`
 - `TagsInput`, `TagsField`
 - `MultilangField` — value per language
 - `EntityAutocomplete`, `MultiEntityAutocomplete`
 - `FileUpload`, `ImageUpload`
-- `FilterBar`, `FilterPicker`, `MultiSelectFilter`, `SortSelect`
+- `FilterBar`, `FilterPicker`, `SortSelect`
 
 ### Feedback and overlays
 - `Tooltip` — floating tooltip

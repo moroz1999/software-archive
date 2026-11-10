@@ -17,7 +17,12 @@ const SOFTWARE = {
 const PLATFORMS = json([{code: 'bk', name: 'BK'}, {code: 'vector', name: 'Vector'}]);
 
 function answer(software: () => Response) {
-    return stubFetchRoutes(new Map([['/api/platforms', PLATFORMS], [`/api/software/${SOFTWARE.id}`, software]]));
+    return stubFetchRoutes(new Map([
+        ['/api/platforms', PLATFORMS],
+        ['/api/hardware?platform=vector', json([{code: 'vector06c', name: 'Vector-06C', group: 'computers'}])],
+        ['/api/hardware?platform=bk', json([])],
+        [`/api/software/${SOFTWARE.id}`, software],
+    ]));
 }
 
 describe(EditSoftwareProvider, () => {
@@ -41,7 +46,7 @@ describe(EditSoftwareProvider, () => {
 
         expect(fetchMock.mock.calls.find(([url]) => url === `/api/software/${SOFTWARE.id}`)?.[1]).toMatchObject({
             method: 'PUT',
-            body: '{"title":"Elite Plus","description":"Space trading","releaseDate":"1985-09-20","platform":"vector"}',
+            body: '{"title":"Elite Plus","description":"Space trading","releaseDate":"1985-09-20","platform":"vector","hardware":[]}',
         });
     });
 
@@ -63,5 +68,29 @@ describe(EditSoftwareProvider, () => {
         expect(reports).toHaveLength(0);
 
         unsubscribe();
+    });
+
+    it('says why the platform cannot change under the platform', async () => {
+        answer(json({status: 422, code: 'software.platform-locked', errors: [{field: 'platform', code: 'software.platform-locked'}]}, 422));
+        renderWithQueries(<EditSoftwareProvider software={SOFTWARE} onSaved={vi.fn<() => void>()}><SoftwareForm submitLabel="Save"/></EditSoftwareProvider>);
+
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Platform'}), await screen.findByRole('option', {name: 'BK'}));
+        await userEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        await vi.waitFor(() => {
+            expect(screen.getByRole('combobox', {name: 'Platform'})).toHaveAccessibleDescription('Remove the hardware of the software and its releases first.');
+        });
+    });
+
+    it('says why the hardware was refused under the hardware', async () => {
+        answer(json({status: 422, code: 'hardware.unknown', errors: [{field: 'hardware', code: 'hardware.unknown'}]}, 422));
+        renderWithQueries(<EditSoftwareProvider software={SOFTWARE} onSaved={vi.fn<() => void>()}><SoftwareForm submitLabel="Save"/></EditSoftwareProvider>);
+
+        await userEvent.click(await screen.findByRole('checkbox', {name: 'Vector-06C'}));
+        await userEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        await vi.waitFor(() => {
+            expect(screen.getByRole('group', {name: 'Hardware'})).toHaveAccessibleDescription('Choose hardware of the platform of the software.');
+        });
     });
 });

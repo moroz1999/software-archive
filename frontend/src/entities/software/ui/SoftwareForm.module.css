@@ -1,0 +1,4 @@
+.hardwareBone {
+    width: 100%;
+    height: var(--software-form-hardware-bone-height);
+}

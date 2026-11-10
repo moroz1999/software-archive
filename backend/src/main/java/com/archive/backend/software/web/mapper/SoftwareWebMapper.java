@@ -1,5 +1,6 @@
 package com.archive.backend.software.web.mapper;
 
+import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.software.app.CreateSoftwareCommand;
@@ -18,7 +19,9 @@ import com.archive.backend.software.web.dto.SoftwareListItemDto;
 import com.archive.backend.software.web.dto.SoftwareReleaseDto;
 import com.archive.backend.software.web.dto.SoftwareRequestDto;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.mapstruct.Mapper;
 import org.springframework.data.domain.Pageable;
@@ -49,7 +52,8 @@ public interface SoftwareWebMapper {
                 toTitle(request.title()),
                 toDescription(request.description()),
                 request.releaseDate(),
-                toPlatform(request.platform()));
+                toPlatform(request.platform()),
+                toHardware(request.hardware()));
     }
 
     default UpdateSoftwareCommand toUpdate(UUID id, SoftwareRequestDto request) {
@@ -58,7 +62,8 @@ public interface SoftwareWebMapper {
                 toTitle(request.title()),
                 toDescription(request.description()),
                 request.releaseDate(),
-                toPlatform(request.platform()));
+                toPlatform(request.platform()),
+                toHardware(request.hardware()));
     }
 
     // Request scalars -> value objects.
@@ -79,6 +84,10 @@ public interface SoftwareWebMapper {
             throw new InvalidValueException("platform.required", "A platform is required.");
         }
         return new PlatformCode(value);
+    }
+
+    private static Set<HardwareCode> toHardware(@Nullable List<String> codes) {
+        return codes == null ? Set.of() : codes.stream().map(HardwareCode::new).collect(Collectors.toUnmodifiableSet());
     }
 
     private static @Nullable PlatformCode toPlatformFilter(@Nullable String value) {

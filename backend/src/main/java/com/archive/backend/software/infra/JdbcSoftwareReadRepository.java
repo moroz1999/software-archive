@@ -1,5 +1,6 @@
 package com.archive.backend.software.infra;
 
+import com.archive.backend.software.read.ReleaseDetails;
 import com.archive.backend.software.read.SoftwareDetails;
 import com.archive.backend.software.read.SoftwareHardware;
 import com.archive.backend.software.read.SoftwarePlatform;
@@ -23,12 +24,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
-/** Software with its platform, hardware and releases straight from SQL: they span several tables. */
+/**
+ * Software with its platform, hardware and releases straight from SQL: they span several tables.
+ */
 @Repository
 @RequiredArgsConstructor
 public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
 
-    /** Hardware in the order of its groups, then by name. */
+    /**
+     * Hardware in the order of its groups, then by name.
+     */
     private static final String HARDWARE_ORDER =
             " ORDER BY array_position(ARRAY['computers', 'storage', 'dos', 'sound', 'controls', 'expansion'],"
                     + " h.hardware_group), lower(h.name), h.code";
@@ -110,7 +115,29 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                 .list();
     }
 
-    /** The hardware attached to one row of the owner table. */
+    @Override
+    public Optional<ReleaseDetails> findRelease(UUID softwareId, UUID releaseId) {
+        return jdbc.sql("""
+                        SELECT id, title, version, type, release_date, description
+                        FROM software_release
+                        WHERE software_id = :softwareId AND id = :releaseId
+                        """)
+                .param("softwareId", softwareId)
+                .param("releaseId", releaseId)
+                .query((rs, row) -> new ReleaseDetails(
+                        releaseId,
+                        rs.getString("title"),
+                        rs.getString("version"),
+                        rs.getString("type"),
+                        day(rs, "release_date"),
+                        rs.getString("description"),
+                        hardware("software_release_hardware", "release_id", releaseId)))
+                .optional();
+    }
+
+    /**
+     * The hardware attached to one row of the owner table.
+     */
     private List<SoftwareHardware> hardware(String table, String ownerColumn, UUID ownerId) {
         return jdbc.sql("SELECT h.code, h.name, h.hardware_group FROM " + table
                         + " x JOIN hardware h ON h.code = x.hardware_code WHERE x." + ownerColumn + " = :id"

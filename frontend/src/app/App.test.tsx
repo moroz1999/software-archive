@@ -9,6 +9,8 @@ import {type AppRouter, createAppRouter} from './router';
 
 const ALPHA = {id: '00000000-0000-0000-0001-000000000001', title: 'Fixture Software Alpha', releaseDate: '1985-03-02'};
 const ALPHA_DETAILS = {...ALPHA, description: null, platform: {code: 'vector', name: 'Vector'}, hardware: []};
+const AY_MOD = '00000000-0000-0000-0007-000000000002';
+const AY_MOD_DETAILS = {id: AY_MOD, title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: null, description: null, hardware: []};
 const ZED = '00000000-0000-0000-0003-000000000001';
 const CREW = '00000000-0000-0000-0005-000000000001';
 const ZED_DETAILS = {id: ZED, name: 'Zed', realName: null, notes: null, labels: [], locations: [], groups: [{id: CREW, name: 'Crew', as: null}]};
@@ -17,10 +19,11 @@ const CREW_DETAILS = {
     members: [{name: 'Zed', personId: ZED, personName: null}], memberGroups: [], groups: [],
 };
 
-/** What every page or the software page loads besides its own data: the platforms of the switch, the releases. */
+/** What every page or the software page loads besides its own data: the platforms of the switch, the releases, the hardware to choose. */
 const AROUND = new Map([
     ['/api/platforms', json([{code: 'vector', name: 'Vector'}])],
     [`/api/software/${ALPHA.id}/releases`, json([])],
+    ['/api/hardware?platform=vector', json([])],
 ]);
 
 /** Answers what every page loads, every other call with the responses in order. */
@@ -181,7 +184,9 @@ describe(App, () => {
         expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     });
 
-    it.each(['/software/42', '/software/42/edit', '/authors/42', '/groups/42'])('shows the not found page for %s without asking the backend', async (path) => {
+    it.each([
+        '/software/42', '/software/42/edit', '/software/42/releases/new', `/software/${ALPHA.id}/releases/42/edit`, '/authors/42', '/groups/42',
+    ])('shows the not found page for %s without asking the backend', async (path) => {
         const fetchMock = stubFetch(json(ALPHA_DETAILS));
         window.history.replaceState(null, '', path);
 
@@ -221,6 +226,48 @@ describe(App, () => {
 
         await userEvent.click(await screen.findByRole('button', {name: 'Delete'}));
         await userEvent.click(screen.getByRole('button', {name: 'Delete for good'}));
+
+        await expect(screen.findByRole('heading', {level: 1, name: 'Not found'})).resolves.toBeInTheDocument();
+    });
+
+    it('shows the not found page for a release the software does not have', async () => {
+        stubRoutes([
+            [`/api/software/${ALPHA.id}`, json(ALPHA_DETAILS)],
+            ['/api/hardware?platform=vector', json([])],
+            [`/api/software/${ALPHA.id}/releases/${AY_MOD}`, json({status: 404, code: 'release.not-found'}, 404)],
+        ]);
+        window.history.replaceState(null, '', `/software/${ALPHA.id}/releases/${AY_MOD}/edit`);
+
+        render(<App router={appRouter()} queryClient={queryClient}/>);
+
+        await expect(screen.findByRole('heading', {level: 1, name: 'Not found'})).resolves.toBeInTheDocument();
+        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    });
+
+    it('shows the not found page for adding a release to software that does not exist', async () => {
+        stubRoutes([[`/api/software/${ALPHA.id}`, json({status: 404, code: 'software.not-found'}, 404)]]);
+        window.history.replaceState(null, '', `/software/${ALPHA.id}/releases/new`);
+
+        render(<App router={appRouter()} queryClient={queryClient}/>);
+
+        await expect(screen.findByRole('heading', {level: 1, name: 'Not found'})).resolves.toBeInTheDocument();
+    });
+
+    it('shows the not found page when the release is deleted meanwhile and then saved', async () => {
+        const fetchMock = stubRoutes([
+            [`/api/software/${ALPHA.id}`, json(ALPHA_DETAILS)],
+            ['/api/hardware?platform=vector', json([])],
+            [`/api/software/${ALPHA.id}/releases/${AY_MOD}`, json(AY_MOD_DETAILS)],
+        ]);
+        const original = fetchMock.getMockImplementation();
+        fetchMock.mockImplementation((input, init) => (init?.method === 'PUT'
+            ? Promise.resolve(json({status: 404, code: 'release.not-found'}, 404)())
+            : original === undefined ? Promise.reject(new Error('no stub')) : original(input, init)));
+        window.history.replaceState(null, '', `/software/${ALPHA.id}/releases/${AY_MOD}/edit`);
+
+        render(<App router={appRouter()} queryClient={queryClient}/>);
+
+        await userEvent.click(await screen.findByRole('button', {name: 'Save'}));
 
         await expect(screen.findByRole('heading', {level: 1, name: 'Not found'})).resolves.toBeInTheDocument();
     });

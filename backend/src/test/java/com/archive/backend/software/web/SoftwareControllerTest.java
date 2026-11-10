@@ -13,7 +13,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.archive.backend.hardware.domain.HardwareCode;
+import com.archive.backend.hardware.domain.HardwareUnknownException;
 import com.archive.backend.hardware.domain.PlatformCode;
+import com.archive.backend.hardware.domain.PlatformUnknownException;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
 import com.archive.backend.shared.web.ApiExceptionHandler;
@@ -34,7 +37,7 @@ import com.archive.backend.software.app.UpdateSoftwareHandler;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareNotFoundException;
-import com.archive.backend.software.domain.SoftwarePlatformUnknownException;
+import com.archive.backend.software.domain.SoftwarePlatformLockedException;
 import com.archive.backend.software.domain.SoftwareTitle;
 import com.archive.backend.software.read.SoftwareDetails;
 import com.archive.backend.software.read.SoftwareHardware;
@@ -44,6 +47,7 @@ import com.archive.backend.software.read.SoftwareSummary;
 import com.archive.backend.software.web.mapper.SoftwareWebMapperImpl;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -250,7 +254,8 @@ class SoftwareControllerTest {
                         new SoftwareTitle("Elite"),
                         new SoftwareDescription("Space trading"),
                         LocalDate.of(1985, 9, 20),
-                        VECTOR)))
+                        VECTOR,
+                        Set.of())))
                 .thenReturn(new SoftwareId(ID));
 
         mvc.perform(
@@ -265,7 +270,7 @@ class SoftwareControllerTest {
 
     @Test
     void createsSoftwareWithoutOptionalFields() throws Exception {
-        when(createHandler.handle(new CreateSoftwareCommand(new SoftwareTitle("Elite"), null, null, VECTOR)))
+        when(createHandler.handle(new CreateSoftwareCommand(new SoftwareTitle("Elite"), null, null, VECTOR, Set.of())))
                 .thenReturn(new SoftwareId(ID));
 
         mvc.perform(
@@ -288,7 +293,7 @@ class SoftwareControllerTest {
 
     @Test
     void answers400ForAnUnknownPlatform() throws Exception {
-        when(createHandler.handle(any(CreateSoftwareCommand.class))).thenThrow(new SoftwarePlatformUnknownException());
+        when(createHandler.handle(any(CreateSoftwareCommand.class))).thenThrow(new PlatformUnknownException());
 
         mvc.perform(post("/api/software")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -339,12 +344,17 @@ class SoftwareControllerTest {
                         put("/api/software/{id}", ID)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(
-                                        "{\"title\":\"Elite Plus\",\"description\":null,\"releaseDate\":\"1987-01-01\",\"platform\":\"vector\"}"))
+                                        "{\"title\":\"Elite Plus\",\"description\":null,\"releaseDate\":\"1987-01-01\",\"platform\":\"vector\",\"hardware\":[\"vector06c\",\"ay8910\"]}"))
                 .andExpect(status().isNoContent());
 
         verify(updateHandler)
                 .handle(new UpdateSoftwareCommand(
-                        new SoftwareId(ID), new SoftwareTitle("Elite Plus"), null, LocalDate.of(1987, 1, 1), VECTOR));
+                        new SoftwareId(ID),
+                        new SoftwareTitle("Elite Plus"),
+                        null,
+                        LocalDate.of(1987, 1, 1),
+                        VECTOR,
+                        Set.of(new HardwareCode("vector06c"), new HardwareCode("ay8910"))));
     }
 
     @Test
@@ -372,5 +382,39 @@ class SoftwareControllerTest {
         mvc.perform(delete("/api/software/{id}", ID))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("software.not-found"));
+    }
+
+    @Test
+    void answers422ForAPlatformLockedByHardware() throws Exception {
+        doThrow(new SoftwarePlatformLockedException()).when(updateHandler).handle(any(UpdateSoftwareCommand.class));
+
+        mvc.perform(put("/api/software/{id}", ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Elite\",\"platform\":\"bk\"}"))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code").value("software.platform-locked"))
+                .andExpect(jsonPath("$.errors[0].field").value("platform"));
+    }
+
+    @Test
+    void answers400ForAMalformedHardwareCode() throws Exception {
+        mvc.perform(post("/api/software")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Elite\",\"platform\":\"vector\",\"hardware\":[\"AY!\"]}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("hardware.code-invalid"));
+        verify(createHandler, never()).handle(any());
+    }
+
+    @Test
+    void answers422ForHardwareOfAnotherPlatform() throws Exception {
+        when(createHandler.handle(any(CreateSoftwareCommand.class))).thenThrow(new HardwareUnknownException());
+
+        mvc.perform(post("/api/software")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Elite\",\"platform\":\"vector\",\"hardware\":[\"bk0011m\"]}"))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code").value("hardware.unknown"))
+                .andExpect(jsonPath("$.errors[0].field").value("hardware"));
     }
 }

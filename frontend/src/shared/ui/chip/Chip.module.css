@@ -81,3 +81,29 @@ a.mono:hover { background: var(--chip-mono-hover-bg); }
     background: transparent;
     color: var(--chip-mono-outline-text);
 }
+
+/* The remove button of a removable chip: a bare cross after the label. */
+.remove {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    line-height: 1;
+    cursor: pointer;
+    opacity: var(--chip-remove-opacity);
+}
+
+.remove:hover {
+    opacity: 1;
+}
+
+.remove:focus-visible {
+    outline: var(--chip-remove-focus-outline);
+    outline-offset: var(--chip-remove-focus-offset);
+}
+
+.remove:disabled {
+    cursor: not-allowed;
+    opacity: var(--chip-remove-disabled-opacity);
+}

@@ -1,11 +1,15 @@
 package com.archive.backend.software.web.dto;
 
 import java.time.LocalDate;
+import java.util.List;
 import org.jspecify.annotations.Nullable;
 
-/** Body of creating and of editing software. */
+/**
+ * Body of creating and of editing software.
+ */
 public record SoftwareRequestDto(
         @Nullable String title,
         @Nullable String description,
         @Nullable LocalDate releaseDate,
-        @Nullable String platform) {}
+        @Nullable String platform,
+        @Nullable List<String> hardware) {}

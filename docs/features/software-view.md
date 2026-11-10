@@ -8,7 +8,10 @@ The page of one software ([domain/software.md](../domain/software.md)) at `/soft
 - Under it: the release day in words ("20 September 1984") and the description, line by line. Unknown values are left out.
 - Platform: the software's platform.
 - Hardware: the software's base hardware, grouped by hardware group in the fixed order computers, storage, DOS, sound, controls, expansion; the section is left out without hardware.
-- Releases: every release with its title, the line "Version · Type · day" (unknown parts left out) and the description; "No releases known yet." when there are none.
+- Releases: "Add release" next to the heading ([release-editing.md](release-editing.md)); "No releases known yet." when there are none. Otherwise:
+  - a table of Title (with the description under it), Year, Version, Type, Hardware and "Edit", in the order they come; Title sorts from A, Year from the newest with unknown years last, a second click turns the order round;
+  - "Type" shows the releases of one type, offered only when they are of more than one; an unknown type is not shown;
+  - "Table / Cards" switches to cards with the same facts; a phone always shows cards, with nothing to switch.
 
 ## Hardware of a release
 
@@ -16,7 +19,7 @@ Each release shows its effective hardware ([domain/hardware.md](../domain/hardwa
 
 ## Loading and errors
 
-- The releases are a lazy block below: they load when they come into view, with a skeleton until then.
+- The releases are a lazy block below: they load when they come into view, with a skeleton until then. It repeats their layout so nothing jumps: the bar with the View toggle at its end, the same table header over rows as high as real ones, the columns fixed in width; cards on a phone.
 - The page preloads the software's details ([data-loading.md](../data-loading.md)): within 300 ms it appears filled, otherwise with a skeleton of the heading and the details.
 - Unknown software, and an id in the URL that cannot be one, show the not found page ([error-handling.md](../error-handling.md)); a malformed id is never sent to the backend.
 - Any other business error is shown inline with Retry; system errors go to the error dialog ([error-handling.md](../error-handling.md)).

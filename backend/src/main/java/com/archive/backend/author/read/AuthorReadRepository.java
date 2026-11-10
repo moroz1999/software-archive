@@ -6,7 +6,9 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-/** Reads authors as plain read models (docs/backend.md). */
+/**
+ * Reads authors as plain read models (docs/backend.md).
+ */
 public interface AuthorReadRepository {
 
     /**
@@ -20,6 +22,8 @@ public interface AuthorReadRepository {
             @Nullable String platform,
             Pageable pageable);
 
-    /** A person who has a name; nothing for an unknown or nameless one. */
+    /**
+     * A person who has a name; nothing for an unknown or nameless one.
+     */
     Optional<AuthorDetails> findById(UUID id);
 }

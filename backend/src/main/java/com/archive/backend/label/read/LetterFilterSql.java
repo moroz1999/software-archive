@@ -11,12 +11,16 @@ import java.util.Map;
 public final class LetterFilterSql {
 
     private static final String REST_LETTER = "#";
-    /** First characters that are catalog letters; anything else is under the rest sign. */
+    /**
+     * First characters that are catalog letters; anything else is under the rest sign.
+     */
     private static final String LETTERS_PATTERN = "^[A-Za-zА-Яа-яЁё]";
 
     private LetterFilterSql() {}
 
-    /** The condition on {@code column} for {@code letter}, adding the parameters it needs to {@code params}. */
+    /**
+     * The condition on {@code column} for {@code letter}, adding the parameters it needs to {@code params}.
+     */
     public static String condition(String column, String letter, Map<String, Object> params) {
         if (REST_LETTER.equals(letter)) {
             params.put("lettersPattern", LETTERS_PATTERN);

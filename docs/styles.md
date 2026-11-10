@@ -56,7 +56,7 @@ Three levels, top to bottom:
 
 ## Breakpoints
 
-Layout components switch at two widths: tablet below 992px, mobile below 576px. Media queries cannot read custom properties, so these two values are written in the modules of the layout components that react to them.
+Layout components switch at two widths: tablet below 992px, mobile below 576px. Media queries cannot read custom properties, so these two values are written in the modules of the layout components that react to them. Markup that changes with the screen, not only its look, asks `useMediaQuery` (`shared/lib/screen`), which holds the phone width as `MOBILE_QUERY`.
 
 ## Automatic checks
 

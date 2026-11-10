@@ -1,4 +1,57 @@
-.releaseBone {
-    width: 100%;
-    height: var(--software-releases-bone-height);
+/* The View toggle keeps to the end of the bar whether or not the Type toggle stands before it. */
+.viewToggle {
+    margin-inline-start: auto;
+}
+
+/* Fixed column widths: the title takes the rest. */
+.yearColumn { width: var(--software-releases-year-column-width); }
+.versionColumn { width: var(--software-releases-version-column-width); }
+.typeColumn { width: var(--software-releases-type-column-width); }
+.hardwareColumn { width: var(--software-releases-hardware-column-width); }
+.actionsColumn { width: var(--software-releases-actions-column-width); }
+
+/* Bones, each as high as the line or control it stands for. */
+.toggleBone {
+    width: var(--software-releases-toggle-bone-width);
+    height: var(--software-releases-toggle-bone-height);
+}
+
+.titleBone {
+    width: var(--software-releases-title-bone-width);
+    height: var(--software-releases-body-line);
+}
+
+.yearBone {
+    width: var(--software-releases-year-bone-width);
+    height: var(--software-releases-cell-line);
+}
+
+.versionBone {
+    width: var(--software-releases-version-bone-width);
+    height: var(--software-releases-cell-line);
+}
+
+.badgeBone {
+    width: var(--software-releases-badge-bone-width);
+    height: var(--software-releases-badge-bone-height);
+}
+
+.hardwareBone {
+    width: var(--software-releases-hardware-bone-width);
+    height: var(--software-releases-body-line);
+}
+
+.buttonBone {
+    width: var(--software-releases-button-bone-width);
+    height: var(--software-releases-button-bone-height);
+}
+
+.cardTitleBone {
+    width: var(--software-releases-card-title-bone-width);
+    height: var(--software-releases-card-title-line);
+}
+
+.factsBone {
+    width: var(--software-releases-facts-bone-width);
+    height: var(--software-releases-facts-line);
 }

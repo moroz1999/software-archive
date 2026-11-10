@@ -9,7 +9,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 
-/** A release of software, under its own title or the title of its software. */
+/**
+ * A release of software, under its own title or the title of its software.
+ */
 public record SoftwareRelease(
         UUID id,
         String title,

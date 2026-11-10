@@ -1,0 +1,56 @@
+.scroll {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--table-text);
+    font-size: var(--table-font-size);
+    line-height: var(--table-line-height);
+}
+
+.fixed {
+    table-layout: fixed;
+}
+
+.row {
+    border-bottom: var(--table-row-border);
+}
+
+.header,
+.cell {
+    padding: var(--table-cell-padding);
+    vertical-align: middle;
+}
+
+.header {
+    color: var(--table-header-text);
+    font-size: var(--table-header-font-size);
+    font-weight: var(--table-header-font-weight);
+    white-space: nowrap;
+}
+
+.start { text-align: start; }
+.center { text-align: center; }
+.end { text-align: end; }
+
+/* A sorting header is a bare button that keeps the look of the header. */
+.sort {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.sort:hover {
+    color: var(--table-sort-hover-text);
+}
+
+.sort:focus-visible {
+    outline: var(--table-sort-focus-outline);
+    outline-offset: var(--table-sort-focus-offset);
+}

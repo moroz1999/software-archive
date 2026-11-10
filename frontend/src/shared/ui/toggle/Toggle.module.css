@@ -1,0 +1,37 @@
+.toggle {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: var(--toggle-gap);
+    padding: var(--toggle-padding);
+    border-radius: var(--toggle-radius);
+    background: var(--toggle-bg);
+}
+
+.option {
+    height: var(--toggle-option-height);
+    padding: var(--toggle-option-padding);
+    border: 0;
+    border-radius: var(--toggle-option-radius);
+    background: transparent;
+    color: var(--toggle-option-text);
+    font: inherit;
+    font-size: var(--toggle-option-font-size);
+    cursor: pointer;
+    transition: background var(--toggle-transition) ease, color var(--toggle-transition) ease;
+}
+
+.option:hover {
+    color: var(--toggle-option-hover-text);
+}
+
+.option:focus-visible {
+    outline: var(--toggle-focus-outline);
+    outline-offset: var(--toggle-focus-offset);
+}
+
+.pressed,
+.pressed:hover {
+    background: var(--toggle-pressed-bg);
+    color: var(--toggle-pressed-text);
+    box-shadow: var(--toggle-pressed-shadow);
+}

@@ -9,7 +9,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** The releases of software, each with the hardware it shows (docs/domain/hardware.md). */
+/**
+ * The releases of software, each with the hardware it shows (docs/domain/hardware.md).
+ */
 @Service
 @RequiredArgsConstructor
 public class ListSoftwareReleasesHandler {

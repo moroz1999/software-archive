@@ -69,4 +69,10 @@
     /* Mono outline: dashed chip for formats and technical parameters. */
     --chip-mono-outline-text: var(--text-light-color);
     --chip-mono-outline-border: var(--secondary-400);
+
+    /* Remove button of a removable chip: dimmed until hovered, more when locked. */
+    --chip-remove-opacity: 0.7;
+    --chip-remove-disabled-opacity: 0.4;
+    --chip-remove-focus-outline: var(--border-width-thin) solid var(--focus-ring-color);
+    --chip-remove-focus-offset: var(--space-2);
 }

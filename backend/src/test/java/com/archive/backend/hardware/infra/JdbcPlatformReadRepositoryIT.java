@@ -24,9 +24,17 @@ class JdbcPlatformReadRepositoryIT {
         assertThat(reads.findAll())
                 .containsExactly(
                         new PlatformItem("agat", "Agat"),
+                        new PlatformItem("bashkiria", "Bashkiria"),
                         new PlatformItem("bk", "BK"),
+                        new PlatformItem("korvet", "Korvet"),
+                        new PlatformItem("lviv", "Lviv"),
                         new PlatformItem("msx", "MSX"),
+                        new PlatformItem("okean", "Okean"),
+                        new PlatformItem("orion", "Orion"),
+                        new PlatformItem("pk8000", "PK8000"),
+                        new PlatformItem("rk", "RK-compatible"),
                         new PlatformItem("specialist", "Specialist"),
-                        new PlatformItem("vector", "Vector"));
+                        new PlatformItem("vector", "Vector"),
+                        new PlatformItem("xt", "XT clones"));
     }
 }

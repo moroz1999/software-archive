@@ -2,12 +2,14 @@ import type {QueryClient} from '@tanstack/react-query';
 import {createBrowserRouter, type RouteObject} from 'react-router';
 import {AUTHOR_ROUTE, AUTHORS_PATH} from '@/entities/authors';
 import {GROUP_ROUTE, GROUPS_PATH} from '@/entities/groups';
-import {SOFTWARE_EDIT_ROUTE, SOFTWARE_LIST_PATH, SOFTWARE_NEW_PATH, SOFTWARE_ROUTE} from '@/entities/software';
+import {RELEASE_EDIT_ROUTE, RELEASE_NEW_ROUTE, SOFTWARE_EDIT_ROUTE, SOFTWARE_LIST_PATH, SOFTWARE_NEW_PATH, SOFTWARE_ROUTE} from '@/entities/software';
 import {loadAuthorViewPage, preloadAuthorViewPage} from '@/pages/author-view';
 import {loadAuthorsPage, preloadAuthorsPage, shouldPreloadAuthorsPage} from '@/pages/authors';
 import {loadGroupViewPage, preloadGroupViewPage} from '@/pages/group-view';
 import {loadGroupsPage, preloadGroupsPage, shouldPreloadGroupsPage} from '@/pages/groups';
 import {loadHomePage, preloadHomePage} from '@/pages/home';
+import {loadReleaseEditPage, preloadReleaseEditPage} from '@/pages/release-edit';
+import {loadReleaseNewPage, preloadReleaseNewPage} from '@/pages/release-new';
 import {loadSoftwarePage, preloadSoftwarePage} from '@/pages/software';
 import {loadSoftwareEditPage, preloadSoftwareEditPage} from '@/pages/software-edit';
 import {loadSoftwareNewPage} from '@/pages/software-new';
@@ -38,6 +40,8 @@ const routes = (queryClient: QueryClient): RouteObject[] => [{Component: AppLayo
         {path: SOFTWARE_NEW_PATH, lazy: {Component: loadSoftwareNewPage}, HydrateFallback: nothing},
         {path: SOFTWARE_ROUTE, loader: preloadSoftwareViewPage(queryClient), lazy: {Component: loadSoftwareViewPage}, HydrateFallback: nothing},
         {path: SOFTWARE_EDIT_ROUTE, loader: preloadSoftwareEditPage(queryClient), lazy: {Component: loadSoftwareEditPage}, HydrateFallback: nothing},
+        {path: RELEASE_NEW_ROUTE, loader: preloadReleaseNewPage(queryClient), lazy: {Component: loadReleaseNewPage}, HydrateFallback: nothing},
+        {path: RELEASE_EDIT_ROUTE, loader: preloadReleaseEditPage(queryClient), lazy: {Component: loadReleaseEditPage}, HydrateFallback: nothing},
         {
             path: AUTHORS_PATH,
             loader: preloadAuthorsPage(queryClient),

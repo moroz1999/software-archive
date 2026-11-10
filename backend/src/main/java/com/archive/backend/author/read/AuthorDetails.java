@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
-/** One author with everything shown on their page. */
+/**
+ * One author with everything shown on their page.
+ */
 public record AuthorDetails(
         UUID id,
         String name,

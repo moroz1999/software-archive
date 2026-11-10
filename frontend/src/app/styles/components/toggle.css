@@ -1,0 +1,25 @@
+:root {
+    /* The track holding the options. */
+    --toggle-gap: var(--space-2);
+    --toggle-padding: var(--space-2);
+    --toggle-radius: var(--radius-lg);
+    --toggle-bg: var(--background-deep);
+
+    /* An option: a small button on the track. */
+    --toggle-option-height: 28px;
+    --toggle-option-padding: 0 var(--space-12);
+    --toggle-option-radius: var(--radius-md);
+    --toggle-option-font-size: var(--font-size-sm);
+    --toggle-option-text: var(--text-light-color);
+    --toggle-option-hover-text: var(--text-color);
+    --toggle-transition: var(--animation-xs);
+
+    /* The chosen option stands up from the track. */
+    --toggle-pressed-bg: var(--surface);
+    --toggle-pressed-text: var(--text-color);
+    --toggle-pressed-shadow: var(--shadow-sm);
+
+    /* Keyboard focus. */
+    --toggle-focus-outline: var(--border-width-thin) solid var(--focus-ring-color);
+    --toggle-focus-offset: var(--space-2);
+}

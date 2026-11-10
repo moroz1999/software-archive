@@ -5,7 +5,9 @@ import com.archive.backend.shared.domain.error.InvalidValueException;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-/** The code a platform is known by: lower-case letters and digits, words joined by a hyphen, such as {@code vector}. */
+/**
+ * The code a platform is known by: lower-case letters and digits, words joined by a hyphen, such as {@code vector}.
+ */
 @ValueObject
 public record PlatformCode(String value) {
 

@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
-/** One group with everything shown on its page. */
+/**
+ * One group with everything shown on its page.
+ */
 public record GroupDetails(
         UUID id,
         String name,

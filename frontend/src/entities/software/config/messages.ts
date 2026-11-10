@@ -9,3 +9,7 @@ export const TITLE_PROBLEM_MESSAGES: Readonly<Record<TitleProblem, string>> = {
 export const RELEASE_DATE_INVALID_MESSAGE = 'Enter a full date.';
 
 export const PLATFORM_REQUIRED_MESSAGE = 'Choose a platform.';
+
+export const RELEASE_VERSION_TOO_LONG_MESSAGE = 'Keep the version within 50 characters.';
+
+export const RELEASE_TYPE_REQUIRED_MESSAGE = 'Choose a type.';

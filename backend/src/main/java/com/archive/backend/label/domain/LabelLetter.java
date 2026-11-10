@@ -12,7 +12,9 @@ import java.util.Objects;
 @ValueObject
 public record LabelLetter(String value) {
 
-    /** The letter of names that start with neither a Latin nor a Cyrillic letter. */
+    /**
+     * The letter of names that start with neither a Latin nor a Cyrillic letter.
+     */
     public static final String REST = "#";
 
     public LabelLetter {

@@ -1,0 +1,33 @@
+:root {
+    /* Gap between the chips, the filter, the list and the captions. */
+    --multi-select-filter-gap: var(--space-8);
+
+    /* The name of the choice, as a field label. */
+    --multi-select-filter-legend-space: var(--space-4);
+    --multi-select-filter-legend-text: var(--text-light-color);
+    --multi-select-filter-legend-font-size: var(--font-size-sm);
+    --multi-select-filter-legend-line-height: var(--line-height-compact);
+
+    /* Gap between the chips of the chosen values. */
+    --multi-select-filter-chips-gap: var(--space-4);
+
+    /* The scrolling box of options, framed like an input. */
+    --multi-select-filter-list-gap: var(--space-8);
+    --multi-select-filter-list-max-height: 200px;
+    --multi-select-filter-list-padding: var(--space-8) var(--space-12);
+    --multi-select-filter-list-border-width: var(--border-width-thin);
+    --multi-select-filter-list-border-color: var(--border-color);
+    --multi-select-filter-list-radius: var(--radius-lg);
+    --multi-select-filter-list-bg: var(--surface);
+
+    /* A group: its uppercase name over its options. */
+    --multi-select-filter-group-gap: var(--space-4);
+    --multi-select-filter-group-name-text: var(--text-light-color);
+    --multi-select-filter-group-name-font-size: var(--font-size-xs);
+    --multi-select-filter-group-name-font-weight: var(--font-weight-medium);
+    --multi-select-filter-group-name-letter-spacing: 1px;
+
+    /* Options in columns at least this wide. */
+    --multi-select-filter-option-min-width: 170px;
+    --multi-select-filter-options-gap: var(--space-4) var(--space-12);
+}

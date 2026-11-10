@@ -82,9 +82,20 @@ describe(SoftwareView, () => {
         renderView(ID);
 
         const releases = await screen.findByRole('region', {name: 'Releases'});
-        const release = await within(releases).findByRole('article', {name: 'Elite AY'});
+        const release = await within(releases).findByRole('row', {name: /Elite AY/});
 
-        expect(within(within(release).getByRole('group', {name: 'Sound'})).getByText('AY-3-8910')).toBeInTheDocument();
+        expect(release).toHaveTextContent('AY-3-8910');
+    });
+
+    it('leads to adding a release and to the editing of each release', async () => {
+        stubFetch(json(ELITE));
+        renderView(ID);
+
+        const releases = await screen.findByRole('region', {name: 'Releases'});
+        const release = await within(releases).findByRole('row', {name: /Elite AY/});
+
+        expect(within(releases).getByRole('link', {name: 'Add release'})).toHaveAttribute('href', `/software/${ID}/releases/new`);
+        expect(within(release).getByRole('link', {name: 'Edit Elite AY'})).toHaveAttribute('href', expect.stringMatching(new RegExp(`^/software/${ID}/releases/[0-9a-f-]+/edit$`)));
     });
 
     it('leads to the editing of the software', async () => {

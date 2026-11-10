@@ -2,6 +2,8 @@ import {type ReactNode, useId} from 'react';
 import {
     HardwareList,
     releaseDayText,
+    releaseEditPath,
+    releaseNewPath,
     type SoftwareDetails,
     SoftwareDetailsProvider,
     softwareEditPath,
@@ -10,8 +12,9 @@ import {
     SoftwareReleasesProvider,
     useSoftwareDetails,
 } from '@/entities/software';
-import {useInViewport} from '@/shared/lib/in-viewport';
+import {useInViewport} from '@/shared/lib/screen';
 import {Button} from '@/shared/ui/button';
+import {Inline} from '@/shared/ui/inline';
 import {PageLayout} from '@/shared/ui/page-layout';
 import {Skeleton} from '@/shared/ui/skeleton';
 import {Stack} from '@/shared/ui/stack';
@@ -97,9 +100,14 @@ function Releases({id}: SoftwareViewProps) {
     return (
         <section ref={ref} aria-labelledby={headingId}>
             <Stack gap="md">
-                <Heading level={2} variant="title" id={headingId}>Releases</Heading>
+                <Inline gap="sm" justify="between" wrap>
+                    <Heading level={2} variant="title" id={headingId}>Releases</Heading>
+                    <Button href={releaseNewPath(id)} color="secondary">Add release</Button>
+                </Inline>
                 <SoftwareReleasesProvider id={id} enabled={visible}>
-                    <SoftwareReleases/>
+                    <SoftwareReleases actions={(release) => (
+                        <Button href={releaseEditPath(id, release.id)} color="secondary" ariaLabel={`Edit ${release.title}`}>Edit</Button>
+                    )}/>
                 </SoftwareReleasesProvider>
             </Stack>
         </section>
