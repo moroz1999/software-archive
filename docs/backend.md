@@ -45,7 +45,7 @@ Domain entities, domain services and use case commands/results use value objects
 - JPA entities never leave `infra`.
 - A domain repository serves only commands, so it loads an aggregate only to change it: the row of its root is locked (`PESSIMISTIC_WRITE`) until the transaction commits. A second change of the same aggregate waits and then checks its invariants against the committed state; reads go through the read side and never wait. Aggregates carry no versions.
 - Spring Data `Page`/`Pageable` are allowed in domain repository interfaces: an own pagination type would add mapping without adding meaning.
-- Naming: domain interface `SoftwareRepository`, Spring Data interface `SoftwareJpaRepository`, adapter `JpaSoftwareRepository`.
+- Naming: domain interface `SoftwareRepository`, Spring Data interface `SpringDataSoftwareRepository`, adapter `JpaSoftwareRepository`.
 
 Cross-domain configuration lives in `shared/config`.
 
@@ -90,7 +90,7 @@ All run on every build; nothing is suppressed to get a change through.
 | No domain subpackage is named after a kind of class (`exceptions`, `vo`, `entities`, `models`, `services`, …); `shared/domain/error` and `shared/domain/ddd` are the shared exceptions | `domainIsGroupedByConcept` |
 | `domain` has no Spring (except `Page`/`Pageable`), Jakarta, Hibernate or Jackson | `domainIsFrameworkFree` |
 | `@Entity` classes live in `infra` and end with `Entity` | `jpaEntitiesLiveInInfra` |
-| Spring Data repositories live in `infra` and end with `JpaRepository` | `springDataRepositoriesLiveInInfra` |
+| Spring Data repositories live in `infra`, start with `SpringData` and end with `Repository` | `springDataRepositoriesLiveInInfra` |
 | `@RestController`s live in `web` and end with `Controller` | `controllersLiveInWeb` |
 | `@Service`s in `app` end with `Handler` | `useCasesAreHandlers` |
 | Exceptions in `domain`/`app` extend `BusinessException` | `exceptionsAreBusinessExceptions` |

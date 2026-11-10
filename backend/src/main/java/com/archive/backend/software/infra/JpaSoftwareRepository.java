@@ -11,21 +11,21 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class JpaSoftwareRepository implements SoftwareRepository {
 
-    private final SoftwareJpaRepository jpa;
+    private final SpringDataSoftwareRepository springDataSoftwareRepository;
     private final SoftwareMapper mapper;
 
     @Override
     public Optional<Software> findById(SoftwareId id) {
-        return jpa.findById(id.value()).map(mapper::toDomain);
+        return springDataSoftwareRepository.findById(id.value()).map(mapper::toDomain);
     }
 
     @Override
     public void save(Software software) {
-        jpa.save(mapper.toEntity(software));
+        springDataSoftwareRepository.save(mapper.toEntity(software));
     }
 
     @Override
     public void delete(Software software) {
-        jpa.deleteById(software.getId().value());
+        springDataSoftwareRepository.deleteById(software.getId().value());
     }
 }

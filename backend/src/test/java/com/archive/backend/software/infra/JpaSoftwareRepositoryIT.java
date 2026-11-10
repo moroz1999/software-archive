@@ -52,7 +52,7 @@ class JpaSoftwareRepositoryIT {
             HardwareSet.restore(VECTOR, Set.of(new HardwareCode("ay8910"), new HardwareCode("joystick")));
 
     @Autowired
-    private SoftwareJpaRepository jpa;
+    private SpringDataSoftwareRepository springDataSoftwareRepository;
 
     @Autowired
     private JpaSoftwareRepository repository;
@@ -71,7 +71,7 @@ class JpaSoftwareRepositoryIT {
                 new SoftwareDescription("Space trading"),
                 LocalDate.of(1985, 9, 20),
                 NO_HARDWARE));
-        jpa.flush();
+        springDataSoftwareRepository.flush();
 
         assertThat(repository.findById(ID)).hasValueSatisfying(software -> {
             assertThat(software.getTitle()).isEqualTo(new SoftwareTitle("Elite"));
@@ -87,7 +87,7 @@ class JpaSoftwareRepositoryIT {
     @Test
     void storesEdits() {
         repository.save(Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE));
-        jpa.flush();
+        springDataSoftwareRepository.flush();
         Software software = repository.findById(ID).orElseThrow();
 
         software.edit(
@@ -96,7 +96,7 @@ class JpaSoftwareRepositoryIT {
                 LocalDate.of(1987, 1, 1),
                 HardwareSet.restore(BK, Set.of()));
         repository.save(software);
-        jpa.flush();
+        springDataSoftwareRepository.flush();
 
         assertThat(jdbc.queryForObject("SELECT title FROM software WHERE id = ?", String.class, ID.value()))
                 .isEqualTo("Elite Plus");
@@ -112,7 +112,7 @@ class JpaSoftwareRepositoryIT {
     @Test
     void deletesSoftwareWithEverythingThatBelongsToIt() {
         repository.save(Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE));
-        jpa.flush();
+        springDataSoftwareRepository.flush();
         jdbc.update("INSERT INTO software_alternative_titles (title, software_id) VALUES ('Элита', ?)", ID.value());
         jdbc.update("INSERT INTO software_languages (software_id, language) VALUES (?, 'en')", ID.value());
         jdbc.update(
@@ -125,7 +125,7 @@ class JpaSoftwareRepositoryIT {
         jdbc.update("INSERT INTO software_release_hardware (release_id, hardware_code) VALUES (?, 'ay8910')", release);
 
         repository.delete(repository.findById(ID).orElseThrow());
-        jpa.flush();
+        springDataSoftwareRepository.flush();
 
         assertThat(jdbc.queryForObject("SELECT count(*) FROM software WHERE id = ?", Integer.class, ID.value()))
                 .isZero();
@@ -149,7 +149,7 @@ class JpaSoftwareRepositoryIT {
         software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_HARDWARE);
         software.addRelease(AY_MOD, AY_MOD_CONTENT, AY_AND_JOYSTICK);
         repository.save(software);
-        jpa.flush();
+        springDataSoftwareRepository.flush();
 
         assertThat(repository.findById(ID).orElseThrow().getReleases())
                 .extracting(Release::id, Release::content, Release::hardware)
@@ -163,13 +163,13 @@ class JpaSoftwareRepositoryIT {
         software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_HARDWARE);
         software.addRelease(AY_MOD, AY_MOD_CONTENT, AY_AND_JOYSTICK);
         repository.save(software);
-        jpa.flush();
+        springDataSoftwareRepository.flush();
 
         Software loaded = repository.findById(ID).orElseThrow();
         loaded.removeRelease(ORIGINAL);
         loaded.editRelease(AY_MOD, ORIGINAL_CONTENT, NO_HARDWARE);
         repository.save(loaded);
-        jpa.flush();
+        springDataSoftwareRepository.flush();
 
         assertThat(repository.findById(ID).orElseThrow().getReleases())
                 .singleElement()
@@ -190,7 +190,7 @@ class JpaSoftwareRepositoryIT {
                 null,
                 null,
                 HardwareSet.restore(VECTOR, Set.of(new HardwareCode("vector06c")))));
-        jpa.flush();
+        springDataSoftwareRepository.flush();
         // Every request starts with an empty persistence context.
         entityManager.clear();
 
@@ -203,7 +203,7 @@ class JpaSoftwareRepositoryIT {
                 null,
                 HardwareSet.restore(VECTOR, Set.of(new HardwareCode("ay8910"))));
         repository.save(software);
-        jpa.flush();
+        springDataSoftwareRepository.flush();
         entityManager.clear();
 
         assertThat(repository.findById(ID).orElseThrow().getHardware())

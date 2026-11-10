@@ -140,7 +140,9 @@ class ArchitectureTest {
             .should()
             .resideInAPackage("..infra..")
             .andShould()
-            .haveSimpleNameEndingWith("JpaRepository");
+            .haveSimpleNameStartingWith("SpringData")
+            .andShould()
+            .haveSimpleNameEndingWith("Repository");
 
     private static final ArchRule controllersLiveInWeb = classes()
             .that()
