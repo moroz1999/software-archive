@@ -43,6 +43,7 @@ Domain entities, domain services and use case commands/results use value objects
 - The repository interface is declared in `domain` and speaks domain objects.
 - The implementation lives in `infra`: JPA entities, Spring Data repositories and the MapStruct entity ↔ domain mapper.
 - JPA entities never leave `infra`.
+- A domain repository serves only commands, so it loads an aggregate only to change it: the row of its root is locked (`PESSIMISTIC_WRITE`) until the transaction commits. A second change of the same aggregate waits and then checks its invariants against the committed state; reads go through the read side and never wait. Aggregates carry no versions.
 - Spring Data `Page`/`Pageable` are allowed in domain repository interfaces: an own pagination type would add mapping without adding meaning.
 - Naming: domain interface `SoftwareRepository`, Spring Data interface `SoftwareJpaRepository`, adapter `JpaSoftwareRepository`.
 
