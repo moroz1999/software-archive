@@ -1,5 +1,6 @@
 import {useId} from 'react';
 import {useQuery} from '@tanstack/react-query';
+import {useTranslation} from 'react-i18next';
 import {Select} from '@/shared/ui/select';
 import {platformsQuery} from '../api/platform-queries';
 import {parsePlatformCode} from '../model/platform';
@@ -11,19 +12,20 @@ import {usePlatformSelection} from '../model/platform-selection-context';
  */
 export function PlatformSwitch() {
     const id = useId();
+    const {t} = useTranslation();
     const {platform, select} = usePlatformSelection();
     const platforms = useQuery(platformsQuery());
 
     return (
         <Select
             id={id}
-            ariaLabel="Platform"
+            ariaLabel={t('filters.platform')}
             value={platform ?? ''}
             onChange={(value) => {
                 select(parsePlatformCode(value === '' ? null : value));
             }}
             options={(platforms.data ?? []).map((item) => ({value: item.code, label: item.name}))}
-            placeholder="All platforms"
+            placeholder={t('filters.allPlatforms')}
         />
     );
 }

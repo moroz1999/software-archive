@@ -4,11 +4,13 @@ import {Button} from '@/shared/ui/button';
 import {PageLayout} from '@/shared/ui/page-layout';
 
 export function SoftwarePage() {
+    const {t} = useTranslation();
     return (
-        <PageLayout title="Software" actions={<Button href={SOFTWARE_NEW_PATH}>Add software</Button>}>
+        <PageLayout title={t('pages.software')} actions={<Button href={SOFTWARE_NEW_PATH}>{t('actions.addSoftware')}</Button>}>
             <SoftwareListProvider>
                 <SoftwareList/>
             </SoftwareListProvider>
         </PageLayout>
     );
 }
+import {useTranslation} from 'react-i18next';

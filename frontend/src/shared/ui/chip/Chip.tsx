@@ -1,5 +1,6 @@
 import type {ReactNode} from 'react';
 import {Link} from 'react-router';
+import {useTranslation} from 'react-i18next';
 import {classNames} from '@/shared/lib/class-names';
 import {isAppHref} from '@/shared/lib/href';
 import styles from './Chip.module.css';
@@ -37,6 +38,7 @@ const sizeClass: Readonly<Record<ChipSize, string>> = {sm: styles.sm, md: styles
 
 /** A compact tag: a category, a role, a technical identifier. */
 export function Chip({children, variant = 'opaque', color = 'neutral', size = 'md', href, onRemove, removeLabel, disabled = false, className}: ChipProps) {
+    const {t} = useTranslation();
     const chipClass = classNames(styles.chip, variantClass[variant], colorClass[color], sizeClass[size], className);
     if (onRemove !== undefined) {
         return (
@@ -45,7 +47,7 @@ export function Chip({children, variant = 'opaque', color = 'neutral', size = 'm
                 <button
                     type="button"
                     className={styles.remove}
-                    aria-label={removeLabel ?? `Remove ${typeof children === 'string' ? children : ''}`.trim()}
+                    aria-label={removeLabel ?? t('selection.remove', {name: typeof children === 'string' ? children : ''}).trim()}
                     onClick={() => {
                         onRemove();
                     }}

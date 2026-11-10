@@ -1,4 +1,5 @@
 import type {ReactNode} from 'react';
+import {useTranslation} from 'react-i18next';
 import {authorPath, toAuthorId} from '@/entities/authors';
 import {locationText, primaryFirst} from '@/entities/locations';
 import {type GroupDetails, GroupDetailsProvider, type GroupId, groupPath, type GroupMember, type RelatedGroup, useGroupDetails} from '@/entities/groups';
@@ -47,38 +48,39 @@ function LoadedView() {
 }
 
 function Details({group}: {readonly group: GroupDetails}) {
+    const {t} = useTranslation();
     const notes = group.notes?.split('\n').filter((line) => line.trim() !== '') ?? [];
     return (
         <Stack gap="lg">
-            <Section label="Name"><Text>{group.groupName}</Text></Section>
+            <Section label={t('group.name')}><Text>{group.groupName}</Text></Section>
             {group.types.length > 0 && (
-                <Section label="Types">
-                    <ItemList label="Types">{group.types.map((type) => <li key={type}><Text>{type}</Text></li>)}</ItemList>
+                <Section label={t('group.types')}>
+                    <ItemList label={t('group.types')}>{group.types.map((type) => <li key={type}><Text>{type}</Text></li>)}</ItemList>
                 </Section>
             )}
             {group.labels.length > 0 && (
-                <Section label="Labels">
-                    <ItemList label="Labels">{group.labels.map((label) => <li key={label.id}><Text>{label.name}</Text></li>)}</ItemList>
+                <Section label={t('group.labels')}>
+                    <ItemList label={t('group.labels')}>{group.labels.map((label) => <li key={label.id}><Text>{label.name}</Text></li>)}</ItemList>
                 </Section>
             )}
             {group.locations.length > 0 && (
-                <Section label="Locations">
-                    <ItemList label="Locations">
+                <Section label={t('group.locations')}>
+                    <ItemList label={t('group.locations')}>
                         {primaryFirst(group.locations).map((location, index) => <li key={index}><Text>{locationText(location)}</Text></li>)}
                     </ItemList>
                 </Section>
             )}
             {group.members.length > 0 && (
-                <Section label="Members">
-                    <ItemList label="Members">
+                <Section label={t('group.members')}>
+                    <ItemList label={t('group.members')}>
                         {group.members.map((member, index) => <li key={index}><Member member={member}/></li>)}
                     </ItemList>
                 </Section>
             )}
-            <RelatedGroups label="Member groups" groups={group.memberGroups}/>
-            <RelatedGroups label="Member of" groups={group.groups}/>
+            <RelatedGroups label={t('group.memberGroups')} groups={group.memberGroups}/>
+            <RelatedGroups label={t('group.memberOf')} groups={group.groups}/>
             {notes.length > 0 && (
-                <Section label="Notes">
+                <Section label={t('group.notes')}>
                     <Stack gap="sm">
                         {notes.map((line, index) => <Text key={index}>{line}</Text>)}
                     </Stack>

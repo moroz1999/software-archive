@@ -11,9 +11,10 @@ export interface LetterFilterProps {
 
 /** "All" and every letter of the catalogs of names, the chosen one marked. */
 export function LetterFilter({current, hrefOf, disabled}: LetterFilterProps) {
+    const {t} = useTranslation();
     return (
-        <NavChips label="First letter">
-            <NavChip href={hrefOf(null)} active={current === null} disabled={disabled}>All</NavChip>
+        <NavChips label={t('filters.firstLetter')}>
+            <NavChip href={hrefOf(null)} active={current === null} disabled={disabled}>{t('filters.all')}</NavChip>
             {LABEL_LETTERS.map((letter) => (
                 <NavChip key={letter} href={hrefOf(letter)} active={current === letter} disabled={disabled}>
                     {letter}
@@ -22,3 +23,4 @@ export function LetterFilter({current, hrefOf, disabled}: LetterFilterProps) {
         </NavChips>
     );
 }
+import {useTranslation} from 'react-i18next';

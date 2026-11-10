@@ -13,5 +13,5 @@ const FALLBACK: Readonly<Record<BusinessStatus, string>> = {
  * or a generic one for the error's status (docs/error-handling.md).
  */
 export function businessErrorMessage(error: BusinessError, messages: BusinessMessages = {}): string {
-    return messages[error.code] ?? FALLBACK[error.status];
+    return messages[error.code] ?? messages[String(error.status)] ?? FALLBACK[error.status];
 }

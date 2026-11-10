@@ -15,13 +15,14 @@ export interface HardwarePickerProps {
 
 /** Hardware of a platform chosen by group, for software and for its releases alike. */
 export function HardwarePicker({hardware, value, onChange, disabled = false, hint, error}: HardwarePickerProps) {
+    const {t} = useTranslation();
     const groups = groupHardware(hardware).map((section) => ({
-        label: section.label,
+        label: t(`hardwareGroups.${section.group}`),
         options: section.items.map((item) => ({value: item.code, label: item.name})),
     }));
     return (
         <MultiSelectFilter
-            label="Hardware"
+            label={t('fields.hardware')}
             groups={groups}
             value={value}
             onChange={onChange}
@@ -31,3 +32,4 @@ export function HardwarePicker({hardware, value, onChange, disabled = false, hin
         />
     );
 }
+import {useTranslation} from 'react-i18next';

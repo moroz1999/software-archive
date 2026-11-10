@@ -1,5 +1,6 @@
 import type {ReactNode} from 'react';
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import {useTranslation} from 'react-i18next';
 import {platformsQuery, usePlatformSelection} from '@/entities/platforms';
 import {createSoftware, SOFTWARE_QUERY_KEY, SoftwareFormProvider, type SoftwareId, toSoftwareFormValues} from '@/entities/software';
 import {businessErrorOf} from '@/shared/api';
@@ -15,6 +16,7 @@ export interface CreateSoftwareProviderProps {
  * lists go stale once it is added.
  */
 export function CreateSoftwareProvider({onCreated, children}: CreateSoftwareProviderProps) {
+    const {t} = useTranslation();
     const queryClient = useQueryClient();
     const {mutate, isPending, error} = useMutation({
         mutationFn: createSoftware,
@@ -34,7 +36,7 @@ export function CreateSoftwareProvider({onCreated, children}: CreateSoftwareProv
             onSubmit={mutate}
             busy={isPending}
             error={businessErrorOf(error)}
-            messages={createSoftwareMessages}
+            messages={createSoftwareMessages(t)}
         >
             {children}
         </SoftwareFormProvider>

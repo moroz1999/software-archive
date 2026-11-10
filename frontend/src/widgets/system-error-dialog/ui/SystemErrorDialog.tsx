@@ -1,15 +1,17 @@
 import {useEffect, useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import {subscribeSystemErrors, type SystemErrorKind, type SystemErrorReport} from '@/shared/api';
 import {ErrorDialog} from '@/shared/ui/dialog';
 
-const MESSAGES: Readonly<Record<SystemErrorKind, string>> = {
-    network: 'The server could not be reached. Check your connection and try again.',
-    server: 'The server could not complete the request. Please try again.',
-    response: 'The server sent a response this page does not understand. Please try again later.',
+const MESSAGE_KEYS: Readonly<Record<SystemErrorKind, string>> = {
+    network: 'errors.system.network',
+    server: 'errors.system.server',
+    response: 'errors.system.response',
 };
 
 /** The single system error modal, mounted once by the app (docs/error-handling.md). */
 export function SystemErrorDialog() {
+    const {t} = useTranslation();
     const [report, setReport] = useState<SystemErrorReport | null>(null);
 
     useEffect(() => subscribeSystemErrors(setReport), []);
@@ -27,8 +29,8 @@ export function SystemErrorDialog() {
     return (
         <ErrorDialog
             open
-            title="Something went wrong"
-            message={MESSAGES[report.error.kind]}
+            title={t('errors.system.title')}
+            message={t(MESSAGE_KEYS[report.error.kind])}
             onClose={close}
             {...(retry === undefined ? {} : {
                 onRetry: () => {

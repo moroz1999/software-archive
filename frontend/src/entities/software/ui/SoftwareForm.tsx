@@ -1,4 +1,5 @@
 import type {ReactNode, SyntheticEvent} from 'react';
+import {useTranslation} from 'react-i18next';
 import {Button} from '@/shared/ui/button';
 import {Field} from '@/shared/ui/field';
 import {Inline} from '@/shared/ui/inline';
@@ -9,7 +10,7 @@ import {Stack} from '@/shared/ui/stack';
 import {Textarea} from '@/shared/ui/textarea';
 import {Text} from '@/shared/ui/typography';
 import {useSkeleton} from '@/shared/lib/skeleton';
-import {PLATFORM_REQUIRED_MESSAGE, RELEASE_DATE_INVALID_MESSAGE, TITLE_PROBLEM_MESSAGES} from '../config/messages';
+import {PLATFORM_REQUIRED_KEY, RELEASE_DATE_INVALID_KEY, TITLE_PROBLEM_KEYS} from '../config/messages';
 import {usePlatformHardware} from '../model/platform-hardware-context';
 import {PlatformHardwareProvider} from '../model/PlatformHardwareProvider';
 import {toSoftwarePlatformCode} from '../model/software';
@@ -25,6 +26,7 @@ export interface SoftwareFormProps {
 
 /** The fields of software inside a SoftwareFormProvider, which holds their values and checks them. */
 export function SoftwareForm({submitLabel, actions}: SoftwareFormProps) {
+    const {t} = useTranslation();
     const {values, errors, refusals, change, submit, platforms, busy, error} = useSoftwareForm();
     // Hardware belongs to its platform: the platform stays while hardware is chosen (docs/domain/hardware.md).
     const platformLocked = values.hardware.length > 0;
@@ -38,13 +40,13 @@ export function SoftwareForm({submitLabel, actions}: SoftwareFormProps) {
         <form noValidate onSubmit={onSubmit}>
             <Stack gap="lg">
                 {error !== undefined && <Text role="alert" tone="danger">{error}</Text>}
-                <Field label="Title" error={errors.title === undefined ? refusals.title : TITLE_PROBLEM_MESSAGES[errors.title]}>
+                <Field label={t('fields.title')} error={errors.title === undefined ? refusals.title : t(TITLE_PROBLEM_KEYS[errors.title])}>
                     {(control) => <Input {...control} value={values.title} onChange={change('title')} disabled={busy}/>}
                 </Field>
                 <Field
-                    label="Platform"
-                    error={errors.platform === undefined ? refusals.platform : PLATFORM_REQUIRED_MESSAGE}
-                    hint={platformLocked ? 'Remove the hardware to change the platform.' : undefined}
+                    label={t('fields.platform')}
+                    error={errors.platform === undefined ? refusals.platform : t(PLATFORM_REQUIRED_KEY)}
+                    hint={platformLocked ? t('fields.platformLocked') : undefined}
                 >
                     {(control) => (
                         <Select
@@ -52,15 +54,15 @@ export function SoftwareForm({submitLabel, actions}: SoftwareFormProps) {
                             value={values.platform}
                             onChange={change('platform')}
                             options={platforms.map((platform) => ({value: platform.code, label: platform.name}))}
-                            placeholder="Choose a platform"
+                            placeholder={t('fields.choosePlatform')}
                             disabled={busy || platformLocked}
                         />
                     )}
                 </Field>
-                <Field label="Description" error={refusals.description}>
+                <Field label={t('fields.description')} error={refusals.description}>
                     {(control) => <Textarea {...control} value={values.description} onChange={change('description')} disabled={busy}/>}
                 </Field>
-                <Field label="Release date" error={errors.releaseDate === undefined ? refusals.releaseDate : RELEASE_DATE_INVALID_MESSAGE}>
+                <Field label={t('fields.releaseDate')} error={errors.releaseDate === undefined ? refusals.releaseDate : t(RELEASE_DATE_INVALID_KEY)}>
                     {(control) => <Input {...control} type="date" value={values.releaseDate} onChange={change('releaseDate')} disabled={busy}/>}
                 </Field>
                 {values.platform !== '' && (

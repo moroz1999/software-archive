@@ -2,6 +2,10 @@
 
 React 19, TypeScript, Vite, React Router, TanStack Query, CSS Modules.
 
+## UI localization
+
+User-facing UI text uses `i18next` through `react-i18next`. English and Russian resources are bundled under `app/i18n`; components request semantic keys with `useTranslation`. The active language is detected and persisted by the domain-neutral helpers in `shared/lib/i18n`, while the app provider owns initialization and synchronizes the document language. Archive content returned by the API is displayed as stored.
+
 ## Feature-Sliced Design (strict)
 
 Layers under `frontend/src`, top to bottom:

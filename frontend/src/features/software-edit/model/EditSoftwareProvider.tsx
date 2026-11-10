@@ -1,5 +1,6 @@
 import type {ReactNode} from 'react';
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import {useTranslation} from 'react-i18next';
 import {platformsQuery} from '@/entities/platforms';
 import {
     SOFTWARE_QUERY_KEY,
@@ -20,6 +21,7 @@ export interface EditSoftwareProviderProps {
 
 /** Saving changes of existing software: the form inside starts from its values; what shows it goes stale once saved. */
 export function EditSoftwareProvider({software, onSaved, children}: EditSoftwareProviderProps) {
+    const {t} = useTranslation();
     const queryClient = useQueryClient();
     const {mutate, isPending, error} = useMutation({
         mutationFn: (draft: SoftwareDraft) => updateSoftware(software.id, draft),
@@ -38,7 +40,7 @@ export function EditSoftwareProvider({software, onSaved, children}: EditSoftware
             onSubmit={mutate}
             busy={isPending}
             error={businessErrorOf(error)}
-            messages={editSoftwareMessages}
+            messages={editSoftwareMessages(t)}
         >
             {children}
         </SoftwareFormProvider>

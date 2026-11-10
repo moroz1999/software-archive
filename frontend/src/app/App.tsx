@@ -3,6 +3,7 @@ import {RouterProvider} from 'react-router';
 import {PlatformSelectionProvider} from '@/entities/platforms';
 import {SystemErrorDialog} from '@/widgets/system-error-dialog';
 import type {AppRouter} from './router';
+import {I18nProvider} from './i18n/I18nProvider';
 
 export interface AppProps {
     /**
@@ -16,11 +17,13 @@ export interface AppProps {
 
 export function App({router, queryClient}: AppProps) {
     return (
-        <QueryClientProvider client={queryClient}>
-            <PlatformSelectionProvider>
-                <RouterProvider router={router}/>
-            </PlatformSelectionProvider>
-            <SystemErrorDialog/>
-        </QueryClientProvider>
+        <I18nProvider>
+            <QueryClientProvider client={queryClient}>
+                <PlatformSelectionProvider>
+                    <RouterProvider router={router}/>
+                </PlatformSelectionProvider>
+                <SystemErrorDialog/>
+            </QueryClientProvider>
+        </I18nProvider>
     );
 }

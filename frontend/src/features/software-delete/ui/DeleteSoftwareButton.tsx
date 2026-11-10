@@ -1,4 +1,5 @@
 import {useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import type {Software} from '@/entities/software';
 import {Button} from '@/shared/ui/button';
 import {ConfirmDialog} from '@/shared/ui/confirm-dialog';
@@ -20,6 +21,7 @@ export function DeleteSoftwareButton({software, onDeleted}: DeleteSoftwareButton
 }
 
 function DeleteWithConfirmation() {
+    const {t} = useTranslation();
     const {software, remove, deleting, deleted, error} = useDeleteSoftware();
     // Whether the confirmation is open is the dialog's own UI state, not business state.
     const [asking, setAsking] = useState(false);
@@ -29,12 +31,12 @@ function DeleteWithConfirmation() {
             <Button color="danger" onClick={() => {
                 setAsking(true);
             }}>
-                Delete
+                {t('actions.delete')}
             </Button>
             <ConfirmDialog
                 open={asking && !deleted}
-                title="Delete software"
-                confirmLabel="Delete for good"
+                title={t('software.delete')}
+                confirmLabel={t('actions.deleteForGood')}
                 onConfirm={remove}
                 onCancel={() => {
                     setAsking(false);
@@ -42,7 +44,7 @@ function DeleteWithConfirmation() {
                 busy={deleting}
                 error={error}
             >
-                Delete “{software.title}” from the archive?
+                {t('software.deleteQuestion', {title: software.title})}
             </ConfirmDialog>
         </>
     );

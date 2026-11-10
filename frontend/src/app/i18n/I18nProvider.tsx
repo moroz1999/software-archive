@@ -12,7 +12,7 @@ function createI18n() {
         lng: language,
         fallbackLng: 'en',
         supportedLngs: SUPPORTED_UI_LANGUAGES,
-        initImmediate: false,
+        initAsync: false,
         interpolation: {escapeValue: false},
         react: {useSuspense: false},
     });

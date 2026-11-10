@@ -1,5 +1,5 @@
 # Main Menu
 
-The bar over every page: Home (`/`), Software (`/software`, [software-list.md](software-list.md)), Authors (`/authors`, [author-catalog.md](author-catalog.md)), Groups (`/groups`, [group-catalog.md](group-catalog.md)), and the platform switch on the right ([platform-switch.md](platform-switch.md)). The section of the current page is marked, including the pages inside it (a software's, an author's or a group's page); Home only on the home page.
+The bar over every page: Home (`/`), Software (`/software`, [software-list.md](software-list.md)), Authors (`/authors`, [author-catalog.md](author-catalog.md)), Groups (`/groups`, [group-catalog.md](group-catalog.md)), and the platform and language switches on the right ([platform-switch.md](platform-switch.md), [localization.md](localization.md)). The section of the current page is marked, including the pages inside it (a software's, an author's or a group's page); Home only on the home page.
 
 The not found page and the error page keep the menu: the route error boundary sits inside the frame of the menu, and an address the app does not know is a route of its own that throws not found.

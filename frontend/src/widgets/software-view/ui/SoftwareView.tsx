@@ -1,4 +1,5 @@
 import {type ReactNode, useId} from 'react';
+import {useTranslation} from 'react-i18next';
 import {
     HardwareList,
     releaseDayText,
@@ -37,6 +38,7 @@ export function SoftwareView({id}: SoftwareViewProps) {
 }
 
 function LoadedView({id}: SoftwareViewProps) {
+    const {t} = useTranslation();
     const query = useSoftwareDetails();
     const skeleton = useSkeleton(query);
 
@@ -52,7 +54,7 @@ function LoadedView({id}: SoftwareViewProps) {
         return null;
     }
     return (
-        <PageLayout title={query.data.title} actions={<Button href={softwareEditPath(id)} color="secondary">Edit</Button>}>
+        <PageLayout title={query.data.title} actions={<Button href={softwareEditPath(id)} color="secondary">{t('actions.edit')}</Button>}>
             <Stack gap="xl">
                 <Details software={query.data}/>
                 <Releases id={id}/>
@@ -62,16 +64,17 @@ function LoadedView({id}: SoftwareViewProps) {
 }
 
 function Details({software}: {readonly software: SoftwareDetails}) {
+    const {t, i18n} = useTranslation();
     const lines = software.description?.split('\n').filter((line) => line.trim() !== '') ?? [];
     return (
         <Stack gap="lg">
-            <Section label="Platform"><Text>{software.platform.name}</Text></Section>
+            <Section label={t('fields.platform')}><Text>{software.platform.name}</Text></Section>
             {software.releaseDate !== null && (
-                <Section label="Released"><Text>{releaseDayText(software.releaseDate)}</Text></Section>
+                <Section label={t('software.released')}><Text>{releaseDayText(software.releaseDate, i18n.resolvedLanguage ?? 'en')}</Text></Section>
             )}
             {software.hardware.length > 0 && (
-                <Stack as="section" gap="xs" ariaLabel="Hardware">
-                    <Text variant="label" tone="muted">Hardware</Text>
+                <Stack as="section" gap="xs" ariaLabel={t('fields.hardware')}>
+                    <Text variant="label" tone="muted">{t('fields.hardware')}</Text>
                     <HardwareList hardware={software.hardware}/>
                 </Stack>
             )}
@@ -95,18 +98,19 @@ function Section({label, children}: {readonly label: string; readonly children: 
 
 /** The releases are lower on the page: they are asked for once the block comes into view (docs/data-loading.md). */
 function Releases({id}: SoftwareViewProps) {
+    const {t} = useTranslation();
     const [ref, visible] = useInViewport();
     const headingId = useId();
     return (
         <section ref={ref} aria-labelledby={headingId}>
             <Stack gap="md">
                 <Inline gap="sm" justify="between" wrap>
-                    <Heading level={2} variant="title" id={headingId}>Releases</Heading>
-                    <Button href={releaseNewPath(id)} color="secondary">Add release</Button>
+                    <Heading level={2} variant="title" id={headingId}>{t('release.releases')}</Heading>
+                    <Button href={releaseNewPath(id)} color="secondary">{t('actions.addRelease')}</Button>
                 </Inline>
                 <SoftwareReleasesProvider id={id} enabled={visible}>
                     <SoftwareReleases actions={(release) => (
-                        <Button href={releaseEditPath(id, release.id)} color="secondary" ariaLabel={`Edit ${release.title}`}>Edit</Button>
+                        <Button href={releaseEditPath(id, release.id)} color="secondary" ariaLabel={t('release.editNamed', {title: release.title})}>{t('actions.edit')}</Button>
                     )}/>
                 </SoftwareReleasesProvider>
             </Stack>

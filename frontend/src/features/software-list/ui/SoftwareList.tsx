@@ -9,6 +9,7 @@ const SKELETON_CARDS = [1, 2, 3, 4, 5, 6, 7, 8];
 
 /** The first page of the archive's software as cards, inside a SoftwareListProvider. */
 export function SoftwareList() {
+    const {t} = useTranslation();
     const query = useSoftwareList();
     const skeleton = useSkeleton(query);
 
@@ -26,7 +27,7 @@ export function SoftwareList() {
         return null;
     }
     if (query.data.items.length === 0) {
-        return <Text tone="muted">No software in the archive yet.</Text>;
+        return <Text tone="muted">{t('empty.software')}</Text>;
     }
     return (
         <LoadingState loading={query.isRefetching}>
@@ -40,3 +41,4 @@ export function SoftwareList() {
         </LoadingState>
     );
 }
+import {useTranslation} from 'react-i18next';

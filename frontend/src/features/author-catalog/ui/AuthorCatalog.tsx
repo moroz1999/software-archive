@@ -33,14 +33,15 @@ export function AuthorCatalog() {
 }
 
 /** Next to an entry: the real name of the person, or for a label of a person without one, the main name. */
-function noteOf(entry: AuthorCatalogEntry): string | null {
+function noteOf(entry: AuthorCatalogEntry, labelOf: (name: string) => string): string | null {
     if (entry.realName !== null) {
         return entry.realName;
     }
-    return entry.labelOf === null ? null : `label of ${entry.labelOf}`;
+    return entry.labelOf === null ? null : labelOf(entry.labelOf);
 }
 
 function Entries() {
+    const {t} = useTranslation();
     const {filter, entries, changing} = useAuthorCatalog();
     const skeleton = useSkeleton(entries);
 
@@ -52,15 +53,15 @@ function Entries() {
         return null;
     }
     if (entries.data.items.length === 0) {
-        return <Text tone="muted">No authors found.</Text>;
+        return <Text tone="muted">{t('empty.authors')}</Text>;
     }
     return (
         <LoadingState loading={changing}>
             <Stack gap="lg">
-                <Grid as="ul" ariaLabel="Authors" desktopColumns={4} tabletColumns={3} mobileColumns={1} gap="md">
+                <Grid as="ul" ariaLabel={t('pages.authors')} desktopColumns={4} tabletColumns={3} mobileColumns={1} gap="md">
                     {entries.data.items.map((entry) => (
                         <li key={`${entry.personId}-${entry.name}`}>
-                            <LabelEntry name={entry.name} href={authorPath(entry.personId)} note={noteOf(entry)}/>
+                            <LabelEntry name={entry.name} href={authorPath(entry.personId)} note={noteOf(entry, (name) => t('author.labelOf', {name}))}/>
                         </li>
                     ))}
                 </Grid>
@@ -74,3 +75,4 @@ function Entries() {
         </LoadingState>
     );
 }
+import {useTranslation} from 'react-i18next';

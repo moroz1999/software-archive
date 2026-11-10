@@ -1,5 +1,6 @@
 import type {ReactNode} from 'react';
 import {useMutation, useQueryClient} from '@tanstack/react-query';
+import {useTranslation} from 'react-i18next';
 import {deleteRelease, type ReleaseDetails, SOFTWARE_QUERY_KEY, type Software} from '@/entities/software';
 import {businessErrorMessage, businessErrorOf} from '@/shared/api';
 import {deleteReleaseMessages} from '../config/messages';
@@ -14,6 +15,7 @@ export interface DeleteReleaseProviderProps {
 
 /** Deleting a release: what shows its software goes stale once it is gone. */
 export function DeleteReleaseProvider({software, release, onDeleted, children}: DeleteReleaseProviderProps) {
+    const {t} = useTranslation();
     const queryClient = useQueryClient();
     const {mutate, isPending, isSuccess, error} = useMutation({
         mutationFn: () => deleteRelease(software.id, release.id),
@@ -32,7 +34,7 @@ export function DeleteReleaseProvider({software, release, onDeleted, children}: 
         },
         deleting: isPending,
         deleted: isSuccess,
-        error: businessError === undefined ? undefined : businessErrorMessage(businessError, deleteReleaseMessages),
+        error: businessError === undefined ? undefined : businessErrorMessage(businessError, deleteReleaseMessages(t)),
     };
 
     return <DeleteReleaseContext value={state}>{children}</DeleteReleaseContext>;

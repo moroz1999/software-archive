@@ -1,4 +1,5 @@
 import {isRouteErrorResponse, useRouteError} from 'react-router';
+import {useTranslation} from 'react-i18next';
 import {NotFoundError} from '@/shared/api';
 import {HOME_PATH} from '@/shared/config';
 import {Button} from '@/shared/ui/button';
@@ -15,18 +16,19 @@ function isNotFound(error: unknown): boolean {
  */
 export function RouteErrorBoundary() {
     const error = useRouteError();
+    const {t} = useTranslation();
 
     if (isNotFound(error)) {
         return (
-            <PageLayout title="Not found">
-                <Text tone="muted">This page does not exist or has been deleted.</Text>
-                <Button href={HOME_PATH} color="secondary">Go to the home page</Button>
+            <PageLayout title={t('errors.notFound.title')}>
+                <Text tone="muted">{t('errors.notFound.message')}</Text>
+                <Button href={HOME_PATH} color="secondary">{t('errors.notFound.home')}</Button>
             </PageLayout>
         );
     }
     return (
-        <PageLayout title="Something went wrong">
-            <Text tone="muted">This page could not be shown. Please reload it or try again later.</Text>
+        <PageLayout title={t('errors.system.title')}>
+            <Text tone="muted">{t('errors.page.message')}</Text>
         </PageLayout>
     );
 }

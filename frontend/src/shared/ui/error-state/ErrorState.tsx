@@ -9,12 +9,14 @@ export interface ErrorStateProps {
 
 /** A business error of a component's own action, shown inside that component. */
 export function ErrorState({message, onRetry}: ErrorStateProps) {
+    const {t} = useTranslation();
     return (
         <div role="alert">
             <Inline gap="md" align="center" wrap>
                 <Text tone="danger">{message}</Text>
-                {onRetry !== undefined && <Button size="sm" color="secondary" onClick={onRetry}>Retry</Button>}
+                {onRetry !== undefined && <Button size="sm" color="secondary" onClick={onRetry}>{t('actions.retry')}</Button>}
             </Inline>
         </div>
     );
 }
+import {useTranslation} from 'react-i18next';

@@ -1,5 +1,6 @@
 import type {ReactNode} from 'react';
 import {Link} from 'react-router';
+import {useTranslation} from 'react-i18next';
 import {classNames} from '@/shared/lib/class-names';
 import styles from './Pagination.module.css';
 
@@ -51,14 +52,15 @@ function Item({href, current = false, children}: ItemProps) {
 
 /** Page navigation of a paged list; nothing for a single page. */
 export function Pagination({page, totalPages, hrefOf, disabled = false}: PaginationProps) {
+    const {t} = useTranslation();
     if (totalPages <= 1) {
         return null;
     }
     const hrefFor = (target: number) => (disabled ? null : hrefOf(target));
     return (
-        <nav aria-label="Pages">
+        <nav aria-label={t('pagination.label')}>
             <ul className={styles.list}>
-                <Item href={page > 0 ? hrefFor(page - 1) : null}>Previous</Item>
+                <Item href={page > 0 ? hrefFor(page - 1) : null}>{t('pagination.previous')}</Item>
                 {slots(page, totalPages).map((slot) => (slot.kind === 'gap'
                     ? <li key={`gap-${String(slot.after)}`}><span className={styles.gap}>…</span></li>
                     : (
@@ -66,7 +68,7 @@ export function Pagination({page, totalPages, hrefOf, disabled = false}: Paginat
                             {String(slot.page + 1)}
                         </Item>
                     )))}
-                <Item href={page < totalPages - 1 ? hrefFor(page + 1) : null}>Next</Item>
+                <Item href={page < totalPages - 1 ? hrefFor(page + 1) : null}>{t('pagination.next')}</Item>
             </ul>
         </nav>
     );

@@ -1,4 +1,5 @@
 import {type ReactNode, useId, useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import {classNames} from '@/shared/lib/class-names';
 import {MOBILE_QUERY, useMediaQuery} from '@/shared/lib/screen';
 import {useSkeleton} from '@/shared/lib/skeleton';
@@ -11,7 +12,6 @@ import {Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow, type 
 import {Toggle} from '@/shared/ui/toggle';
 import {Heading, Text} from '@/shared/ui/typography';
 import {CardGrid} from '@/shared/ui/card-grid';
-import {releaseTypeText} from '../lib/release-type';
 import {releaseYear} from '../lib/release-year';
 import type {ReleaseType, SoftwareRelease} from '../model/release';
 import {useSoftwareReleases} from '../model/software-releases-context';
@@ -30,10 +30,9 @@ interface Sort {
     readonly direction: Exclude<TableSort, 'none'>;
 }
 
-const VIEWS = [{value: 'table', label: 'Table'}, {value: 'cards', label: 'Cards'}] as const;
-
 /** The releases of the software inside a SoftwareReleasesProvider: a table, or cards on a phone or when asked. */
 export function SoftwareReleases({actions}: SoftwareReleasesProps) {
+    const {t} = useTranslation();
     const query = useSoftwareReleases();
     const skeleton = useSkeleton(query);
 
@@ -45,7 +44,7 @@ export function SoftwareReleases({actions}: SoftwareReleasesProps) {
         return null;
     }
     if (query.data.length === 0) {
-        return <Text tone="muted">No releases known yet.</Text>;
+        return <Text tone="muted">{t('empty.releases')}</Text>;
     }
     return <ReleaseList releases={query.data} actions={actions}/>;
 }
@@ -56,10 +55,12 @@ interface ReleaseListProps {
 }
 
 function ReleaseList({releases, actions}: ReleaseListProps) {
+    const {t} = useTranslation();
     const phone = useMediaQuery(MOBILE_QUERY);
     const [view, setView] = useState<View>('table');
     const [type, setType] = useState<ReleaseType | 'all'>('all');
     const [sort, setSort] = useState<Sort | null>(null);
+    const views = [{value: 'table', label: t('release.table')}, {value: 'cards', label: t('release.cards')}] as const;
 
     const types = [...new Set(releases.map((release) => release.type))];
     const shown = sorted(type === 'all' ? releases : releases.filter((release) => release.type === type), sort);
@@ -80,13 +81,21 @@ function ReleaseList({releases, actions}: ReleaseListProps) {
                 <Inline gap="md" wrap>
                     {types.length > 1 && (
                         <Toggle
-                            label="Type"
-                            options={[{value: 'all', label: 'All'}, ...types.map((value) => ({value, label: releaseTypeText(value)}))]}
+                            label={t('fields.type')}
+                            options={[{value: 'all', label: t('release.allTypes')}, ...types.map((value) => ({value, label: t(`release.types.${value}`)}))]}
                             value={type}
                             onChange={setType}
                         />
                     )}
-                    {!phone && <Toggle label="View" options={VIEWS} value={view} onChange={setView} className={styles.viewToggle}/>}
+                    {!phone && (
+                        <Toggle
+                            label={t('release.view')}
+                            options={views}
+                            value={view}
+                            onChange={setView}
+                            className={styles.viewToggle}
+                        />
+                    )}
                 </Inline>
             )}
             {phone || view === 'cards'
@@ -126,14 +135,15 @@ interface ReleaseHeaderProps {
 
 /** The column names, the same over the data and over its skeleton; the widths are fixed so neither moves the other. */
 function ReleaseHeader({withActions, sort = null, onSort}: ReleaseHeaderProps) {
+    const {t} = useTranslation();
     return (
         <TableHead>
             <TableRow>
-                <TableHeaderCell {...sortProps(sort, 'title', onSort)}>Title</TableHeaderCell>
-                <TableHeaderCell align="center" className={styles.yearColumn} {...sortProps(sort, 'year', onSort)}>Year</TableHeaderCell>
-                <TableHeaderCell align="center" className={styles.versionColumn}>Version</TableHeaderCell>
-                <TableHeaderCell className={styles.typeColumn}>Type</TableHeaderCell>
-                <TableHeaderCell className={styles.hardwareColumn}>Hardware</TableHeaderCell>
+                <TableHeaderCell {...sortProps(sort, 'title', onSort)}>{t('fields.title')}</TableHeaderCell>
+                <TableHeaderCell align="center" className={styles.yearColumn} {...sortProps(sort, 'year', onSort)}>{t('release.year')}</TableHeaderCell>
+                <TableHeaderCell align="center" className={styles.versionColumn}>{t('fields.version')}</TableHeaderCell>
+                <TableHeaderCell className={styles.typeColumn}>{t('fields.type')}</TableHeaderCell>
+                <TableHeaderCell className={styles.hardwareColumn}>{t('fields.hardware')}</TableHeaderCell>
                 {withActions && <TableHeaderCell className={styles.actionsColumn}/>}
             </TableRow>
         </TableHead>
@@ -158,8 +168,9 @@ interface ReleaseTableProps extends ReleaseListProps {
 }
 
 function ReleaseTable({releases, actions, sort, onSort}: ReleaseTableProps) {
+    const {t} = useTranslation();
     return (
-        <Table label="Releases" fixed>
+        <Table label={t('release.releases')} fixed>
             <ReleaseHeader sort={sort} onSort={onSort} withActions={actions !== undefined}/>
             <TableBody>
                 {releases.map((release) => (
@@ -200,10 +211,11 @@ interface ReleaseCardProps {
 }
 
 function ReleaseCard({release, actions}: ReleaseCardProps) {
+    const {t} = useTranslation();
     const titleId = useId();
     const facts = [
         release.releaseDate === null ? null : String(releaseYear(release.releaseDate)),
-        release.version === null ? null : `Version ${release.version}`,
+        release.version === null ? null : t('release.versionFact', {version: release.version}),
     ].filter((fact) => fact !== null);
     return (
         <Panel as="article" labelledBy={titleId} padding="md">
@@ -227,7 +239,8 @@ function ReleaseCard({release, actions}: ReleaseCardProps) {
 
 /** The type of a release; one nobody knows is left out. */
 function TypeBadge({type}: {readonly type: ReleaseType}) {
-    return type === 'unknown' ? null : <Badge variant="secondary">{releaseTypeText(type)}</Badge>;
+    const {t} = useTranslation();
+    return type === 'unknown' ? null : <Badge variant="secondary">{t(`release.types.${type}`)}</Badge>;
 }
 
 const SKELETON_ROWS = [1, 2, 3] as const;
@@ -235,6 +248,7 @@ const SKELETON_ROWS = [1, 2, 3] as const;
 /** Loading placeholder shaped like the releases: the bar, then the table, or cards on a phone. */
 function SoftwareReleasesSkeleton({withActions}: {readonly withActions: boolean}) {
     const phone = useMediaQuery(MOBILE_QUERY);
+    const {t} = useTranslation();
     return (
         <div data-testid="software-releases-skeleton" aria-hidden="true">
             {phone
@@ -248,7 +262,7 @@ function SoftwareReleasesSkeleton({withActions}: {readonly withActions: boolean}
                         <Inline gap="md" wrap>
                             <Skeleton className={classNames(styles.toggleBone, styles.viewToggle)}/>
                         </Inline>
-                        <Table label="Releases" fixed>
+                        <Table label={t('release.releases')} fixed>
                             <ReleaseHeader withActions={withActions}/>
                             <TableBody>
                                 {SKELETON_ROWS.map((row) => (

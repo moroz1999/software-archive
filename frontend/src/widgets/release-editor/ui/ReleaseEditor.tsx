@@ -1,5 +1,6 @@
 import type {ReactNode} from 'react';
 import type {UseQueryResult} from '@tanstack/react-query';
+import {useTranslation} from 'react-i18next';
 import {
     type Hardware,
     type ReleaseDetails,
@@ -29,11 +30,12 @@ export interface ReleaseCreatorProps {
 
 /** The page of adding a release to software: its form with the hardware of the software's platform. */
 export function ReleaseCreator({softwareId, onDone}: ReleaseCreatorProps) {
+    const {t} = useTranslation();
     return (
-        <WithSoftwareAndHardware id={softwareId} title="Add release" titleOf={(software) => `Add release to ${software.title}`}>
+        <WithSoftwareAndHardware id={softwareId} title={t('release.add')} titleOf={(software) => t('release.addTo', {title: software.title})}>
             {(software, hardware) => (
                 <CreateReleaseProvider software={software} hardware={hardware} onCreated={onDone}>
-                    <ReleaseForm submitLabel="Add release"/>
+                    <ReleaseForm submitLabel={t('release.add')}/>
                 </CreateReleaseProvider>
             )}
         </WithSoftwareAndHardware>
@@ -49,14 +51,15 @@ export interface ReleaseEditorProps {
 
 /** The page of editing one release: its form, saving and deleting. */
 export function ReleaseEditor({softwareId, releaseId, onDone}: ReleaseEditorProps) {
+    const {t} = useTranslation();
     return (
-        <WithSoftwareAndHardware id={softwareId} title="Edit release" titleOf={(software) => `Edit release of ${software.title}`}>
+        <WithSoftwareAndHardware id={softwareId} title={t('release.edit')} titleOf={(software) => t('release.editOf', {title: software.title})}>
             {(software, hardware) => (
                 <ReleaseDetailsProvider softwareId={softwareId} releaseId={releaseId}>
                     <ReleaseGate>
                         {(release) => (
                             <EditReleaseProvider software={software} release={release} hardware={hardware} onSaved={onDone}>
-                                <ReleaseForm submitLabel="Save" actions={<DeleteReleaseButton software={software} release={release} onDeleted={onDone}/>}/>
+                                <ReleaseForm submitLabel={t('actions.save')} actions={<DeleteReleaseButton software={software} release={release} onDeleted={onDone}/>}/>
                             </EditReleaseProvider>
                         )}
                     </ReleaseGate>

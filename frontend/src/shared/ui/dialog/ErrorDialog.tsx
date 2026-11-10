@@ -13,6 +13,7 @@ export interface ErrorDialogProps {
 
 /** The system error modal (docs/error-handling.md). */
 export function ErrorDialog({open, title, message, onClose, onRetry}: ErrorDialogProps) {
+    const {t} = useTranslation();
     return (
         <Dialog
             open={open}
@@ -21,8 +22,8 @@ export function ErrorDialog({open, title, message, onClose, onRetry}: ErrorDialo
             role="alertdialog"
             actions={(
                 <>
-                    <Button color="secondary" onClick={onClose}>Close</Button>
-                    {onRetry !== undefined && <Button onClick={onRetry}>Retry</Button>}
+                    <Button color="secondary" onClick={onClose}>{t('actions.close')}</Button>
+                    {onRetry !== undefined && <Button onClick={onRetry}>{t('actions.retry')}</Button>}
                 </>
             )}
         >
@@ -30,3 +31,4 @@ export function ErrorDialog({open, title, message, onClose, onRetry}: ErrorDialo
         </Dialog>
     );
 }
+import {useTranslation} from 'react-i18next';

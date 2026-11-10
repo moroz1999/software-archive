@@ -39,9 +39,10 @@ export const resources = {
         },
         pagination: {label: 'Pages', previous: 'Previous', next: 'Next'},
         loading: {refreshing: 'Refreshing'},
+        selection: {remove: 'Remove {{name}}', selected_one: '{{count}} selected', selected_other: '{{count}} selected'},
         author: {
             realName: 'Real name', labels: 'Labels', locations: 'Locations', groups: 'Groups', notes: 'Notes',
-            as: 'as {{name}}',
+            as: 'as {{name}}', labelOf: 'label of {{name}}',
         },
         group: {
             name: 'Name', types: 'Types', labels: 'Labels', locations: 'Locations', members: 'Members', notes: 'Notes',
@@ -50,14 +51,16 @@ export const resources = {
         release: {
             add: 'Add release', addTo: 'Add release to {{title}}', edit: 'Edit release', editOf: 'Edit release of {{title}}',
             delete: 'Delete release', releases: 'Releases', noReleases: 'No releases known yet.', view: 'View', table: 'Table',
-            cards: 'Cards', allTypes: 'All', year: 'Year', versionFact: 'Version {{version}}', editNamed: 'Edit {{title}}',
+            deleteQuestion: 'Delete the release {{name}} from the archive?', cards: 'Cards', allTypes: 'All', year: 'Year',
+            versionFact: 'Version {{version}}', editNamed: 'Edit {{title}}',
+            hardwareHint: 'A group checked here replaces that group of the software.',
             types: {
                 original: 'Original', rerelease: 'Rerelease', adaptation: 'Adaptation', localization: 'Localization', bugfix: 'Bugfix',
                 mod: 'Mod', crack: 'Crack', mia: 'Missing in action', corrupted: 'Corrupted', compilation: 'Compilation',
                 incomplete: 'Incomplete', demoversion: 'Demo version', unknown: 'Unknown',
             },
         },
-        software: {delete: 'Delete software', released: 'Released'},
+        software: {delete: 'Delete software', deleteQuestion: 'Delete “{{title}}” from the archive?', released: 'Released'},
         hardwareGroups: {
             computers: 'Computers', storage: 'Storage', dos: 'DOS', sound: 'Sound', controls: 'Controls', expansion: 'Expansion',
         },
@@ -103,9 +106,13 @@ export const resources = {
         },
         pagination: {label: 'Страницы', previous: 'Назад', next: 'Вперёд'},
         loading: {refreshing: 'Обновление'},
+        selection: {
+            remove: 'Удалить {{name}}', selected_one: 'Выбран {{count}}', selected_few: 'Выбрано {{count}}',
+            selected_many: 'Выбрано {{count}}', selected_other: 'Выбрано {{count}}',
+        },
         author: {
             realName: 'Настоящее имя', labels: 'Псевдонимы', locations: 'Места', groups: 'Группы', notes: 'Заметки',
-            as: 'как {{name}}',
+            as: 'как {{name}}', labelOf: 'псевдоним {{name}}',
         },
         group: {
             name: 'Название', types: 'Типы', labels: 'Псевдонимы', locations: 'Места', members: 'Участники', notes: 'Заметки',
@@ -115,14 +122,16 @@ export const resources = {
             add: 'Добавить релиз', addTo: 'Добавить релиз для {{title}}', edit: 'Редактировать релиз',
             editOf: 'Редактировать релиз {{title}}', delete: 'Удалить релиз', releases: 'Релизы',
             noReleases: 'Сведения о релизах пока отсутствуют.', view: 'Вид', table: 'Таблица', cards: 'Карточки', allTypes: 'Все',
-            year: 'Год', versionFact: 'Версия {{version}}', editNamed: 'Редактировать {{title}}',
+            deleteQuestion: 'Удалить релиз {{name}} из архива?', year: 'Год', versionFact: 'Версия {{version}}',
+            editNamed: 'Редактировать {{title}}',
+            hardwareHint: 'Выбранная здесь группа заменяет соответствующую группу оборудования программы.',
             types: {
                 original: 'Оригинал', rerelease: 'Переиздание', adaptation: 'Адаптация', localization: 'Локализация',
                 bugfix: 'Исправление ошибок', mod: 'Модификация', crack: 'Взлом', mia: 'Утрачено', corrupted: 'Повреждено',
                 compilation: 'Сборник', incomplete: 'Незавершённое', demoversion: 'Демоверсия', unknown: 'Неизвестно',
             },
         },
-        software: {delete: 'Удалить программу', released: 'Выпущено'},
+        software: {delete: 'Удалить программу', deleteQuestion: 'Удалить «{{title}}» из архива?', released: 'Выпущено'},
         hardwareGroups: {
             computers: 'Компьютеры', storage: 'Носители', dos: 'DOS', sound: 'Звук', controls: 'Управление', expansion: 'Расширения',
         },

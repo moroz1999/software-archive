@@ -1,4 +1,5 @@
 import type {ReactNode, SyntheticEvent} from 'react';
+import {useTranslation} from 'react-i18next';
 import {Button} from '@/shared/ui/button';
 import {Field} from '@/shared/ui/field';
 import {Inline} from '@/shared/ui/inline';
@@ -8,12 +9,11 @@ import {Stack} from '@/shared/ui/stack';
 import {Textarea} from '@/shared/ui/textarea';
 import {Text} from '@/shared/ui/typography';
 import {
-    RELEASE_DATE_INVALID_MESSAGE,
-    RELEASE_TYPE_REQUIRED_MESSAGE,
-    RELEASE_VERSION_TOO_LONG_MESSAGE,
-    TITLE_PROBLEM_MESSAGES,
+    RELEASE_DATE_INVALID_KEY,
+    RELEASE_TYPE_REQUIRED_KEY,
+    RELEASE_VERSION_TOO_LONG_KEY,
+    TITLE_PROBLEM_KEYS,
 } from '../config/messages';
-import {releaseTypeText} from '../lib/release-type';
 import {RELEASE_TYPES} from '../model/release';
 import {useReleaseForm} from '../model/release-form-context';
 import {HardwarePicker} from './HardwarePicker';
@@ -24,11 +24,11 @@ export interface ReleaseFormProps {
     readonly actions?: ReactNode;
 }
 
-const TYPE_OPTIONS = RELEASE_TYPES.map((type) => ({value: type, label: releaseTypeText(type)}));
-
 /** The fields of a release inside a ReleaseFormProvider, its hardware chosen from the platform of its software. */
 export function ReleaseForm({submitLabel, actions}: ReleaseFormProps) {
+    const {t} = useTranslation();
     const {values, errors, refusals, change, submit, busy, error} = useReleaseForm();
+    const typeOptions = RELEASE_TYPES.map((type) => ({value: type, label: t(`release.types.${type}`)}));
 
     function onSubmit(event: SyntheticEvent) {
         event.preventDefault();
@@ -39,21 +39,21 @@ export function ReleaseForm({submitLabel, actions}: ReleaseFormProps) {
         <form noValidate onSubmit={onSubmit}>
             <Stack gap="lg">
                 {error !== undefined && <Text role="alert" tone="danger">{error}</Text>}
-                <Field label="Title" error={errors.title === undefined ? refusals.title : TITLE_PROBLEM_MESSAGES[errors.title]}>
+                <Field label={t('fields.title')} error={errors.title === undefined ? refusals.title : t(TITLE_PROBLEM_KEYS[errors.title])}>
                     {(control) => <Input {...control} value={values.title} onChange={change('title')} disabled={busy}/>}
                 </Field>
-                <Field label="Version" error={errors.version === undefined ? refusals.version : RELEASE_VERSION_TOO_LONG_MESSAGE}>
+                <Field label={t('fields.version')} error={errors.version === undefined ? refusals.version : t(RELEASE_VERSION_TOO_LONG_KEY)}>
                     {(control) => <Input {...control} value={values.version} onChange={change('version')} disabled={busy}/>}
                 </Field>
-                <Field label="Type" error={errors.type === undefined ? refusals.type : RELEASE_TYPE_REQUIRED_MESSAGE}>
+                <Field label={t('fields.type')} error={errors.type === undefined ? refusals.type : t(RELEASE_TYPE_REQUIRED_KEY)}>
                     {(control) => (
-                        <Select {...control} value={values.type} onChange={change('type')} options={TYPE_OPTIONS} placeholder="Choose a type" disabled={busy}/>
+                        <Select {...control} value={values.type} onChange={change('type')} options={typeOptions} placeholder={t('fields.chooseType')} disabled={busy}/>
                     )}
                 </Field>
-                <Field label="Release date" error={errors.releaseDate === undefined ? refusals.releaseDate : RELEASE_DATE_INVALID_MESSAGE}>
+                <Field label={t('fields.releaseDate')} error={errors.releaseDate === undefined ? refusals.releaseDate : t(RELEASE_DATE_INVALID_KEY)}>
                     {(control) => <Input {...control} type="date" value={values.releaseDate} onChange={change('releaseDate')} disabled={busy}/>}
                 </Field>
-                <Field label="Description" error={refusals.description}>
+                <Field label={t('fields.description')} error={refusals.description}>
                     {(control) => <Textarea {...control} value={values.description} onChange={change('description')} disabled={busy}/>}
                 </Field>
                 <ReleaseHardware/>
@@ -68,6 +68,7 @@ export function ReleaseForm({submitLabel, actions}: ReleaseFormProps) {
 
 /** The hardware of the platform; a group chosen here replaces that group of the software (docs/domain/hardware.md). */
 function ReleaseHardware() {
+    const {t} = useTranslation();
     const {values, refusals, changeHardware, hardware, busy} = useReleaseForm();
     return (
         <HardwarePicker
@@ -75,7 +76,7 @@ function ReleaseHardware() {
             value={values.hardware}
             onChange={changeHardware}
             disabled={busy}
-            hint="A group checked here replaces that group of the software."
+            hint={t('release.hardwareHint')}
             error={refusals.hardware}
         />
     );

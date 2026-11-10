@@ -21,6 +21,7 @@ export function SoftwareEditor(props: SoftwareEditorProps) {
 }
 
 function LoadedEditor({id, onSaved, onDeleted}: SoftwareEditorProps) {
+    const {t} = useTranslation();
     const query = useSoftwareDetails();
     const skeleton = useSkeleton(query);
 
@@ -35,7 +36,8 @@ function LoadedEditor({id, onSaved, onDeleted}: SoftwareEditorProps) {
         <EditSoftwareProvider software={query.data} onSaved={() => {
             onSaved(id);
         }}>
-            <SoftwareForm submitLabel="Save" actions={<DeleteSoftwareButton software={query.data} onDeleted={onDeleted}/>}/>
+            <SoftwareForm submitLabel={t('actions.save')} actions={<DeleteSoftwareButton software={query.data} onDeleted={onDeleted}/>}/>
         </EditSoftwareProvider>
     );
 }
+import {useTranslation} from 'react-i18next';

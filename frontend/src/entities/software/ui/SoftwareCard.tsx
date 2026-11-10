@@ -1,4 +1,5 @@
 import {useId} from 'react';
+import {useTranslation} from 'react-i18next';
 import {ImagePlaceholder} from '@/shared/ui/image-placeholder';
 import {Inset} from '@/shared/ui/inset';
 import {Panel} from '@/shared/ui/panel';
@@ -16,9 +17,10 @@ export interface SoftwareCardProps {
 /** A piece of software as a card: its picture, title and release year. */
 export function SoftwareCard({software, href}: SoftwareCardProps) {
     const titleId = useId();
+    const {t} = useTranslation();
     return (
         <Panel as="article" labelledBy={titleId} radius="xl" padding="none" contentBleed>
-            <ImagePlaceholder label="No screenshot yet"/>
+            <ImagePlaceholder label={t('empty.noScreenshot')}/>
             <Inset padding="lg">
                 <Stack gap="md">
                     <Heading level={3} id={titleId} truncate><TextLink href={href} tone="inherit">{software.title}</TextLink></Heading>

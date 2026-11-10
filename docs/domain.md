@@ -26,3 +26,7 @@ Detailed logic and structure: [domain/hardware.md](domain/hardware.md)
 ### geo
 Countries and cities, and where authors and events are located.
 Detailed logic and structure: [domain/geo.md](domain/geo.md)
+
+### localization
+The interface languages visitors can use and which parts of the archive follow that choice.
+Detailed logic and structure: [domain/localization.md](domain/localization.md)

@@ -1,5 +1,6 @@
 import type {ReactNode} from 'react';
 import {useMutation, useQueryClient} from '@tanstack/react-query';
+import {useTranslation} from 'react-i18next';
 import {
     type Hardware,
     type ReleaseDetails,
@@ -24,6 +25,7 @@ export interface EditReleaseProviderProps {
 
 /** Saving changes of a release: the form inside starts from its values; what shows the software goes stale once saved. */
 export function EditReleaseProvider({software, release, hardware, onSaved, children}: EditReleaseProviderProps) {
+    const {t} = useTranslation();
     const queryClient = useQueryClient();
     const {mutate, isPending, error} = useMutation({
         mutationFn: (draft: ReleaseDraft) => updateRelease(software.id, release.id, draft),
@@ -40,7 +42,7 @@ export function EditReleaseProvider({software, release, hardware, onSaved, child
             onSubmit={mutate}
             busy={isPending}
             error={businessErrorOf(error)}
-            messages={editReleaseMessages}
+            messages={editReleaseMessages(t)}
         >
             {children}
         </ReleaseFormProvider>

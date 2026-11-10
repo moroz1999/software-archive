@@ -1,4 +1,5 @@
 import type {ReactNode} from 'react';
+import {useTranslation} from 'react-i18next';
 import {Button} from '../button';
 import {Dialog} from '../dialog';
 import {Text} from '../typography';
@@ -20,6 +21,7 @@ export interface ConfirmDialogProps {
 
 /** Asks before a destructive action and shows how it went. */
 export function ConfirmDialog({open, title, children, confirmLabel, onConfirm, onCancel, busy = false, error}: ConfirmDialogProps) {
+    const {t} = useTranslation();
     return (
         <Dialog
             open={open}
@@ -28,7 +30,7 @@ export function ConfirmDialog({open, title, children, confirmLabel, onConfirm, o
             onClose={busy ? noop : onCancel}
             actions={(
                 <>
-                    <Button color="secondary" disabled={busy} onClick={onCancel}>Cancel</Button>
+                    <Button color="secondary" disabled={busy} onClick={onCancel}>{t('actions.cancel')}</Button>
                     <Button color="danger" loading={busy} onClick={onConfirm}>{confirmLabel}</Button>
                 </>
             )}

@@ -1,4 +1,11 @@
+import type {TFunction} from 'i18next';
+import type {BusinessMessages} from '@/shared/api';
+
 /** Texts for the business error codes adding software can receive; others fall back by status. */
-export const createSoftwareMessages: Readonly<Partial<Record<string, string>>> = {
-    'hardware.unknown': 'Choose hardware of the platform of the software.',
-};
+export function createSoftwareMessages(t: TFunction): BusinessMessages {
+    return {
+        '409': t('errors.business.conflict'),
+        '422': t('errors.business.refused'),
+        'hardware.unknown': t('errors.hardwareUnknown'),
+    };
+}

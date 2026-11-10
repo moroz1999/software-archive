@@ -1,5 +1,6 @@
 import type {ReactNode} from 'react';
 import {useMutation, useQueryClient} from '@tanstack/react-query';
+import {useTranslation} from 'react-i18next';
 import {createRelease, type Hardware, type ReleaseDraft, ReleaseFormProvider, type ReleaseId, SOFTWARE_QUERY_KEY, type SoftwareDetails} from '@/entities/software';
 import {businessErrorOf} from '@/shared/api';
 import {createReleaseMessages} from '../config/messages';
@@ -14,6 +15,7 @@ export interface CreateReleaseProviderProps {
 
 /** Adding a release to software: the form inside sends its draft here; what shows the software goes stale once added. */
 export function CreateReleaseProvider({software, hardware, onCreated, children}: CreateReleaseProviderProps) {
+    const {t} = useTranslation();
     const queryClient = useQueryClient();
     const {mutate, isPending, error} = useMutation({
         mutationFn: (draft: ReleaseDraft) => createRelease(software.id, draft),
@@ -24,7 +26,7 @@ export function CreateReleaseProvider({software, hardware, onCreated, children}:
     });
 
     return (
-        <ReleaseFormProvider hardware={hardware} onSubmit={mutate} busy={isPending} error={businessErrorOf(error)} messages={createReleaseMessages}>
+        <ReleaseFormProvider hardware={hardware} onSubmit={mutate} busy={isPending} error={businessErrorOf(error)} messages={createReleaseMessages(t)}>
             {children}
         </ReleaseFormProvider>
     );

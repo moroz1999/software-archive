@@ -32,6 +32,7 @@ export function GroupCatalog() {
 }
 
 function Entries() {
+    const {t} = useTranslation();
     const {filter, entries, changing} = useGroupCatalog();
     const skeleton = useSkeleton(entries);
 
@@ -43,12 +44,12 @@ function Entries() {
         return null;
     }
     if (entries.data.items.length === 0) {
-        return <Text tone="muted">No groups found.</Text>;
+        return <Text tone="muted">{t('empty.groups')}</Text>;
     }
     return (
         <LoadingState loading={changing}>
             <Stack gap="lg">
-                <Grid as="ul" ariaLabel="Groups" desktopColumns={4} tabletColumns={3} mobileColumns={1} gap="md">
+                <Grid as="ul" ariaLabel={t('pages.groups')} desktopColumns={4} tabletColumns={3} mobileColumns={1} gap="md">
                     {entries.data.items.map((entry) => (
                         <li key={`${entry.groupId}-${entry.name}`}>
                             <LabelEntry name={entry.name} href={groupPath(entry.groupId)} note={entry.groupName}/>
@@ -65,3 +66,4 @@ function Entries() {
         </LoadingState>
     );
 }
+import {useTranslation} from 'react-i18next';

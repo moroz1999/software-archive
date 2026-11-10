@@ -1,4 +1,5 @@
 import type {ReactNode} from 'react';
+import {useTranslation} from 'react-i18next';
 import {type AuthorDetails, AuthorDetailsProvider, type AuthorId, useAuthorDetails} from '@/entities/authors';
 import {locationText, primaryFirst} from '@/entities/locations';
 import {groupPath, toGroupId} from '@/entities/groups';
@@ -47,34 +48,35 @@ function LoadedView() {
 }
 
 function Details({author}: {readonly author: AuthorDetails}) {
+    const {t} = useTranslation();
     const notes = author.notes?.split('\n').filter((line) => line.trim() !== '') ?? [];
     return (
         <Stack gap="lg">
             {author.realName !== null && (
-                <Section label="Real name"><Text>{author.realName}</Text></Section>
+                <Section label={t('author.realName')}><Text>{author.realName}</Text></Section>
             )}
             {author.labels.length > 0 && (
-                <Section label="Labels">
-                    <ItemList label="Labels">
+                <Section label={t('author.labels')}>
+                    <ItemList label={t('author.labels')}>
                         {author.labels.map((label) => <li key={label.id}><Text>{label.name}</Text></li>)}
                     </ItemList>
                 </Section>
             )}
             {author.locations.length > 0 && (
-                <Section label="Locations">
-                    <ItemList label="Locations">
+                <Section label={t('author.locations')}>
+                    <ItemList label={t('author.locations')}>
                         {primaryFirst(author.locations).map((location, index) => <li key={index}><Text>{locationText(location)}</Text></li>)}
                     </ItemList>
                 </Section>
             )}
             {author.groups.length > 0 && (
-                <Section label="Groups">
-                    <ItemList label="Groups">
+                <Section label={t('author.groups')}>
+                    <ItemList label={t('author.groups')}>
                         {author.groups.map((group) => (
                             <li key={`${group.id}-${group.as ?? ''}`}>
                                 <Inline gap="sm" align="baseline" wrap>
                                     <Text><TextLink href={groupPath(toGroupId(group.id))}>{group.name}</TextLink></Text>
-                                    {group.as !== null && <>{' '}<Text variant="bodySm" tone="muted">as {group.as}</Text></>}
+                                    {group.as !== null && <>{' '}<Text variant="bodySm" tone="muted">{t('author.as', {name: group.as})}</Text></>}
                                 </Inline>
                             </li>
                         ))}
@@ -82,7 +84,7 @@ function Details({author}: {readonly author: AuthorDetails}) {
                 </Section>
             )}
             {notes.length > 0 && (
-                <Section label="Notes">
+                <Section label={t('author.notes')}>
                     <Stack gap="sm">
                         {notes.map((line, index) => <Text key={index}>{line}</Text>)}
                     </Stack>

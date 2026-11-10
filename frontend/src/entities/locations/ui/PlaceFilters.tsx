@@ -18,11 +18,12 @@ export interface PlaceFiltersProps {
 
 /** Country and City to narrow a list by place: City offers the cities of the chosen country. */
 export function PlaceFilters({country, city, countries, cities, disabled, onChange}: PlaceFiltersProps) {
+    const {t} = useTranslation();
     const countryOptions = (countries ?? []).map((item) => ({value: item.id, label: item.name}));
     const cityOptions = (cities ?? []).map((item) => ({value: item.id, label: item.name}));
     return (
         <Inline gap="md" wrap>
-            <Field label="Country" className={styles.filter}>
+            <Field label={t('filters.country')} className={styles.filter}>
                 {(control) => (
                     <Select
                         id={control.id}
@@ -31,12 +32,12 @@ export function PlaceFilters({country, city, countries, cities, disabled, onChan
                             onChange(value === '' ? null : toCountryId(value), null);
                         }}
                         options={countryOptions}
-                        placeholder="Any country"
+                        placeholder={t('filters.anyCountry')}
                         disabled={disabled || countries === undefined}
                     />
                 )}
             </Field>
-            <Field label="City" className={styles.filter}>
+            <Field label={t('filters.city')} className={styles.filter}>
                 {(control) => (
                     <Select
                         id={control.id}
@@ -45,7 +46,7 @@ export function PlaceFilters({country, city, countries, cities, disabled, onChan
                             onChange(country, value === '' ? null : toCityId(value));
                         }}
                         options={cityOptions}
-                        placeholder="Any city"
+                        placeholder={t('filters.anyCity')}
                         disabled={disabled || cities === undefined}
                     />
                 )}
@@ -53,3 +54,4 @@ export function PlaceFilters({country, city, countries, cities, disabled, onChan
         </Inline>
     );
 }
+import {useTranslation} from 'react-i18next';

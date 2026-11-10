@@ -1,4 +1,5 @@
 import {useId, useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import {classNames} from '@/shared/lib/class-names';
 import {Checkbox} from '../checkbox';
 import {Chip} from '../chip';
@@ -38,6 +39,7 @@ export interface MultiSelectFilterProps {
  * checkboxes under the names of their groups.
  */
 export function MultiSelectFilter({label, groups, value, onChange, disabled = false, hint, error, className}: MultiSelectFilterProps) {
+    const {t} = useTranslation();
     const [query, setQuery] = useState('');
     const searchId = useId();
     const hintId = useId();
@@ -68,7 +70,7 @@ export function MultiSelectFilter({label, groups, value, onChange, disabled = fa
                                 onRemove={() => {
                                     toggle(item, false);
                                 }}
-                                removeLabel={`Remove ${name}`}
+                                removeLabel={t('selection.remove', {name})}
                                 disabled={disabled}
                             >
                                 {name}
@@ -77,12 +79,12 @@ export function MultiSelectFilter({label, groups, value, onChange, disabled = fa
                     })}
                 </div>
             )}
-            <Input id={searchId} type="search" value={query} onChange={setQuery} ariaLabel={`Filter ${label}`} placeholder="Filter" disabled={disabled}/>
+            <Input id={searchId} type="search" value={query} onChange={setQuery} ariaLabel={t('filters.filterLabel', {label})} placeholder={t('filters.filter')} disabled={disabled}/>
             <div className={styles.list}>
-                {shown.length === 0 && <Text as="span" variant="bodySm" tone="muted">Nothing found.</Text>}
+                {shown.length === 0 && <Text as="span" variant="bodySm" tone="muted">{t('empty.nothingFound')}</Text>}
                 {shown.map((group) => <Group key={group.label} group={group} value={value} onToggle={toggle} disabled={disabled}/>)}
             </div>
-            <Text as="span" variant="caption" tone="muted">{value.length} selected</Text>
+            <Text as="span" variant="caption" tone="muted">{t('selection.selected', {count: value.length})}</Text>
             {hint !== undefined && <Text as="span" id={hintId} variant="caption" tone="muted">{hint}</Text>}
             {error !== undefined && <Text as="span" id={errorId} variant="caption" tone="danger">{error}</Text>}
         </fieldset>

@@ -107,6 +107,7 @@ describe('UI localization', () => {
         renderApp();
 
         await screen.findByRole('heading', {level: 1, name: 'Elite'});
+
         expect(screen.getByText('Выпущено')).toBeInTheDocument();
         expect(screen.getByText('2 марта 1985 г.')).toBeInTheDocument();
     });

@@ -1,5 +1,6 @@
 import {type ReactNode, useEffect, useRef, useState} from 'react';
 import {createPortal} from 'react-dom';
+import {useTranslation} from 'react-i18next';
 import {classNames} from '@/shared/lib/class-names';
 import {Spinner} from '../spinner';
 import styles from './LoadingState.module.css';
@@ -34,6 +35,7 @@ function placeSpinner(content: HTMLElement, pane: HTMLElement) {
  * after a short delay, shows a spinner over the part of it that is on screen.
  */
 export function LoadingState({loading, children, className}: LoadingStateProps) {
+    const {t} = useTranslation();
     const content = useRef<HTMLDivElement>(null);
     const pane = useRef<HTMLDivElement>(null);
     // The pane is created on the first load and kept: its fade-out is a CSS transition.
@@ -76,7 +78,7 @@ export function LoadingState({loading, children, className}: LoadingStateProps) 
             </div>
             {hasPane && createPortal(
                 <div ref={pane} data-testid="loading-state-spinner" aria-hidden={!loading} className={styles.pane}>
-                    <Spinner size="lg" label="Refreshing"/>
+                    <Spinner size="lg" label={t('loading.refreshing')}/>
                 </div>,
                 document.body,
             )}
