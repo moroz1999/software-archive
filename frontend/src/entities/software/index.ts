@@ -29,6 +29,7 @@ export {
     type HardwareGroup,
     type ReleaseDate,
     type Software,
+    type SoftwareCategory,
     type SoftwareDetails,
     type SoftwareId,
     type SoftwarePlatform,

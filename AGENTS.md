@@ -14,6 +14,7 @@ You MUST read the MD files linked in this document which are relevant to the cur
 - Before starting a task, you MUST read the relevant documents from the DOCUMENTATION TREE below.
 - ALWAYS add newly created files to GIT immediately after creation.
 - Commit directly to `master`; do not create feature branches. Commit only the files of your own task (explicit pathspecs) — the working tree may hold unrelated uncommitted work.
+- A commit message is one short subject line describing the change, with no body. Never add co-authorship or any other attribution of an agent or AI (no `Co-Authored-By` trailers, no "Generated with" lines).
 - When the IDE is in 'Ask' (readonly) mode, it is STRICTLY FORBIDDEN to do anything except answering the user's question. No file modifications or tool calls that change state are allowed.
 - ALWAYS use MCP tools (JetBrains IDE) when available for code search, file reading, navigation, and locating files, methods, and classes instead of Grep/Glob/Read/Bash.
 - When checking file problems via IDE (`get_file_problems`), ALWAYS request ALL severity levels (`errorsOnly: false`). Weak warnings (unused imports, unused parameters, etc.) must be caught too.

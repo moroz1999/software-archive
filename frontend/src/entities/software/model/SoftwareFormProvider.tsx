@@ -1,6 +1,5 @@
 import {type ReactNode, useState} from 'react';
-import type {BusinessError, BusinessMessages} from '@/shared/api';
-import {splitRefusal, unedited} from './form-refusal';
+import {type BusinessError, type BusinessMessages, splitRefusal, unedited} from '@/shared/api';
 import {type PlatformChoice, type SoftwareDraft, type SoftwareFormErrors, type SoftwareFormValues, toSoftwareFormValues, validateSoftwareForm} from './software-form';
 import {type SoftwareFormRefusals, SoftwareFormContext, type SoftwareFormState} from './software-form-context';
 
@@ -18,7 +17,7 @@ export interface SoftwareFormProviderProps {
     readonly children: ReactNode;
 }
 
-const FIELDS = ['title', 'description', 'releaseDate', 'platform', 'hardware'] as const satisfies readonly (keyof SoftwareFormValues)[];
+const FIELDS = ['title', 'description', 'releaseDate', 'platform', 'hardware', 'categories'] as const satisfies readonly (keyof SoftwareFormValues)[];
 
 /** The values of a software form being filled in, their format rules and why the last submit was refused. */
 export function SoftwareFormProvider({onSubmit, initial, platforms = [], busy = false, error, messages = {}, children}: SoftwareFormProviderProps) {
@@ -49,6 +48,10 @@ export function SoftwareFormProvider({onSubmit, initial, platforms = [], busy = 
         changeHardware: (codes) => {
             setValues((current) => ({...current, hardware: codes}));
             markEdited('hardware');
+        },
+        changeCategories: (ids) => {
+            setValues((current) => ({...current, categories: ids}));
+            markEdited('categories');
         },
         submit: () => {
             const result = validateSoftwareForm(values);

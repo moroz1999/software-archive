@@ -27,7 +27,7 @@ class ListSoftwareReleasesHandlerTest {
     @Test
     void returnsTheReleasesWithTheHardwareTheyShowOverTheSoftware() {
         reads.add(new SoftwareDetails(
-                ID, "Elite", null, null, new SoftwarePlatform("vector", "Vector"), List.of(VECTOR, BEEPER)));
+                ID, "Elite", null, null, new SoftwarePlatform("vector", "Vector"), List.of(VECTOR, BEEPER), List.of()));
         reads.addReleases(ID, release("Elite", List.of()), release("Elite AY", List.of(AY)));
 
         assertThat(handler.handle(new ListSoftwareReleasesQuery(new SoftwareId(ID))))

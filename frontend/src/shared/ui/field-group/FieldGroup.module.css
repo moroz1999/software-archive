@@ -1,0 +1,12 @@
+.group {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.legend {
+    margin: 0;
+    margin-bottom: var(--field-group-legend-gap);
+    padding: 0;
+}

@@ -28,7 +28,8 @@ class GetSoftwareHandlerTest {
                 "Space trading",
                 LocalDate.of(1985, 9, 20),
                 new SoftwarePlatform("vector", "Vector"),
-                List.of(new SoftwareHardware("vector06c", "Vector-06C", "computers")));
+                List.of(new SoftwareHardware("vector06c", "Vector-06C", "computers")),
+                List.of());
         reads.add(details);
 
         assertThat(handler.handle(new GetSoftwareQuery(new SoftwareId(ID)))).isEqualTo(details);

@@ -26,10 +26,10 @@ All components live in `frontend/src/shared/ui/`, one folder each with an `index
 Built:
 
 - Layout: [Stack](design-system/stack.md), [Inline](design-system/inline.md), [Inset](design-system/inset.md), [Grid, GridItem](design-system/grid.md), [CardGrid](design-system/card-grid.md), [Panel](design-system/panel.md), [PageLayout](design-system/page-layout.md)
-- Content: [Text, Heading, Label, TextLink](design-system/typography.md), [Badge](design-system/badge.md), [Chip](design-system/chip.md), [ImagePlaceholder](design-system/image-placeholder.md), [Table](design-system/table.md)
+- Content: [Text, Heading, Label, TextLink](design-system/typography.md), [Badge](design-system/badge.md), [Chip](design-system/chip.md), [ImagePlaceholder](design-system/image-placeholder.md), [Table](design-system/table.md), [Tree](design-system/tree.md)
 - Controls: [Button](design-system/button.md), [Toggle](design-system/toggle.md)
 - Navigation: [NavBar, NavBarLink](design-system/nav-bar.md), [NavChips, NavChip](design-system/nav-chips.md), [Pagination](design-system/pagination.md)
-- Forms: [Input, Textarea](design-system/input.md), [Select](design-system/select.md), [Field](design-system/field.md), [Checkbox](design-system/checkbox.md), [MultiSelectFilter](design-system/multi-select-filter.md)
+- Forms: [Input, Textarea](design-system/input.md), [Select](design-system/select.md), [Field](design-system/field.md), [Checkbox](design-system/checkbox.md), [MultiSelectFilter](design-system/multi-select-filter.md), [TreeChecklist](design-system/tree-checklist.md)
 - Loading: [Skeleton](design-system/skeletons.md), [Spinner](design-system/spinner.md), [LoadingState](design-system/loading-states.md)
 - Errors and overlays: [ErrorState](design-system/error-state.md), [Dialog, ErrorDialog](design-system/dialog.md), [ConfirmDialog](design-system/confirm-dialog.md)
 
@@ -45,7 +45,6 @@ Planned, built when a feature first needs them (each gets its document then):
 - `Preformatted` — fixed-width text with its own horizontal scroll
 - `ItemData` — grouped key-value panel
 - `ListItem` — pickable row with a second line and trailing actions
-- `Tree` — collapsible tree of rows with row actions
 - `Steps` — vertical list of process steps with a status marker
 - `Chips` — a wrapping row of chips
 - `Medal` — circular placement badge

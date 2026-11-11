@@ -1,0 +1,4 @@
+.bone {
+    width: 100%;
+    height: var(--categories-field-bone-height);
+}

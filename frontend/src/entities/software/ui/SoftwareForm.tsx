@@ -22,10 +22,12 @@ export interface SoftwareFormProps {
     readonly submitLabel: string;
     /** More buttons next to the submit button. */
     readonly actions?: ReactNode;
+    /** The field of the categories of the software, under its hardware: the tree of categories is not of this slice. */
+    readonly categories?: ReactNode;
 }
 
 /** The fields of software inside a SoftwareFormProvider, which holds their values and checks them. */
-export function SoftwareForm({submitLabel, actions}: SoftwareFormProps) {
+export function SoftwareForm({submitLabel, actions, categories}: SoftwareFormProps) {
     const {t} = useTranslation();
     const {values, errors, refusals, change, submit, platforms, busy, error} = useSoftwareForm();
     // Hardware belongs to its platform: the platform stays while hardware is chosen (docs/domain/hardware.md).
@@ -70,6 +72,7 @@ export function SoftwareForm({submitLabel, actions}: SoftwareFormProps) {
                         <SoftwareHardware/>
                     </PlatformHardwareProvider>
                 )}
+                {categories}
                 <Inline gap="sm" justify="between" wrap>
                     <Button type="submit" loading={busy}>{submitLabel}</Button>
                     {actions}

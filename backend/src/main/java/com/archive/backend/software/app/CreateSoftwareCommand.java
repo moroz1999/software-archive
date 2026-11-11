@@ -1,5 +1,6 @@
 package com.archive.backend.software.app;
 
+import com.archive.backend.category.domain.CategoryId;
 import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.software.domain.SoftwareDescription;
@@ -13,4 +14,5 @@ public record CreateSoftwareCommand(
         @Nullable SoftwareDescription description,
         @Nullable LocalDate releaseDate,
         PlatformCode platform,
-        Set<HardwareCode> hardware) {}
+        Set<HardwareCode> hardware,
+        Set<CategoryId> categories) {}

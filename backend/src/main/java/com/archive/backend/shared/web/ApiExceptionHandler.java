@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -32,6 +33,19 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ConflictException.class)
     ProblemDetail conflict(ConflictException e) {
         return business(HttpStatus.CONFLICT, e);
+    }
+
+    /**
+     * A change that lost to another one running at the same time, such as a deadlock between them: repeating it after
+     * reloading succeeds.
+     */
+    @ExceptionHandler(ConcurrencyFailureException.class)
+    ProblemDetail concurrent(ConcurrencyFailureException e) {
+        log.warn("A change lost to a concurrent one", e);
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.CONFLICT, "The item was changed by another change at the same time.");
+        problem.setProperty("code", "conflict.concurrent");
+        return problem;
     }
 
     @ExceptionHandler(RuleViolationException.class)

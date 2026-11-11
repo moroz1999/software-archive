@@ -1,5 +1,6 @@
 package com.archive.backend.software.web.mapper;
 
+import com.archive.backend.category.domain.CategoryId;
 import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.shared.domain.error.InvalidValueException;
@@ -53,7 +54,8 @@ public interface SoftwareWebMapper {
                 toDescription(request.description()),
                 request.releaseDate(),
                 toPlatform(request.platform()),
-                toHardware(request.hardware()));
+                toHardware(request.hardware()),
+                toCategories(request.categories()));
     }
 
     default UpdateSoftwareCommand toUpdate(UUID id, SoftwareRequestDto request) {
@@ -63,7 +65,8 @@ public interface SoftwareWebMapper {
                 toDescription(request.description()),
                 request.releaseDate(),
                 toPlatform(request.platform()),
-                toHardware(request.hardware()));
+                toHardware(request.hardware()),
+                toCategories(request.categories()));
     }
 
     // Request scalars -> value objects.
@@ -88,6 +91,10 @@ public interface SoftwareWebMapper {
 
     private static Set<HardwareCode> toHardware(@Nullable List<String> codes) {
         return codes == null ? Set.of() : codes.stream().map(HardwareCode::new).collect(Collectors.toUnmodifiableSet());
+    }
+
+    private static Set<CategoryId> toCategories(@Nullable List<UUID> ids) {
+        return ids == null ? Set.of() : ids.stream().map(CategoryId::new).collect(Collectors.toUnmodifiableSet());
     }
 
     private static @Nullable PlatformCode toPlatformFilter(@Nullable String value) {

@@ -1,0 +1,4 @@
+:root {
+    /* As high as the field it stands for: the chips, the filter and the scrolling tree. */
+    --categories-field-bone-height: 300px;
+}

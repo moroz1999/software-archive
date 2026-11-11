@@ -1,0 +1,10 @@
+:root {
+    /* Between the fields and the controls of an item. */
+    --item-row-gap: var(--gap-sm);
+
+    /* Between an item and its error. */
+    --item-row-error-gap: var(--space-4);
+
+    /* Below this width the controls wrap under the fields. */
+    --item-row-fields-basis: 160px;
+}

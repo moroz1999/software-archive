@@ -1,6 +1,7 @@
 package com.archive.backend.group.infra;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 import com.archive.backend.TestcontainersConfiguration;
 import com.archive.backend.group.read.GroupCatalogEntry;
@@ -71,7 +72,6 @@ class JdbcGroupReadRepositoryIT {
                 CREW,
                 BAND,
                 OLDIES);
-        jdbc.update("INSERT INTO group_type (code) VALUES ('demogroup'), ('label')");
         jdbc.update(
                 "INSERT INTO group_group_type (group_id, group_type_code) VALUES (?, 'label'), (?, 'demogroup')",
                 CREW,
@@ -225,10 +225,10 @@ class JdbcGroupReadRepositoryIT {
                         "Crew Ltd",
                         "Since 1990",
                         List.of("demogroup", "label"),
-                        List.of(new GroupLabel(CREW_LABEL, "Crew"), new GroupLabel(CRW_LABEL, "CRW")),
+                        List.of(new GroupLabel(CREW_LABEL, "Crew", true), new GroupLabel(CRW_LABEL, "CRW", false)),
                         List.of(
-                                new GroupLocation("Finland", "Helsinki", true),
-                                new GroupLocation("Norway", null, false)),
+                                new GroupLocation(FINLAND, "Finland", HELSINKI, "Helsinki", true),
+                                new GroupLocation(NORWAY, "Norway", null, null, false)),
                         List.of(
                                 new GroupMember("Ghost", null, null),
                                 new GroupMember("Zed", ZED, null),
@@ -247,10 +247,17 @@ class JdbcGroupReadRepositoryIT {
                         null,
                         List.of(),
                         List.of(),
-                        List.of(new GroupLocation("Finland", "Tampere", true)),
+                        List.of(new GroupLocation(FINLAND, "Finland", TAMPERE, "Tampere", true)),
                         List.of(),
                         List.of(),
                         List.of(new RelatedGroup(CREW, "Crew"))));
+    }
+
+    @Test
+    void marksTheMainNameOfAGroupFromBeforeTheRuleAsItsDisplayName() {
+        assertThat(reads.findById(OLDIES).orElseThrow().labels())
+                .extracting(GroupLabel::name, GroupLabel::display)
+                .containsExactly(tuple("Alpha", true), tuple("Zeta", false));
     }
 
     @Test

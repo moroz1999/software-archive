@@ -1,0 +1,4 @@
+.loading {
+    width: var(--group-types-field-loading-width);
+    height: var(--group-types-field-loading-height);
+}

@@ -1,0 +1,5 @@
+:root {
+    /* While the types load: about one line of checkboxes. */
+    --group-types-field-loading-width: 240px;
+    --group-types-field-loading-height: var(--space-24);
+}

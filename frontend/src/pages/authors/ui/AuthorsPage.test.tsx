@@ -36,4 +36,15 @@ describe('AuthorsPage', () => {
         expect(screen.queryByTestId('author-catalog-skeleton')).not.toBeInTheDocument();
         expect(fetchMock).toHaveBeenCalledTimes(3);
     });
+
+    it('leads to adding an author', async () => {
+        stubFetchRoutes(new Map([
+            ['/api/authors?page=0&size=100', json(pageResponse([], {size: 100}))],
+            ['/api/countries', json([])],
+        ]));
+
+        renderRoute('/authors');
+
+        await expect(screen.findByRole('link', {name: 'Add author'})).resolves.toHaveAttribute('href', '/authors/new');
+    });
 });

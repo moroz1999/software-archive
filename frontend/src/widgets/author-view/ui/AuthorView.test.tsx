@@ -14,8 +14,11 @@ const ZED = {
     name: 'Zed',
     realName: 'John Doe',
     notes: 'Coder since 1984\nand musician',
-    labels: [{id: '00000000-0000-0000-0004-000000000001', name: 'Axe'}, {id: '00000000-0000-0000-0004-000000000002', name: 'Zed'}],
-    locations: [{country: 'Norway', city: null, primary: false}, {country: 'Finland', city: 'Helsinki', primary: true}],
+    labels: [{id: '00000000-0000-0000-0004-000000000001', name: 'Axe', display: false}, {id: '00000000-0000-0000-0004-000000000002', name: 'Zed', display: true}],
+    locations: [
+        {countryId: '00000000-0000-0000-0002-000000000002', country: 'Norway', cityId: null, city: null, primary: false},
+        {countryId: '00000000-0000-0000-0002-000000000001', country: 'Finland', cityId: '00000000-0000-0000-0002-000000000011', city: 'Helsinki', primary: true},
+    ],
     groups: [{id: CREW, name: 'Crew', as: 'Axe'}, {id: BAND, name: 'Band', as: null}],
 };
 
@@ -45,6 +48,13 @@ describe(AuthorView, () => {
         expect(screen.getByTestId('author-view-skeleton')).toBeInTheDocument();
         await expect(screen.findByRole('heading', {level: 1, name: 'Zed'})).resolves.toBeInTheDocument();
         expect(screen.queryByTestId('author-view-skeleton')).not.toBeInTheDocument();
+    });
+
+    it('leads to the editing of the author', async () => {
+        stubFetch(json(ZED));
+        renderView();
+
+        await expect(screen.findByRole('link', {name: 'Edit'})).resolves.toHaveAttribute('href', `/authors/${ID}/edit`);
     });
 
     it('shows everything known about the author under the main name', async () => {

@@ -17,7 +17,7 @@ function softwarePath(id: SoftwareId): string {
 }
 
 function toBody(draft: SoftwareDraft): unknown {
-    return {title: draft.title, description: draft.description, releaseDate: draft.releaseDate, platform: draft.platform, hardware: draft.hardware};
+    return {title: draft.title, description: draft.description, releaseDate: draft.releaseDate, platform: draft.platform, hardware: draft.hardware, categories: draft.categories};
 }
 
 /** The hardware of a release or software, or of a platform's reference book. */
@@ -42,6 +42,17 @@ export async function fetchSoftware(id: SoftwareId, signal: AbortSignal): Promis
             releaseDate: releaseDate === null ? null : toReleaseDate(releaseDate),
             platform: {code: toSoftwarePlatformCode(readString(platform, 'code')), name: readString(platform, 'name')},
             hardware: parseHardwareList(dto['hardware']),
+            categories: readArray(dto['categories'], 'categories').map((item) => {
+                const category = readObject(item, 'category');
+                return {
+                    id: readString(category, 'id'),
+                    title: readString(category, 'title'),
+                    branch: readArray(category['branch'], 'branch').map((raw) => {
+                        const step = readObject(raw, 'category step');
+                        return {id: readString(step, 'id'), title: readString(step, 'title')};
+                    }),
+                };
+            }),
         };
     });
 }

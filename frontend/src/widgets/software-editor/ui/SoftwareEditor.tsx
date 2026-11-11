@@ -2,6 +2,7 @@ import {SoftwareDetailsProvider, SoftwareForm, type SoftwareId, SoftwareFormSkel
 import {DeleteSoftwareButton} from '@/features/software-delete';
 import {EditSoftwareProvider} from '@/features/software-edit';
 import {useSkeleton} from '@/shared/lib/skeleton';
+import {SoftwareCategoriesField} from './SoftwareCategoriesField';
 
 export interface SoftwareEditorProps {
     readonly id: SoftwareId;
@@ -11,7 +12,7 @@ export interface SoftwareEditorProps {
     readonly onDeleted: () => void;
 }
 
-/** Editing of one software: its form, saving and deleting. */
+/** Editing of one software: its form with its categories, saving and deleting. */
 export function SoftwareEditor(props: SoftwareEditorProps) {
     return (
         <SoftwareDetailsProvider key={props.id} id={props.id}>
@@ -36,7 +37,7 @@ function LoadedEditor({id, onSaved, onDeleted}: SoftwareEditorProps) {
         <EditSoftwareProvider software={query.data} onSaved={() => {
             onSaved(id);
         }}>
-            <SoftwareForm submitLabel={t('actions.save')} actions={<DeleteSoftwareButton software={query.data} onDeleted={onDeleted}/>}/>
+            <SoftwareForm submitLabel={t('actions.save')} actions={<DeleteSoftwareButton software={query.data} onDeleted={onDeleted}/>} categories={<SoftwareCategoriesField/>}/>
         </EditSoftwareProvider>
     );
 }

@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.archive.backend.TestcontainersConfiguration;
 import com.archive.backend.software.read.ReleaseDetails;
+import com.archive.backend.software.read.SoftwareCategory;
+import com.archive.backend.software.read.SoftwareCategoryStep;
 import com.archive.backend.software.read.SoftwareDetails;
 import com.archive.backend.software.read.SoftwareHardware;
 import com.archive.backend.software.read.SoftwarePlatform;
@@ -120,7 +122,8 @@ class JdbcSoftwareReadRepositoryIT {
                         "Space trading",
                         LocalDate.of(1985, 9, 20),
                         new SoftwarePlatform("vector", "Vector"),
-                        List.of(VECTOR06C, TAPE, BEEPER, JOYSTICK)));
+                        List.of(VECTOR06C, TAPE, BEEPER, JOYSTICK),
+                        List.of()));
     }
 
     @Test
@@ -170,5 +173,53 @@ class JdbcSoftwareReadRepositoryIT {
     @Test
     void readsNoReleaseOfOtherSoftware() {
         assertThat(reads.findRelease(TETRIS, AY_MOD)).isEmpty();
+    }
+
+    @Test
+    void readsTheCategoriesInTheOrderOfTheTree() {
+        // Demoscene → Intro → 4K intro, Games → Action, Games; inserted out of order.
+        UUID intro4k = UUID.fromString("e9d495af-b0d1-5b0f-a22f-6955b423ab8d");
+        UUID games = UUID.fromString("081bf3a1-782b-5a8b-8d12-3b155e0a58cb");
+        UUID action = jdbc.queryForObject(
+                "SELECT id FROM category WHERE parent_id = ? AND title = 'Action'", UUID.class, games);
+        jdbc.update(
+                "INSERT INTO software_category (software_id, category_id) VALUES (?, ?), (?, ?), (?, ?)",
+                ELITE,
+                intro4k,
+                ELITE,
+                action,
+                ELITE,
+                games);
+
+        assertThat(reads.findById(ELITE))
+                .hasValueSatisfying(details -> assertThat(details.categories())
+                        .extracting(SoftwareCategory::title)
+                        .containsExactly("Games", "Action", "4K intro"));
+    }
+
+    @Test
+    void readsEveryCategoryWithItsBranchFromTheTopOfTheTree() {
+        UUID intro4k = UUID.fromString("e9d495af-b0d1-5b0f-a22f-6955b423ab8d");
+        UUID intro = UUID.fromString("47301d2f-eb74-5c1c-90c3-090b4f33e498");
+        UUID demoscene = UUID.fromString("c35b7f9b-44a8-5570-9406-9e6dcb30b607");
+        UUID games = UUID.fromString("081bf3a1-782b-5a8b-8d12-3b155e0a58cb");
+        jdbc.update(
+                "INSERT INTO software_category (software_id, category_id) VALUES (?, ?), (?, ?)",
+                ELITE,
+                intro4k,
+                ELITE,
+                games);
+
+        assertThat(reads.findById(ELITE))
+                .hasValueSatisfying(details -> assertThat(details.categories())
+                        .containsExactly(
+                                new SoftwareCategory(games, "Games", List.of(new SoftwareCategoryStep(games, "Games"))),
+                                new SoftwareCategory(
+                                        intro4k,
+                                        "4K intro",
+                                        List.of(
+                                                new SoftwareCategoryStep(demoscene, "Demoscene"),
+                                                new SoftwareCategoryStep(intro, "Intro"),
+                                                new SoftwareCategoryStep(intro4k, "4K intro")))));
     }
 }

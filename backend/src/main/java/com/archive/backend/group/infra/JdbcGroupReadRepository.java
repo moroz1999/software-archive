@@ -136,19 +136,30 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
                 .list();
     }
 
+    /**
+     * The label shown as the main name is the display name, also of a record from before the rule with none marked.
+     */
     private List<GroupLabel> labels(UUID groupId) {
-        return jdbc.sql("SELECT id, name FROM label WHERE group_id = :id ORDER BY lower(name), id")
+        return jdbc.sql("WITH " + MainNameSql.GROUPS + """
+                        SELECT l.id, l.name, l.id = n.main_label_id AS display
+                        FROM label l
+                        JOIN named_group n ON n.group_id = l.group_id
+                        WHERE l.group_id = :id
+                        ORDER BY lower(l.name), l.id
+                        """)
                 .param("id", groupId)
-                .query((rs, row) -> new GroupLabel(rs.getObject("id", UUID.class), rs.getString("name")))
+                .query((rs, row) ->
+                        new GroupLabel(rs.getObject("id", UUID.class), rs.getString("name"), rs.getBoolean("display")))
                 .list();
     }
 
     /**
-     * The primary location first.
+     * The primary location first; of a record from before the rule with none or several marked, the first of them.
      */
     private List<GroupLocation> locations(UUID groupId) {
         return jdbc.sql("""
-                        SELECT co.name AS country, ci.name AS city, COALESCE(l.is_primary, FALSE) AS is_primary
+                        SELECT co.id AS country_id, co.name AS country, ci.id AS city_id, ci.name AS city,
+                               ROW_NUMBER() OVER (ORDER BY COALESCE(l.is_primary, FALSE) DESC, co.name, ci.name) = 1 AS is_primary
                         FROM entity_location l
                         LEFT JOIN city ci ON ci.id = l.city_id
                         LEFT JOIN country co ON co.id = COALESCE(l.country_id, ci.country_id)
@@ -156,8 +167,12 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
                         ORDER BY COALESCE(l.is_primary, FALSE) DESC, co.name, ci.name
                         """)
                 .param("id", groupId)
-                .query((rs, row) ->
-                        new GroupLocation(rs.getString("country"), rs.getString("city"), rs.getBoolean("is_primary")))
+                .query((rs, row) -> new GroupLocation(
+                        rs.getObject("country_id", UUID.class),
+                        rs.getString("country"),
+                        rs.getObject("city_id", UUID.class),
+                        rs.getString("city"),
+                        rs.getBoolean("is_primary")))
                 .list();
     }
 

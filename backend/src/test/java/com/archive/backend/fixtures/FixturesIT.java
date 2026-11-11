@@ -2,6 +2,7 @@ package com.archive.backend.fixtures;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
@@ -184,6 +185,13 @@ class FixturesIT {
                 .andExpect(jsonPath("$.platform.code").value("vector"))
                 .andExpect(jsonPath("$.hardware[*].group").value(hasItems("computers", "sound")))
                 .andExpect(jsonPath("$.hardware[*].code").value(hasItem("beeper")));
+    }
+
+    @Test
+    void aFixtureSoftwareIsInTwoCategoriesOfTheTree() throws Exception {
+        mvc.perform(get("/api/software/{id}", ELITE))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.categories[*].title").value(containsInAnyOrder("Strategy", "Shooters")));
     }
 
     @Test

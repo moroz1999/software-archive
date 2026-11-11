@@ -44,6 +44,7 @@ class ListSoftwareHandlerTest {
                 null,
                 LocalDate.of(1990, 1, 1),
                 new SoftwarePlatform("vector", "Vector"),
+                List.of(),
                 List.of());
     }
 }

@@ -36,4 +36,15 @@ describe('GroupsPage', () => {
         expect(screen.queryByTestId('group-catalog-skeleton')).not.toBeInTheDocument();
         expect(fetchMock).toHaveBeenCalledTimes(3);
     });
+
+    it('leads to adding a group', async () => {
+        stubFetchRoutes(new Map([
+            ['/api/groups?page=0&size=100', json(pageResponse([], {size: 100}))],
+            ['/api/countries', json([])],
+        ]));
+
+        renderRoute('/groups');
+
+        await expect(screen.findByRole('link', {name: 'Add group'})).resolves.toHaveAttribute('href', '/groups/new');
+    });
 });

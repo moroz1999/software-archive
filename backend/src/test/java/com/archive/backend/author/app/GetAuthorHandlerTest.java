@@ -21,7 +21,13 @@ class GetAuthorHandlerTest {
     @Test
     void returnsTheAuthor() {
         AuthorDetails author = new AuthorDetails(
-                ID, "Zed", "John Doe", null, List.of(new AuthorLabel(UUID.randomUUID(), "Zed")), List.of(), List.of());
+                ID,
+                "Zed",
+                "John Doe",
+                null,
+                List.of(new AuthorLabel(UUID.randomUUID(), "Zed", true)),
+                List.of(),
+                List.of());
         reads.add(author);
 
         assertThat(handler.handle(new GetAuthorQuery(new AuthorId(ID)))).isEqualTo(author);

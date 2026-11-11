@@ -1,5 +1,6 @@
 package com.archive.backend.software.app;
 
+import com.archive.backend.category.domain.CategorySets;
 import com.archive.backend.hardware.domain.HardwareSets;
 import com.archive.backend.software.domain.Software;
 import com.archive.backend.software.domain.SoftwareId;
@@ -15,12 +16,18 @@ public class CreateSoftwareHandler {
 
     private final SoftwareRepository repository;
     private final HardwareSets hardwareSets;
+    private final CategorySets categorySets;
 
     @Transactional
     public SoftwareId handle(CreateSoftwareCommand c) {
         SoftwareId id = new SoftwareId(UUID.randomUUID());
         repository.save(Software.create(
-                id, c.title(), c.description(), c.releaseDate(), hardwareSets.of(c.platform(), c.hardware())));
+                id,
+                c.title(),
+                c.description(),
+                c.releaseDate(),
+                hardwareSets.of(c.platform(), c.hardware()),
+                categorySets.of(c.categories())));
         return id;
     }
 }

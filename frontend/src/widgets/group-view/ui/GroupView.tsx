@@ -2,7 +2,8 @@ import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
 import {authorPath, toAuthorId} from '@/entities/authors';
 import {locationText, primaryFirst} from '@/entities/locations';
-import {type GroupDetails, GroupDetailsProvider, type GroupId, groupPath, type GroupMember, type RelatedGroup, useGroupDetails} from '@/entities/groups';
+import {groupEditPath, type GroupDetails, GroupDetailsProvider, type GroupId, groupPath, type GroupMember, type RelatedGroup, useGroupDetails} from '@/entities/groups';
+import {Button} from '@/shared/ui/button';
 import {Inline} from '@/shared/ui/inline';
 import {PageLayout} from '@/shared/ui/page-layout';
 import {Skeleton} from '@/shared/ui/skeleton';
@@ -26,6 +27,7 @@ export function GroupView({id}: GroupViewProps) {
 }
 
 function LoadedView() {
+    const {t} = useTranslation();
     const query = useGroupDetails();
     const skeleton = useSkeleton(query);
 
@@ -41,7 +43,7 @@ function LoadedView() {
         return null;
     }
     return (
-        <PageLayout title={query.data.name}>
+        <PageLayout title={query.data.name} actions={<Button href={groupEditPath(query.data.id)} color="secondary">{t('actions.edit')}</Button>}>
             <Details group={query.data}/>
         </PageLayout>
     );

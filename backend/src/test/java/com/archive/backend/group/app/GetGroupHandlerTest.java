@@ -26,7 +26,7 @@ class GetGroupHandlerTest {
                 "Crew Ltd",
                 null,
                 List.of(),
-                List.of(new GroupLabel(UUID.randomUUID(), "Crew")),
+                List.of(new GroupLabel(UUID.randomUUID(), "Crew", true)),
                 List.of(),
                 List.of(),
                 List.of(),

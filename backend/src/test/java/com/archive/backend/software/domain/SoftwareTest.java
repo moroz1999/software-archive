@@ -3,6 +3,9 @@ package com.archive.backend.software.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.archive.backend.category.domain.CategoryId;
+import com.archive.backend.category.domain.CategoryLine;
+import com.archive.backend.category.domain.CategorySet;
 import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.HardwareSet;
 import com.archive.backend.hardware.domain.PlatformCode;
@@ -45,7 +48,7 @@ class SoftwareTest {
     }
 
     private static Software elite() {
-        return Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_VECTOR_HARDWARE);
+        return Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_VECTOR_HARDWARE, CategorySet.EMPTY);
     }
 
     private static Software eliteWithAyMod() {
@@ -61,7 +64,8 @@ class SoftwareTest {
                 new SoftwareTitle("Elite"),
                 new SoftwareDescription("Space trading"),
                 LocalDate.of(1985, 9, 20),
-                NO_VECTOR_HARDWARE);
+                NO_VECTOR_HARDWARE,
+                CategorySet.EMPTY);
 
         assertThat(software.getId()).isEqualTo(ID);
         assertThat(software.getTitle()).isEqualTo(new SoftwareTitle("Elite"));
@@ -72,7 +76,8 @@ class SoftwareTest {
 
     @Test
     void takesItsPlatformFromItsHardware() {
-        Software software = Software.create(ID, new SoftwareTitle("Elite"), null, null, VECTOR_06C_SET);
+        Software software =
+                Software.create(ID, new SoftwareTitle("Elite"), null, null, VECTOR_06C_SET, CategorySet.EMPTY);
 
         assertThat(software.getPlatform()).isEqualTo(VECTOR);
         assertThat(software.getHardware()).isEqualTo(VECTOR_06C_SET);
@@ -90,9 +95,10 @@ class SoftwareTest {
                 new SoftwareTitle("Elite"),
                 new SoftwareDescription("Space trading"),
                 LocalDate.of(1985, 9, 20),
-                VECTOR_06C_SET);
+                VECTOR_06C_SET,
+                CategorySet.EMPTY);
 
-        software.edit(new SoftwareTitle("Elite Plus"), null, null, VECTOR_AY);
+        software.edit(new SoftwareTitle("Elite Plus"), null, null, VECTOR_AY, CategorySet.EMPTY);
 
         assertThat(software.getId()).isEqualTo(ID);
         assertThat(software.getTitle()).isEqualTo(new SoftwareTitle("Elite Plus"));
@@ -194,6 +200,7 @@ class SoftwareTest {
                         null,
                         null,
                         NO_VECTOR_HARDWARE,
+                        CategorySet.EMPTY,
                         List.of(new Release(AY_MOD, AY_MOD_CONTENT, BK_0011M))))
                 .isInstanceOfSatisfying(
                         RuleViolationException.class, e -> assertThat(e.code()).isEqualTo("hardware.unknown"));
@@ -204,16 +211,17 @@ class SoftwareTest {
         Software software = elite();
         software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_VECTOR_HARDWARE);
 
-        software.edit(new SoftwareTitle("Elite"), null, null, NO_BK_HARDWARE);
+        software.edit(new SoftwareTitle("Elite"), null, null, NO_BK_HARDWARE, CategorySet.EMPTY);
 
         assertThat(software.getPlatform()).isEqualTo(BK);
     }
 
     @Test
     void changesThePlatformTogetherWithHardwareOfTheNewPlatform() {
-        Software software = Software.create(ID, new SoftwareTitle("Elite"), null, null, VECTOR_06C_SET);
+        Software software =
+                Software.create(ID, new SoftwareTitle("Elite"), null, null, VECTOR_06C_SET, CategorySet.EMPTY);
 
-        software.edit(new SoftwareTitle("Elite"), null, null, BK_0011M);
+        software.edit(new SoftwareTitle("Elite"), null, null, BK_0011M, CategorySet.EMPTY);
 
         assertThat(software.getPlatform()).isEqualTo(BK);
         assertThat(software.getHardware()).isEqualTo(BK_0011M);
@@ -223,7 +231,8 @@ class SoftwareTest {
     void keepsThePlatformWhileAReleaseHasHardware() {
         Software software = eliteWithAyMod();
 
-        assertThatThrownBy(() -> software.edit(new SoftwareTitle("Elite Plus"), null, null, NO_BK_HARDWARE))
+        assertThatThrownBy(() ->
+                        software.edit(new SoftwareTitle("Elite Plus"), null, null, NO_BK_HARDWARE, CategorySet.EMPTY))
                 .isInstanceOfSatisfying(RuleViolationException.class, e -> {
                     assertThat(e.code()).isEqualTo("software.platform-locked");
                     assertThat(e.field()).isEqualTo("platform");
@@ -236,9 +245,21 @@ class SoftwareTest {
     void editsTheRestOfSoftwareWhoseReleasesHaveHardwareOnTheSamePlatform() {
         Software software = eliteWithAyMod();
 
-        software.edit(new SoftwareTitle("Elite Plus"), null, null, VECTOR_06C_SET);
+        software.edit(new SoftwareTitle("Elite Plus"), null, null, VECTOR_06C_SET, CategorySet.EMPTY);
 
         assertThat(software.getTitle()).isEqualTo(new SoftwareTitle("Elite Plus"));
         assertThat(software.getHardware()).isEqualTo(VECTOR_06C_SET);
+    }
+
+    @Test
+    void isCreatedInItsCategoriesAndEditingReplacesThem() {
+        CategorySet games = CategorySet.restore(List.of(new CategoryLine(new CategoryId(ORIGINAL.value()), List.of())));
+        Software software = Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_VECTOR_HARDWARE, games);
+
+        assertThat(software.getCategories()).isEqualTo(games);
+
+        software.edit(new SoftwareTitle("Elite"), null, null, NO_VECTOR_HARDWARE, CategorySet.EMPTY);
+
+        assertThat(software.getCategories()).isEqualTo(CategorySet.EMPTY);
     }
 }

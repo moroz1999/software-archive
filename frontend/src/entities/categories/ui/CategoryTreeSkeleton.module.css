@@ -1,0 +1,4 @@
+.row {
+    width: var(--category-tree-skeleton-row-width);
+    height: var(--category-tree-skeleton-row-height);
+}

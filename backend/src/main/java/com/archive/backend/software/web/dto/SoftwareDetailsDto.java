@@ -11,4 +11,5 @@ public record SoftwareDetailsDto(
         @Nullable String description,
         @Nullable LocalDate releaseDate,
         SoftwarePlatformDto platform,
-        List<SoftwareHardwareDto> hardware) {}
+        List<SoftwareHardwareDto> hardware,
+        List<SoftwareCategoryDto> categories) {}

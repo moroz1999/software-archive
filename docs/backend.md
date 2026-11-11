@@ -20,6 +20,7 @@ Each domain is a package under `com.archive.backend`. A request passes four role
   - or a **query** (`GetSoftwareQuery` + `GetSoftwareHandler`) — reads: asks the read repository and returns a read model; `handle` is `@Transactional(readOnly = true)`. Of the domain it uses only value objects and business exceptions, never entities or repositories.
 - Owns the transaction boundary.
 - Holds no business rules itself — they live in the domain.
+- Publishes the domain events of the aggregates it saved (`pullEvents()`) through Spring's `ApplicationEventPublisher`. Another module answers with a use case of its own: a handler with an `@EventListener` method, run synchronously in the transaction of the change, so the change and the answer commit or roll back together. Thus a module answers a change of another without that one knowing it: a moved category (`CategoryMoved`) recategorizes software.
 
 ### Domain services and model (`domain`)
 - Business rules belong to the domain model first. A domain service holds a rule only when it does not belong to a single entity.
@@ -46,6 +47,7 @@ Domain entities, domain services and use case commands/results use value objects
 - A domain repository serves only commands, so it loads an aggregate only to change it: the row of its root is locked (`PESSIMISTIC_WRITE`) until the transaction commits. A second change of the same aggregate waits and then checks its invariants against the committed state; reads go through the read side and never wait. Aggregates carry no versions.
 - Spring Data `Page`/`Pageable` are allowed in domain repository interfaces: an own pagination type would add mapping without adding meaning.
 - Naming: domain interface `SoftwareRepository`, Spring Data interface `SpringDataSoftwareRepository`, adapter `JpaSoftwareRepository`.
+- A row an aggregate only refers to and must outlive it (a label of a person) is mapped without `REMOVE` and orphan removal: taking it away, or deleting the aggregate, clears its owner column only. A table shared by several kinds of owners (`entity_location`) is mapped by an entity of each owner, sharing a `@MappedSuperclass`, with `@SQLRestriction` on its type column; the rows of labels and locations are converted by shared helpers of their domains, used by every owner's mapper.
 
 Cross-domain configuration lives in `shared/config`.
 
@@ -55,8 +57,8 @@ Use cases and the domain signal failures by throwing business exceptions; one `@
 
 - `shared/domain` — the shared kernel: concepts of the archive used by several domains, such as `Title`, the abstract value object of every title.
 - `shared/domain/error` — the taxonomy of business errors: `BusinessException` and its kinds (`NotFoundException`, `ConflictException`, `RuleViolationException`, `InvalidValueException`), mapped as a whole by `ApiExceptionHandler`.
-- `shared/domain/ddd` — DDD building-block markers: `@ValueObject`.
-- `shared/web` — `ApiExceptionHandler`, the only exception → REST status mapping.
+- `shared/domain/ddd` — DDD building blocks: the `@ValueObject` marker and the `DomainEvent` interface of what an aggregate tells happened.
+- `shared/web` — `ApiExceptionHandler`, the only exception → REST status mapping. A change that lost to another running at the same time (a deadlock, a lock not acquired) answers `409 conflict.concurrent`.
 - `shared/config` — `SecurityConfig`; `DomainServicesConfig` registers the domain services; `WebConfig` fixes the page JSON contract: `{content: [...], page: {size, number, totalElements, totalPages}}`.
 
 ## Mapping
@@ -95,7 +97,7 @@ All run on every build; nothing is suppressed to get a change through.
 | `@Service`s in `app` end with `Handler` | `useCasesAreHandlers` |
 | Exceptions in `domain`/`app` extend `BusinessException` | `exceptionsAreBusinessExceptions` |
 | `@ValueObject`s live in `domain` and are records, enums, abstract shared value objects of the shared kernel, final cases of one, or final classes without public constructors (always-valid, built by their factory) | `valueObjectsAreDomainRecords` |
-| `HardwareSet.restore` is called only in `infra` | `hardwareSetsAreRestoredOnlyInInfra` |
+| `restore` factories of the domain (`HardwareSet`, `Place`, `OwnLabels`) are called only in `infra` | `restoringIsLeftToInfra` |
 | No scalar fields (`String`, `UUID`, numbers, booleans) in `domain`/`app` classes except value objects and exceptions | `noScalarsInDomainAndCommands` |
 
 Not checkable by ArchUnit, left to review: controllers and use cases never catch exceptions to build responses.

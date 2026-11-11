@@ -1,0 +1,27 @@
+.radio {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--radio-gap);
+    color: var(--radio-text);
+    font-size: var(--radio-font-size);
+    line-height: var(--radio-line-height);
+    cursor: pointer;
+}
+
+.circle {
+    width: var(--radio-size);
+    height: var(--radio-size);
+    margin: 0;
+    accent-color: var(--radio-accent);
+    cursor: inherit;
+}
+
+.circle:focus-visible {
+    outline: var(--radio-focus-outline);
+    outline-offset: var(--radio-focus-offset);
+}
+
+.disabled {
+    color: var(--radio-disabled-text);
+    cursor: not-allowed;
+}

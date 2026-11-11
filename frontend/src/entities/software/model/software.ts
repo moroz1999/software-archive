@@ -16,11 +16,25 @@ export interface Software {
     readonly releaseDate: ReleaseDate | null;
 }
 
-/** One software with everything shown about it; its base hardware in the order of the groups. */
+/** One software with everything shown about it; its base hardware in the order of the groups, its categories in the order of the tree. */
 export interface SoftwareDetails extends Software {
     readonly description: string | null;
     readonly platform: SoftwarePlatform;
     readonly hardware: readonly Hardware[];
+    readonly categories: readonly SoftwareCategory[];
+}
+
+/** A category software is in, with its branch from the top of the tree down to itself (docs/domain/categories.md). */
+export interface SoftwareCategory {
+    readonly id: string;
+    readonly title: string;
+    readonly branch: readonly CategoryStep[];
+}
+
+/** A category on the branch down to a category software is in. */
+export interface CategoryStep {
+    readonly id: string;
+    readonly title: string;
 }
 
 /** The platform software is for, as the software shows it. */

@@ -1,5 +1,6 @@
 package com.archive.backend.software.domain;
 
+import com.archive.backend.category.domain.CategorySet;
 import com.archive.backend.hardware.domain.HardwareSet;
 import com.archive.backend.hardware.domain.HardwareUnknownException;
 import com.archive.backend.hardware.domain.PlatformCode;
@@ -26,6 +27,10 @@ public final class Software {
      * The base hardware the software is released for, on its platform.
      */
     private HardwareSet hardware;
+    /**
+     * The categories the software is in; it may be in none (docs/domain/categories.md).
+     */
+    private CategorySet categories;
 
     private final List<Release> releases;
 
@@ -35,12 +40,14 @@ public final class Software {
             @Nullable SoftwareDescription description,
             @Nullable LocalDate releaseDate,
             HardwareSet hardware,
+            CategorySet categories,
             List<Release> releases) {
         this.id = Objects.requireNonNull(id, "id");
         this.title = Objects.requireNonNull(title, "title");
         this.description = description;
         this.releaseDate = releaseDate;
         this.hardware = Objects.requireNonNull(hardware, "hardware");
+        this.categories = Objects.requireNonNull(categories, "categories");
         releases.forEach(release -> requireOwn(release.hardware()));
         this.releases = new ArrayList<>(releases);
     }
@@ -50,8 +57,9 @@ public final class Software {
             SoftwareTitle title,
             @Nullable SoftwareDescription description,
             @Nullable LocalDate releaseDate,
-            HardwareSet hardware) {
-        return new Software(id, title, description, releaseDate, hardware, List.of());
+            HardwareSet hardware,
+            CategorySet categories) {
+        return new Software(id, title, description, releaseDate, hardware, categories, List.of());
     }
 
     public PlatformCode getPlatform() {
@@ -65,7 +73,8 @@ public final class Software {
             SoftwareTitle title,
             @Nullable SoftwareDescription description,
             @Nullable LocalDate releaseDate,
-            HardwareSet hardware) {
+            HardwareSet hardware,
+            CategorySet categories) {
         if (!hardware.platform().equals(getPlatform()) && releasesHaveHardware()) {
             throw new SoftwarePlatformLockedException();
         }
@@ -73,6 +82,7 @@ public final class Software {
         this.description = description;
         this.releaseDate = releaseDate;
         this.hardware = hardware;
+        this.categories = categories;
     }
 
     public List<Release> getReleases() {

@@ -1,0 +1,27 @@
+:root {
+    /* Height of a row and the gap between rows. */
+    --tree-row-height: var(--space-32);
+    --tree-row-gap: var(--space-2);
+
+    /* How far children stand in from their parent. */
+    --tree-indent: var(--space-24);
+
+    /* Toggle: its size, the gap to the row content, its corner radius. */
+    --tree-toggle-size: var(--space-24);
+    --tree-toggle-gap: var(--space-4);
+    --tree-toggle-radius: var(--radius-sm);
+
+    /* Toggle colors: its chevron and its background on hover. */
+    --tree-toggle-color: var(--text-light-color);
+    --tree-toggle-hover-bg: var(--background-deep);
+
+    /* The chevron: its size and line width. */
+    --tree-chevron-size: 6px;
+    --tree-chevron-width: var(--border-width-thick);
+
+    /* Keyboard focus ring of the toggle. */
+    --tree-focus-ring: 0 0 0 var(--border-width-thick) var(--border-focused);
+
+    /* Duration of the hover and turn transitions. */
+    --tree-transition: var(--animation-sm);
+}

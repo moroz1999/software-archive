@@ -8,7 +8,7 @@ import {App} from './App';
 import {type AppRouter, createAppRouter} from './router';
 
 const ALPHA = {id: '00000000-0000-0000-0001-000000000001', title: 'Fixture Software Alpha', releaseDate: '1985-03-02'};
-const ALPHA_DETAILS = {...ALPHA, description: null, platform: {code: 'vector', name: 'Vector'}, hardware: []};
+const ALPHA_DETAILS = {...ALPHA, description: null, platform: {code: 'vector', name: 'Vector'}, hardware: [], categories: []};
 const AY_MOD = '00000000-0000-0000-0007-000000000002';
 const AY_MOD_DETAILS = {id: AY_MOD, title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: null, description: null, hardware: []};
 const ZED = '00000000-0000-0000-0003-000000000001';
@@ -22,6 +22,7 @@ const CREW_DETAILS = {
 /** What every page or the software page loads besides its own data: the platforms of the switch, the releases, the hardware to choose. */
 const AROUND = new Map([
     ['/api/platforms', json([{code: 'vector', name: 'Vector'}])],
+    ['/api/categories', json([])],
     [`/api/software/${ALPHA.id}/releases`, json([])],
     ['/api/hardware?platform=vector', json([])],
 ]);

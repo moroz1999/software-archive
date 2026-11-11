@@ -1,10 +1,11 @@
-import {type ReactNode, useId} from 'react';
+import {Fragment, type ReactNode, useId} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
     HardwareList,
     releaseDayText,
     releaseEditPath,
     releaseNewPath,
+    type SoftwareCategory,
     type SoftwareDetails,
     SoftwareDetailsProvider,
     softwareEditPath,
@@ -15,6 +16,7 @@ import {
 } from '@/entities/software';
 import {useInViewport} from '@/shared/lib/screen';
 import {Button} from '@/shared/ui/button';
+import {Chip} from '@/shared/ui/chip';
 import {Inline} from '@/shared/ui/inline';
 import {PageLayout} from '@/shared/ui/page-layout';
 import {Skeleton} from '@/shared/ui/skeleton';
@@ -78,12 +80,34 @@ function Details({software}: {readonly software: SoftwareDetails}) {
                     <HardwareList hardware={software.hardware}/>
                 </Stack>
             )}
+            {software.categories.length > 0 && (
+                <Stack as="section" gap="xs" ariaLabel={t('fields.categories')}>
+                    <Text variant="label" tone="muted">{t('fields.categories')}</Text>
+                    <Stack as="ul" gap="xs">
+                        {software.categories.map((category) => <li key={category.id}><Branch category={category}/></li>)}
+                    </Stack>
+                </Stack>
+            )}
             {lines.length > 0 && (
                 <Stack gap="sm">
                     {lines.map((line, index) => <Text key={index}>{line}</Text>)}
                 </Stack>
             )}
         </Stack>
+    );
+}
+
+/** A category of the software with its branch from the top of the tree down to it. */
+function Branch({category}: {readonly category: SoftwareCategory}) {
+    return (
+        <Inline as="ul" gap="xs" align="center" wrap ariaLabel={category.branch.map((step) => step.title).join(' › ')}>
+            {category.branch.map((step, index) => (
+                <Fragment key={step.id}>
+                    {index > 0 && <li aria-hidden="true"><Text as="span" tone="muted">›</Text></li>}
+                    <li><Chip>{step.title}</Chip></li>
+                </Fragment>
+            ))}
+        </Inline>
     );
 }
 

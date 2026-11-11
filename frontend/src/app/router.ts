@@ -1,10 +1,18 @@
 import type {QueryClient} from '@tanstack/react-query';
 import {createBrowserRouter, type RouteObject} from 'react-router';
-import {AUTHOR_ROUTE, AUTHORS_PATH} from '@/entities/authors';
-import {GROUP_ROUTE, GROUPS_PATH} from '@/entities/groups';
+import {AUTHOR_EDIT_ROUTE, AUTHOR_NEW_PATH, AUTHOR_ROUTE, AUTHORS_PATH} from '@/entities/authors';
+import {CATEGORIES_PATH, CATEGORY_EDIT_ROUTE, CATEGORY_NEW_PATH} from '@/entities/categories';
+import {GROUP_EDIT_ROUTE, GROUP_NEW_PATH, GROUP_ROUTE, GROUPS_PATH} from '@/entities/groups';
 import {RELEASE_EDIT_ROUTE, RELEASE_NEW_ROUTE, SOFTWARE_EDIT_ROUTE, SOFTWARE_LIST_PATH, SOFTWARE_NEW_PATH, SOFTWARE_ROUTE} from '@/entities/software';
+import {loadAuthorEditPage, preloadAuthorEditPage} from '@/pages/author-edit';
+import {loadAuthorNewPage, preloadAuthorNewPage} from '@/pages/author-new';
 import {loadAuthorViewPage, preloadAuthorViewPage} from '@/pages/author-view';
 import {loadAuthorsPage, preloadAuthorsPage, shouldPreloadAuthorsPage} from '@/pages/authors';
+import {loadCategoriesPage, preloadCategoriesPage} from '@/pages/categories';
+import {loadCategoryEditPage, preloadCategoryEditPage} from '@/pages/category-edit';
+import {loadCategoryNewPage, preloadCategoryNewPage} from '@/pages/category-new';
+import {loadGroupEditPage, preloadGroupEditPage} from '@/pages/group-edit';
+import {loadGroupNewPage, preloadGroupNewPage} from '@/pages/group-new';
 import {loadGroupViewPage, preloadGroupViewPage} from '@/pages/group-view';
 import {loadGroupsPage, preloadGroupsPage, shouldPreloadGroupsPage} from '@/pages/groups';
 import {loadHomePage, preloadHomePage} from '@/pages/home';
@@ -49,7 +57,9 @@ const routes = (queryClient: QueryClient): RouteObject[] => [{Component: AppLayo
             lazy: {Component: loadAuthorsPage},
             HydrateFallback: nothing,
         },
+        {path: AUTHOR_NEW_PATH, loader: preloadAuthorNewPage(queryClient), lazy: {Component: loadAuthorNewPage}, HydrateFallback: nothing},
         {path: AUTHOR_ROUTE, loader: preloadAuthorViewPage(queryClient), lazy: {Component: loadAuthorViewPage}, HydrateFallback: nothing},
+        {path: AUTHOR_EDIT_ROUTE, loader: preloadAuthorEditPage(queryClient), lazy: {Component: loadAuthorEditPage}, HydrateFallback: nothing},
         {
             path: GROUPS_PATH,
             loader: preloadGroupsPage(queryClient),
@@ -57,7 +67,12 @@ const routes = (queryClient: QueryClient): RouteObject[] => [{Component: AppLayo
             lazy: {Component: loadGroupsPage},
             HydrateFallback: nothing,
         },
+        {path: GROUP_NEW_PATH, loader: preloadGroupNewPage(queryClient), lazy: {Component: loadGroupNewPage}, HydrateFallback: nothing},
         {path: GROUP_ROUTE, loader: preloadGroupViewPage(queryClient), lazy: {Component: loadGroupViewPage}, HydrateFallback: nothing},
+        {path: GROUP_EDIT_ROUTE, loader: preloadGroupEditPage(queryClient), lazy: {Component: loadGroupEditPage}, HydrateFallback: nothing},
+        {path: CATEGORIES_PATH, loader: preloadCategoriesPage(queryClient), lazy: {Component: loadCategoriesPage}, HydrateFallback: nothing},
+        {path: CATEGORY_NEW_PATH, loader: preloadCategoryNewPage(queryClient), lazy: {Component: loadCategoryNewPage}, HydrateFallback: nothing},
+        {path: CATEGORY_EDIT_ROUTE, loader: preloadCategoryEditPage(queryClient), lazy: {Component: loadCategoryEditPage}, HydrateFallback: nothing},
         {path: '*', loader: unknownAddress, Component: nothing},
     ]},
 ]}];

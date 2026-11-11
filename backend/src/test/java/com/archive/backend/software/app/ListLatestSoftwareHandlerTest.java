@@ -37,6 +37,6 @@ class ListLatestSoftwareHandlerTest {
 
     private static SoftwareDetails details(String title) {
         return new SoftwareDetails(
-                UUID.randomUUID(), title, null, null, new SoftwarePlatform("vector", "Vector"), List.of());
+                UUID.randomUUID(), title, null, null, new SoftwarePlatform("vector", "Vector"), List.of(), List.of());
     }
 }

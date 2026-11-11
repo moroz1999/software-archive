@@ -2,21 +2,38 @@ package com.archive.backend.group.web;
 
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.archive.backend.geo.domain.CityId;
 import com.archive.backend.geo.domain.CountryId;
+import com.archive.backend.geo.domain.LocationDraft;
+import com.archive.backend.group.app.CreateGroupCommand;
+import com.archive.backend.group.app.CreateGroupHandler;
+import com.archive.backend.group.app.DeleteGroupCommand;
+import com.archive.backend.group.app.DeleteGroupHandler;
 import com.archive.backend.group.app.GetGroupHandler;
 import com.archive.backend.group.app.GetGroupQuery;
 import com.archive.backend.group.app.ListGroupsHandler;
 import com.archive.backend.group.app.ListGroupsQuery;
+import com.archive.backend.group.app.UpdateGroupCommand;
+import com.archive.backend.group.app.UpdateGroupHandler;
 import com.archive.backend.group.domain.GroupId;
+import com.archive.backend.group.domain.GroupName;
 import com.archive.backend.group.domain.GroupNotFoundException;
+import com.archive.backend.group.domain.GroupNotes;
+import com.archive.backend.group.domain.GroupTypeCode;
+import com.archive.backend.group.domain.GroupTypeUnknownException;
+import com.archive.backend.group.domain.GroupTypesRequiredException;
 import com.archive.backend.group.read.GroupCatalogEntry;
 import com.archive.backend.group.read.GroupDetails;
 import com.archive.backend.group.read.GroupLabel;
@@ -25,11 +42,15 @@ import com.archive.backend.group.read.GroupMember;
 import com.archive.backend.group.read.RelatedGroup;
 import com.archive.backend.group.web.mapper.GroupWebMapperImpl;
 import com.archive.backend.hardware.domain.PlatformCode;
+import com.archive.backend.label.domain.LabelDraft;
+import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.LabelLetter;
+import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
 import com.archive.backend.shared.web.ApiExceptionHandler;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +58,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -60,6 +82,15 @@ class GroupControllerTest {
 
     @MockitoBean
     private GetGroupHandler getHandler;
+
+    @MockitoBean
+    private CreateGroupHandler createHandler;
+
+    @MockitoBean
+    private UpdateGroupHandler updateHandler;
+
+    @MockitoBean
+    private DeleteGroupHandler deleteHandler;
 
     @Test
     void listsTheCatalogWithoutFilters() throws Exception {
@@ -138,10 +169,10 @@ class GroupControllerTest {
                         "Crew Ltd",
                         "Since 1990",
                         List.of("demogroup"),
-                        List.of(new GroupLabel(LABEL, "Crew")),
+                        List.of(new GroupLabel(LABEL, "Crew", true)),
                         List.of(
-                                new GroupLocation("Finland", "Helsinki", true),
-                                new GroupLocation("Norway", null, false)),
+                                new GroupLocation(COUNTRY, "Finland", CITY, "Helsinki", true),
+                                new GroupLocation(COUNTRY, "Norway", null, null, false)),
                         List.of(
                                 new GroupMember("хакер федя", PERSON, "MASTERSOFT"),
                                 new GroupMember("Ghost", null, null)),
@@ -157,6 +188,10 @@ class GroupControllerTest {
                 .andExpect(jsonPath("$.types[0]").value("demogroup"))
                 .andExpect(jsonPath("$.labels[0].id").value(LABEL.toString()))
                 .andExpect(jsonPath("$.labels[0].name").value("Crew"))
+                .andExpect(jsonPath("$.labels[0].display").value(true))
+                .andExpect(jsonPath("$.locations[0].countryId").value(COUNTRY.toString()))
+                .andExpect(jsonPath("$.locations[0].cityId").value(CITY.toString()))
+                .andExpect(jsonPath("$.locations[1].cityId").value(nullValue()))
                 .andExpect(jsonPath("$.locations[0].city").value("Helsinki"))
                 .andExpect(jsonPath("$.locations[0].primary").value(true))
                 .andExpect(jsonPath("$.locations[1].city").value(nullValue()))
@@ -182,5 +217,132 @@ class GroupControllerTest {
     @Test
     void answers400ForAMalformedId() throws Exception {
         mvc.perform(get("/api/groups/{id}", "not-a-uuid")).andExpect(status().isBadRequest());
+    }
+
+    private static final String CREW_JSON = """
+            {"name":"Crew Ltd","notes":"Since 1990","types":["demogroup","label"],\
+            "labels":[{"id":"%s","name":"Crew","display":true},{"id":null,"name":"CRW","display":false}],\
+            "locations":[{"country":"%s","city":"%s","primary":true}]}""".formatted(LABEL, COUNTRY, CITY);
+
+    private static final Set<GroupTypeCode> CREW_TYPES =
+            Set.of(new GroupTypeCode("demogroup"), new GroupTypeCode("label"));
+
+    private static final List<LabelDraft> CREW_LABELS = List.of(
+            new LabelDraft(new LabelId(LABEL), new LabelName("Crew"), true),
+            new LabelDraft(null, new LabelName("CRW"), false));
+
+    private static final List<LocationDraft> CREW_LOCATIONS =
+            List.of(new LocationDraft(new CountryId(COUNTRY), new CityId(CITY), true));
+
+    @Test
+    void createsAGroup() throws Exception {
+        when(createHandler.handle(new CreateGroupCommand(
+                        new GroupName("Crew Ltd"),
+                        new GroupNotes("Since 1990"),
+                        CREW_TYPES,
+                        CREW_LABELS,
+                        CREW_LOCATIONS)))
+                .thenReturn(new GroupId(ID));
+
+        mvc.perform(post("/api/groups").contentType(MediaType.APPLICATION_JSON).content(CREW_JSON))
+                .andExpect(status().isCreated())
+                .andExpect(header().string("Location", "/api/groups/" + ID))
+                .andExpect(jsonPath("$.id").value(ID.toString()));
+    }
+
+    @Test
+    void createsAGroupOfOnlyANameAndAType() throws Exception {
+        when(createHandler.handle(new CreateGroupCommand(
+                        new GroupName("Crew Ltd"), null, Set.of(new GroupTypeCode("demogroup")), List.of(), List.of())))
+                .thenReturn(new GroupId(ID));
+
+        mvc.perform(post("/api/groups")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Crew Ltd\",\"types\":[\"demogroup\"]}"))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void answers400ForAGroupWithoutAName() throws Exception {
+        mvc.perform(post("/api/groups")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\" \",\"types\":[\"demogroup\"]}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("title.required"));
+        verify(createHandler, never()).handle(any());
+    }
+
+    @Test
+    void answers400ForABlankType() throws Exception {
+        mvc.perform(post("/api/groups")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Crew Ltd\",\"types\":[\" \"]}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("group.type-code-blank"));
+        verify(createHandler, never()).handle(any());
+    }
+
+    @Test
+    void answers422ForAGroupWithoutTypes() throws Exception {
+        when(createHandler.handle(any(CreateGroupCommand.class))).thenThrow(new GroupTypesRequiredException());
+
+        mvc.perform(post("/api/groups").contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"Crew Ltd\"}"))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code").value("group.types-required"))
+                .andExpect(jsonPath("$.errors[0].field").value("types"));
+    }
+
+    @Test
+    void answers422ForAnUnknownType() throws Exception {
+        when(createHandler.handle(any(CreateGroupCommand.class))).thenThrow(new GroupTypeUnknownException());
+
+        mvc.perform(post("/api/groups").contentType(MediaType.APPLICATION_JSON).content(CREW_JSON))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code").value("group.type-unknown"))
+                .andExpect(jsonPath("$.errors[0].field").value("types"));
+    }
+
+    @Test
+    void updatesAGroup() throws Exception {
+        mvc.perform(put("/api/groups/{id}", ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(CREW_JSON))
+                .andExpect(status().isNoContent());
+
+        verify(updateHandler)
+                .handle(new UpdateGroupCommand(
+                        new GroupId(ID),
+                        new GroupName("Crew Ltd"),
+                        new GroupNotes("Since 1990"),
+                        CREW_TYPES,
+                        CREW_LABELS,
+                        CREW_LOCATIONS));
+    }
+
+    @Test
+    void answers404WhenUpdatingAnUnknownGroup() throws Exception {
+        doThrow(new GroupNotFoundException()).when(updateHandler).handle(any(UpdateGroupCommand.class));
+
+        mvc.perform(put("/api/groups/{id}", ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(CREW_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("group.not-found"));
+    }
+
+    @Test
+    void deletesAGroup() throws Exception {
+        mvc.perform(delete("/api/groups/{id}", ID)).andExpect(status().isNoContent());
+
+        verify(deleteHandler).handle(new DeleteGroupCommand(new GroupId(ID)));
+    }
+
+    @Test
+    void answers404WhenDeletingAnUnknownGroup() throws Exception {
+        doThrow(new GroupNotFoundException()).when(deleteHandler).handle(any(DeleteGroupCommand.class));
+
+        mvc.perform(delete("/api/groups/{id}", ID))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("group.not-found"));
     }
 }

@@ -8,7 +8,7 @@ import {loadReleaseEditPage, preloadReleaseEditPage} from '../index';
 
 const ID = '00000000-0000-0000-0001-000000000001';
 const RELEASE = '00000000-0000-0000-0007-000000000002';
-const ELITE = {id: ID, title: 'Elite', description: null, releaseDate: null, platform: {code: 'vector', name: 'Vector'}, hardware: []};
+const ELITE = {id: ID, title: 'Elite', description: null, releaseDate: null, platform: {code: 'vector', name: 'Vector'}, hardware: [], categories: []};
 const AY = {code: 'ay8910', name: 'AY-3-8910', group: 'sound'};
 const AY_MOD = {id: RELEASE, title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: null, description: null, hardware: [AY]};
 

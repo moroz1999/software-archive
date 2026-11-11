@@ -4,6 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
 import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.category.domain.CategoryId;
+import com.archive.backend.category.domain.CategoryLine;
+import com.archive.backend.category.domain.CategorySet;
+import com.archive.backend.category.infra.JdbcCategoryCatalog;
 import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.HardwareSet;
 import com.archive.backend.hardware.domain.PlatformCode;
@@ -20,6 +24,7 @@ import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareTitle;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -31,7 +36,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({TestcontainersConfiguration.class, JpaSoftwareRepository.class, SoftwareMapperImpl.class})
+@Import({
+    TestcontainersConfiguration.class,
+    JpaSoftwareRepository.class,
+    SoftwareMapperImpl.class,
+    JdbcCategoryCatalog.class
+})
 class JpaSoftwareRepositoryIT {
 
     private static final SoftwareId ID = new SoftwareId(UUID.fromString("00000000-0000-0000-0000-000000000001"));
@@ -47,6 +57,19 @@ class JpaSoftwareRepositoryIT {
             new ReleaseDescription("With AY music"));
     private static final ReleaseContent ORIGINAL_CONTENT =
             new ReleaseContent(null, null, ReleaseType.ORIGINAL, null, null);
+    /** Categories of the tree the schema brings. */
+    private static final CategoryId GAMES = new CategoryId(UUID.fromString("081bf3a1-782b-5a8b-8d12-3b155e0a58cb"));
+
+    private static final CategoryId INTRO_4K = new CategoryId(UUID.fromString("e9d495af-b0d1-5b0f-a22f-6955b423ab8d"));
+    /** Games → Action. */
+    private static final CategoryId ACTION = new CategoryId(UUID.fromString("93c89b73-d81b-5b8f-9318-6a52895305b3"));
+
+    private static final CategoryLine GAMES_LINE = new CategoryLine(GAMES, List.of());
+    private static final CategoryLine INTRO_4K_LINE = new CategoryLine(
+            INTRO_4K,
+            List.of(
+                    new CategoryId(UUID.fromString("47301d2f-eb74-5c1c-90c3-090b4f33e498")),
+                    new CategoryId(UUID.fromString("c35b7f9b-44a8-5570-9406-9e6dcb30b607"))));
     private static final HardwareSet NO_HARDWARE = HardwareSet.restore(VECTOR, Set.of());
     private static final HardwareSet AY_AND_JOYSTICK =
             HardwareSet.restore(VECTOR, Set.of(new HardwareCode("ay8910"), new HardwareCode("joystick")));
@@ -70,7 +93,8 @@ class JpaSoftwareRepositoryIT {
                 new SoftwareTitle("Elite"),
                 new SoftwareDescription("Space trading"),
                 LocalDate.of(1985, 9, 20),
-                NO_HARDWARE));
+                NO_HARDWARE,
+                CategorySet.EMPTY));
         springDataSoftwareRepository.flush();
 
         assertThat(repository.findById(ID)).hasValueSatisfying(software -> {
@@ -86,7 +110,7 @@ class JpaSoftwareRepositoryIT {
 
     @Test
     void storesEdits() {
-        repository.save(Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE));
+        repository.save(Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE, CategorySet.EMPTY));
         springDataSoftwareRepository.flush();
         Software software = repository.findById(ID).orElseThrow();
 
@@ -94,7 +118,8 @@ class JpaSoftwareRepositoryIT {
                 new SoftwareTitle("Elite Plus"),
                 new SoftwareDescription("Enhanced"),
                 LocalDate.of(1987, 1, 1),
-                HardwareSet.restore(BK, Set.of()));
+                HardwareSet.restore(BK, Set.of()),
+                CategorySet.EMPTY);
         repository.save(software);
         springDataSoftwareRepository.flush();
 
@@ -111,7 +136,7 @@ class JpaSoftwareRepositoryIT {
 
     @Test
     void deletesSoftwareWithEverythingThatBelongsToIt() {
-        repository.save(Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE));
+        repository.save(Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE, CategorySet.EMPTY));
         springDataSoftwareRepository.flush();
         jdbc.update("INSERT INTO software_alternative_titles (title, software_id) VALUES ('Элита', ?)", ID.value());
         jdbc.update("INSERT INTO software_languages (software_id, language) VALUES (?, 'en')", ID.value());
@@ -145,7 +170,7 @@ class JpaSoftwareRepositoryIT {
 
     @Test
     void storesReleasesWithTheirHardware() {
-        Software software = Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE);
+        Software software = Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE, CategorySet.EMPTY);
         software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_HARDWARE);
         software.addRelease(AY_MOD, AY_MOD_CONTENT, AY_AND_JOYSTICK);
         repository.save(software);
@@ -159,7 +184,7 @@ class JpaSoftwareRepositoryIT {
 
     @Test
     void storesEditedAndRemovedReleases() {
-        Software software = Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE);
+        Software software = Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE, CategorySet.EMPTY);
         software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_HARDWARE);
         software.addRelease(AY_MOD, AY_MOD_CONTENT, AY_AND_JOYSTICK);
         repository.save(software);
@@ -189,7 +214,8 @@ class JpaSoftwareRepositoryIT {
                 new SoftwareTitle("Elite"),
                 null,
                 null,
-                HardwareSet.restore(VECTOR, Set.of(new HardwareCode("vector06c")))));
+                HardwareSet.restore(VECTOR, Set.of(new HardwareCode("vector06c"))),
+                CategorySet.EMPTY));
         springDataSoftwareRepository.flush();
         // Every request starts with an empty persistence context.
         entityManager.clear();
@@ -201,12 +227,85 @@ class JpaSoftwareRepositoryIT {
                 new SoftwareTitle("Elite"),
                 null,
                 null,
-                HardwareSet.restore(VECTOR, Set.of(new HardwareCode("ay8910"))));
+                HardwareSet.restore(VECTOR, Set.of(new HardwareCode("ay8910"))),
+                CategorySet.EMPTY);
         repository.save(software);
         springDataSoftwareRepository.flush();
         entityManager.clear();
 
         assertThat(repository.findById(ID).orElseThrow().getHardware())
                 .isEqualTo(HardwareSet.restore(VECTOR, Set.of(new HardwareCode("ay8910"))));
+    }
+
+    @Test
+    void storesAndRestoresTheCategoriesOfTheSoftware() {
+        repository.save(Software.create(
+                ID,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                NO_HARDWARE,
+                CategorySet.restore(List.of(GAMES_LINE, INTRO_4K_LINE))));
+        springDataSoftwareRepository.flush();
+        entityManager.clear();
+
+        assertThat(repository.findById(ID))
+                .hasValueSatisfying(software -> assertThat(software.getCategories())
+                        .isEqualTo(CategorySet.restore(List.of(GAMES_LINE, INTRO_4K_LINE))));
+    }
+
+    @Test
+    void storesEditedCategories() {
+        repository.save(Software.create(
+                ID,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                NO_HARDWARE,
+                CategorySet.restore(List.of(GAMES_LINE, INTRO_4K_LINE))));
+        springDataSoftwareRepository.flush();
+        entityManager.clear();
+        Software software = repository.findById(ID).orElseThrow();
+        software.edit(new SoftwareTitle("Elite"), null, null, NO_HARDWARE, CategorySet.restore(List.of(INTRO_4K_LINE)));
+        repository.save(software);
+        springDataSoftwareRepository.flush();
+
+        assertThat(jdbc.queryForList(
+                        "SELECT category_id FROM software_category WHERE software_id = ?", UUID.class, ID.value()))
+                .containsExactly(INTRO_4K.value());
+    }
+
+    @Test
+    void leavesTheSoftwareWhenItsCategoryIsDeleted() {
+        repository.save(Software.create(
+                ID,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                NO_HARDWARE,
+                CategorySet.restore(List.of(GAMES_LINE, INTRO_4K_LINE))));
+        springDataSoftwareRepository.flush();
+        entityManager.clear();
+
+        jdbc.update("DELETE FROM category WHERE id = ?", INTRO_4K.value());
+
+        assertThat(repository.findById(ID))
+                .hasValueSatisfying(software ->
+                        assertThat(software.getCategories()).isEqualTo(CategorySet.restore(List.of(GAMES_LINE))));
+    }
+
+    @Test
+    void restoresNoCategoryAboveAnotherOfTheSoftware() {
+        repository.save(Software.create(
+                ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE, CategorySet.restore(List.of(GAMES_LINE))));
+        springDataSoftwareRepository.flush();
+        // Stored before the rule, or put there by a change of the tree.
+        jdbc.update(
+                "INSERT INTO software_category (software_id, category_id) VALUES (?, ?)", ID.value(), ACTION.value());
+        entityManager.clear();
+
+        assertThat(repository.findById(ID))
+                .hasValueSatisfying(
+                        software -> assertThat(software.getCategories().ids()).containsExactly(ACTION));
     }
 }

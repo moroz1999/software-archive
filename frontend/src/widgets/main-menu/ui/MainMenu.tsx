@@ -1,4 +1,5 @@
 import {AUTHORS_PATH} from '@/entities/authors';
+import {CATEGORIES_PATH} from '@/entities/categories';
 import {PlatformSwitch} from '@/entities/platforms';
 import {GROUPS_PATH} from '@/entities/groups';
 import {SOFTWARE_LIST_PATH} from '@/entities/software';
@@ -17,6 +18,7 @@ export function MainMenu() {
             <NavBarLink href={SOFTWARE_LIST_PATH}>{t('navigation.software')}</NavBarLink>
             <NavBarLink href={AUTHORS_PATH}>{t('navigation.authors')}</NavBarLink>
             <NavBarLink href={GROUPS_PATH}>{t('navigation.groups')}</NavBarLink>
+            <NavBarLink href={CATEGORIES_PATH}>{t('navigation.categories')}</NavBarLink>
         </NavBar>
     );
 }

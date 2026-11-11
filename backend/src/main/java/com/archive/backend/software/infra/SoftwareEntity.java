@@ -46,6 +46,14 @@ public class SoftwareEntity {
     @Column(name = "hardware_code")
     private Set<String> hardware = new HashSet<>();
 
+    /**
+     * The categories the software is in.
+     */
+    @ElementCollection
+    @CollectionTable(name = "software_category", joinColumns = @JoinColumn(name = "software_id"))
+    @Column(name = "category_id")
+    private Set<UUID> categories = new HashSet<>();
+
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "software_id", nullable = false)
     private List<SoftwareReleaseEntity> releases = new ArrayList<>();

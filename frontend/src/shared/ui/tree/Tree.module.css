@@ -1,0 +1,64 @@
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tree-row-gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    gap: var(--tree-toggle-gap);
+    min-height: var(--tree-row-height);
+}
+
+.children {
+    margin-top: var(--tree-row-gap);
+    padding-left: var(--tree-indent);
+}
+
+.toggle,
+.spacer {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: var(--tree-toggle-size);
+    height: var(--tree-toggle-size);
+}
+
+.toggle {
+    padding: 0;
+    border: none;
+    border-radius: var(--tree-toggle-radius);
+    outline: none;
+    background: transparent;
+    color: var(--tree-toggle-color);
+    cursor: pointer;
+    transition: background-color var(--tree-transition) ease-in-out;
+}
+
+.toggle:hover {
+    background: var(--tree-toggle-hover-bg);
+}
+
+.toggle:focus-visible {
+    box-shadow: var(--tree-focus-ring);
+}
+
+.chevron,
+.chevronOpen {
+    width: var(--tree-chevron-size);
+    height: var(--tree-chevron-size);
+    border-width: 0 var(--tree-chevron-width) var(--tree-chevron-width) 0;
+    border-style: solid;
+    border-color: currentcolor;
+    transform: rotate(-45deg);
+    transition: transform var(--tree-transition) ease-in-out;
+}
+
+.chevronOpen {
+    transform: rotate(45deg);
+}

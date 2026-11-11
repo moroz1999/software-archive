@@ -1,0 +1,16 @@
+:root {
+    /* As wide as the form it stands for. */
+    --author-form-skeleton-max-width: 720px;
+
+    /* Label bone: a short word of a label line. */
+    --author-form-skeleton-label-width: var(--space-64);
+    --author-form-skeleton-label-height: var(--space-16);
+
+    /* Field bones: as high as a one-line input and as a textarea. */
+    --author-form-skeleton-input-height: 36px;
+    --author-form-skeleton-textarea-height: 96px;
+
+    /* Button bone: a medium button with a short label. */
+    --author-form-skeleton-button-width: 96px;
+    --author-form-skeleton-button-height: 36px;
+}

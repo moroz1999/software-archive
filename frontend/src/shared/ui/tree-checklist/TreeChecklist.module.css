@@ -1,0 +1,59 @@
+.checklist {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tree-checklist-gap);
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.legend {
+    margin-bottom: var(--tree-checklist-legend-space);
+    padding: 0;
+    color: var(--tree-checklist-legend-text);
+    font-size: var(--tree-checklist-legend-font-size);
+    line-height: var(--tree-checklist-legend-line-height);
+}
+
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--tree-checklist-chips-gap);
+}
+
+/* The tree scrolls inside a box of its own so a long one keeps the form short. */
+.list {
+    max-height: var(--tree-checklist-list-max-height);
+    padding: var(--tree-checklist-list-padding);
+    overflow: auto;
+    border-width: var(--tree-checklist-list-border-width);
+    border-style: solid;
+    border-color: var(--tree-checklist-list-border-color);
+    border-radius: var(--tree-checklist-list-radius);
+    background: var(--tree-checklist-list-bg);
+}
+
+.top,
+.level {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.top {
+    gap: var(--tree-checklist-top-gap);
+}
+
+/* Each level stands in from its parent. */
+.level {
+    gap: var(--tree-checklist-level-gap);
+    margin-top: var(--tree-checklist-level-gap);
+    padding-inline-start: var(--tree-checklist-indent);
+}
+
+.item {
+    min-width: 0;
+}

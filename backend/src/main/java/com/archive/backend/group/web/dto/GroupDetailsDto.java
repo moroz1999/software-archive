@@ -16,10 +16,14 @@ public record GroupDetailsDto(
         List<RelatedGroupDto> memberGroups,
         List<RelatedGroupDto> groups) {
 
-    public record LabelDto(UUID id, String name) {}
+    public record LabelDto(UUID id, String name, boolean display) {}
 
     public record LocationDto(
-            @Nullable String country, @Nullable String city, boolean primary) {}
+            @Nullable UUID countryId,
+            @Nullable String country,
+            @Nullable UUID cityId,
+            @Nullable String city,
+            boolean primary) {}
 
     public record MemberDto(
             String name, @Nullable UUID personId, @Nullable String personName) {}

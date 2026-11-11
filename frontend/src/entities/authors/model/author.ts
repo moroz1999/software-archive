@@ -8,6 +8,8 @@ export type AuthorId = Brand<string, 'AuthorId'>;
 export interface AuthorLabel {
     readonly id: string;
     readonly name: string;
+    /** Chosen as the display name. */
+    readonly display: boolean;
 }
 
 /** A group the author was a member of, under its main name; `as` is the label they were a member under, unless it is their main name. */
@@ -17,9 +19,11 @@ export interface AuthorGroup {
     readonly as: string | null;
 }
 
-/** Where an author is located: a country, a city of it, or both. */
+/** Where an author is located: a country, a city of it, or both; the country of a city given alone is its own. */
 export interface AuthorLocation {
+    readonly countryId: string | null;
     readonly country: string | null;
+    readonly cityId: string | null;
     readonly city: string | null;
     readonly primary: boolean;
 }

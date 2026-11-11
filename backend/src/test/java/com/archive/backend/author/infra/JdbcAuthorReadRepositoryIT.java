@@ -225,10 +225,10 @@ class JdbcAuthorReadRepositoryIT {
                         "Zed",
                         "John Doe",
                         "Coder since 1984",
-                        List.of(new AuthorLabel(AXE_LABEL, "Axe"), new AuthorLabel(ZED_LABEL, "Zed")),
+                        List.of(new AuthorLabel(AXE_LABEL, "Axe", false), new AuthorLabel(ZED_LABEL, "Zed", true)),
                         List.of(
-                                new AuthorLocation("Finland", "Helsinki", true),
-                                new AuthorLocation("Norway", null, false)),
+                                new AuthorLocation(FINLAND, "Finland", HELSINKI, "Helsinki", true),
+                                new AuthorLocation(NORWAY, "Norway", null, null, false)),
                         List.of(
                                 new AuthorGroup(BAND, "Band", null),
                                 new AuthorGroup(CREW, "Crew Label", "Axe"),
@@ -244,7 +244,7 @@ class JdbcAuthorReadRepositoryIT {
                         "Carl Real",
                         null,
                         List.of(),
-                        List.of(new AuthorLocation("Finland", "Tampere", true)),
+                        List.of(new AuthorLocation(FINLAND, "Finland", TAMPERE, "Tampere", true)),
                         List.of()));
     }
 

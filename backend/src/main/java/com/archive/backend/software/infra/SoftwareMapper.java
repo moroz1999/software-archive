@@ -1,5 +1,7 @@
 package com.archive.backend.software.infra;
 
+import com.archive.backend.category.domain.CategoryId;
+import com.archive.backend.category.domain.CategorySet;
 import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.HardwareSet;
 import com.archive.backend.hardware.domain.PlatformCode;
@@ -21,12 +23,13 @@ import org.mapstruct.Mapper;
 
 /**
  * Software ↔ its JPA entity. Hardware sets are restored without the reference book: they were checked when stored, and
- * every set of the software is on its platform.
+ * every set of the software is on its platform. The categories come restored by the repository, with their lines as
+ * the tree has them now.
  */
 @Mapper(componentModel = "spring")
 public interface SoftwareMapper {
 
-    default Software toDomain(SoftwareEntity entity) {
+    default Software toDomain(SoftwareEntity entity, CategorySet categories) {
         PlatformCode platform = new PlatformCode(entity.getPlatformCode());
         String description = entity.getDescription();
         return new Software(
@@ -35,6 +38,7 @@ public interface SoftwareMapper {
                 description == null ? null : new SoftwareDescription(description),
                 entity.getReleaseDate(),
                 toHardware(platform, entity.getHardware()),
+                categories,
                 entity.getReleases().stream()
                         .map(release -> toRelease(platform, release))
                         .toList());
@@ -49,6 +53,8 @@ public interface SoftwareMapper {
         entity.setReleaseDate(software.getReleaseDate());
         entity.setPlatformCode(software.getPlatform().value());
         entity.setHardware(fromHardware(software.getHardware()));
+        entity.setCategories(
+                software.getCategories().ids().stream().map(CategoryId::value).collect(Collectors.toSet()));
         entity.setReleases(software.getReleases().stream()
                 .map(SoftwareMapper::fromRelease)
                 .collect(Collectors.toCollection(ArrayList::new)));

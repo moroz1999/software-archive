@@ -12,6 +12,7 @@ const SOFTWARE = {
     releaseDate: null,
     platform: {code: toSoftwarePlatformCode('vector'), name: 'Vector'},
     hardware: [],
+    categories: [],
 };
 const AY: Hardware = {code: 'ay8910', name: 'AY-3-8910', group: 'sound'};
 const BEEPER: Hardware = {code: 'beeper', name: 'Beeper', group: 'sound'};

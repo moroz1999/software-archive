@@ -1,6 +1,8 @@
 package com.archive.backend.software.infra;
 
 import com.archive.backend.software.read.ReleaseDetails;
+import com.archive.backend.software.read.SoftwareCategory;
+import com.archive.backend.software.read.SoftwareCategoryStep;
 import com.archive.backend.software.read.SoftwareDetails;
 import com.archive.backend.software.read.SoftwareHardware;
 import com.archive.backend.software.read.SoftwarePlatform;
@@ -11,6 +13,7 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,7 +90,8 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                         rs.getString("description"),
                         day(rs, "release_date"),
                         new SoftwarePlatform(rs.getString("code"), rs.getString("name")),
-                        hardware("software_hardware", "software_id", id)))
+                        hardware("software_hardware", "software_id", id),
+                        categories(id)))
                 .optional();
     }
 
@@ -133,6 +137,43 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                         rs.getString("description"),
                         hardware("software_release_hardware", "release_id", releaseId)))
                 .optional();
+    }
+
+    /**
+     * The categories of software in the order of the tree, each by the positions of its line from the top, with its
+     * branch from the top down to itself.
+     */
+    private List<SoftwareCategory> categories(UUID softwareId) {
+        return jdbc.sql("""
+                        WITH RECURSIVE tree (id, title, path, ids, titles) AS (
+                            SELECT id, title, ARRAY[position], ARRAY[id], ARRAY[title]
+                            FROM category
+                            WHERE parent_id IS NULL
+                            UNION ALL
+                            SELECT c.id, c.title, t.path || c.position, t.ids || c.id, t.titles || c.title
+                            FROM category c
+                            JOIN tree t ON c.parent_id = t.id
+                        )
+                        SELECT t.id, t.title, t.ids, t.titles
+                        FROM tree t
+                        JOIN software_category sc ON sc.category_id = t.id
+                        WHERE sc.software_id = :id
+                        ORDER BY t.path, t.title, t.id
+                        """)
+                .param("id", softwareId)
+                .query((rs, row) ->
+                        new SoftwareCategory(rs.getObject("id", UUID.class), rs.getString("title"), branch(rs)))
+                .list();
+    }
+
+    private static List<SoftwareCategoryStep> branch(ResultSet rs) throws SQLException {
+        UUID[] ids = (UUID[]) rs.getArray("ids").getArray();
+        String[] titles = (String[]) rs.getArray("titles").getArray();
+        List<SoftwareCategoryStep> branch = new ArrayList<>(ids.length);
+        for (int i = 0; i < ids.length; i++) {
+            branch.add(new SoftwareCategoryStep(ids[i], titles[i]));
+        }
+        return branch;
     }
 
     /**

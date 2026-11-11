@@ -1,4 +1,5 @@
-import {type BusinessError, businessErrorMessage, type BusinessMessages} from '@/shared/api';
+import type {BusinessError} from './errors';
+import {businessErrorMessage, type BusinessMessages} from './messages';
 
 /** The texts of a refusal by the name of the field they go under. */
 export type FieldRefusals = Readonly<Partial<Record<string, string>>>;

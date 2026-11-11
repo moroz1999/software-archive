@@ -5,10 +5,11 @@ import userEvent from '@testing-library/user-event';
 import {BusinessError} from '@/shared/api';
 import {json, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import type {SoftwareDraft} from '../model/software-form';
+import {useSoftwareForm} from '../model/software-form-context';
 import {SoftwareFormProvider, type SoftwareFormProviderProps} from '../model/SoftwareFormProvider';
 import {SoftwareForm} from './SoftwareForm';
 
-type FormProps = Omit<SoftwareFormProviderProps, 'onSubmit' | 'children'> & {readonly actions?: ReactNode};
+type FormProps = Omit<SoftwareFormProviderProps, 'onSubmit' | 'children'> & {readonly actions?: ReactNode; readonly categories?: ReactNode};
 
 const PLATFORMS = [{code: 'agat', name: 'Agat'}, {code: 'bk', name: 'BK'}];
 const BK_HARDWARE = [
@@ -17,14 +18,36 @@ const BK_HARDWARE = [
     {code: 'ay8910', name: 'AY-3-8910', group: 'sound'},
 ];
 
-function renderForm({actions, ...props}: FormProps = {}) {
+function renderForm({actions, categories, ...props}: FormProps = {}) {
     const onSubmit = vi.fn<(draft: SoftwareDraft) => void>();
     renderWithQueries(
         <SoftwareFormProvider onSubmit={onSubmit} platforms={PLATFORMS} {...props}>
-            <SoftwareForm submitLabel="Save" actions={actions}/>
+            <SoftwareForm submitLabel="Save" actions={actions} categories={categories}/>
         </SoftwareFormProvider>,
     );
     return {onSubmit};
+}
+
+const GAMES = '00000000-0000-0000-0006-000000000001';
+
+/** Stands in for the field of the categories: their tree is of another slice. */
+function GamesOnly() {
+    const {values, refusals, changeCategories} = useSoftwareForm();
+    return (
+        <div>
+            <label>
+                <input
+                    type="checkbox"
+                    checked={values.categories.includes(GAMES)}
+                    onChange={(event) => {
+                        changeCategories(event.target.checked ? [GAMES] : []);
+                    }}
+                />
+                Games
+            </label>
+            {refusals.categories !== undefined && <span role="alert">{refusals.categories}</span>}
+        </div>
+    );
 }
 
 describe(SoftwareForm, () => {
@@ -48,7 +71,7 @@ describe(SoftwareForm, () => {
         await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Platform'}), 'BK');
         await userEvent.click(screen.getByRole('button', {name: 'Save'}));
 
-        expect(onSubmit).toHaveBeenCalledExactlyOnceWith({title: 'Elite', description: 'Space trading', releaseDate: '1985-09-20', platform: 'bk', hardware: []});
+        expect(onSubmit).toHaveBeenCalledExactlyOnceWith({title: 'Elite', description: 'Space trading', releaseDate: '1985-09-20', platform: 'bk', hardware: [], categories: []});
     });
 
     it('offers the platforms to choose from', () => {
@@ -58,7 +81,7 @@ describe(SoftwareForm, () => {
     });
 
     it('does not submit without a platform and says so under the field', async () => {
-        const {onSubmit} = renderForm({initial: {title: 'Elite', description: '', releaseDate: '', platform: '', hardware: []}});
+        const {onSubmit} = renderForm({initial: {title: 'Elite', description: '', releaseDate: '', platform: '', hardware: [], categories: []}});
 
         await userEvent.click(screen.getByRole('button', {name: 'Save'}));
 
@@ -67,7 +90,7 @@ describe(SoftwareForm, () => {
     });
 
     it('starts from the given values', () => {
-        renderForm({initial: {title: 'Elite', description: '', releaseDate: '1985-09-20', platform: 'bk', hardware: []}});
+        renderForm({initial: {title: 'Elite', description: '', releaseDate: '1985-09-20', platform: 'bk', hardware: [], categories: []}});
 
         expect(screen.getByRole('textbox', {name: 'Title'})).toHaveValue('Elite');
         expect(screen.getByLabelText('Release date')).toHaveValue('1985-09-20');
@@ -84,7 +107,7 @@ describe(SoftwareForm, () => {
     });
 
     it('does not submit a title longer than 255 characters', async () => {
-        const {onSubmit} = renderForm({initial: {title: 'a'.repeat(256), description: '', releaseDate: '', platform: 'bk', hardware: []}});
+        const {onSubmit} = renderForm({initial: {title: 'a'.repeat(256), description: '', releaseDate: '', platform: 'bk', hardware: [], categories: []}});
 
         await userEvent.click(screen.getByRole('button', {name: 'Save'}));
 
@@ -143,7 +166,7 @@ describe(SoftwareForm, () => {
     });
 
     it('offers the hardware of the chosen platform by group and submits what is checked', async () => {
-        const {onSubmit} = renderForm({initial: {title: 'Elite', description: '', releaseDate: '', platform: '', hardware: []}});
+        const {onSubmit} = renderForm({initial: {title: 'Elite', description: '', releaseDate: '', platform: '', hardware: [], categories: []}});
 
         await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Platform'}), 'BK');
         const computers = await screen.findByRole('group', {name: 'Computers'});
@@ -151,18 +174,18 @@ describe(SoftwareForm, () => {
         await userEvent.click(screen.getByRole('checkbox', {name: 'AY-3-8910'}));
         await userEvent.click(screen.getByRole('button', {name: 'Save'}));
 
-        expect(onSubmit).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({platform: 'bk', hardware: ['bk0011m', 'ay8910']}));
+        expect(onSubmit).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({platform: 'bk', hardware: ['bk0011m', 'ay8910'], categories: []}));
     });
 
     it('starts from the hardware of the software', async () => {
-        renderForm({initial: {title: 'Elite', description: '', releaseDate: '', platform: 'bk', hardware: ['bk0010']}});
+        renderForm({initial: {title: 'Elite', description: '', releaseDate: '', platform: 'bk', hardware: ['bk0010'], categories: []}});
 
         await expect(screen.findByRole('checkbox', {name: 'BK-0010'})).resolves.toBeChecked();
         expect(screen.getByRole('button', {name: 'Remove BK-0010'})).toBeInTheDocument();
     });
 
     it('locks the platform while hardware is checked and says why', async () => {
-        renderForm({initial: {title: 'Elite', description: '', releaseDate: '', platform: 'bk', hardware: []}});
+        renderForm({initial: {title: 'Elite', description: '', releaseDate: '', platform: 'bk', hardware: [], categories: []}});
 
         await userEvent.click(await screen.findByRole('checkbox', {name: 'BK-0010'}));
 
@@ -176,7 +199,7 @@ describe(SoftwareForm, () => {
 
     it('shows a refusal of the hardware under the hardware', async () => {
         renderForm({
-            initial: {title: 'Elite', description: '', releaseDate: '', platform: 'bk', hardware: []},
+            initial: {title: 'Elite', description: '', releaseDate: '', platform: 'bk', hardware: [], categories: []},
             error: new BusinessError(422, 'hardware.unknown', [{field: 'hardware', code: 'hardware.unknown'}]),
             messages: {'hardware.unknown': 'Choose hardware of the platform of the software.'},
         });
@@ -185,8 +208,32 @@ describe(SoftwareForm, () => {
     });
 
     it('locks the hardware while it is being saved', async () => {
-        renderForm({initial: {title: 'Elite', description: '', releaseDate: '', platform: 'bk', hardware: []}, busy: true});
+        renderForm({initial: {title: 'Elite', description: '', releaseDate: '', platform: 'bk', hardware: [], categories: []}, busy: true});
 
         await expect(screen.findByRole('checkbox', {name: 'BK-0010'})).resolves.toBeDisabled();
+    });
+
+    it('shows the field of the categories under the hardware and submits the categories chosen in it', async () => {
+        const {onSubmit} = renderForm({initial: {title: 'Elite', description: '', releaseDate: '', platform: 'agat', hardware: [], categories: []}, categories: <GamesOnly/>});
+
+        await userEvent.click(screen.getByRole('checkbox', {name: 'Games'}));
+        await userEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        expect(onSubmit).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({categories: [GAMES]}));
+    });
+
+    it('gives the field of the categories their refusal until they are changed', async () => {
+        renderForm({
+            initial: {title: 'Elite', description: '', releaseDate: '', platform: 'agat', hardware: [], categories: [GAMES]},
+            error: new BusinessError(422, 'category.unknown', [{field: 'categories', code: 'category.unknown'}]),
+            messages: {'category.unknown': 'The category is gone.'},
+            categories: <GamesOnly/>,
+        });
+
+        expect(screen.getByRole('alert')).toHaveTextContent('The category is gone.');
+
+        await userEvent.click(screen.getByRole('checkbox', {name: 'Games'}));
+
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     });
 });

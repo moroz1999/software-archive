@@ -1,7 +1,7 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {SoftwareForm, toReleaseDate, toSoftwareId, toSoftwarePlatformCode, toSoftwareTitle} from '@/entities/software';
+import {SoftwareForm, useSoftwareForm, toReleaseDate, toSoftwareId, toSoftwarePlatformCode, toSoftwareTitle} from '@/entities/software';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, noContent, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {EditSoftwareProvider} from './EditSoftwareProvider';
@@ -13,6 +13,7 @@ const SOFTWARE = {
     releaseDate: toReleaseDate('1985-09-20'),
     platform: {code: toSoftwarePlatformCode('vector'), name: 'Vector'},
     hardware: [],
+    categories: [],
 };
 const PLATFORMS = json([{code: 'bk', name: 'BK'}, {code: 'vector', name: 'Vector'}]);
 
@@ -46,7 +47,7 @@ describe(EditSoftwareProvider, () => {
 
         expect(fetchMock.mock.calls.find(([url]) => url === `/api/software/${SOFTWARE.id}`)?.[1]).toMatchObject({
             method: 'PUT',
-            body: '{"title":"Elite Plus","description":"Space trading","releaseDate":"1985-09-20","platform":"vector","hardware":[]}',
+            body: '{"title":"Elite Plus","description":"Space trading","releaseDate":"1985-09-20","platform":"vector","hardware":[],"categories":[]}',
         });
     });
 
@@ -93,4 +94,19 @@ describe(EditSoftwareProvider, () => {
             expect(screen.getByRole('group', {name: 'Hardware'})).toHaveAccessibleDescription('Choose hardware of the platform of the software.');
         });
     });
+
+    it('says why the categories were refused under the categories', async () => {
+        answer(json({status: 422, code: 'category.unknown', errors: [{field: 'categories', code: 'category.unknown'}]}, 422));
+        renderWithQueries(<EditSoftwareProvider software={SOFTWARE} onSaved={vi.fn<() => void>()}><SoftwareForm submitLabel="Save" categories={<CategoriesRefusal/>}/></EditSoftwareProvider>);
+
+        await userEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        await expect(screen.findByTestId('categories-refusal')).resolves.toHaveTextContent('A category is no longer in the archive: choose again.');
+    });
 });
+
+/** Stands in for the field of the categories, showing only their refusal. */
+function CategoriesRefusal() {
+    const {refusals} = useSoftwareForm();
+    return <span data-testid="categories-refusal">{refusals.categories}</span>;
+}

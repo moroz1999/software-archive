@@ -4,6 +4,7 @@ Software (a production) is a release of a program: the work itself, as it is kno
 
 - It is for exactly one platform and has its base hardware — see [hardware.md](hardware.md).
 - It has a title, a description and a release date (a day, without time).
+- It can be in categories of the archive's tree — see [categories.md](categories.md).
 - The title follows the common title rules (see the domain index). The description and the release date may be unknown.
 - Software can be added, edited and deleted, its base hardware with it, chosen from the hardware of its platform. For now anyone can do it; access rules come later.
 - Deleting software deletes what belongs only to it: its releases, alternative titles, languages, links and credits.

@@ -24,7 +24,7 @@ Exceptions are turned into HTTP statuses in one place: `ApiExceptionHandler` in 
 | Exception | Status |
 |---|---|
 | Entity not found | `404 Not Found` |
-| State conflict (duplicate, concurrent change) | `409 Conflict` |
+| State conflict (duplicate, concurrent change) | `409 Conflict`; a change that lost to another running at the same time has the code `conflict.concurrent` |
 | Business rule violated: the form is correct, its substance is not | `422 Unprocessable Entity`, with field errors when the rule concerns a field |
 | Incorrect request: malformed JSON, wrong types, a value failing value object or Bean Validation format rules | `400 Bad Request`, with field errors |
 | Anything else | `500 Internal Server Error` |

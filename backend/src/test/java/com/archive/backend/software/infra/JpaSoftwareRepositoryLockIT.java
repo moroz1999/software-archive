@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.category.domain.CategorySet;
+import com.archive.backend.category.infra.JdbcCategoryCatalog;
 import com.archive.backend.hardware.domain.HardwareSet;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.software.domain.Software;
@@ -33,7 +35,12 @@ import org.springframework.transaction.support.TransactionTemplate;
  */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({TestcontainersConfiguration.class, JpaSoftwareRepository.class, SoftwareMapperImpl.class})
+@Import({
+    TestcontainersConfiguration.class,
+    JpaSoftwareRepository.class,
+    SoftwareMapperImpl.class,
+    JdbcCategoryCatalog.class
+})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class JpaSoftwareRepositoryLockIT {
 
@@ -63,7 +70,8 @@ class JpaSoftwareRepositoryLockIT {
                 new SoftwareTitle("Elite"),
                 null,
                 null,
-                HardwareSet.restore(new PlatformCode("vector"), Set.of()))));
+                HardwareSet.restore(new PlatformCode("vector"), Set.of()),
+                CategorySet.EMPTY)));
     }
 
     @AfterEach

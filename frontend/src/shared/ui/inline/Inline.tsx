@@ -14,6 +14,8 @@ export interface InlineProps {
     /** Lets children move to the next line when out of room. */
     readonly wrap?: boolean;
     readonly as?: 'div' | 'span' | 'ul' | 'li';
+    /** Accessible name, as of a list the row holds. */
+    readonly ariaLabel?: string;
     /** External contour only (margin, alignment, flex-grow); see docs/styles.md. */
     readonly className?: string;
 }
@@ -44,9 +46,10 @@ const justifyClass: Readonly<Record<InlineJustify, string>> = {
 };
 
 /** Horizontal layout: children in a row with a gap from the scale. */
-export function Inline({children, gap = 'md', align, justify, wrap = false, as: Element = 'div', className}: InlineProps) {
+export function Inline({children, gap = 'md', align, justify, wrap = false, as: Element = 'div', ariaLabel, className}: InlineProps) {
     return (
         <Element
+            aria-label={ariaLabel}
             className={classNames(
                 styles.inline,
                 gapClass[gap],

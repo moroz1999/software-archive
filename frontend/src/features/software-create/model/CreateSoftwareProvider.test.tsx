@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {PlatformSelectionProvider} from '@/entities/platforms';
-import {SoftwareForm} from '@/entities/software';
+import {SoftwareForm, useSoftwareForm} from '@/entities/software';
 import {CreateSoftwareProvider} from './CreateSoftwareProvider';
 
 const ID = '00000000-0000-0000-0001-000000000001';
@@ -49,7 +49,7 @@ describe(CreateSoftwareProvider, () => {
 
         expect(fetchMock.mock.calls.find(([url]) => url === '/api/software')?.[1]).toMatchObject({
             method: 'POST',
-            body: '{"title":"Elite","description":null,"releaseDate":null,"platform":"bk","hardware":[]}',
+            body: '{"title":"Elite","description":null,"releaseDate":null,"platform":"bk","hardware":[],"categories":[]}',
         });
     });
 
@@ -118,4 +118,20 @@ describe(CreateSoftwareProvider, () => {
             expect(screen.getByRole('group', {name: 'Hardware'})).toHaveAccessibleDescription('Choose hardware of the platform of the software.');
         });
     });
+
+    it('says why the categories were refused under the categories', async () => {
+        answer(json({status: 422, code: 'category.unknown', errors: [{field: 'categories', code: 'category.unknown'}]}, 422));
+        renderWithQueries(<PlatformSelectionProvider><CreateSoftwareProvider onCreated={vi.fn<(id: string) => void>()}><SoftwareForm submitLabel="Add software" categories={<CategoriesRefusal/>}/></CreateSoftwareProvider></PlatformSelectionProvider>);
+
+        await fill('Elite');
+        await userEvent.click(screen.getByRole('button', {name: 'Add software'}));
+
+        await expect(screen.findByTestId('categories-refusal')).resolves.toHaveTextContent('A category is no longer in the archive: choose again.');
+    });
 });
+
+/** Stands in for the field of the categories, showing only their refusal. */
+function CategoriesRefusal() {
+    const {refusals} = useSoftwareForm();
+    return <span data-testid="categories-refusal">{refusals.categories}</span>;
+}

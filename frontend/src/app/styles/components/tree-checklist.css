@@ -1,0 +1,26 @@
+:root {
+    /* Gap between the chips, the filter, the list and the captions. */
+    --tree-checklist-gap: var(--space-8);
+
+    /* The name of the choice, as a field label. */
+    --tree-checklist-legend-space: var(--space-4);
+    --tree-checklist-legend-text: var(--text-light-color);
+    --tree-checklist-legend-font-size: var(--font-size-sm);
+    --tree-checklist-legend-line-height: var(--line-height-compact);
+
+    /* Gap between the chips of the chosen items. */
+    --tree-checklist-chips-gap: var(--space-4);
+
+    /* The scrolling box of the tree, framed like an input. */
+    --tree-checklist-list-max-height: 210px;
+    --tree-checklist-list-padding: var(--space-8) var(--space-12);
+    --tree-checklist-list-border-width: var(--border-width-thin);
+    --tree-checklist-list-border-color: var(--border-color);
+    --tree-checklist-list-radius: var(--radius-lg);
+    --tree-checklist-list-bg: var(--surface);
+
+    /* The items at the top stand apart; a level stands in from its parent. */
+    --tree-checklist-top-gap: var(--space-12);
+    --tree-checklist-level-gap: var(--space-4);
+    --tree-checklist-indent: var(--space-16);
+}

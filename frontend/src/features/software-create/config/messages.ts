@@ -7,5 +7,6 @@ export function createSoftwareMessages(t: TFunction): BusinessMessages {
         '409': t('errors.business.conflict'),
         '422': t('errors.business.refused'),
         'hardware.unknown': t('errors.hardwareUnknown'),
+        'category.unknown': t('errors.categoryUnknown'),
     };
 }

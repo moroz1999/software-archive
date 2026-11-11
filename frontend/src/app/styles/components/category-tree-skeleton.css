@@ -1,0 +1,5 @@
+:root {
+    /* Row bone: a title of a category at the top of the tree. */
+    --category-tree-skeleton-row-width: 180px;
+    --category-tree-skeleton-row-height: var(--space-24);
+}

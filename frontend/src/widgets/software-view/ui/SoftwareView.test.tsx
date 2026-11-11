@@ -9,6 +9,10 @@ import {SoftwareView} from './SoftwareView';
 const ID = '00000000-0000-0000-0001-000000000001';
 const VECTOR06C = {code: 'vector06c', name: 'Vector-06C', group: 'computers'};
 const BEEPER = {code: 'beeper', name: 'Beeper', group: 'sound'};
+const GAMES = '00000000-0000-0000-0006-000000000001';
+const ACTION = '00000000-0000-0000-0006-000000000002';
+const SHOOTERS = '00000000-0000-0000-0006-000000000003';
+const STRATEGY = '00000000-0000-0000-0006-000000000004';
 const ELITE = {
     id: ID,
     title: 'Elite',
@@ -16,6 +20,11 @@ const ELITE = {
     releaseDate: '1984-09-20',
     platform: {code: 'vector', name: 'Vector'},
     hardware: [VECTOR06C, BEEPER],
+    // Games → Action → Shooters and Games → Strategy, in the order of the tree.
+    categories: [
+        {id: SHOOTERS, title: 'Shooters', branch: [{id: GAMES, title: 'Games'}, {id: ACTION, title: 'Action'}, {id: SHOOTERS, title: 'Shooters'}]},
+        {id: STRATEGY, title: 'Strategy', branch: [{id: GAMES, title: 'Games'}, {id: STRATEGY, title: 'Strategy'}]},
+    ],
 };
 const AY_MOD = {
     id: '00000000-0000-0000-0007-000000000001',
@@ -103,6 +112,29 @@ describe(SoftwareView, () => {
         renderView(ID);
 
         await expect(screen.findByRole('link', {name: 'Edit'})).resolves.toHaveAttribute('href', `/software/${ID}/edit`);
+    });
+
+    it('shows every category of the software with its whole branch from the top, in their order', async () => {
+        stubFetch(json(ELITE));
+        renderView(ID);
+
+        const categories = await screen.findByRole('region', {name: 'Categories'});
+        const branches = within(categories).getAllByRole('list', {name: /./u});
+
+        expect(branches.map((branch) => branch.getAttribute('aria-label'))).toStrictEqual(['Games › Action › Shooters', 'Games › Strategy']);
+        expect(branches.map((branch) => within(branch).getAllByRole('listitem').map((item) => item.textContent))).toStrictEqual([
+            ['Games', 'Action', 'Shooters'],
+            ['Games', 'Strategy'],
+        ]);
+    });
+
+    it('shows no categories for software in none', async () => {
+        stubFetch(json({...ELITE, categories: []}));
+        renderView(ID);
+
+        await screen.findByRole('heading', {level: 1, name: 'Elite'});
+
+        expect(screen.queryByRole('region', {name: 'Categories'})).not.toBeInTheDocument();
     });
 
     it('shows nothing for an unknown description and release date', async () => {

@@ -8,13 +8,12 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noFields;
 import static com.tngtech.archunit.library.Architectures.layeredArchitecture;
 
-import com.archive.backend.hardware.domain.HardwareSet;
-import com.archive.backend.hardware.domain.PlatformCode;
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.domain.JavaField;
 import com.tngtech.archunit.core.domain.JavaMethod;
+import com.tngtech.archunit.core.domain.JavaMethodCall;
 import com.tngtech.archunit.core.domain.JavaModifier;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
@@ -204,13 +203,19 @@ class ArchitectureTest {
             .resideInAPackage("..domain..")
             .allowEmptyShould(true);
 
-    private static final ArchRule hardwareSetsAreRestoredOnlyInInfra = noClasses()
+    private static final ArchRule restoringIsLeftToInfra = noClasses()
             .that()
-            .resideOutsideOfPackages("..hardware.domain..", "..infra..")
+            .resideOutsideOfPackage("..infra..")
             .should()
-            .callMethod(HardwareSet.class, "restore", PlatformCode.class, Set.class)
-            .because("a hardware set is checked against the reference book by its factory; only a set read back from"
-                    + " storage, checked when it was stored, is restored without it (docs/backend.md)");
+            .callMethodWhere(new DescribedPredicate<JavaMethodCall>("a domain restore factory") {
+                @Override
+                public boolean test(JavaMethodCall call) {
+                    return call.getName().equals("restore")
+                            && call.getTargetOwner().getPackageName().contains(".domain");
+                }
+            })
+            .because("what the domain checked when it was built is restored without the check only from storage"
+                    + " (docs/backend.md)");
 
     private static final ArchRule noScalarsInDomainAndCommands = noFields()
             .that(
@@ -405,8 +410,8 @@ class ArchitectureTest {
     }
 
     @Test
-    void hardwareSetsAreRestoredOnlyInInfra() {
-        hardwareSetsAreRestoredOnlyInInfra.check(CLASSES);
+    void restoringIsLeftToInfra() {
+        restoringIsLeftToInfra.check(CLASSES);
     }
 
     @Test

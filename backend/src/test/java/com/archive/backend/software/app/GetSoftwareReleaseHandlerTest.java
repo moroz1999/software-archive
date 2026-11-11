@@ -25,7 +25,8 @@ class GetSoftwareReleaseHandlerTest {
     private final GetSoftwareReleaseHandler handler = new GetSoftwareReleaseHandler(reads);
 
     private void eliteWithAyMod() {
-        reads.add(new SoftwareDetails(ELITE, "Elite", null, null, new SoftwarePlatform("vector", "Vector"), List.of()));
+        reads.add(new SoftwareDetails(
+                ELITE, "Elite", null, null, new SoftwarePlatform("vector", "Vector"), List.of(), List.of()));
         reads.addRelease(ELITE, AY_MOD_DETAILS);
     }
 

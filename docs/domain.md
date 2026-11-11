@@ -11,6 +11,10 @@ Read detailed files only WHEN you get specific domain questions.
 A piece of software: the work itself, with its titles, languages, links and credits.
 Detailed logic and structure: [domain/software.md](domain/software.md)
 
+### categories
+The one tree of categories software is sorted by, for every platform.
+Detailed logic and structure: [domain/categories.md](domain/categories.md)
+
 ### authors
 Real people, groups and the labels works are released under.
 Detailed logic and structure: [domain/authors.md](domain/authors.md)

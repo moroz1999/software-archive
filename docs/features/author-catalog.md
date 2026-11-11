@@ -2,10 +2,11 @@
 
 The catalog at `/authors` ([domain/authors.md](../domain/authors.md#author-catalog)): entries in four columns (three on tablets, one on phones), 100 per page, only the authors credited on software of the platform chosen in the switch ([platform-switch.md](platform-switch.md)).
 
-The group catalog ([group-catalog.md](group-catalog.md)) works the same way. Their common parts are entities: `entities/labels` holds the letters, the letter filter, an entry and the skeleton of the entries; `entities/locations` holds the countries, the cities and the place filters.
+The group catalog ([group-catalog.md](group-catalog.md)) works the same way. Their common parts are entities: `entities/labels` holds the letters, the letter filter, an entry and the skeleton of the entries; `entities/locations` holds the countries, the cities, the place filters and the locations editor; `entities/labels` also holds the labels editor of an owner's form and the texts of its errors, `entities/locations` those of the locations editor.
 
 ## Page
 
+- "Add author" next to the page title leads to adding an author ([author-editing.md](author-editing.md)).
 - Letters: "All", A–Z, А–Я, `#`; the current one is marked.
 - Country and City: City offers the cities of the chosen country and is locked until one is chosen; choosing another country forgets the city.
 - An entry is the name leading to the person's page ([author-view.md](author-view.md)), with the person's real name muted on the same line; a label of a person without a real name says "label of {main name}" there instead.

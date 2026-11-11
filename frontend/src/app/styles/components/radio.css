@@ -1,0 +1,20 @@
+:root {
+    /* Circle size and the gap to its label. */
+    --radio-size: 16px;
+    --radio-gap: var(--space-8);
+
+    /* Label text. */
+    --radio-text: var(--text-color);
+    --radio-font-size: var(--font-size-md);
+    --radio-line-height: var(--line-height-normal);
+
+    /* Color of a chosen radio. */
+    --radio-accent: var(--link-color);
+
+    /* Keyboard focus. */
+    --radio-focus-outline: var(--border-width-thin) solid var(--focus-ring-color);
+    --radio-focus-offset: var(--space-2);
+
+    /* Label of a disabled radio. */
+    --radio-disabled-text: var(--text-light-color);
+}

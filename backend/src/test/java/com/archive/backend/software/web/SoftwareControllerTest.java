@@ -13,6 +13,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.archive.backend.category.domain.CategoryId;
+import com.archive.backend.category.domain.CategoryUnknownException;
 import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.HardwareUnknownException;
 import com.archive.backend.hardware.domain.PlatformCode;
@@ -39,6 +41,8 @@ import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareNotFoundException;
 import com.archive.backend.software.domain.SoftwarePlatformLockedException;
 import com.archive.backend.software.domain.SoftwareTitle;
+import com.archive.backend.software.read.SoftwareCategory;
+import com.archive.backend.software.read.SoftwareCategoryStep;
 import com.archive.backend.software.read.SoftwareDetails;
 import com.archive.backend.software.read.SoftwareHardware;
 import com.archive.backend.software.read.SoftwarePlatform;
@@ -64,6 +68,8 @@ import org.springframework.test.web.servlet.MockMvc;
 class SoftwareControllerTest {
 
     private static final UUID ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    private static final UUID CATEGORY = UUID.fromString("00000000-0000-0000-0000-000000000021");
+    private static final UUID GAMES = UUID.fromString("00000000-0000-0000-0000-000000000020");
     private static final UUID RELEASE = UUID.fromString("00000000-0000-0000-0000-000000000002");
     private static final PlatformCode VECTOR = new PlatformCode("vector");
 
@@ -155,7 +161,8 @@ class SoftwareControllerTest {
                         "Space trading",
                         LocalDate.of(1985, 9, 20),
                         new SoftwarePlatform("vector", "Vector"),
-                        List.of(new SoftwareHardware("vector06c", "Vector-06C", "computers"))));
+                        List.of(new SoftwareHardware("vector06c", "Vector-06C", "computers")),
+                        List.of()));
 
         mvc.perform(get("/api/software/{id}", ID))
                 .andExpect(status().isOk())
@@ -174,7 +181,8 @@ class SoftwareControllerTest {
                         null,
                         null,
                         new SoftwarePlatform("vector", "Vector"),
-                        List.of(new SoftwareHardware("vector06c", "Vector-06C", "computers"))));
+                        List.of(new SoftwareHardware("vector06c", "Vector-06C", "computers")),
+                        List.of()));
 
         mvc.perform(get("/api/software/{id}", ID))
                 .andExpect(status().isOk())
@@ -255,6 +263,7 @@ class SoftwareControllerTest {
                         new SoftwareDescription("Space trading"),
                         LocalDate.of(1985, 9, 20),
                         VECTOR,
+                        Set.of(),
                         Set.of())))
                 .thenReturn(new SoftwareId(ID));
 
@@ -270,7 +279,8 @@ class SoftwareControllerTest {
 
     @Test
     void createsSoftwareWithoutOptionalFields() throws Exception {
-        when(createHandler.handle(new CreateSoftwareCommand(new SoftwareTitle("Elite"), null, null, VECTOR, Set.of())))
+        when(createHandler.handle(
+                        new CreateSoftwareCommand(new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of())))
                 .thenReturn(new SoftwareId(ID));
 
         mvc.perform(
@@ -354,7 +364,8 @@ class SoftwareControllerTest {
                         null,
                         LocalDate.of(1987, 1, 1),
                         VECTOR,
-                        Set.of(new HardwareCode("vector06c"), new HardwareCode("ay8910"))));
+                        Set.of(new HardwareCode("vector06c"), new HardwareCode("ay8910")),
+                        Set.of()));
     }
 
     @Test
@@ -416,5 +427,82 @@ class SoftwareControllerTest {
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.code").value("hardware.unknown"))
                 .andExpect(jsonPath("$.errors[0].field").value("hardware"));
+    }
+
+    @Test
+    void returnsTheCategoriesOfOneSoftware() throws Exception {
+        when(getHandler.handle(new GetSoftwareQuery(new SoftwareId(ID))))
+                .thenReturn(new SoftwareDetails(
+                        ID,
+                        "Elite",
+                        null,
+                        null,
+                        new SoftwarePlatform("vector", "Vector"),
+                        List.of(),
+                        List.of(new SoftwareCategory(
+                                CATEGORY,
+                                "Trading",
+                                List.of(
+                                        new SoftwareCategoryStep(GAMES, "Games"),
+                                        new SoftwareCategoryStep(CATEGORY, "Trading"))))));
+
+        mvc.perform(get("/api/software/{id}", ID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.categories[0].id").value(CATEGORY.toString()))
+                .andExpect(jsonPath("$.categories[0].title").value("Trading"))
+                .andExpect(jsonPath("$.categories[0].branch[0].id").value(GAMES.toString()))
+                .andExpect(jsonPath("$.categories[0].branch[0].title").value("Games"))
+                .andExpect(jsonPath("$.categories[0].branch[1].title").value("Trading"));
+    }
+
+    @Test
+    void createsSoftwareInCategories() throws Exception {
+        when(createHandler.handle(new CreateSoftwareCommand(
+                        new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of(new CategoryId(CATEGORY)))))
+                .thenReturn(new SoftwareId(ID));
+
+        mvc.perform(post("/api/software")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Elite\",\"platform\":\"vector\",\"categories\":[\"" + CATEGORY + "\"]}"))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void movesSoftwareToOtherCategories() throws Exception {
+        mvc.perform(put("/api/software/{id}", ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Elite\",\"platform\":\"vector\",\"categories\":[\"" + CATEGORY + "\"]}"))
+                .andExpect(status().isNoContent());
+
+        verify(updateHandler)
+                .handle(new UpdateSoftwareCommand(
+                        new SoftwareId(ID),
+                        new SoftwareTitle("Elite"),
+                        null,
+                        null,
+                        VECTOR,
+                        Set.of(),
+                        Set.of(new CategoryId(CATEGORY))));
+    }
+
+    @Test
+    void answers400ForAMalformedCategory() throws Exception {
+        mvc.perform(post("/api/software")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Elite\",\"platform\":\"vector\",\"categories\":[\"games\"]}"))
+                .andExpect(status().isBadRequest());
+        verify(createHandler, never()).handle(any());
+    }
+
+    @Test
+    void answers422ForACategoryNotInTheArchive() throws Exception {
+        when(createHandler.handle(any(CreateSoftwareCommand.class))).thenThrow(new CategoryUnknownException());
+
+        mvc.perform(post("/api/software")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Elite\",\"platform\":\"vector\",\"categories\":[\"" + CATEGORY + "\"]}"))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code").value("category.unknown"))
+                .andExpect(jsonPath("$.errors[0].field").value("categories"));
     }
 }

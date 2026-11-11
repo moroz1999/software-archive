@@ -1,0 +1,4 @@
+:root {
+    /* A form of a few fields reads best narrow: one line of a label row stays in view. */
+    --author-form-max-width: 720px;
+}

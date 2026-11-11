@@ -100,6 +100,7 @@ describe('UI localization', () => {
                 releaseDate: '1985-03-02',
                 platform: {code: 'vector', name: 'Vector'},
                 hardware: [],
+                categories: [],
             })],
             [`/api/software/${SOFTWARE_ID}/releases`, json([])],
         ]));

@@ -13,6 +13,7 @@ import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.shared.domain.error.RuleViolationException;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -61,6 +62,13 @@ class ApiExceptionHandlerTest {
     }
 
     @Test
+    void aChangeLostToAnotherRunningAtOnceIs409WithCode() throws Exception {
+        mvc.perform(get("/concurrent"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("conflict.concurrent"));
+    }
+
+    @Test
     void invalidValueIs400WithCode() throws Exception {
         mvc.perform(get("/invalid-value"))
                 .andExpect(status().isBadRequest())
@@ -96,6 +104,11 @@ class ApiExceptionHandlerTest {
         @GetMapping("/conflict")
         void conflict() {
             throw new ConflictException("test.conflict", "Already changed.");
+        }
+
+        @GetMapping("/concurrent")
+        void concurrent() {
+            throw new CannotAcquireLockException("deadlock detected");
         }
 
         @GetMapping("/rule-violation")

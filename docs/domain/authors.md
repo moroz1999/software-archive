@@ -6,20 +6,25 @@ The archive separates who someone is from the names they use.
 A real person. The real name is optional; a person may be known only through labels. Can have notes.
 
 ## Group
-A team or a company that releases works. Has a name, notes and one or more group types.
+A team or a company that releases works. Has a name, notes and at least one group type. Group types are a reference book kept in the archive: demogroup, crack group, game studio, label.
 
 ## Label
 A name works are released under ("VASYANSOFT"). Works are credited to labels, not to people or groups — see [software.md](software.md).
 A label is taken as it is first met: often nobody knows yet whose it is, so a label can belong to nobody. Once it is found out, the label is attached to its owner — a person (a nickname) or a group (an alternative name of the group) — never to both.
-An owner can have several labels; one of them can be marked as the display name. Labels can be tied to cities.
+An owner can have several labels; exactly one of them is the display name. Labels can be tied to cities.
+A label taken away from its owner is not deleted: it becomes a label of nobody and keeps its credits and memberships. A label is deleted only on purpose.
+
+## Locations
+People and groups are located in countries, or in cities of them; one place counts once. An owner with locations has exactly one primary location, the one they are best known from.
 
 ## Group membership
 Who was in a group is recorded as it was, by the label they were a member under: the group ZHOPAGROUP had "хакер федя" as a member, a label of Fyodor Ivanko, who is known as MASTERSOFT today. The member stays "хакер федя". A member label may belong to nobody known yet.
+Membership belongs to the group: it is always changed as a change of the group, even when it is started from the page of a person.
 A group can also be a member of another group. This is a relation of its own, between the groups themselves, apart from the labels that are members.
 The labels of a group are its alternative names (ZHOPAS, ZS), not its members.
 
 ## Main name
-A person or a group is shown under one main name: the label marked as the display name; without one, the first of their labels in alphabetical order; without labels, the real name of the person or the name of the group. A person without any name is not an author of the archive.
+A person or a group is shown under one main name: their display name; for a record from before the rule with no label marked, the first of their labels in alphabetical order; without labels, the real name of the person or the name of the group. A person without any name is not an author of the archive.
 
 ## Catalogs of names
 The author catalog and the group catalog are where visitors find authors and groups. Each lists its owners and their labels mixed together, sorted by name, 100 entries per page:
@@ -44,3 +49,7 @@ The page of a person: the main name, the real name, notes, all their labels, the
 
 ## Group page
 The page of a group: the main name, the name, the group types, notes, all its labels, its locations (the primary one first), its members under the labels they were members under — each with the person's main name next to it when it is another one, and leading to the person when known —, the groups that are members of it and the groups it is a member of.
+
+## Adding, editing and deleting
+People and groups are added, edited and deleted in the archive; for now anyone can do it.
+Deleting a person or a group leaves their labels as labels of nobody, with their credits and memberships; the memberships of a deleted group go with it.

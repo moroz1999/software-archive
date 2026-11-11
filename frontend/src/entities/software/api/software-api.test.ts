@@ -4,6 +4,8 @@ import {json, noContent, stubFetch} from '@/shared/lib/test';
 import {toReleaseDate, toSoftwareId, toSoftwarePlatformCode, toSoftwareTitle} from '../model/software';
 import {createSoftware, deleteSoftware, fetchSoftware, fetchSoftwareReleases, updateSoftware} from './software-api';
 
+const GAMES = '00000000-0000-0000-0006-000000000001';
+const ACTION = '00000000-0000-0000-0006-000000000002';
 const ID = toSoftwareId('00000000-0000-0000-0001-000000000001');
 const DRAFT = {
     title: toSoftwareTitle('Elite'),
@@ -11,6 +13,7 @@ const DRAFT = {
     releaseDate: toReleaseDate('1985-09-20'),
     platform: toSoftwarePlatformCode('vector'),
     hardware: ['vector06c', 'ay8910'],
+    categories: [GAMES],
 };
 const VECTOR = {code: 'vector', name: 'Vector'};
 const VECTOR06C = {code: 'vector06c', name: 'Vector-06C', group: 'computers'};
@@ -25,10 +28,12 @@ describe(fetchSoftware, () => {
     it('reads one software', async () => {
         const fetchMock = stubFetch(json({
             id: ID, title: 'Elite', description: 'Space trading', releaseDate: null, platform: VECTOR, hardware: [VECTOR06C],
+            categories: [{id: ACTION, title: 'Action', branch: [{id: GAMES, title: 'Games'}, {id: ACTION, title: 'Action'}]}],
         }));
 
         await expect(fetchSoftware(ID, new AbortController().signal)).resolves.toStrictEqual({
             id: ID, title: 'Elite', description: 'Space trading', releaseDate: null, platform: VECTOR, hardware: [VECTOR06C],
+            categories: [{id: ACTION, title: 'Action', branch: [{id: GAMES, title: 'Games'}, {id: ACTION, title: 'Action'}]}],
         });
         expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/software/${ID}`);
     });
@@ -41,6 +46,22 @@ describe(fetchSoftware, () => {
 
     it('fails with a system error on a malformed answer', async () => {
         stubFetch(json({id: ID, title: ''}));
+
+        await expect(fetchSoftware(ID, new AbortController().signal)).rejects.toBeInstanceOf(SystemError);
+    });
+
+    it('fails with a system error on a malformed category', async () => {
+        stubFetch(json({
+            id: ID, title: 'Elite', description: null, releaseDate: null, platform: VECTOR, hardware: [], categories: [{id: GAMES}],
+        }));
+
+        await expect(fetchSoftware(ID, new AbortController().signal)).rejects.toBeInstanceOf(SystemError);
+    });
+
+    it('fails with a system error on a category without its branch', async () => {
+        stubFetch(json({
+            id: ID, title: 'Elite', description: null, releaseDate: null, platform: VECTOR, hardware: [], categories: [{id: GAMES, title: 'Games'}],
+        }));
 
         await expect(fetchSoftware(ID, new AbortController().signal)).rejects.toBeInstanceOf(SystemError);
     });
@@ -88,7 +109,7 @@ describe(createSoftware, () => {
         expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/software');
         expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
             method: 'POST',
-            body: '{"title":"Elite","description":null,"releaseDate":"1985-09-20","platform":"vector","hardware":["vector06c","ay8910"]}',
+            body: '{"title":"Elite","description":null,"releaseDate":"1985-09-20","platform":"vector","hardware":["vector06c","ay8910"],"categories":["00000000-0000-0000-0006-000000000001"]}',
         });
     });
 });
@@ -105,7 +126,7 @@ describe(updateSoftware, () => {
         expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/software/${ID}`);
         expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
             method: 'PUT',
-            body: '{"title":"Elite","description":null,"releaseDate":"1985-09-20","platform":"vector","hardware":["vector06c","ay8910"]}',
+            body: '{"title":"Elite","description":null,"releaseDate":"1985-09-20","platform":"vector","hardware":["vector06c","ay8910"],"categories":["00000000-0000-0000-0006-000000000001"]}',
         });
     });
 });

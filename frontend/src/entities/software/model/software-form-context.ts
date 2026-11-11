@@ -11,9 +11,11 @@ export interface SoftwareFormState {
     /** Why the last submit was refused, under the fields the refusal names; a field's text clears once it is edited. */
     readonly refusals: SoftwareFormRefusals;
     /** The change handler of a text field. */
-    readonly change: (field: Exclude<keyof SoftwareFormValues, 'hardware'>) => (value: string) => void;
+    readonly change: (field: Exclude<keyof SoftwareFormValues, 'hardware' | 'categories'>) => (value: string) => void;
     /** Replaces the chosen hardware. */
     readonly changeHardware: (codes: readonly string[]) => void;
+    /** Replaces the chosen categories. */
+    readonly changeCategories: (ids: readonly string[]) => void;
     /** Checks the format rules and hands the draft on only when they pass. */
     readonly submit: () => void;
     /** The platforms to choose from. */

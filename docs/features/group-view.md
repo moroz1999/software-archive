@@ -4,7 +4,7 @@ The page of one group at `/groups/{id}` ([domain/authors.md](../domain/authors.m
 
 ## Page
 
-- The main name is the page heading.
+- The main name is the page heading, with "Edit" next to it leading to the editing ([group-editing.md](group-editing.md)).
 - Under it: Name, then each when known: Types, Labels, Locations ("City, Country", the primary one first), Members, Member groups, Member of, Notes line by line.
 - A member is the label they were a member under, leading to the person when known, with the person's main name muted next to it when it is another one; a label of nobody known is plain text.
 - Member groups and Member of lead to the pages of those groups.

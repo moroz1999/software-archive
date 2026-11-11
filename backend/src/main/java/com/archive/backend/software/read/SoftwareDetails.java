@@ -6,7 +6,8 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 /**
- * One software with everything shown about it; its base hardware by group, then by name.
+ * One software with everything shown about it; its base hardware by group, then by name; its
+ * categories in the order of the tree.
  */
 public record SoftwareDetails(
         UUID id,
@@ -14,4 +15,5 @@ public record SoftwareDetails(
         @Nullable String description,
         @Nullable LocalDate releaseDate,
         SoftwarePlatform platform,
-        List<SoftwareHardware> hardware) {}
+        List<SoftwareHardware> hardware,
+        List<SoftwareCategory> categories) {}

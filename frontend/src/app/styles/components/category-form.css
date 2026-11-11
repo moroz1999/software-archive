@@ -1,0 +1,4 @@
+:root {
+    /* A form of two fields reads best narrow, as the other forms. */
+    --category-form-max-width: 720px;
+}

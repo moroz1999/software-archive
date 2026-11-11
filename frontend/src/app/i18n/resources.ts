@@ -1,14 +1,16 @@
 export const resources = {
     en: {translation: {
         language: {label: 'Language', choose: 'Choose a language'},
-        navigation: {mainMenu: 'Main menu', home: 'Home', software: 'Software', authors: 'Authors', groups: 'Groups'},
+        navigation: {mainMenu: 'Main menu', home: 'Home', software: 'Software', authors: 'Authors', groups: 'Groups', categories: 'Categories'},
         actions: {
             addSoftware: 'Add software', editSoftware: 'Edit software', save: 'Save', edit: 'Edit', delete: 'Delete',
             deleteForGood: 'Delete for good', cancel: 'Cancel', close: 'Close', retry: 'Retry', addRelease: 'Add release',
+            addAuthor: 'Add author', editAuthor: 'Edit author', remove: 'Remove', addGroup: 'Add group', editGroup: 'Edit group',
+            addCategory: 'Add category', editCategory: 'Edit category',
         },
-        pages: {recentlyAdded: 'Recently added', software: 'Software', authors: 'Authors', groups: 'Groups'},
+        pages: {recentlyAdded: 'Recently added', software: 'Software', authors: 'Authors', groups: 'Groups', categories: 'Categories'},
         empty: {
-            software: 'No software in the archive yet.', authors: 'No authors found.', groups: 'No groups found.',
+            software: 'No software in the archive yet.', authors: 'No authors found.', groups: 'No groups found.', categories: 'No categories yet.',
             releases: 'No releases known yet.', nothingFound: 'Nothing found.', noScreenshot: 'No screenshot yet',
         },
         filters: {
@@ -17,13 +19,16 @@ export const resources = {
         },
         fields: {
             title: 'Title', platform: 'Platform', description: 'Description', releaseDate: 'Release date', version: 'Version',
-            type: 'Type', hardware: 'Hardware', choosePlatform: 'Choose a platform', chooseType: 'Choose a type',
+            type: 'Type', hardware: 'Hardware', categories: 'Categories', choosePlatform: 'Choose a platform', chooseType: 'Choose a type',
             platformLocked: 'Remove the hardware to change the platform.',
         },
         validation: {
             titleRequired: 'Enter a title.', titleTooLong: 'Keep the title within 255 characters.',
             releaseDateInvalid: 'Enter a full date.', platformRequired: 'Choose a platform.',
             versionTooLong: 'Keep the version within 50 characters.', typeRequired: 'Choose a type.',
+            authorNameless: 'Enter a real name or add a label.', realNameTooLong: 'Keep the real name within 255 characters.',
+            labelNameRequired: 'Enter a name.', labelNameTooLong: 'Keep the name within 255 characters.',
+            countryRequired: 'Choose a country.', groupTypesRequired: 'Choose at least one type.',
         },
         errors: {
             system: {
@@ -35,18 +40,33 @@ export const resources = {
             page: {message: 'This page could not be shown. Please reload it or try again later.'},
             business: {conflict: 'This item was changed in the meantime. Reload and try again.', refused: 'The request was refused.'},
             hardwareUnknown: 'Choose hardware of the platform of the software.',
+            categoryUnknown: 'A category is no longer in the archive: choose again.',
             platformLocked: 'Remove the hardware of the software and its releases first.',
+            labelNotOwn: 'One of the labels belongs to someone else. Reload and try again.',
+            labelDisplayOne: 'Choose one display name.',
+            locationUnknown: 'One of the places is not in the archive any more. Reload and try again.',
+            locationPrimaryOne: 'Choose one primary location.',
+            groupTypeUnknown: 'One of the types is not in the archive any more. Reload and try again.',
+            categoryParentUnknown: 'The parent category is not in the archive any more. Reload and try again.',
+            categoryParentInside: 'A category cannot go under itself or its own subcategory.',
         },
         pagination: {label: 'Pages', previous: 'Previous', next: 'Next'},
         loading: {refreshing: 'Refreshing'},
         selection: {remove: 'Remove {{name}}', selected_one: '{{count}} selected', selected_other: '{{count}} selected'},
         author: {
             realName: 'Real name', labels: 'Labels', locations: 'Locations', groups: 'Groups', notes: 'Notes',
-            as: 'as {{name}}', labelOf: 'label of {{name}}',
+            as: 'as {{name}}', labelOf: 'label of {{name}}', delete: 'Delete author',
+            deleteQuestion: 'Delete “{{name}}” from the archive? Their labels stay in the archive as labels of nobody, with their credits.',
+        },
+        label: {labels: 'Labels', name: 'Label {{n}}', placeholder: 'A name works were released under', display: 'Display name', remove: 'Remove label {{n}}', add: 'Add label'},
+        location: {
+            locations: 'Locations', country: 'Country {{n}}', city: 'City {{n}}', chooseCountry: 'Choose a country', noCity: 'No city',
+            primary: 'Primary', remove: 'Remove location {{n}}', add: 'Add location',
         },
         group: {
             name: 'Name', types: 'Types', labels: 'Labels', locations: 'Locations', members: 'Members', notes: 'Notes',
-            memberGroups: 'Member groups', memberOf: 'Member of',
+            memberGroups: 'Member groups', memberOf: 'Member of', delete: 'Delete group',
+            deleteQuestion: 'Delete “{{name}}” from the archive? Its labels stay in the archive as labels of nobody, with their credits.',
         },
         release: {
             add: 'Add release', addTo: 'Add release to {{title}}', edit: 'Edit release', editOf: 'Edit release of {{title}}',
@@ -60,6 +80,10 @@ export const resources = {
                 incomplete: 'Incomplete', demoversion: 'Demo version', unknown: 'Unknown',
             },
         },
+        category: {
+            parent: 'Parent', top: 'None, at the top', expand: 'Expand {{name}}', collapse: 'Collapse {{name}}', delete: 'Delete category',
+            deleteQuestion: 'Delete “{{title}}” with all its subcategories? Their software stays in the archive and only leaves them.',
+        },
         software: {delete: 'Delete software', deleteQuestion: 'Delete “{{title}}” from the archive?', released: 'Released'},
         hardwareGroups: {
             computers: 'Computers', storage: 'Storage', dos: 'DOS', sound: 'Sound', controls: 'Controls', expansion: 'Expansion',
@@ -67,15 +91,16 @@ export const resources = {
     }},
     ru: {translation: {
         language: {label: 'Язык', choose: 'Выберите язык'},
-        navigation: {mainMenu: 'Главное меню', home: 'Главная', software: 'Программы', authors: 'Авторы', groups: 'Группы'},
+        navigation: {mainMenu: 'Главное меню', home: 'Главная', software: 'Программы', authors: 'Авторы', groups: 'Группы', categories: 'Категории'},
         actions: {
             addSoftware: 'Добавить программу', editSoftware: 'Редактировать программу', save: 'Сохранить', edit: 'Редактировать',
             delete: 'Удалить', deleteForGood: 'Удалить навсегда', cancel: 'Отмена', close: 'Закрыть', retry: 'Повторить',
-            addRelease: 'Добавить релиз',
+            addRelease: 'Добавить релиз', addAuthor: 'Добавить автора', editAuthor: 'Редактировать автора', remove: 'Убрать', addGroup: 'Добавить группу', editGroup: 'Редактировать группу',
+            addCategory: 'Добавить категорию', editCategory: 'Редактировать категорию',
         },
-        pages: {recentlyAdded: 'Недавно добавленное', software: 'Программы', authors: 'Авторы', groups: 'Группы'},
+        pages: {recentlyAdded: 'Недавно добавленное', software: 'Программы', authors: 'Авторы', groups: 'Группы', categories: 'Категории'},
         empty: {
-            software: 'В архиве пока нет программ.', authors: 'Авторы не найдены.', groups: 'Группы не найдены.',
+            software: 'В архиве пока нет программ.', authors: 'Авторы не найдены.', groups: 'Группы не найдены.', categories: 'Категорий пока нет.',
             releases: 'Сведения о релизах пока отсутствуют.', nothingFound: 'Ничего не найдено.', noScreenshot: 'Скриншота пока нет',
         },
         filters: {
@@ -84,13 +109,17 @@ export const resources = {
         },
         fields: {
             title: 'Название', platform: 'Платформа', description: 'Описание', releaseDate: 'Дата выпуска', version: 'Версия',
-            type: 'Тип', hardware: 'Оборудование', choosePlatform: 'Выберите платформу', chooseType: 'Выберите тип',
+            type: 'Тип', hardware: 'Оборудование', categories: 'Категории', choosePlatform: 'Выберите платформу', chooseType: 'Выберите тип',
             platformLocked: 'Удалите оборудование, чтобы изменить платформу.',
         },
         validation: {
             titleRequired: 'Введите название.', titleTooLong: 'Название должно содержать не более 255 символов.',
             releaseDateInvalid: 'Введите полную дату.', platformRequired: 'Выберите платформу.',
             versionTooLong: 'Версия должна содержать не более 50 символов.', typeRequired: 'Выберите тип.',
+            authorNameless: 'Введите настоящее имя или добавьте псевдоним.',
+            realNameTooLong: 'Настоящее имя должно содержать не более 255 символов.',
+            labelNameRequired: 'Введите имя.', labelNameTooLong: 'Имя должно содержать не более 255 символов.',
+            countryRequired: 'Выберите страну.', groupTypesRequired: 'Выберите хотя бы один тип.',
         },
         errors: {
             system: {
@@ -102,7 +131,15 @@ export const resources = {
             page: {message: 'Не удалось показать страницу. Перезагрузите её или попробуйте позже.'},
             business: {conflict: 'Объект был изменён. Перезагрузите страницу и попробуйте ещё раз.', refused: 'Запрос отклонён.'},
             hardwareUnknown: 'Выберите оборудование платформы этой программы.',
+            categoryUnknown: 'Одной из категорий уже нет в архиве: выберите заново.',
             platformLocked: 'Сначала удалите оборудование программы и её релизов.',
+            labelNotOwn: 'Один из псевдонимов принадлежит кому-то другому. Перезагрузите страницу и попробуйте ещё раз.',
+            labelDisplayOne: 'Выберите один основной псевдоним.',
+            locationUnknown: 'Одного из мест больше нет в архиве. Перезагрузите страницу и попробуйте ещё раз.',
+            locationPrimaryOne: 'Выберите одно основное место.',
+            groupTypeUnknown: 'Одного из типов больше нет в архиве. Перезагрузите страницу и попробуйте ещё раз.',
+            categoryParentUnknown: 'Родительской категории больше нет в архиве. Перезагрузите страницу и попробуйте ещё раз.',
+            categoryParentInside: 'Категорию нельзя поместить в неё саму или в её подкатегорию.',
         },
         pagination: {label: 'Страницы', previous: 'Назад', next: 'Вперёд'},
         loading: {refreshing: 'Обновление'},
@@ -112,11 +149,18 @@ export const resources = {
         },
         author: {
             realName: 'Настоящее имя', labels: 'Псевдонимы', locations: 'Места', groups: 'Группы', notes: 'Заметки',
-            as: 'как {{name}}', labelOf: 'псевдоним {{name}}',
+            as: 'как {{name}}', labelOf: 'псевдоним {{name}}', delete: 'Удалить автора',
+            deleteQuestion: 'Удалить «{{name}}» из архива? Его псевдонимы останутся в архиве ничьими, вместе с участием в работах.',
+        },
+        label: {labels: 'Псевдонимы', name: 'Псевдоним {{n}}', placeholder: 'Имя, под которым выходили работы', display: 'Основной', remove: 'Убрать псевдоним {{n}}', add: 'Добавить псевдоним'},
+        location: {
+            locations: 'Места', country: 'Страна {{n}}', city: 'Город {{n}}', chooseCountry: 'Выберите страну', noCity: 'Без города',
+            primary: 'Основное', remove: 'Убрать место {{n}}', add: 'Добавить место',
         },
         group: {
             name: 'Название', types: 'Типы', labels: 'Псевдонимы', locations: 'Места', members: 'Участники', notes: 'Заметки',
-            memberGroups: 'Группы-участники', memberOf: 'Входит в группы',
+            memberGroups: 'Группы-участники', memberOf: 'Входит в группы', delete: 'Удалить группу',
+            deleteQuestion: 'Удалить «{{name}}» из архива? Её псевдонимы останутся в архиве ничьими, вместе с участием в работах.',
         },
         release: {
             add: 'Добавить релиз', addTo: 'Добавить релиз для {{title}}', edit: 'Редактировать релиз',
@@ -130,6 +174,10 @@ export const resources = {
                 bugfix: 'Исправление ошибок', mod: 'Модификация', crack: 'Взлом', mia: 'Утрачено', corrupted: 'Повреждено',
                 compilation: 'Сборник', incomplete: 'Незавершённое', demoversion: 'Демоверсия', unknown: 'Неизвестно',
             },
+        },
+        category: {
+            parent: 'Родитель', top: 'Нет, на верхнем уровне', expand: 'Раскрыть {{name}}', collapse: 'Свернуть {{name}}', delete: 'Удалить категорию',
+            deleteQuestion: 'Удалить «{{title}}» со всеми подкатегориями? Их программы останутся в архиве и только покинут эти категории.',
         },
         software: {delete: 'Удалить программу', deleteQuestion: 'Удалить «{{title}}» из архива?', released: 'Выпущено'},
         hardwareGroups: {

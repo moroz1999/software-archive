@@ -8,11 +8,15 @@ export type GroupId = Brand<string, 'GroupId'>;
 export interface GroupLabel {
     readonly id: string;
     readonly name: string;
+    /** Chosen as the display name. */
+    readonly display: boolean;
 }
 
-/** Where a group is located: a country, a city of it, or both. */
+/** Where a group is located: a country, a city of it, or both; the country of a city given alone is its own. */
 export interface GroupLocation {
+    readonly countryId: string | null;
     readonly country: string | null;
+    readonly cityId: string | null;
     readonly city: string | null;
     readonly primary: boolean;
 }

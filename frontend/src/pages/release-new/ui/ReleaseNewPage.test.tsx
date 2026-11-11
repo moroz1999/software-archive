@@ -7,7 +7,7 @@ import {json, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {loadReleaseNewPage, preloadReleaseNewPage} from '../index';
 
 const ID = '00000000-0000-0000-0001-000000000001';
-const ELITE = {id: ID, title: 'Elite', description: null, releaseDate: null, platform: {code: 'vector', name: 'Vector'}, hardware: []};
+const ELITE = {id: ID, title: 'Elite', description: null, releaseDate: null, platform: {code: 'vector', name: 'Vector'}, hardware: [], categories: []};
 const AY = {code: 'ay8910', name: 'AY-3-8910', group: 'sound'};
 
 function renderRoute() {

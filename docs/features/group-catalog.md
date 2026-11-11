@@ -4,6 +4,7 @@ The catalog at `/groups` ([domain/authors.md](../domain/authors.md#group-catalog
 
 ## Page
 
+- "Add group" next to the page title leads to adding a group ([group-editing.md](group-editing.md)).
 - An entry is the name leading to the group's page ([group-view.md](group-view.md)), with the group's name muted on the same line unless the entry is that name.
 - "No groups found." when nothing matches.
 

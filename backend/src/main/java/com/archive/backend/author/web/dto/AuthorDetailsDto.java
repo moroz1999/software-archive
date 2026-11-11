@@ -13,10 +13,14 @@ public record AuthorDetailsDto(
         List<LocationDto> locations,
         List<GroupDto> groups) {
 
-    public record LabelDto(UUID id, String name) {}
+    public record LabelDto(UUID id, String name, boolean display) {}
 
     public record LocationDto(
-            @Nullable String country, @Nullable String city, boolean primary) {}
+            @Nullable UUID countryId,
+            @Nullable String country,
+            @Nullable UUID cityId,
+            @Nullable String city,
+            boolean primary) {}
 
     public record GroupDto(UUID id, String name, @Nullable String as) {}
 }

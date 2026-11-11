@@ -21,4 +21,10 @@ describe(Inline, () => {
 
         expect(screen.getByRole('list')).toHaveClass('inline');
     });
+
+    it('names the list it renders as', () => {
+        render(<Inline as="ul" ariaLabel="Games › Action"><li>Games</li></Inline>);
+
+        expect(screen.getByRole('list', {name: 'Games › Action'})).toBeInTheDocument();
+    });
 });
