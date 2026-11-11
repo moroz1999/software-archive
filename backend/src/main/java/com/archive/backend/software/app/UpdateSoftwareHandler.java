@@ -6,6 +6,7 @@ import com.archive.backend.software.domain.Software;
 import com.archive.backend.software.domain.SoftwareNotFoundException;
 import com.archive.backend.software.domain.SoftwareRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ public class UpdateSoftwareHandler {
     private final SoftwareRepository repository;
     private final HardwareSets hardwareSets;
     private final CategorySets categorySets;
+    private final ApplicationEventPublisher events;
 
     @Transactional
     public void handle(UpdateSoftwareCommand c) {
@@ -27,5 +29,6 @@ public class UpdateSoftwareHandler {
                 hardwareSets.of(c.platform(), c.hardware()),
                 categorySets.of(c.categories()));
         repository.save(software);
+        software.pullEvents().forEach(events::publishEvent);
     }
 }

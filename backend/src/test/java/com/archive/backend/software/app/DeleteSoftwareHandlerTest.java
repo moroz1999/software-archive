@@ -20,7 +20,7 @@ class DeleteSoftwareHandlerTest {
     private static final PlatformCode VECTOR = new PlatformCode("vector");
 
     private final InMemorySoftwareRepository repository = new InMemorySoftwareRepository();
-    private final DeleteSoftwareHandler handler = new DeleteSoftwareHandler(repository);
+    private final DeleteSoftwareHandler handler = new DeleteSoftwareHandler(repository, event -> {});
 
     @Test
     void removesTheSoftware() {

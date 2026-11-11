@@ -7,6 +7,7 @@ import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareRepository;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,17 +18,20 @@ public class CreateSoftwareHandler {
     private final SoftwareRepository repository;
     private final HardwareSets hardwareSets;
     private final CategorySets categorySets;
+    private final ApplicationEventPublisher events;
 
     @Transactional
     public SoftwareId handle(CreateSoftwareCommand c) {
         SoftwareId id = new SoftwareId(UUID.randomUUID());
-        repository.save(Software.create(
+        Software software = Software.create(
                 id,
                 c.title(),
                 c.description(),
                 c.releaseDate(),
                 hardwareSets.of(c.platform(), c.hardware()),
-                categorySets.of(c.categories())));
+                categorySets.of(c.categories()));
+        repository.save(software);
+        software.pullEvents().forEach(events::publishEvent);
         return id;
     }
 }

@@ -4,6 +4,7 @@ import com.archive.backend.category.domain.CategorySet;
 import com.archive.backend.hardware.domain.HardwareSet;
 import com.archive.backend.hardware.domain.HardwareUnknownException;
 import com.archive.backend.hardware.domain.PlatformCode;
+import com.archive.backend.shared.domain.ddd.DomainEvent;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,9 @@ public final class Software {
 
     private final List<Release> releases;
 
+    @Getter(lombok.AccessLevel.NONE)
+    private final List<DomainEvent> events = new ArrayList<>();
+
     public Software(
             SoftwareId id,
             SoftwareTitle title,
@@ -59,7 +63,9 @@ public final class Software {
             @Nullable LocalDate releaseDate,
             HardwareSet hardware,
             CategorySet categories) {
-        return new Software(id, title, description, releaseDate, hardware, categories, List.of());
+        Software software = new Software(id, title, description, releaseDate, hardware, categories, List.of());
+        software.events.add(new SoftwareChanged(id));
+        return software;
     }
 
     public PlatformCode getPlatform() {
@@ -83,6 +89,21 @@ public final class Software {
         this.releaseDate = releaseDate;
         this.hardware = hardware;
         this.categories = categories;
+        events.add(new SoftwareChanged(id));
+    }
+
+    /** Tells the software is going: its repository deletes it. */
+    public void delete() {
+        events.add(new SoftwareChanged(id));
+    }
+
+    /**
+     * What happened to the software since it was loaded, handed over once.
+     */
+    public List<DomainEvent> pullEvents() {
+        List<DomainEvent> pulled = List.copyOf(events);
+        events.clear();
+        return pulled;
     }
 
     public List<Release> getReleases() {

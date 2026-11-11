@@ -34,3 +34,7 @@ Detailed logic and structure: [domain/geo.md](domain/geo.md)
 ### localization
 The interface languages visitors can use and which parts of the archive follow that choice.
 Detailed logic and structure: [domain/localization.md](domain/localization.md)
+
+### search
+Quick search over software, people and groups, and the filters of the software catalog.
+Detailed logic and structure: [domain/search.md](domain/search.md)

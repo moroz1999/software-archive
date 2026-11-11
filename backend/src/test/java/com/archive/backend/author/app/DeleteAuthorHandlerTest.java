@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 class DeleteAuthorHandlerTest {
 
     private final InMemoryAuthorRepository repository = new InMemoryAuthorRepository();
-    private final DeleteAuthorHandler handler = new DeleteAuthorHandler(repository);
+    private final DeleteAuthorHandler handler = new DeleteAuthorHandler(repository, event -> {});
 
     @Test
     void removesTheAuthor() {

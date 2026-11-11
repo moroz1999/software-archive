@@ -27,6 +27,8 @@ The frontend dev server proxies `/api` to the backend at `API_PROXY_TARGET` (fro
 
 The backend connects to PostgreSQL on `localhost:5432` and applies Flyway migrations on start. Spring DevTools restarts the application when compiled classes change.
 
+On start the backend also builds the search collections in Typesense when there are none yet; `make reindex` starts it building them anew from the database (`--search.rebuild=true`). Without Typesense the backend still starts and saves edits; the search catches up once Typesense is back ([features/search.md](features/search.md)).
+
 Check the database from the container:
 
 ```bash

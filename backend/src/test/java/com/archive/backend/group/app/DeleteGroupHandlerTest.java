@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 class DeleteGroupHandlerTest {
 
     private final InMemoryGroupRepository repository = new InMemoryGroupRepository();
-    private final DeleteGroupHandler handler = new DeleteGroupHandler(repository);
+    private final DeleteGroupHandler handler = new DeleteGroupHandler(repository, event -> {});
 
     @Test
     void removesTheGroup() {

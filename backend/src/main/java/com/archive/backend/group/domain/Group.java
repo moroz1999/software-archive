@@ -2,9 +2,14 @@ package com.archive.backend.group.domain;
 
 import com.archive.backend.geo.domain.Locations;
 import com.archive.backend.label.domain.LabelDraft;
+import com.archive.backend.label.domain.OwnLabel;
 import com.archive.backend.label.domain.OwnLabels;
+import com.archive.backend.label.domain.OwnerOfLabelsChanged;
+import com.archive.backend.shared.domain.ddd.DomainEvent;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
@@ -21,6 +26,9 @@ public final class Group {
     private GroupTypeSet types;
     private OwnLabels labels;
     private Locations locations;
+
+    @Getter(lombok.AccessLevel.NONE)
+    private final List<DomainEvent> events = new ArrayList<>();
 
     public Group(
             GroupId id,
@@ -57,10 +65,29 @@ public final class Group {
             List<LabelDraft> labels,
             Locations locations) {
         OwnLabels edited = this.labels.replace(labels);
+        events.add(labelsChanged());
         this.name = Objects.requireNonNull(name, "name");
         this.notes = notes;
         this.types = Objects.requireNonNull(types, "types");
         this.labels = edited;
         this.locations = Objects.requireNonNull(locations, "locations");
+    }
+
+    /** Tells the group is going: its repository deletes it and leaves its labels to nobody. */
+    public void delete() {
+        events.add(labelsChanged());
+    }
+
+    private OwnerOfLabelsChanged labelsChanged() {
+        return new OwnerOfLabelsChanged(labels.all().stream().map(OwnLabel::id).collect(Collectors.toSet()));
+    }
+
+    /**
+     * What happened to the group since it was loaded, handed over once.
+     */
+    public List<DomainEvent> pullEvents() {
+        List<DomainEvent> pulled = List.copyOf(events);
+        events.clear();
+        return pulled;
     }
 }

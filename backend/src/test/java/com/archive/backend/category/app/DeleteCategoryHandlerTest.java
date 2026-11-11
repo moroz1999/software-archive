@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 class DeleteCategoryHandlerTest {
 
     private final InMemoryCategoryRepository repository = tree();
-    private final DeleteCategoryHandler handler = new DeleteCategoryHandler(repository);
+    private final DeleteCategoryHandler handler = new DeleteCategoryHandler(repository, event -> {});
 
     @Test
     void removesTheCategoryWithItsSubtree() {

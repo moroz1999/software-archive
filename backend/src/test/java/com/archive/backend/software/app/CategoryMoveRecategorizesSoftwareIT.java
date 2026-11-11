@@ -3,6 +3,7 @@ package com.archive.backend.software.app;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.TypesenseTestConfiguration;
 import com.archive.backend.category.app.UpdateCategoryCommand;
 import com.archive.backend.category.app.UpdateCategoryHandler;
 import com.archive.backend.category.domain.CategoryId;
@@ -22,7 +23,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * (docs/domain/categories.md), in the transaction of the move.
  */
 @SpringBootTest
-@Import(TestcontainersConfiguration.class)
+@Import({TestcontainersConfiguration.class, TypesenseTestConfiguration.class})
 class CategoryMoveRecategorizesSoftwareIT {
 
     /** In Demoscene and in Shooters, of Games → Action. */

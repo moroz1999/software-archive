@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
 class UpdateGroupHandlerTest {
 
     private final InMemoryGroupRepository repository = new InMemoryGroupRepository();
-    private final UpdateGroupHandler handler = new UpdateGroupHandler(repository, groupTypes(), places());
+    private final UpdateGroupHandler handler = new UpdateGroupHandler(repository, groupTypes(), places(), event -> {});
 
     @Test
     void storesTheEditedGroup() {

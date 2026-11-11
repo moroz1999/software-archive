@@ -17,7 +17,7 @@ Tests describe behaviour, not implementation: assert on results and visible effe
 JUnit 5 with `spring-boot-starter-test`.
 
 - `*Test` — unit and slice tests, no database. Includes the ArchUnit architecture rules. Run: `cd backend && ./mvnw test` (single test: `-Dtest=ClassName`).
-- `*IT` — integration tests against a throwaway PostgreSQL container (Testcontainers, shared `TestcontainersConfiguration`). Run with everything else: `cd backend && ./mvnw verify` (single test: `-Dit.test=ClassName`). They never touch the dev database.
+- `*IT` — integration tests against a throwaway PostgreSQL container (Testcontainers, shared `TestcontainersConfiguration`). Run with everything else: `cd backend && ./mvnw verify` (single test: `-Dit.test=ClassName`). They never touch the dev database. Tests that start the whole application (`@SpringBootTest`) also import `TypesenseTestConfiguration`: a throwaway Typesense, with the search worker off its schedule so the test drives it.
 
 | Layer | Test |
 |---|---|

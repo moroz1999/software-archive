@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.TypesenseTestConfiguration;
 import com.jayway.jsonpath.JsonPath;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("fixtures")
-@Import(TestcontainersConfiguration.class)
+@Import({TestcontainersConfiguration.class, TypesenseTestConfiguration.class})
 class FixturesIT {
 
     /** A fixture country with its 20 cities. */

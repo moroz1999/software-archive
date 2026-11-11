@@ -12,3 +12,11 @@ spring:
     # Fixtures are repeatable migrations applied only with the "fixtures" profile;
     # a database seeded with them must still start without it.
     ignore-migration-patterns: "*:future,repeatable:missing"
+
+search:
+  typesense:
+    url: http://localhost:8108
+    api-key: my-secret-key
+    timeout: 2s
+  worker:
+    delay: 1s

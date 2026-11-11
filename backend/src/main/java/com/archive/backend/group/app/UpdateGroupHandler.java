@@ -6,6 +6,7 @@ import com.archive.backend.group.domain.GroupNotFoundException;
 import com.archive.backend.group.domain.GroupRepository;
 import com.archive.backend.group.domain.GroupTypes;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,11 +17,13 @@ public class UpdateGroupHandler {
     private final GroupRepository repository;
     private final GroupTypes groupTypes;
     private final Places places;
+    private final ApplicationEventPublisher events;
 
     @Transactional
     public void handle(UpdateGroupCommand c) {
         Group group = repository.findById(c.id()).orElseThrow(GroupNotFoundException::new);
         group.edit(c.name(), c.notes(), groupTypes.of(c.types()), c.labels(), places.locations(c.locations()));
         repository.save(group);
+        group.pullEvents().forEach(events::publishEvent);
     }
 }

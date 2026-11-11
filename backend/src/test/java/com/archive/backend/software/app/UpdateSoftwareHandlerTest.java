@@ -33,7 +33,8 @@ import org.junit.jupiter.api.Test;
 class UpdateSoftwareHandlerTest {
 
     private final InMemorySoftwareRepository repository = new InMemorySoftwareRepository();
-    private final UpdateSoftwareHandler handler = new UpdateSoftwareHandler(repository, hardwareSets(), categorySets());
+    private final UpdateSoftwareHandler handler =
+            new UpdateSoftwareHandler(repository, hardwareSets(), categorySets(), event -> {});
 
     @Test
     void storesTheEditedSoftware() {

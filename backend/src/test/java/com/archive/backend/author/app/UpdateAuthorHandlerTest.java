@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 class UpdateAuthorHandlerTest {
 
     private final InMemoryAuthorRepository repository = new InMemoryAuthorRepository();
-    private final UpdateAuthorHandler handler = new UpdateAuthorHandler(repository, places());
+    private final UpdateAuthorHandler handler = new UpdateAuthorHandler(repository, places(), event -> {});
 
     @Test
     void storesTheEditedAuthor() {

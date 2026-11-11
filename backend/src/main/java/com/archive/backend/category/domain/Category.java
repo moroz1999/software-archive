@@ -47,6 +47,11 @@ public final class Category {
         return parent == null ? null : parent.id();
     }
 
+    /** Tells the category is going with its subcategories: its repository deletes them. */
+    public void delete() {
+        events.add(new CategoryDeleted(id));
+    }
+
     /**
      * What happened to the category since it was loaded, handed over once.
      */

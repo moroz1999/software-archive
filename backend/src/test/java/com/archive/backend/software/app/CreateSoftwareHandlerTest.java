@@ -28,7 +28,8 @@ import org.junit.jupiter.api.Test;
 class CreateSoftwareHandlerTest {
 
     private final InMemorySoftwareRepository repository = new InMemorySoftwareRepository();
-    private final CreateSoftwareHandler handler = new CreateSoftwareHandler(repository, hardwareSets(), categorySets());
+    private final CreateSoftwareHandler handler =
+            new CreateSoftwareHandler(repository, hardwareSets(), categorySets(), event -> {});
 
     @Test
     void storesNewSoftwareUnderANewId() {

@@ -5,7 +5,7 @@ MVNW := cd backend && ./mvnw
 FRONTEND := docker compose exec frontend npm run
 
 .DEFAULT_GOAL := help
-.PHONY: help up down wsl-up run run-fixtures clean format test verify check test-front lint typecheck build
+.PHONY: help up down wsl-up run run-fixtures reindex clean format test verify check test-front lint typecheck build
 
 help: ## List the commands
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
@@ -29,6 +29,9 @@ run: ## Run the backend (applies migrations)
 
 run-fixtures: ## Run the backend with the fixture data set; cleans the build so no stale fixture is applied
 	$(MVNW) clean spring-boot:run -Dspring-boot.run.profiles=fixtures
+
+reindex: ## Run the backend, building the search collections anew from the database on start
+	$(MVNW) spring-boot:run -Dspring-boot.run.arguments=--search.rebuild=true
 
 clean: ## Clean the backend build
 	$(MVNW) clean
