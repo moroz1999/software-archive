@@ -37,7 +37,7 @@ Query elements the way a user finds them (role, label, text), not by CSS class o
 - Exception: design system atoms (`shared/ui`) promise markup — the element, its classes, its attributes — so their tests may read the rendered DOM node and its classes (CSS module class names are not scoped in tests).
 - Pages are tested through a memory router with their real loader, so the preload window is part of the test: data in time means no skeleton, a slow call means a skeleton first.
 - Timers, animation frames and intersection are faked where behaviour depends on them (`vi.useFakeTimers`, a stubbed `IntersectionObserver`).
-- The minimum skeleton time is 0 in tests (`vitest.setup.ts` mocks `shared/lib/skeleton/skeleton-timing`), so a block test does not wait for it; a test of that hold unmocks it in a file of its own, `{Component}.hold.test.tsx`.
+- The minimum skeleton time is 0 in tests (`vitest.setup.ts` mocks `shared/lib/loading/skeleton-timing`), so a block test does not wait for it; a test of that hold unmocks it in a file of its own, `{Component}.hold.test.tsx`.
 - Network helpers also include `stubFetchAround`: it answers the calls every page makes (the platform switch, a lazy block) by URL, and the others in order.
 - The local Stylelint plugin is tested by linting code snippets as files (`frontend/stylelint/*.test.js`).
 

@@ -1,5 +1,5 @@
 import {useTranslation} from 'react-i18next';
-import {useSkeleton} from '@/shared/lib/skeleton';
+import {useSkeleton} from '@/shared/lib/loading';
 import {Tree, type TreeItem} from '@/shared/ui/tree';
 import {Text, TextLink} from '@/shared/ui/typography';
 import {categoryEditPath} from '../config/paths';

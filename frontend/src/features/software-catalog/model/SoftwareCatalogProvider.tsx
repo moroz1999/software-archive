@@ -4,6 +4,7 @@ import {useNavigate, useParams, useSearchParams} from 'react-router';
 import {categoryTreeQuery} from '@/entities/categories';
 import {countriesQuery} from '@/entities/locations';
 import {usePlatformSelection} from '@/entities/platforms';
+import {useLoadingLock} from '@/shared/lib/loading';
 import {softwareCatalogQuery} from '../api/catalog-queries';
 import {catalogHref, parseCatalogFilter, type SoftwareCatalogFilter} from './catalog-filter';
 import {SoftwareCatalogContext} from './software-catalog-context';
@@ -22,16 +23,17 @@ export function SoftwareCatalogProvider({children}: {readonly children: ReactNod
     const categories = useQuery(categoryTreeQuery());
     const countries = useQuery(countriesQuery());
 
+    const changing = useLoadingLock(catalog.isPlaceholderData || catalog.isRefetching);
     const state = useMemo(() => ({
         filter,
         catalog,
         categories,
         countries,
-        changing: catalog.isPlaceholderData || catalog.isRefetching,
+        changing,
         show: (next: SoftwareCatalogFilter) => {
             void navigate(catalogHref(next));
         },
-    }), [filter, catalog, categories, countries, navigate]);
+    }), [filter, changing, catalog, categories, countries, navigate]);
 
     return <SoftwareCatalogContext value={state}>{children}</SoftwareCatalogContext>;
 }

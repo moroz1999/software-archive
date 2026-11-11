@@ -216,6 +216,22 @@ describe(AuthorCatalog, () => {
         expect(screen.getByTestId('loading-state-spinner')).toHaveAttribute('aria-hidden', 'true');
     });
 
+    it('shows the entries of a filter that answers at once with no spinner and no locked controls', async () => {
+        stubFetchRoutes(routes({[ALL]: catalogPage(ENTRIES), [`/api/authors?page=0&size=100&country=${FINLAND}`]: catalogPage([ENTRIES[2]])}));
+        openCatalog();
+        await entryNames();
+
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Country'}), 'Finland');
+
+        expect(screen.getByRole('combobox', {name: 'Country'})).toBeEnabled();
+
+        await vi.waitFor(async () => {
+            await expect(entryNames()).resolves.toStrictEqual(['Zed']);
+        });
+
+        expect(screen.queryByTestId('loading-state-spinner')).not.toBeInTheDocument();
+    });
+
     it('leads to the other pages of the catalog', async () => {
         stubFetchRoutes(routes({[`/api/authors?page=0&size=100&letter=A`]: catalogPage(ENTRIES, 3)}));
         openCatalog('/authors?letter=A');

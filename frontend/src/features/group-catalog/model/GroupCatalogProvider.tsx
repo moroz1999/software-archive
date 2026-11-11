@@ -3,6 +3,7 @@ import {useQuery} from '@tanstack/react-query';
 import {useNavigate, useSearchParams} from 'react-router';
 import {citiesQuery, countriesQuery} from '@/entities/locations';
 import {usePlatformSelection} from '@/entities/platforms';
+import {useLoadingLock} from '@/shared/lib/loading';
 import {groupCatalogQuery} from '../api/catalog-queries';
 import {type GroupCatalogFilter, groupCatalogHref, parseGroupCatalogFilter} from './catalog-filter';
 import {GroupCatalogContext} from './group-catalog-context';
@@ -20,16 +21,17 @@ export function GroupCatalogProvider({children}: {readonly children: ReactNode})
     const countries = useQuery(countriesQuery());
     const cities = useQuery(citiesQuery(filter.country));
 
+    const changing = useLoadingLock(entries.isPlaceholderData || entries.isRefetching);
     const state = useMemo(() => ({
         filter,
         entries,
         countries,
         cities,
-        changing: entries.isPlaceholderData || entries.isRefetching,
+        changing,
         show: (next: GroupCatalogFilter) => {
             void navigate(groupCatalogHref(next));
         },
-    }), [filter, entries, countries, cities, navigate]);
+    }), [filter, changing, entries, countries, cities, navigate]);
 
     return <GroupCatalogContext value={state}>{children}</GroupCatalogContext>;
 }

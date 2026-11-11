@@ -19,7 +19,7 @@ import {
 import {CreateReleaseProvider} from '@/features/release-create';
 import {DeleteReleaseButton} from '@/features/release-delete';
 import {EditReleaseProvider} from '@/features/release-edit';
-import {useSkeleton} from '@/shared/lib/skeleton';
+import {useSkeleton} from '@/shared/lib/loading';
 import {PageLayout} from '@/shared/ui/page-layout';
 
 export interface ReleaseCreatorProps {

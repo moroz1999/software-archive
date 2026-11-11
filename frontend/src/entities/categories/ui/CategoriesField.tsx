@@ -1,5 +1,5 @@
 import {useTranslation} from 'react-i18next';
-import {useSkeleton} from '@/shared/lib/skeleton';
+import {useSkeleton} from '@/shared/lib/loading';
 import {Skeleton} from '@/shared/ui/skeleton';
 import {TreeChecklist, type TreeChecklistItem} from '@/shared/ui/tree-checklist';
 import type {CategoryNode} from '../model/category';

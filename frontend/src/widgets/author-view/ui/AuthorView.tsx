@@ -11,7 +11,7 @@ import {Stack} from '@/shared/ui/stack';
 import {Text, TextLink} from '@/shared/ui/typography';
 import {AuthorViewSkeleton} from './AuthorViewSkeleton';
 import styles from './AuthorView.module.css';
-import {useSkeleton} from '@/shared/lib/skeleton';
+import {useSkeleton} from '@/shared/lib/loading';
 
 export interface AuthorViewProps {
     readonly id: AuthorId;

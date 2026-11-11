@@ -8,7 +8,7 @@ import {Stack} from '@/shared/ui/stack';
 import {Text} from '@/shared/ui/typography';
 import {groupCatalogHref} from '../model/catalog-filter';
 import {useGroupCatalog} from '../model/group-catalog-context';
-import {useSkeleton} from '@/shared/lib/skeleton';
+import {useSkeleton} from '@/shared/lib/loading';
 
 /** The group catalog with its letters, place filters and pages, inside a GroupCatalogProvider. */
 export function GroupCatalog() {

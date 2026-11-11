@@ -12,7 +12,7 @@ export interface AuthorCatalogState {
     readonly countries: UseQueryResult<readonly Country[]>;
     /** The cities of the chosen country; pending while none is chosen. */
     readonly cities: UseQueryResult<readonly City[]>;
-    /** Another filter or page is loading over the shown entries: the controls are locked. */
+    /** Another filter or page has been loading over the shown entries for a while: the controls are locked. */
     readonly changing: boolean;
     /** Goes to the address of another filter. */
     readonly show: (filter: AuthorCatalogFilter) => void;

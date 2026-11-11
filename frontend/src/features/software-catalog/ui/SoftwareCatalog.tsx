@@ -3,7 +3,7 @@ import {useTranslation} from 'react-i18next';
 import type {CategoryNode} from '@/entities/categories';
 import {toCountryId} from '@/entities/locations';
 import {SoftwareCard, SoftwareCardSkeleton, softwarePath} from '@/entities/software';
-import {useSkeleton} from '@/shared/lib/skeleton';
+import {useSkeleton} from '@/shared/lib/loading';
 import {CardGrid} from '@/shared/ui/card-grid';
 import {Field} from '@/shared/ui/field';
 import {Inline} from '@/shared/ui/inline';

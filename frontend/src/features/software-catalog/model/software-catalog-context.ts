@@ -13,7 +13,7 @@ export interface SoftwareCatalogState {
     readonly categories: UseQueryResult<readonly CategoryNode[]>;
     /** The countries the country filter is named by. */
     readonly countries: UseQueryResult<readonly Country[]>;
-    /** Another filter or page is loading over the shown cards: the controls are locked. */
+    /** Another filter or page has been loading over the shown cards for a while: the controls are locked. */
     readonly changing: boolean;
     /** Goes to the address of another filter. */
     readonly show: (filter: SoftwareCatalogFilter) => void;

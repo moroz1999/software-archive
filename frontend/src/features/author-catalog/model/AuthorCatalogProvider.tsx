@@ -3,6 +3,7 @@ import {useQuery} from '@tanstack/react-query';
 import {useNavigate, useSearchParams} from 'react-router';
 import {citiesQuery, countriesQuery} from '@/entities/locations';
 import {usePlatformSelection} from '@/entities/platforms';
+import {useLoadingLock} from '@/shared/lib/loading';
 import {authorCatalogQuery} from '../api/catalog-queries';
 import {AuthorCatalogContext} from './author-catalog-context';
 import {type AuthorCatalogFilter, catalogHref, parseCatalogFilter} from './catalog-filter';
@@ -20,16 +21,17 @@ export function AuthorCatalogProvider({children}: {readonly children: ReactNode}
     const countries = useQuery(countriesQuery());
     const cities = useQuery(citiesQuery(filter.country));
 
+    const changing = useLoadingLock(entries.isPlaceholderData || entries.isRefetching);
     const state = useMemo(() => ({
         filter,
         entries,
         countries,
         cities,
-        changing: entries.isPlaceholderData || entries.isRefetching,
+        changing,
         show: (next: AuthorCatalogFilter) => {
             void navigate(catalogHref(next));
         },
-    }), [filter, entries, countries, cities, navigate]);
+    }), [filter, changing, entries, countries, cities, navigate]);
 
     return <AuthorCatalogContext value={state}>{children}</AuthorCatalogContext>;
 }

@@ -9,7 +9,7 @@ import {Text} from '@/shared/ui/typography';
 import {useAuthorCatalog} from '../model/author-catalog-context';
 import type {AuthorCatalogEntry} from '../model/catalog';
 import {catalogHref} from '../model/catalog-filter';
-import {useSkeleton} from '@/shared/lib/skeleton';
+import {useSkeleton} from '@/shared/lib/loading';
 
 /** The author catalog with its letters, place filters and pages, inside an AuthorCatalogProvider. */
 export function AuthorCatalog() {

@@ -3,7 +3,7 @@ import {CardGrid} from '@/shared/ui/card-grid';
 import {LoadingState} from '@/shared/ui/loading-state';
 import {Text} from '@/shared/ui/typography';
 import {useLatestSoftware} from '../model/latest-software-context';
-import {useSkeleton} from '@/shared/lib/skeleton';
+import {useSkeleton} from '@/shared/lib/loading';
 
 const SKELETON_CARDS = [1, 2, 3, 4, 5, 6, 7, 8];
 

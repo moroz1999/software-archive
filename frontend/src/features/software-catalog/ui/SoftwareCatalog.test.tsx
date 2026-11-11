@@ -250,6 +250,23 @@ describe(SoftwareCatalog, () => {
         });
     });
 
+    it('shows the cards of a filter that answers at once with no spinner and no locked filters', async () => {
+        stubFetchRoutes(routes({[ALL]: catalog([ELITE, EXOLON]), [`${ALL}&year=1989`]: catalog([EXOLON])}));
+        openCatalog();
+        await screen.findByRole('option', {name: '1989 (1)'});
+
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Year'}), '1989');
+
+        expect(screen.getByRole('combobox', {name: 'Year'})).toBeEnabled();
+
+        await screen.findByRole('article', {name: 'Exolon'});
+        await waitFor(() => {
+            expect(screen.queryByRole('article', {name: 'Elite'})).not.toBeInTheDocument();
+        });
+
+        expect(screen.queryByTestId('loading-state-spinner')).not.toBeInTheDocument();
+    });
+
     it('reports a system error when the catalog cannot be read', async () => {
         const reports: SystemErrorReport[] = [];
         unsubscribers.push(subscribeSystemErrors((report) => reports.push(report)));

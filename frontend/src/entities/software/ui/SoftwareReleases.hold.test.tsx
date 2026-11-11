@@ -5,7 +5,7 @@ import {toSoftwareId} from '../model/software';
 import {SoftwareReleasesProvider} from '../model/SoftwareReleasesProvider';
 import {SoftwareReleases} from './SoftwareReleases';
 
-vi.unmock('@/shared/lib/skeleton/skeleton-timing');
+vi.unmock('@/shared/lib/loading/skeleton-timing');
 
 const ID = toSoftwareId('00000000-0000-0000-0001-000000000001');
 

@@ -6,7 +6,7 @@ import {json, pageResponse, renderWithQueries, stubFetch} from '@/shared/lib/tes
 import {LatestSoftwareProvider} from '../model/LatestSoftwareProvider';
 import {LatestSoftware} from './LatestSoftware';
 
-vi.unmock('@/shared/lib/skeleton/skeleton-timing');
+vi.unmock('@/shared/lib/loading/skeleton-timing');
 
 const ELITE = {id: '00000000-0000-0000-0001-000000000001', title: 'Elite', releaseDate: '1984-09-20'};
 

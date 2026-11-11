@@ -1,7 +1,7 @@
 import {SoftwareDetailsProvider, SoftwareForm, type SoftwareId, SoftwareFormSkeleton, useSoftwareDetails} from '@/entities/software';
 import {DeleteSoftwareButton} from '@/features/software-delete';
 import {EditSoftwareProvider} from '@/features/software-edit';
-import {useSkeleton} from '@/shared/lib/skeleton';
+import {useSkeleton} from '@/shared/lib/loading';
 import {SoftwareCategoriesField} from './SoftwareCategoriesField';
 
 export interface SoftwareEditorProps {

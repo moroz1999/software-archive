@@ -20,7 +20,7 @@ afterEach(() => {
 });
 
 // Skeletons are not held in tests unless a test unmocks the timing to check exactly that (docs/testing.md).
-vi.mock('@/shared/lib/skeleton/skeleton-timing', () => ({SKELETON_MIN_MS: 0}));
+vi.mock('@/shared/lib/loading/skeleton-timing', () => ({SKELETON_MIN_MS: 0}));
 
 // jsdom has no media queries: every test screen is wider than a phone unless a test stubs `matchMedia` itself.
 Object.defineProperty(globalThis, 'matchMedia', {

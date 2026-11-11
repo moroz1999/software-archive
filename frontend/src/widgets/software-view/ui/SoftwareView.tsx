@@ -24,7 +24,7 @@ import {Stack} from '@/shared/ui/stack';
 import {Heading, Text} from '@/shared/ui/typography';
 import {SoftwareViewSkeleton} from './SoftwareViewSkeleton';
 import styles from './SoftwareView.module.css';
-import {useSkeleton} from '@/shared/lib/skeleton';
+import {useSkeleton} from '@/shared/lib/loading';
 
 export interface SoftwareViewProps {
     readonly id: SoftwareId;

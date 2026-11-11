@@ -2,7 +2,7 @@ import {type ReactNode, useId, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {classNames} from '@/shared/lib/class-names';
 import {MOBILE_QUERY, useMediaQuery} from '@/shared/lib/screen';
-import {useSkeleton} from '@/shared/lib/skeleton';
+import {useSkeleton} from '@/shared/lib/loading';
 import {Badge} from '@/shared/ui/badge';
 import {Inline} from '@/shared/ui/inline';
 import {Panel} from '@/shared/ui/panel';
