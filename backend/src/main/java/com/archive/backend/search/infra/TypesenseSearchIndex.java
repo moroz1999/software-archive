@@ -1,5 +1,7 @@
 package com.archive.backend.search.infra;
 
+import static com.archive.backend.search.infra.TypesenseCall.call;
+
 import com.archive.backend.search.domain.SearchCollection;
 import com.archive.backend.search.domain.SearchEntity;
 import com.archive.backend.search.domain.SearchEntityType;
@@ -9,9 +11,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.typesense.api.Client;
@@ -45,6 +50,14 @@ public class TypesenseSearchIndex implements SearchIndex {
             case SOFTWARE ->
                 List.of(
                         new Field().name("title").type(FieldTypes.STRING),
+                        // The catalog's order: by title, whatever the case.
+                        new Field().name("title_sort").type(FieldTypes.STRING).sort(true),
+                        // Shown on the card only.
+                        new Field()
+                                .name("release_date")
+                                .type(FieldTypes.STRING)
+                                .index(false)
+                                .optional(true),
                         new Field().name("alternative_titles").type(FieldTypes.STRING_ARRAY),
                         new Field().name("platform").type(FieldTypes.STRING).facet(true),
                         new Field()
@@ -67,6 +80,10 @@ public class TypesenseSearchIndex implements SearchIndex {
         Map<String, Object> doc = new HashMap<>();
         doc.put("id", d.id().toString());
         doc.put("title", d.title());
+        doc.put("title_sort", d.title().toLowerCase(Locale.ROOT));
+        if (d.releaseDate() != null) {
+            doc.put("release_date", d.releaseDate().toString());
+        }
         doc.put("alternative_titles", d.alternativeTitles());
         doc.put("platform", d.platform());
         if (d.year() != null) {
@@ -100,8 +117,18 @@ public class TypesenseSearchIndex implements SearchIndex {
     }
 
     @Override
-    public boolean exists(SearchEntityType type) {
-        return target(type).isPresent();
+    public boolean isCurrent(SearchEntityType type) {
+        Optional<String> collection = target(type);
+        if (collection.isEmpty()) {
+            return false;
+        }
+        Set<String> present = call(
+                        "read collection " + collection.get(),
+                        () -> client.collections(collection.get()).retrieve().getFields())
+                .stream()
+                .map(Field::getName)
+                .collect(Collectors.toSet());
+        return fields(type).stream().map(Field::getName).allMatch(present::contains);
     }
 
     private Optional<String> target(SearchEntityType type) {
@@ -167,19 +194,5 @@ public class TypesenseSearchIndex implements SearchIndex {
             }
             return collection;
         });
-    }
-
-    private interface Call<T> {
-        T run() throws Exception;
-    }
-
-    private static <T> T call(String what, Call<T> call) {
-        try {
-            return call.run();
-        } catch (SearchIndexException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new SearchIndexException("Typesense failed to " + what, e);
-        }
     }
 }

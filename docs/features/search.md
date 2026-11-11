@@ -7,7 +7,7 @@ PostgreSQL stays the source of truth: every change and every full page of an ent
 ## Stages
 
 1. **Index infrastructure** — the `software` collection, the outbox, the worker, the rebuild. *Built.*
-2. **Software catalog** — `/software` reads from Typesense, with the year, category and country filters.
+2. **Software catalog** — `/software` reads from Typesense, with the year, category and country filters ([software-list.md](software-list.md)). *Built.*
 3. **Quick search** — the `authors` and `groups` collections, the header button and the window with brief results.
 4. Later: the full search section; the author and group catalogs move to Typesense.
 
@@ -26,6 +26,7 @@ Platforms of people and groups are those of the software their labels are credit
 ## Reads
 
 - **Software catalog.** The chosen filters go to `filter_by`; year, category and country are asked through `facet_by`; an empty keyword is `q=*`. The answer is the page and, for each facet, the values with counts over the whole filtered result. `max_facet_values` fits the interface. The values of an active filter come from a separate search without its own condition, keeping the keyword and the other conditions; all searches of one view go in one `multi_search`.
+  - As built: one `multi_search` with the main search and, for each chosen filter, a search with `per_page=0` that asks only its own facet; `max_facet_values` is 1000. The keyword is matched over `title` and `alternative_titles`, the page sorted by `title_sort`, the lowercased title. A card's release day is stored with the document, not indexed.
 - **Quick search.** One `multi_search` over the three collections with the keyword and the platform: a few hits and the count of matches per section.
 - **Full search** (later): the same, with a page of its own per section.
 - **Typesense unavailable.** A read fails as a system error and goes to the error dialog ([error-handling.md](../error-handling.md)). Edits are not affected.
@@ -49,7 +50,7 @@ Platforms of people and groups are those of the software their labels are credit
 
 ## Initial load and rebuild
 
-The rebuild runs inside the backend, in the process of the worker: by itself when the collection aliases do not exist yet, and on demand by a start option.
+The rebuild runs inside the backend, in the process of the worker: by itself when a collection alias does not exist yet or points at a collection without every field of the current schema, and on demand by a start option.
 
 1. Pause the worker before reading PostgreSQL; changes keep writing tasks.
 2. Build the documents by the rules of the worker and import them in batches into new collections, checking the result of every document.

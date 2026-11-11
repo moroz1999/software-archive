@@ -198,6 +198,7 @@ class SoftwareSearchSyncIT {
         assertThat(doc)
                 .containsEntry("title", "Elite")
                 .containsEntry("platform", "vector")
+                .containsEntry("release_date", "1987-05-01")
                 .containsEntry("year", 1987);
         assertThat(listIn(doc, "alternative_titles")).containsExactly("Элита");
         assertThat(listIn(doc, "categories"))

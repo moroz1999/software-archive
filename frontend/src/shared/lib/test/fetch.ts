@@ -63,8 +63,14 @@ export interface PageMeta {
     readonly totalPages?: number;
 }
 
+/** The body of a backend page response; a response with more beside the page spreads it. */
+export interface PageResponse {
+    readonly content: readonly unknown[];
+    readonly page: Required<PageMeta>;
+}
+
 /** A backend page response holding the given items; one page of 20 unless told otherwise. */
-export function pageResponse(items: readonly unknown[], meta: PageMeta = {}): unknown {
+export function pageResponse(items: readonly unknown[], meta: PageMeta = {}): PageResponse {
     return {
         content: items,
         page: {size: 20, number: 0, totalElements: items.length, totalPages: 1, ...meta},

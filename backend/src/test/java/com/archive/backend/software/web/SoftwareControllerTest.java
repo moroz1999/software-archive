@@ -30,8 +30,6 @@ import com.archive.backend.software.app.GetSoftwareHandler;
 import com.archive.backend.software.app.GetSoftwareQuery;
 import com.archive.backend.software.app.ListLatestSoftwareHandler;
 import com.archive.backend.software.app.ListLatestSoftwareQuery;
-import com.archive.backend.software.app.ListSoftwareHandler;
-import com.archive.backend.software.app.ListSoftwareQuery;
 import com.archive.backend.software.app.ListSoftwareReleasesHandler;
 import com.archive.backend.software.app.ListSoftwareReleasesQuery;
 import com.archive.backend.software.app.UpdateSoftwareCommand;
@@ -77,9 +75,6 @@ class SoftwareControllerTest {
     private MockMvc mvc;
 
     @MockitoBean
-    private ListSoftwareHandler listHandler;
-
-    @MockitoBean
     private ListLatestSoftwareHandler latestHandler;
 
     @MockitoBean
@@ -96,39 +91,6 @@ class SoftwareControllerTest {
 
     @MockitoBean
     private DeleteSoftwareHandler deleteHandler;
-
-    @Test
-    void listsSoftwareAsListItems() throws Exception {
-        when(listHandler.handle(any(ListSoftwareQuery.class)))
-                .thenReturn(new PageImpl<>(
-                        List.of(new SoftwareSummary(ID, "Title", LocalDate.of(1987, 5, 1))), PageRequest.of(0, 20), 1));
-
-        mvc.perform(get("/api/software"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].id").value(ID.toString()))
-                .andExpect(jsonPath("$.content[0].title").value("Title"))
-                .andExpect(jsonPath("$.content[0].releaseDate").value("1987-05-01"))
-                .andExpect(jsonPath("$.page.totalElements").value(1))
-                .andExpect(jsonPath("$.page.number").value(0))
-                .andExpect(jsonPath("$.page.size").value(20));
-    }
-
-    @Test
-    void listsTheSoftwareOfAPlatform() throws Exception {
-        when(listHandler.handle(new ListSoftwareQuery(new PlatformCode("bk"), PageRequest.of(0, 20))))
-                .thenReturn(new PageImpl<>(List.of(new SoftwareSummary(ID, "Title", null)), PageRequest.of(0, 20), 1));
-
-        mvc.perform(get("/api/software").param("platform", "bk").param("size", "20"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].title").value("Title"));
-    }
-
-    @Test
-    void answers400ForAnInvalidPlatformOfTheList() throws Exception {
-        mvc.perform(get("/api/software").param("platform", "BK!"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("platform.code-invalid"));
-    }
 
     @Test
     void listsTheLatestSoftwareOfAPlatform() throws Exception {

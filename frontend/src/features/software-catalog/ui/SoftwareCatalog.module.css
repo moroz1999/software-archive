@@ -1,0 +1,3 @@
+.filter {
+    min-width: var(--software-catalog-filter-min-width);
+}

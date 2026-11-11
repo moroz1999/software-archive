@@ -1,6 +1,6 @@
 export {createRelease, deleteRelease, fetchPlatformHardware, fetchSoftwareRelease, updateRelease} from './api/release-api';
 export {createSoftware, deleteSoftware, fetchSoftware, fetchSoftwareReleases, updateSoftware} from './api/software-api';
-export {fetchLatestSoftware, fetchSoftwarePage} from './api/fetch-software-page';
+export {fetchLatestSoftware, parseSoftware} from './api/fetch-software-page';
 export {platformHardwareQuery, querySoftwareWithHardware, SOFTWARE_QUERY_KEY, softwareDetailsQuery, softwareReleaseQuery, softwareReleasesQuery} from './api/software-queries';
 export {
     RELEASE_EDIT_ROUTE,

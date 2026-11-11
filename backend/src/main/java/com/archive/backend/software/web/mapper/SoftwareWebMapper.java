@@ -6,7 +6,6 @@ import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.software.app.CreateSoftwareCommand;
 import com.archive.backend.software.app.ListLatestSoftwareQuery;
-import com.archive.backend.software.app.ListSoftwareQuery;
 import com.archive.backend.software.app.UpdateSoftwareCommand;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
@@ -38,10 +37,6 @@ public interface SoftwareWebMapper {
 
     default SoftwareCreatedDto toCreated(SoftwareId id) {
         return new SoftwareCreatedDto(id.value());
-    }
-
-    default ListSoftwareQuery toListQuery(@Nullable String platform, Pageable pageable) {
-        return new ListSoftwareQuery(toPlatformFilter(platform), pageable);
     }
 
     default ListLatestSoftwareQuery toLatestQuery(@Nullable String platform, Pageable pageable) {

@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.archive.backend.TestcontainersConfiguration;
 import com.archive.backend.TypesenseTestConfiguration;
 import com.archive.backend.search.TypesenseProbe;
+import com.archive.backend.search.domain.SearchEntityType;
+import com.archive.backend.search.domain.SearchIndex;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -32,6 +34,12 @@ class SearchRebuildIT {
 
     @Autowired
     private ProcessSearchOutboxHandler worker;
+
+    @Autowired
+    private SearchIndexOnStartup startup;
+
+    @Autowired
+    private SearchIndex index;
 
     @Autowired
     private JdbcTemplate jdbc;
@@ -107,6 +115,31 @@ class SearchRebuildIT {
         jdbc.update("INSERT INTO search_outbox (entity_type, entity_id) VALUES ('SOFTWARE', ?)", ELITE);
         worker.handle();
 
+        assertThat(probe.software(ELITE)).isPresent();
+    }
+
+    @Test
+    void aCollectionOfTheCurrentSchemaIsCurrent() {
+        rebuild.handle();
+
+        assertThat(index.isCurrent(SearchEntityType.SOFTWARE)).isTrue();
+    }
+
+    @Test
+    void aCollectionOfAnOlderSchemaIsNotCurrent() throws Exception {
+        probe.aliasAnOutdatedSoftwareCollection();
+
+        assertThat(index.isCurrent(SearchEntityType.SOFTWARE)).isFalse();
+    }
+
+    @Test
+    void theApplicationRebuildsACollectionOfAnOlderSchemaOnStart() throws Exception {
+        insertUnindexed(ELITE, "Elite");
+        probe.aliasAnOutdatedSoftwareCollection();
+
+        startup.onReady();
+
+        assertThat(index.isCurrent(SearchEntityType.SOFTWARE)).isTrue();
         assertThat(probe.software(ELITE)).isPresent();
     }
 }

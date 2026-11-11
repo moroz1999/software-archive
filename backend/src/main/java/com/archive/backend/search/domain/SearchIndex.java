@@ -14,8 +14,8 @@ public interface SearchIndex {
     /** Removes the entity's document from the collection in use; a missing document counts as removed. */
     void delete(SearchEntity entity);
 
-    /** Whether a collection of the kind is in use. */
-    boolean exists(SearchEntityType type);
+    /** Whether the collection of the kind in use has every field the documents of the kind have now. */
+    boolean isCurrent(SearchEntityType type);
 
     /** Creates a new, empty collection of the kind, not yet in use. */
     SearchCollection create(SearchEntityType type);

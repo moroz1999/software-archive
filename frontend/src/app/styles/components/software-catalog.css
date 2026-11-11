@@ -1,0 +1,4 @@
+:root {
+    /* Narrowest width of a catalog filter, so the longest country names fit. */
+    --software-catalog-filter-min-width: 240px;
+}

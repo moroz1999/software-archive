@@ -44,11 +44,6 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     private final JdbcClient jdbc;
 
     @Override
-    public Page<SoftwareSummary> findPage(@Nullable String platform, Pageable pageable) {
-        return page(platform, "lower(title), title, id", pageable);
-    }
-
-    @Override
     public Page<SoftwareSummary> findLatest(@Nullable String platform, Pageable pageable) {
         return page(platform, "created_at DESC, id", Pageable.ofSize(pageable.getPageSize()));
     }

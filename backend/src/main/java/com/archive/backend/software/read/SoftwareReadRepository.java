@@ -13,11 +13,6 @@ import org.springframework.data.domain.Pageable;
 public interface SoftwareReadRepository {
 
     /**
-     * A page of software; only of the platform when one is given.
-     */
-    Page<SoftwareSummary> findPage(@Nullable String platform, Pageable pageable);
-
-    /**
      * The most recently added software first, only of the platform when one is given; the sort is ignored.
      */
     Page<SoftwareSummary> findLatest(@Nullable String platform, Pageable pageable);

@@ -16,6 +16,8 @@ export const resources = {
         filters: {
             platform: 'Platform', allPlatforms: 'All platforms', country: 'Country', anyCountry: 'Any country', city: 'City',
             anyCity: 'Any city', firstLetter: 'First letter', all: 'All', filter: 'Filter', filterLabel: 'Filter {{label}}',
+            search: 'Search', year: 'Year', anyYear: 'Any year', category: 'Category', allCategories: 'All categories',
+            subcategories: 'Subcategories', withCount: '{{label}} ({{count}})',
         },
         fields: {
             title: 'Title', platform: 'Platform', description: 'Description', releaseDate: 'Release date', version: 'Version',
@@ -106,6 +108,8 @@ export const resources = {
         filters: {
             platform: 'Платформа', allPlatforms: 'Все платформы', country: 'Страна', anyCountry: 'Любая страна', city: 'Город',
             anyCity: 'Любой город', firstLetter: 'Первая буква', all: 'Все', filter: 'Фильтр', filterLabel: 'Фильтр: {{label}}',
+            search: 'Поиск', year: 'Год', anyYear: 'Любой год', category: 'Категория', allCategories: 'Все категории',
+            subcategories: 'Подкатегории', withCount: '{{label}} ({{count}})',
         },
         fields: {
             title: 'Название', platform: 'Платформа', description: 'Описание', releaseDate: 'Дата выпуска', version: 'Версия',

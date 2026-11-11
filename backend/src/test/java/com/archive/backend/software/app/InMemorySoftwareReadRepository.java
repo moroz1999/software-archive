@@ -42,17 +42,6 @@ class InMemorySoftwareReadRepository implements SoftwareReadRepository {
         return lastPlatform;
     }
 
-    @Override
-    public Page<SoftwareSummary> findPage(@Nullable String platform, Pageable pageable) {
-        lastPlatform = platform;
-        int from = (int) Math.min(pageable.getOffset(), items.size());
-        int to = Math.min(from + pageable.getPageSize(), items.size());
-        List<SoftwareSummary> content = items.subList(from, to).stream()
-                .map(details -> new SoftwareSummary(details.id(), details.title(), details.releaseDate()))
-                .toList();
-        return new PageImpl<>(content, pageable, items.size());
-    }
-
     /** Added last means newest. */
     @Override
     public Page<SoftwareSummary> findLatest(@Nullable String platform, Pageable pageable) {

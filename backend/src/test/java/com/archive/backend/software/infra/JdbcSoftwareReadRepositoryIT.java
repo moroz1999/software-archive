@@ -78,26 +78,6 @@ class JdbcSoftwareReadRepositoryIT {
     }
 
     @Test
-    void readsAPageOfSummariesOfEveryPlatformByTitle() {
-        Page<SoftwareSummary> page = reads.findPage(null, PageRequest.of(0, 20));
-
-        assertThat(page.getContent())
-                .containsExactly(
-                        new SoftwareSummary(ELITE, "Elite", LocalDate.of(1985, 9, 20)),
-                        new SoftwareSummary(NEWEST, "Newest", null),
-                        new SoftwareSummary(TETRIS, "Tetris", null));
-        assertThat(page.getTotalElements()).isEqualTo(3);
-    }
-
-    @Test
-    void readsAPageOfTheSoftwareOfAPlatform() {
-        Page<SoftwareSummary> page = reads.findPage("vector", PageRequest.of(0, 20));
-
-        assertThat(page.getContent()).extracting(SoftwareSummary::title).containsExactly("Elite", "Newest");
-        assertThat(page.getTotalElements()).isEqualTo(2);
-    }
-
-    @Test
     void readsTheLatestAddedSoftwareFirstWhateverSortIsAsked() {
         Page<SoftwareSummary> page = reads.findLatest(null, PageRequest.of(0, 2, Sort.by("title")));
 

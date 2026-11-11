@@ -6,7 +6,6 @@ import com.archive.backend.software.app.DeleteSoftwareHandler;
 import com.archive.backend.software.app.GetSoftwareHandler;
 import com.archive.backend.software.app.GetSoftwareQuery;
 import com.archive.backend.software.app.ListLatestSoftwareHandler;
-import com.archive.backend.software.app.ListSoftwareHandler;
 import com.archive.backend.software.app.ListSoftwareReleasesHandler;
 import com.archive.backend.software.app.ListSoftwareReleasesQuery;
 import com.archive.backend.software.app.UpdateSoftwareHandler;
@@ -42,7 +41,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class SoftwareController {
 
-    private final ListSoftwareHandler listHandler;
     private final ListLatestSoftwareHandler latestHandler;
     private final GetSoftwareHandler getHandler;
     private final ListSoftwareReleasesHandler releasesHandler;
@@ -50,12 +48,6 @@ public class SoftwareController {
     private final UpdateSoftwareHandler updateHandler;
     private final DeleteSoftwareHandler deleteHandler;
     private final SoftwareWebMapper webMapper;
-
-    @GetMapping
-    public Page<SoftwareListItemDto> list(
-            @RequestParam(required = false) @Nullable String platform, Pageable pageable) {
-        return listHandler.handle(webMapper.toListQuery(platform, pageable)).map(webMapper::toListItem);
-    }
 
     /**
      * The most recently added software; only the page size is taken from the request.

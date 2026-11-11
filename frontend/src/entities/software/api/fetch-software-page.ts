@@ -1,7 +1,6 @@
 import {getJson, mapResponse, type Page, parsePage, readNullableString, readObject, readString} from '@/shared/api';
 import {type Software, toReleaseDate, toSoftwareId, toSoftwareTitle} from '../model/software';
 
-const PAGE_SIZE = 20;
 /** Cards of the latest software on the home page. */
 const LATEST_SIZE = 12;
 
@@ -10,7 +9,8 @@ function platformParam(platform: string | null): string {
     return platform === null ? '' : `&platform=${encodeURIComponent(platform)}`;
 }
 
-function parseSoftware(item: unknown): Software {
+/** A card of a list of software, as the API gives it. */
+export function parseSoftware(item: unknown): Software {
     const dto = readObject(item, 'software');
     const releaseDate = readNullableString(dto, 'releaseDate');
     return {
@@ -18,12 +18,6 @@ function parseSoftware(item: unknown): Software {
         title: toSoftwareTitle(readString(dto, 'title')),
         releaseDate: releaseDate === null ? null : toReleaseDate(releaseDate),
     };
-}
-
-/** One page of the software list, of the platform when one is given: `GET /api/software`. */
-export async function fetchSoftwarePage(page: number, platform: string | null, signal: AbortSignal): Promise<Page<Software>> {
-    const json = await getJson(`/api/software?page=${String(page)}&size=${String(PAGE_SIZE)}${platformParam(platform)}`, signal);
-    return mapResponse(() => parsePage(json, parseSoftware));
 }
 
 /** The most recently added software, newest first, of the platform when one is given: `GET /api/software/latest`. */

@@ -11,7 +11,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 /**
- * Builds the search collections on start when there are none yet, or when the start asks for it with
+ * Builds the search collections on start when there are none yet or the one in use lacks fields the documents have
+ * now, or when the start asks for it with
  * {@code search.rebuild=true} (docs/features/search.md#initial-load-and-rebuild). The archive starts without search
  * when the engine is down.
  */
@@ -29,7 +30,7 @@ public class SearchIndexOnStartup {
     public void onReady() {
         try {
             if (environment.getProperty("search.rebuild", Boolean.class, false)
-                    || !index.exists(SearchEntityType.SOFTWARE)) {
+                    || !index.isCurrent(SearchEntityType.SOFTWARE)) {
                 rebuild.handle();
             }
         } catch (RuntimeException e) {

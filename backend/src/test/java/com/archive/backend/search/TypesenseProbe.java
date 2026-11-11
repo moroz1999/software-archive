@@ -9,7 +9,11 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.typesense.TypesenseContainer;
 import org.typesense.api.Client;
 import org.typesense.api.Configuration;
+import org.typesense.api.FieldTypes;
 import org.typesense.api.exceptions.ObjectNotFound;
+import org.typesense.model.CollectionAliasSchema;
+import org.typesense.model.CollectionSchema;
+import org.typesense.model.Field;
 import org.typesense.resources.Node;
 
 /** Looks into the Typesense of the tests as a reader would, and takes it down and up. */
@@ -43,6 +47,19 @@ public final class TypesenseProbe {
         } catch (ObjectNotFound e) {
             return Optional.empty();
         }
+    }
+
+    /**
+     * Puts in use, under the {@code software} alias, a collection built by an older schema: it lacks fields the documents
+     * have now.
+     */
+    public void aliasAnOutdatedSoftwareCollection() throws Exception {
+        String name = "software_outdated_" + UUID.randomUUID().toString().replace("-", "");
+        client.collections()
+                .create(new CollectionSchema()
+                        .name(name)
+                        .fields(List.of(new Field().name("title").type(FieldTypes.STRING))));
+        client.aliases().upsert("software", new CollectionAliasSchema().collectionName(name));
     }
 
     /** Freezes Typesense: every call to it times out until {@link #resume()}. */

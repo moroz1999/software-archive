@@ -18,7 +18,8 @@ import {loadGroupsPage, preloadGroupsPage, shouldPreloadGroupsPage} from '@/page
 import {loadHomePage, preloadHomePage} from '@/pages/home';
 import {loadReleaseEditPage, preloadReleaseEditPage} from '@/pages/release-edit';
 import {loadReleaseNewPage, preloadReleaseNewPage} from '@/pages/release-new';
-import {loadSoftwarePage, preloadSoftwarePage} from '@/pages/software';
+import {loadSoftwarePage, preloadSoftwarePage, shouldPreloadSoftwarePage} from '@/pages/software';
+import {SOFTWARE_CATEGORY_ROUTE} from '@/features/software-catalog';
 import {loadSoftwareEditPage, preloadSoftwareEditPage} from '@/pages/software-edit';
 import {loadSoftwareNewPage} from '@/pages/software-new';
 import {loadSoftwareViewPage, preloadSoftwareViewPage} from '@/pages/software-view';
@@ -44,7 +45,13 @@ const unknownAddress = () => {
 const routes = (queryClient: QueryClient): RouteObject[] => [{Component: AppLayout, HydrateFallback: nothing, children: [
     {ErrorBoundary: RouteErrorBoundary, HydrateFallback: nothing, children: [
         {path: HOME_PATH, loader: preloadHomePage(queryClient), lazy: {Component: loadHomePage}, HydrateFallback: nothing},
-        {path: SOFTWARE_LIST_PATH, loader: preloadSoftwarePage(queryClient), lazy: {Component: loadSoftwarePage}, HydrateFallback: nothing},
+        ...[SOFTWARE_LIST_PATH, SOFTWARE_CATEGORY_ROUTE].map((path) => ({
+            path,
+            loader: preloadSoftwarePage(queryClient),
+            shouldRevalidate: shouldPreloadSoftwarePage,
+            lazy: {Component: loadSoftwarePage},
+            HydrateFallback: nothing,
+        })),
         {path: SOFTWARE_NEW_PATH, lazy: {Component: loadSoftwareNewPage}, HydrateFallback: nothing},
         {path: SOFTWARE_ROUTE, loader: preloadSoftwareViewPage(queryClient), lazy: {Component: loadSoftwareViewPage}, HydrateFallback: nothing},
         {path: SOFTWARE_EDIT_ROUTE, loader: preloadSoftwareEditPage(queryClient), lazy: {Component: loadSoftwareEditPage}, HydrateFallback: nothing},

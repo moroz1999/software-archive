@@ -1,6 +1,7 @@
 package com.archive.backend.search.domain;
 
 import com.archive.backend.shared.domain.ddd.ValueObject;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -14,6 +15,7 @@ import org.jspecify.annotations.Nullable;
 public record SoftwareDocument(
         UUID id,
         String title,
+        @Nullable LocalDate releaseDate,
         List<String> alternativeTitles,
         String platform,
         @Nullable Integer year,

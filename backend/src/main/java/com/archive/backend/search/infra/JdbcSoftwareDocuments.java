@@ -5,6 +5,7 @@ import com.archive.backend.search.domain.SoftwareDocuments;
 import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +25,7 @@ import org.springframework.stereotype.Repository;
 public class JdbcSoftwareDocuments implements SoftwareDocuments {
 
     private static final String SELECT = """
-            SELECT s.id, s.title, s.platform_code,
+            SELECT s.id, s.title, s.release_date, s.platform_code,
                    EXTRACT(YEAR FROM s.release_date)::int AS year,
                    ARRAY(SELECT t.title FROM software_alternative_titles t
                          WHERE t.software_id = s.id ORDER BY t.title) AS alternative_titles,
@@ -70,6 +71,7 @@ public class JdbcSoftwareDocuments implements SoftwareDocuments {
         return new SoftwareDocument(
                 rs.getObject("id", UUID.class),
                 rs.getString("title"),
+                rs.getObject("release_date", LocalDate.class),
                 list(rs.getArray("alternative_titles"), String.class),
                 rs.getString("platform_code"),
                 rs.getObject("year", Integer.class),
