@@ -1,6 +1,6 @@
 import {useTranslation} from 'react-i18next';
 import {AuthorForm, type AuthorId, AUTHORS_PATH} from '@/entities/authors';
-import {CreateAuthorProvider} from '@/features/author-create';
+import {CreateAuthorProvider} from '@/features/author/create';
 import {Button} from '@/shared/ui/button';
 import {PageLayout} from '@/shared/ui/page-layout';
 import {AuthorLabels, AuthorLocations} from './AuthorFields';

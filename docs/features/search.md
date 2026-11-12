@@ -8,7 +8,7 @@ PostgreSQL stays the source of truth: every change and every full page of an ent
 
 1. **Index infrastructure** — the `software` collection, the outbox, the worker, the rebuild. *Built.*
 2. **Software catalog** — `/software` reads from Typesense, with the year, category and country filters ([software-list.md](software-list.md)). *Built.*
-3. **Quick search** — the `authors` and `groups` collections, the header button and the window with brief results. *The collections and the REST read built; the window next.*
+3. **Quick search** — the `authors` and `groups` collections, the header button and the window with brief results. ([quick-search.md](quick-search.md)). *Built.*
 4. Later: the full search section; the author and group catalogs move to Typesense.
 
 ## Collections

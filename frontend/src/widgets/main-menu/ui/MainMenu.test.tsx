@@ -34,6 +34,12 @@ describe(MainMenu, () => {
         expect(menu.getByRole('link', {name: 'Categories'})).toHaveAttribute('href', '/categories');
     });
 
+    it('offers the quick search', () => {
+        renderAt('/');
+
+        expect(screen.getByRole('button', {name: 'Search'})).toBeInTheDocument();
+    });
+
     it('marks only the home page on the home page', () => {
         renderAt('/');
 

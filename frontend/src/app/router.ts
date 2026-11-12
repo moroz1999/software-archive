@@ -19,7 +19,7 @@ import {loadHomePage, preloadHomePage} from '@/pages/home';
 import {loadReleaseEditPage, preloadReleaseEditPage} from '@/pages/release-edit';
 import {loadReleaseNewPage, preloadReleaseNewPage} from '@/pages/release-new';
 import {loadSoftwarePage, preloadSoftwarePage, shouldPreloadSoftwarePage} from '@/pages/software';
-import {SOFTWARE_CATEGORY_ROUTE} from '@/features/software-catalog';
+import {SOFTWARE_CATEGORY_ROUTE} from '@/features/software/catalog';
 import {loadSoftwareEditPage, preloadSoftwareEditPage} from '@/pages/software-edit';
 import {loadSoftwareNewPage} from '@/pages/software-new';
 import {loadSoftwareViewPage, preloadSoftwareViewPage} from '@/pages/software-view';

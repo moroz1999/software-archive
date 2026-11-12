@@ -1,7 +1,7 @@
 import {useTranslation} from 'react-i18next';
 import {GroupDetailsProvider, GroupForm, GroupFormSkeleton, type GroupId, groupPath, useGroupDetails} from '@/entities/groups';
-import {DeleteGroupButton} from '@/features/group-delete';
-import {EditGroupProvider} from '@/features/group-edit';
+import {DeleteGroupButton} from '@/features/group/delete';
+import {EditGroupProvider} from '@/features/group/edit';
 import {useSkeleton} from '@/shared/lib/loading';
 import {Button} from '@/shared/ui/button';
 import {PageLayout} from '@/shared/ui/page-layout';

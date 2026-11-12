@@ -16,9 +16,9 @@ import {
     useReleaseDetails,
     useSoftwareDetails,
 } from '@/entities/software';
-import {CreateReleaseProvider} from '@/features/release-create';
-import {DeleteReleaseButton} from '@/features/release-delete';
-import {EditReleaseProvider} from '@/features/release-edit';
+import {CreateReleaseProvider} from '@/features/release/create';
+import {DeleteReleaseButton} from '@/features/release/delete';
+import {EditReleaseProvider} from '@/features/release/edit';
 import {useSkeleton} from '@/shared/lib/loading';
 import {PageLayout} from '@/shared/ui/page-layout';
 

@@ -1,6 +1,6 @@
 import {useTranslation} from 'react-i18next';
 import {CATEGORIES_PATH, CategoryForm, type CategoryId, CategoryTreeProvider} from '@/entities/categories';
-import {CreateCategoryProvider} from '@/features/category-create';
+import {CreateCategoryProvider} from '@/features/category/create';
 import {Button} from '@/shared/ui/button';
 import {PageLayout} from '@/shared/ui/page-layout';
 

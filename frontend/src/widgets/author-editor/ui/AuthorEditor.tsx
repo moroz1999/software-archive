@@ -1,7 +1,7 @@
 import {useTranslation} from 'react-i18next';
 import {AuthorDetailsProvider, AuthorForm, AuthorFormSkeleton, type AuthorId, authorPath, useAuthorDetails} from '@/entities/authors';
-import {DeleteAuthorButton} from '@/features/author-delete';
-import {EditAuthorProvider} from '@/features/author-edit';
+import {DeleteAuthorButton} from '@/features/author/delete';
+import {EditAuthorProvider} from '@/features/author/edit';
 import {useSkeleton} from '@/shared/lib/loading';
 import {Button} from '@/shared/ui/button';
 import {PageLayout} from '@/shared/ui/page-layout';

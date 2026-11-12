@@ -4,7 +4,7 @@ import {categoryTreeQuery} from '@/entities/categories';
 import {countriesQuery} from '@/entities/locations';
 import {readSelectedPlatform} from '@/entities/platforms';
 import {SOFTWARE_LIST_PATH} from '@/entities/software';
-import {parseCatalogFilter, softwareCatalogQuery} from '@/features/software-catalog';
+import {parseCatalogFilter, softwareCatalogQuery} from '@/features/software/catalog';
 import {preloadView} from '@/shared/api';
 
 /**

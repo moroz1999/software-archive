@@ -4,7 +4,7 @@ import {createMemoryRouter, RouterProvider} from 'react-router';
 import {PlatformSelectionProvider} from '@/entities/platforms';
 import {createQueryClient} from '@/shared/api';
 import {json, pageResponse, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
-import {SOFTWARE_CATEGORY_ROUTE} from '@/features/software-catalog';
+import {SOFTWARE_CATEGORY_ROUTE} from '@/features/software/catalog';
 import {loadSoftwarePage, preloadSoftwarePage} from '../index';
 
 const ALPHA = {id: '00000000-0000-0000-0001-000000000001', title: 'Fixture Software Alpha', releaseDate: '1985-03-02'};

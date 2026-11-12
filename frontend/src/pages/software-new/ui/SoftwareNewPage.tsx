@@ -1,7 +1,7 @@
 import {useNavigate} from 'react-router';
 import {useTranslation} from 'react-i18next';
 import {SOFTWARE_LIST_PATH, SoftwareForm} from '@/entities/software';
-import {CreateSoftwareProvider} from '@/features/software-create';
+import {CreateSoftwareProvider} from '@/features/software/create';
 import {SoftwareCategoriesField} from '@/widgets/software-editor';
 import {PageLayout} from '@/shared/ui/page-layout';
 

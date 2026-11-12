@@ -52,6 +52,7 @@ export const resources = {
             categoryParentUnknown: 'The parent category is not in the archive any more. Reload and try again.',
             categoryParentInside: 'A category cannot go under itself or its own subcategory.',
         },
+        quickSearch: {open: 'Search', title: 'Search', field: 'Search', software: 'Software ({{count}})', authors: 'Authors ({{count}})', groups: 'Groups ({{count}})', allSoftware: 'All software ({{count}})'},
         pagination: {label: 'Pages', previous: 'Previous', next: 'Next'},
         loading: {refreshing: 'Refreshing'},
         selection: {remove: 'Remove {{name}}', selected_one: '{{count}} selected', selected_other: '{{count}} selected'},
@@ -145,6 +146,7 @@ export const resources = {
             categoryParentUnknown: 'Родительской категории больше нет в архиве. Перезагрузите страницу и попробуйте ещё раз.',
             categoryParentInside: 'Категорию нельзя поместить в неё саму или в её подкатегорию.',
         },
+        quickSearch: {open: 'Поиск', title: 'Поиск', field: 'Поиск', software: 'Программы ({{count}})', authors: 'Авторы ({{count}})', groups: 'Группы ({{count}})', allSoftware: 'Все программы ({{count}})'},
         pagination: {label: 'Страницы', previous: 'Назад', next: 'Вперёд'},
         loading: {refreshing: 'Обновление'},
         selection: {

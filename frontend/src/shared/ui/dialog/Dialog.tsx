@@ -14,10 +14,12 @@ export interface DialogProps {
     readonly actions?: ReactNode;
     /** `alertdialog` for messages that interrupt the user, such as errors. */
     readonly role?: 'dialog' | 'alertdialog';
+    /** Opens with the focus in its first field instead of on the window, for a window that is a field above all. */
+    readonly focusField?: boolean;
 }
 
 /** Modal dialog rendered over the page; closes on Escape. */
-export function Dialog({open, title, onClose, children, actions, role = 'dialog'}: DialogProps) {
+export function Dialog({open, title, onClose, children, actions, role = 'dialog', focusField = false}: DialogProps) {
     const titleId = useId();
     const ref = useRef<HTMLDivElement>(null);
 
@@ -25,7 +27,8 @@ export function Dialog({open, title, onClose, children, actions, role = 'dialog'
         if (!open) {
             return undefined;
         }
-        ref.current?.focus();
+        const field = focusField ? ref.current?.querySelector<HTMLElement>('input, select, textarea') : null;
+        (field ?? ref.current)?.focus();
         const onKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
                 onClose();
@@ -35,7 +38,7 @@ export function Dialog({open, title, onClose, children, actions, role = 'dialog'
         return () => {
             document.removeEventListener('keydown', onKeyDown);
         };
-    }, [open, onClose]);
+    }, [open, onClose, focusField]);
 
     if (!open) {
         return null;

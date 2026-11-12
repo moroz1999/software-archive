@@ -3,7 +3,7 @@
 How visitors find software, people and groups by a word, and narrow the software catalog. Being built in stages ([features/search.md](../features/search.md#stages)); the rules below are agreed.
 
 ## Quick search
-- A search button in the header of every page opens a window with a field. As the visitor types, the window shows brief results in three sections: software, people, groups — each with its first five matches, best first, and the count of all of them.
+- A search button in the header of every page opens a window with a field. As the visitor types, the window shows brief results in three sections: software, people, groups — each with its first five matches, best first, and the count of all of them. The count of software leads to the software catalog narrowed by the same word.
 - Software is found by its title and alternative titles; a person by any of their labels and the real name; a group by any of its labels and its name. Labels of nobody are not found on their own, as in the catalogs of names ([authors.md](authors.md#catalogs-of-names)).
 - A person or a group found by any of their names is shown under the main name ([authors.md](authors.md#main-name)); a person with the real name next to it, unless it is the main name itself.
 - Search follows the platform switch ([hardware.md](hardware.md#platform-switch)).

@@ -1,6 +1,6 @@
 import type {QueryClient} from '@tanstack/react-query';
 import type {LoaderFunctionArgs, ShouldRevalidateFunctionArgs} from 'react-router';
-import {groupCatalogQuery, parseGroupCatalogFilter} from '@/features/group-catalog';
+import {groupCatalogQuery, parseGroupCatalogFilter} from '@/features/group/catalog';
 import {citiesQuery, countriesQuery} from '@/entities/locations';
 import {readSelectedPlatform} from '@/entities/platforms';
 import {preloadView} from '@/shared/api';

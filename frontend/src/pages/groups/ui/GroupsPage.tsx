@@ -1,5 +1,5 @@
 import {GROUP_NEW_PATH} from '@/entities/groups';
-import {GroupCatalog, GroupCatalogProvider} from '@/features/group-catalog';
+import {GroupCatalog, GroupCatalogProvider} from '@/features/group/catalog';
 import {Button} from '@/shared/ui/button';
 import {PageLayout} from '@/shared/ui/page-layout';
 

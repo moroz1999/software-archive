@@ -1,6 +1,6 @@
 import {useTranslation} from 'react-i18next';
 import {GroupForm, type GroupId, GROUPS_PATH} from '@/entities/groups';
-import {CreateGroupProvider} from '@/features/group-create';
+import {CreateGroupProvider} from '@/features/group/create';
 import {Button} from '@/shared/ui/button';
 import {PageLayout} from '@/shared/ui/page-layout';
 import {GroupLabels, GroupLocations} from './GroupFields';

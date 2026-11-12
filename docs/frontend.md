@@ -22,7 +22,8 @@ Layers under `frontend/src`, top to bottom:
 Rules:
 - A module imports only from layers strictly below its own. Never from the same layer or above.
 - Slices of the same layer never import each other.
-- Every slice (`pages/software`, `features/software-list`, …) is a folder with a public API in `index.ts`. Code outside the slice imports only through that file — never by deep path.
+- Every slice (`pages/software`, `features/software/catalog`, …) is a folder with a public API in `index.ts`. Code outside the slice imports only through that file — never by deep path.
+- The slices of `features` are grouped by the entity they act on: `features/software/{catalog,create,edit,delete,latest}`, `features/author/*`, `features/group/*`, `features/category/*`, `features/release/*`. A group is a plain folder, not a slice: it has no `index.ts`, and its slices do not import each other. A feature of no single entity stays at the top (`features/quick-search`, `features/language-switch`).
 - Imports across layers and slices start at the root of the sources, `@/` (`@/entities/software`); relative paths stay inside a slice or a module and go up one level at most (`../model/…`).
 - `shared/ui` and `shared/lib` have no barrel: a component or a module is imported from its own folder or file (`@/shared/ui/button`, `@/shared/lib/context`), so a module pulls in only what it uses — into the bundle and into every test. A folder module keeps its `index.ts` (`shared/ui/button`, `shared/lib/test`). `shared/api` is one module with one public API, `@/shared/api`, as Steiger requires for segments other than `ui` and `lib`; so is `shared/config` (`HOME_PATH`).
 - A page slice never exports its component statically: its `index.ts` exports the route loader and a `load…Page` function that imports the component dynamically (`lazy: {Component: loadSoftwarePage}` in the router). A static export would pull the page into the main bundle.
@@ -90,7 +91,7 @@ entities/software/
   model/software-form-context.ts      state type + [Context, useSoftwareForm]
   model/SoftwareFormProvider.tsx      values, format errors, refusal → context
   ui/SoftwareForm.tsx                 fields reading useSoftwareForm()
-features/software-edit/
+features/software/edit/
   model/EditSoftwareProvider.tsx      useMutation, invalidation → <SoftwareFormProvider …>
 widgets/software-editor/
   ui/SoftwareEditor.tsx               <EditSoftwareProvider …><SoftwareForm submitLabel="Save"/></EditSoftwareProvider>

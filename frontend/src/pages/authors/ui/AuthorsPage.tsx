@@ -1,5 +1,5 @@
 import {AUTHOR_NEW_PATH} from '@/entities/authors';
-import {AuthorCatalog, AuthorCatalogProvider} from '@/features/author-catalog';
+import {AuthorCatalog, AuthorCatalogProvider} from '@/features/author/catalog';
 import {Button} from '@/shared/ui/button';
 import {PageLayout} from '@/shared/ui/page-layout';
 
