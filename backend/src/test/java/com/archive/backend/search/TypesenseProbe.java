@@ -40,6 +40,25 @@ public final class TypesenseProbe {
         }
     }
 
+    /** The document of the person in the collection the {@code authors} alias points to. */
+    public Optional<Map<String, Object>> author(UUID id) throws Exception {
+        return document("authors", id);
+    }
+
+    /** The document of the group in the collection the {@code groups} alias points to. */
+    public Optional<Map<String, Object>> group(UUID id) throws Exception {
+        return document("groups", id);
+    }
+
+    private Optional<Map<String, Object>> document(String alias, UUID id) throws Exception {
+        try {
+            return Optional.of(
+                    client.collections(alias).documents(id.toString()).retrieve());
+        } catch (ObjectNotFound e) {
+            return Optional.empty();
+        }
+    }
+
     /** The collection an alias points to; empty without the alias. */
     public Optional<String> aliasTarget(String alias) throws Exception {
         try {
@@ -54,12 +73,17 @@ public final class TypesenseProbe {
      * have now.
      */
     public void aliasAnOutdatedSoftwareCollection() throws Exception {
-        String name = "software_outdated_" + UUID.randomUUID().toString().replace("-", "");
+        aliasAnOutdatedCollection("software", "title");
+    }
+
+    /** Puts in use, under the alias, a collection built by an older schema that has only the field given. */
+    public void aliasAnOutdatedCollection(String alias, String field) throws Exception {
+        String name = alias + "_outdated_" + UUID.randomUUID().toString().replace("-", "");
         client.collections()
                 .create(new CollectionSchema()
                         .name(name)
-                        .fields(List.of(new Field().name("title").type(FieldTypes.STRING))));
-        client.aliases().upsert("software", new CollectionAliasSchema().collectionName(name));
+                        .fields(List.of(new Field().name(field).type(FieldTypes.STRING))));
+        client.aliases().upsert(alias, new CollectionAliasSchema().collectionName(name));
     }
 
     /** Freezes Typesense: every call to it times out until {@link #resume()}. */

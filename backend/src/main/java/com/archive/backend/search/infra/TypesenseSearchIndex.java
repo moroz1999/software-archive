@@ -2,7 +2,10 @@ package com.archive.backend.search.infra;
 
 import static com.archive.backend.search.infra.TypesenseCall.call;
 
+import com.archive.backend.search.domain.AuthorDocument;
+import com.archive.backend.search.domain.GroupDocument;
 import com.archive.backend.search.domain.SearchCollection;
+import com.archive.backend.search.domain.SearchDocument;
 import com.archive.backend.search.domain.SearchEntity;
 import com.archive.backend.search.domain.SearchEntityType;
 import com.archive.backend.search.domain.SearchIndex;
@@ -42,6 +45,8 @@ public class TypesenseSearchIndex implements SearchIndex {
     private static String alias(SearchEntityType type) {
         return switch (type) {
             case SOFTWARE -> "software";
+            case AUTHOR -> "authors";
+            case GROUP -> "groups";
         };
     }
 
@@ -73,7 +78,61 @@ public class TypesenseSearchIndex implements SearchIndex {
                                 .name("countries")
                                 .type(FieldTypes.STRING_ARRAY)
                                 .facet(true));
+            case AUTHOR ->
+                List.of(
+                        new Field().name("name").type(FieldTypes.STRING),
+                        // Equal matches in name order, whatever the case.
+                        new Field().name("name_sort").type(FieldTypes.STRING).sort(true),
+                        new Field().name("labels").type(FieldTypes.STRING_ARRAY),
+                        new Field().name("real_name").type(FieldTypes.STRING).optional(true),
+                        new Field()
+                                .name("platforms")
+                                .type(FieldTypes.STRING_ARRAY)
+                                .facet(true));
+            case GROUP ->
+                List.of(
+                        new Field().name("name").type(FieldTypes.STRING),
+                        new Field().name("name_sort").type(FieldTypes.STRING).sort(true),
+                        new Field().name("labels").type(FieldTypes.STRING_ARRAY),
+                        new Field().name("group_name").type(FieldTypes.STRING),
+                        new Field()
+                                .name("platforms")
+                                .type(FieldTypes.STRING_ARRAY)
+                                .facet(true));
         };
+    }
+
+    private static Map<String, Object> toMap(SearchDocument document) {
+        return switch (document) {
+            case SoftwareDocument d -> toMap(d);
+            case AuthorDocument d -> toMap(d);
+            case GroupDocument d -> toMap(d);
+        };
+    }
+
+    private static Map<String, Object> toMap(AuthorDocument d) {
+        Map<String, Object> doc = named(d.id(), d.name(), d.labels(), d.platforms());
+        if (d.realName() != null) {
+            doc.put("real_name", d.realName());
+        }
+        return doc;
+    }
+
+    private static Map<String, Object> toMap(GroupDocument d) {
+        Map<String, Object> doc = named(d.id(), d.name(), d.labels(), d.platforms());
+        doc.put("group_name", d.groupName());
+        return doc;
+    }
+
+    /** What the documents of people and groups have alike. */
+    private static Map<String, Object> named(UUID id, String name, List<String> labels, List<String> platforms) {
+        Map<String, Object> doc = new HashMap<>();
+        doc.put("id", id.toString());
+        doc.put("name", name);
+        doc.put("name_sort", name.toLowerCase(Locale.ROOT));
+        doc.put("labels", labels);
+        doc.put("platforms", platforms);
+        return doc;
     }
 
     private static Map<String, Object> toMap(SoftwareDocument d) {
@@ -95,10 +154,10 @@ public class TypesenseSearchIndex implements SearchIndex {
     }
 
     @Override
-    public void upsert(SoftwareDocument document) {
+    public void upsert(SearchDocument document) {
         call(
-                "upsert software " + document.id(),
-                () -> client.collections(alias(SearchEntityType.SOFTWARE))
+                "upsert " + document.entity(),
+                () -> client.collections(alias(document.entity().type()))
                         .documents()
                         .upsert(toMap(document)));
     }
@@ -152,7 +211,7 @@ public class TypesenseSearchIndex implements SearchIndex {
     }
 
     @Override
-    public void load(SearchCollection collection, List<SoftwareDocument> documents) {
+    public void load(SearchCollection collection, List<? extends SearchDocument> documents) {
         String answer = call(
                 "load into " + collection.name(),
                 () -> client.collections(collection.name())

@@ -47,7 +47,9 @@ public final class Author {
             @Nullable AuthorNotes notes,
             List<LabelDraft> labels,
             Locations locations) {
-        return new Author(id, realName, notes, OwnLabels.of(labels), locations);
+        Author author = new Author(id, realName, notes, OwnLabels.of(labels), locations);
+        author.events.add(new AuthorChanged(id));
+        return author;
     }
 
     /**
@@ -57,6 +59,7 @@ public final class Author {
             @Nullable RealName realName, @Nullable AuthorNotes notes, List<LabelDraft> labels, Locations locations) {
         OwnLabels edited = requireNamed(realName, this.labels.replace(labels));
         events.add(labelsChanged());
+        events.add(new AuthorChanged(id));
         this.realName = realName;
         this.notes = notes;
         this.labels = edited;
@@ -73,6 +76,7 @@ public final class Author {
     /** Tells the person is going: its repository deletes it and leaves its labels to nobody. */
     public void delete() {
         events.add(labelsChanged());
+        events.add(new AuthorChanged(id));
     }
 
     private OwnerOfLabelsChanged labelsChanged() {

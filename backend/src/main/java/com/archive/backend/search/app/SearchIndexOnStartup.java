@@ -2,6 +2,7 @@ package com.archive.backend.search.app;
 
 import com.archive.backend.search.domain.SearchEntityType;
 import com.archive.backend.search.domain.SearchIndex;
+import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,9 +12,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 /**
- * Builds the search collections on start when there are none yet or the one in use lacks fields the documents have
- * now, or when the start asks for it with
- * {@code search.rebuild=true} (docs/features/search.md#initial-load-and-rebuild). The archive starts without search
+ * Builds the search collections on start when one of them is missing or lacks fields its documents have now, or when
+ * the start asks for it with {@code search.rebuild=true} (docs/features/search.md#initial-load-and-rebuild). The archive starts without search
  * when the engine is down.
  */
 @Component
@@ -30,7 +30,7 @@ public class SearchIndexOnStartup {
     public void onReady() {
         try {
             if (environment.getProperty("search.rebuild", Boolean.class, false)
-                    || !index.isCurrent(SearchEntityType.SOFTWARE)) {
+                    || !Arrays.stream(SearchEntityType.values()).allMatch(index::isCurrent)) {
                 rebuild.handle();
             }
         } catch (RuntimeException e) {

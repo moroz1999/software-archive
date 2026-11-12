@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 class CreateGroupHandlerTest {
 
     private final InMemoryGroupRepository repository = new InMemoryGroupRepository();
-    private final CreateGroupHandler handler = new CreateGroupHandler(repository, groupTypes(), places());
+    private final CreateGroupHandler handler = new CreateGroupHandler(repository, groupTypes(), places(), event -> {});
 
     @Test
     void storesANewGroupUnderANewId() {

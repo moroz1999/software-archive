@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 class CreateAuthorHandlerTest {
 
     private final InMemoryAuthorRepository repository = new InMemoryAuthorRepository();
-    private final CreateAuthorHandler handler = new CreateAuthorHandler(repository, places());
+    private final CreateAuthorHandler handler = new CreateAuthorHandler(repository, places(), event -> {});
 
     @Test
     void storesANewAuthorUnderANewId() {

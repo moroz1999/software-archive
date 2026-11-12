@@ -52,7 +52,9 @@ public final class Group {
             GroupTypeSet types,
             List<LabelDraft> labels,
             Locations locations) {
-        return new Group(id, name, notes, types, OwnLabels.of(labels), locations);
+        Group group = new Group(id, name, notes, types, OwnLabels.of(labels), locations);
+        group.events.add(new GroupChanged(id));
+        return group;
     }
 
     /**
@@ -66,6 +68,7 @@ public final class Group {
             Locations locations) {
         OwnLabels edited = this.labels.replace(labels);
         events.add(labelsChanged());
+        events.add(new GroupChanged(id));
         this.name = Objects.requireNonNull(name, "name");
         this.notes = notes;
         this.types = Objects.requireNonNull(types, "types");
@@ -76,6 +79,7 @@ public final class Group {
     /** Tells the group is going: its repository deletes it and leaves its labels to nobody. */
     public void delete() {
         events.add(labelsChanged());
+        events.add(new GroupChanged(id));
     }
 
     private OwnerOfLabelsChanged labelsChanged() {

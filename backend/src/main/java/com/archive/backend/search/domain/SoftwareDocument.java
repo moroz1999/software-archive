@@ -20,7 +20,8 @@ public record SoftwareDocument(
         String platform,
         @Nullable Integer year,
         List<UUID> categories,
-        List<UUID> countries) {
+        List<UUID> countries)
+        implements SearchDocument {
 
     public SoftwareDocument {
         Objects.requireNonNull(id, "id");
@@ -29,5 +30,10 @@ public record SoftwareDocument(
         alternativeTitles = List.copyOf(alternativeTitles);
         categories = List.copyOf(categories);
         countries = List.copyOf(countries);
+    }
+
+    @Override
+    public SearchEntity entity() {
+        return new SearchEntity(SearchEntityType.SOFTWARE, id);
     }
 }

@@ -168,7 +168,8 @@ public class TypesenseSoftwareCatalog implements SoftwareCatalog {
                         .toList();
     }
 
-    private static SoftwareCatalogItem item(Map<String, Object> doc) {
+    /** The card of software from its document. */
+    static SoftwareCatalogItem item(Map<String, Object> doc) {
         Object releaseDate = doc.get("release_date");
         return new SoftwareCatalogItem(
                 UUID.fromString(String.valueOf(doc.get("id"))),

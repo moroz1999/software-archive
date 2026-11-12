@@ -1,9 +1,12 @@
 package com.archive.backend.search.app;
 
+import com.archive.backend.author.domain.AuthorChanged;
 import com.archive.backend.category.domain.CategoryDeleted;
 import com.archive.backend.category.domain.CategoryMoved;
+import com.archive.backend.group.domain.GroupChanged;
 import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.OwnerOfLabelsChanged;
+import com.archive.backend.search.domain.AffectedOwners;
 import com.archive.backend.search.domain.AffectedSoftware;
 import com.archive.backend.search.domain.SearchEntity;
 import com.archive.backend.search.domain.SearchEntityType;
@@ -26,10 +29,25 @@ public class EnqueueSearchDocumentsHandler {
 
     private final SearchOutbox outbox;
     private final AffectedSoftware affected;
+    private final AffectedOwners owners;
 
+    /** The software, and the people and groups credited on it: their platforms may have changed. */
     @EventListener
     public void on(SoftwareChanged event) {
-        enqueueSoftware(List.of(event.software().value()));
+        UUID software = event.software().value();
+        enqueueSoftware(List.of(software));
+        enqueue(SearchEntityType.AUTHOR, owners.peopleCreditedOn(software));
+        enqueue(SearchEntityType.GROUP, owners.groupsCreditedOn(software));
+    }
+
+    @EventListener
+    public void on(AuthorChanged event) {
+        enqueue(SearchEntityType.AUTHOR, List.of(event.author().value()));
+    }
+
+    @EventListener
+    public void on(GroupChanged event) {
+        enqueue(SearchEntityType.GROUP, List.of(event.group().value()));
     }
 
     @EventListener
@@ -51,10 +69,12 @@ public class EnqueueSearchDocumentsHandler {
     }
 
     private void enqueueSoftware(Collection<UUID> software) {
-        if (!software.isEmpty()) {
-            outbox.enqueue(software.stream()
-                    .map(id -> new SearchEntity(SearchEntityType.SOFTWARE, id))
-                    .toList());
+        enqueue(SearchEntityType.SOFTWARE, software);
+    }
+
+    private void enqueue(SearchEntityType type, Collection<UUID> ids) {
+        if (!ids.isEmpty()) {
+            outbox.enqueue(ids.stream().map(id -> new SearchEntity(type, id)).toList());
         }
     }
 }

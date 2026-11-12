@@ -98,4 +98,29 @@ class GroupTest {
         assertThat(group.getTypes()).isEqualTo(DEMOGROUP);
         assertThat(group.getLabels().all()).extracting(OwnLabel::id).containsExactly(CRW);
     }
+
+    @Test
+    void tellsItWasAdded() {
+        assertThat(Group.create(ID, new GroupName("Crew Ltd"), null, DEMOGROUP, List.of(), NOWHERE)
+                        .pullEvents())
+                .contains(new GroupChanged(ID));
+    }
+
+    @Test
+    void tellsItWasEdited() {
+        Group group = crew();
+
+        group.edit(new GroupName("Crew Two"), null, DEMOGROUP, List.of(), NOWHERE);
+
+        assertThat(group.pullEvents()).contains(new GroupChanged(ID));
+    }
+
+    @Test
+    void tellsItIsGoing() {
+        Group group = crew();
+
+        group.delete();
+
+        assertThat(group.pullEvents()).contains(new GroupChanged(ID));
+    }
 }

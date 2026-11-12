@@ -1,11 +1,15 @@
 package com.archive.backend.search.app;
 
+import com.archive.backend.search.domain.AuthorDocuments;
+import com.archive.backend.search.domain.GroupDocuments;
+import com.archive.backend.search.domain.SearchDocument;
 import com.archive.backend.search.domain.SearchEntity;
 import com.archive.backend.search.domain.SearchIndex;
 import com.archive.backend.search.domain.SearchOutbox;
 import com.archive.backend.search.domain.SearchTask;
 import com.archive.backend.search.domain.SoftwareDocuments;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +28,8 @@ public class ProcessSearchOutboxHandler {
 
     private final SearchOutbox outbox;
     private final SoftwareDocuments softwareDocuments;
+    private final AuthorDocuments authorDocuments;
+    private final GroupDocuments groupDocuments;
     private final SearchIndex index;
     private final SearchWorkerPause pause;
 
@@ -48,9 +54,11 @@ public class ProcessSearchOutboxHandler {
     }
 
     private void bringUpToDate(SearchEntity entity) {
-        switch (entity.type()) {
-            case SOFTWARE ->
-                softwareDocuments.of(entity.id()).ifPresentOrElse(index::upsert, () -> index.delete(entity));
-        }
+        Optional<? extends SearchDocument> document = switch (entity.type()) {
+            case SOFTWARE -> softwareDocuments.of(entity.id());
+            case AUTHOR -> authorDocuments.of(entity.id());
+            case GROUP -> groupDocuments.of(entity.id());
+        };
+        document.ifPresentOrElse(index::upsert, () -> index.delete(entity));
     }
 }

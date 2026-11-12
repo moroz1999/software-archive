@@ -6,6 +6,7 @@ import com.archive.backend.author.domain.AuthorRepository;
 import com.archive.backend.geo.domain.Places;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,11 +16,14 @@ public class CreateAuthorHandler {
 
     private final AuthorRepository repository;
     private final Places places;
+    private final ApplicationEventPublisher events;
 
     @Transactional
     public AuthorId handle(CreateAuthorCommand c) {
         AuthorId id = new AuthorId(UUID.randomUUID());
-        repository.save(Author.create(id, c.realName(), c.notes(), c.labels(), places.locations(c.locations())));
+        Author author = Author.create(id, c.realName(), c.notes(), c.labels(), places.locations(c.locations()));
+        repository.save(author);
+        author.pullEvents().forEach(events::publishEvent);
         return id;
     }
 }

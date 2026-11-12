@@ -9,7 +9,7 @@ import java.util.List;
 public interface SearchIndex {
 
     /** Puts the document in the collection in use, replacing the one of the same id. */
-    void upsert(SoftwareDocument document);
+    void upsert(SearchDocument document);
 
     /** Removes the entity's document from the collection in use; a missing document counts as removed. */
     void delete(SearchEntity entity);
@@ -21,7 +21,7 @@ public interface SearchIndex {
     SearchCollection create(SearchEntityType type);
 
     /** Loads documents into a collection not yet in use; fails unless every one of them was taken. */
-    void load(SearchCollection collection, List<SoftwareDocument> documents);
+    void load(SearchCollection collection, List<? extends SearchDocument> documents);
 
     /** Puts the collection in use and drops the one used before. */
     void switchTo(SearchCollection collection);

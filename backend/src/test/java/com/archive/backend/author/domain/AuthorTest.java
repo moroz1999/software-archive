@@ -121,4 +121,27 @@ class AuthorTest {
         assertThat(author.getNotes()).isNull();
         assertThat(author.getLocations()).isEqualTo(NOWHERE);
     }
+
+    @Test
+    void tellsItWasAdded() {
+        assertThat(johnDoe().pullEvents()).contains(new AuthorChanged(ID));
+    }
+
+    @Test
+    void tellsItWasEdited() {
+        Author author = zed();
+
+        author.edit(new RealName("John Doe"), null, List.of(), NOWHERE);
+
+        assertThat(author.pullEvents()).contains(new AuthorChanged(ID));
+    }
+
+    @Test
+    void tellsItIsGoing() {
+        Author author = zed();
+
+        author.delete();
+
+        assertThat(author.pullEvents()).contains(new AuthorChanged(ID));
+    }
 }

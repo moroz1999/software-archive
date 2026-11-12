@@ -1,10 +1,13 @@
 package com.archive.backend.search.app;
 
+import com.archive.backend.search.domain.AuthorDocuments;
+import com.archive.backend.search.domain.GroupDocuments;
 import com.archive.backend.search.domain.SearchCollection;
+import com.archive.backend.search.domain.SearchDocument;
 import com.archive.backend.search.domain.SearchEntityType;
 import com.archive.backend.search.domain.SearchIndex;
-import com.archive.backend.search.domain.SoftwareDocument;
 import com.archive.backend.search.domain.SoftwareDocuments;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * Builds the search collections anew from the archive and puts them in use only once fully loaded
+ * Builds the search collections anew from the archive and puts them in use only once all of them are fully loaded
  * (docs/features/search.md#initial-load-and-rebuild). The worker waits meanwhile; the changes keep their tasks and it
  * applies them afterwards. A failed rebuild leaves the collections in use as they were.
  */
@@ -26,39 +29,60 @@ public class RebuildSearchIndexHandler {
     private static final int BATCH = 500;
 
     private final SoftwareDocuments softwareDocuments;
+    private final AuthorDocuments authorDocuments;
+    private final GroupDocuments groupDocuments;
     private final SearchIndex index;
     private final SearchWorkerPause pause;
 
-    public void handle() {
-        pause.run(this::rebuildSoftware);
+    /** The documents of a kind, a batch at a time after the id given. */
+    private interface Batches {
+        List<? extends SearchDocument> after(@Nullable UUID after, int limit);
     }
 
-    private void rebuildSoftware() {
-        SearchCollection fresh;
+    public void handle() {
+        pause.run(this::rebuild);
+    }
+
+    private Batches batchesOf(SearchEntityType type) {
+        return switch (type) {
+            case SOFTWARE -> softwareDocuments::after;
+            case AUTHOR -> authorDocuments::after;
+            case GROUP -> groupDocuments::after;
+        };
+    }
+
+    private void rebuild() {
+        List<SearchCollection> fresh = new ArrayList<>();
         try {
-            fresh = index.create(SearchEntityType.SOFTWARE);
+            for (SearchEntityType type : SearchEntityType.values()) {
+                fresh.add(index.create(type));
+            }
         } catch (RuntimeException e) {
             log.error("Search rebuild not started: no new collection", e);
+            fresh.forEach(this::dropQuietly);
             return;
         }
         try {
-            load(fresh);
-            index.switchTo(fresh);
-            log.info("Search collection {} in use", fresh.name());
+            fresh.forEach(this::load);
+            fresh.forEach(index::switchTo);
+            log.info(
+                    "Search collections {} in use",
+                    fresh.stream().map(SearchCollection::name).toList());
         } catch (RuntimeException e) {
             log.error("Search rebuild failed, the collections in use stay", e);
-            dropQuietly(fresh);
+            fresh.forEach(this::dropQuietly);
         }
     }
 
     private void load(SearchCollection collection) {
+        Batches batches = batchesOf(collection.type());
         @Nullable UUID last = null;
-        List<SoftwareDocument> batch;
+        List<? extends SearchDocument> batch;
         do {
-            batch = softwareDocuments.after(last, BATCH);
+            batch = batches.after(last, BATCH);
             if (!batch.isEmpty()) {
                 index.load(collection, batch);
-                last = batch.getLast().id();
+                last = batch.getLast().entity().id();
             }
         } while (batch.size() == BATCH);
     }

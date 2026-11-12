@@ -1,12 +1,12 @@
 package com.archive.backend.search.infra;
 
+import static com.archive.backend.search.infra.SqlArrays.list;
+
 import com.archive.backend.search.domain.SoftwareDocument;
 import com.archive.backend.search.domain.SoftwareDocuments;
-import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -77,9 +77,5 @@ public class JdbcSoftwareDocuments implements SoftwareDocuments {
                 rs.getObject("year", Integer.class),
                 list(rs.getArray("categories"), UUID.class),
                 list(rs.getArray("countries"), UUID.class));
-    }
-
-    private static <T> List<T> list(Array array, Class<T> type) throws SQLException {
-        return Arrays.stream((Object[]) array.getArray()).map(type::cast).toList();
     }
 }
