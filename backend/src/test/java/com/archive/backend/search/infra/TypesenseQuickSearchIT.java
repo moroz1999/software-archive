@@ -12,8 +12,8 @@ import com.archive.backend.search.domain.SearchCollection;
 import com.archive.backend.search.domain.SearchDocument;
 import com.archive.backend.search.domain.SearchEntityType;
 import com.archive.backend.search.domain.SoftwareDocument;
-import com.archive.backend.search.read.QuickAuthor;
-import com.archive.backend.search.read.QuickGroup;
+import com.archive.backend.search.read.FoundAuthor;
+import com.archive.backend.search.read.FoundGroup;
 import com.archive.backend.search.read.QuickSearchResult;
 import com.archive.backend.search.read.SoftwareCatalogItem;
 import java.time.LocalDate;
@@ -129,7 +129,7 @@ class TypesenseQuickSearchIT {
 
     @Test
     void findsAPersonByAnyLabelOrTheRealNameUnderTheMainName() {
-        QuickAuthor zed = new QuickAuthor(ZED, "Zed", "John Doe");
+        FoundAuthor zed = new FoundAuthor(ZED, "Zed", "John Doe");
 
         assertThat(find("zx", null).authors().hits()).containsExactly(zed);
         assertThat(find("john", null).authors().hits()).containsExactly(zed);
@@ -137,13 +137,13 @@ class TypesenseQuickSearchIT {
 
     @Test
     void givesNoRealNameForAPersonShownUnderIt() {
-        assertThat(find("carl", null).authors().hits()).containsExactly(new QuickAuthor(CARL, "Carl Real", null));
+        assertThat(find("carl", null).authors().hits()).containsExactly(new FoundAuthor(CARL, "Carl Real", null));
     }
 
     @Test
     void findsAGroupByAnyLabelOrItsNameUnderTheMainName() {
-        assertThat(find("zeta", null).groups().hits()).containsExactly(new QuickGroup(SQUAD, "ZS"));
-        assertThat(find("zero", null).groups().hits()).containsExactly(new QuickGroup(CREW, "CRW"));
+        assertThat(find("zeta", null).groups().hits()).containsExactly(new FoundGroup(SQUAD, "ZS"));
+        assertThat(find("zero", null).groups().hits()).containsExactly(new FoundGroup(CREW, "CRW"));
     }
 
     @Test
@@ -151,10 +151,10 @@ class TypesenseQuickSearchIT {
         QuickSearchResult vector = find("z", "vector");
         QuickSearchResult bk = find("z", "bk");
 
-        assertThat(vector.authors().hits()).extracting(QuickAuthor::id).containsExactly(ZED);
-        assertThat(vector.groups().hits()).extracting(QuickGroup::id).containsExactly(SQUAD);
-        assertThat(bk.authors().hits()).extracting(QuickAuthor::id).containsExactly(BOB);
-        assertThat(bk.groups().hits()).extracting(QuickGroup::id).containsExactly(CREW);
+        assertThat(vector.authors().hits()).extracting(FoundAuthor::id).containsExactly(ZED);
+        assertThat(vector.groups().hits()).extracting(FoundGroup::id).containsExactly(SQUAD);
+        assertThat(bk.authors().hits()).extracting(FoundAuthor::id).containsExactly(BOB);
+        assertThat(bk.groups().hits()).extracting(FoundGroup::id).containsExactly(CREW);
         assertThat(find("exolon", "bk").software().hits())
                 .extracting(SoftwareCatalogItem::title)
                 .containsExactly("Exolon BK");

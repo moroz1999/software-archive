@@ -7,7 +7,12 @@ How visitors find software, people and groups by a word, and narrow the software
 - Software is found by its title and alternative titles; a person by any of their labels and the real name; a group by any of its labels and its name. Labels of nobody are not found on their own, as in the catalogs of names ([authors.md](authors.md#catalogs-of-names)).
 - A person or a group found by any of their names is shown under the main name ([authors.md](authors.md#main-name)); a person with the real name next to it, unless it is the main name itself.
 - Search follows the platform switch ([hardware.md](hardware.md#platform-switch)).
-- The full search, a section of the archive with every match and pages of its own for each section, comes later.
+
+## Full search
+- A section of the archive with every match of the word, in the same three sections and by the same rules of finding as the quick search.
+- Every section has pages of its own: going through the software keeps the pages of people and of groups where they were. A new word starts every section from its first page.
+- Software is shown as in its catalog; people and groups as lists of names, the best matches first.
+- A section without matches is left out; with none in any, the visitor is told nothing was found.
 
 ## Software catalog
 The software list is the catalog of software. Visitors go through it by the categories: the catalog of a category holds the software in it and in its whole subtree ([categories.md](categories.md)); the whole tree is offered, without counts. A category is where the catalog is, not a filter: the word and the filters keep it, and going to another category keeps them.

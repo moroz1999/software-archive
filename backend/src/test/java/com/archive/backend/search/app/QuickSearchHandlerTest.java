@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.search.domain.CatalogKeyword;
-import com.archive.backend.search.read.QuickGroup;
+import com.archive.backend.search.read.FoundGroup;
 import com.archive.backend.search.read.QuickSearch;
 import com.archive.backend.search.read.QuickSearchResult;
 import com.archive.backend.search.read.QuickSection;
@@ -20,7 +20,7 @@ class QuickSearchHandlerTest {
     private static final QuickSearchResult FOUND = new QuickSearchResult(
             QuickSection.empty(),
             QuickSection.empty(),
-            new QuickSection<>(List.of(new QuickGroup(UUID.randomUUID(), "ZS")), 1));
+            new QuickSection<>(List.of(new FoundGroup(UUID.randomUUID(), "ZS")), 1));
 
     private final List<String> asked = new ArrayList<>();
 

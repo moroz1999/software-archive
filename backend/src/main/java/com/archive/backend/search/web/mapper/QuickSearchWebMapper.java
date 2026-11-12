@@ -3,13 +3,13 @@ package com.archive.backend.search.web.mapper;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.search.app.QuickSearchQuery;
 import com.archive.backend.search.domain.CatalogKeyword;
-import com.archive.backend.search.read.QuickAuthor;
-import com.archive.backend.search.read.QuickGroup;
+import com.archive.backend.search.read.FoundAuthor;
+import com.archive.backend.search.read.FoundGroup;
 import com.archive.backend.search.read.QuickSearchResult;
 import com.archive.backend.search.read.QuickSection;
 import com.archive.backend.search.read.SoftwareCatalogItem;
-import com.archive.backend.search.web.dto.QuickAuthorDto;
-import com.archive.backend.search.web.dto.QuickGroupDto;
+import com.archive.backend.search.web.dto.FoundAuthorDto;
+import com.archive.backend.search.web.dto.FoundGroupDto;
 import com.archive.backend.search.web.dto.QuickSearchDto;
 import com.archive.backend.search.web.dto.QuickSectionDto;
 import com.archive.backend.search.web.dto.SoftwareCatalogItemDto;
@@ -22,9 +22,9 @@ public interface QuickSearchWebMapper {
 
     SoftwareCatalogItemDto toSoftware(SoftwareCatalogItem item);
 
-    QuickAuthorDto toAuthor(QuickAuthor author);
+    FoundAuthorDto toAuthor(FoundAuthor author);
 
-    QuickGroupDto toGroup(QuickGroup group);
+    FoundGroupDto toGroup(FoundGroup group);
 
     default QuickSearchQuery toQuery(@Nullable String keyword, @Nullable String platform) {
         return new QuickSearchQuery(CatalogKeyword.of(keyword), platform == null ? null : new PlatformCode(platform));

@@ -2,8 +2,8 @@ package com.archive.backend.search.infra;
 
 import static com.archive.backend.search.infra.TypesenseCall.call;
 
-import com.archive.backend.search.read.QuickAuthor;
-import com.archive.backend.search.read.QuickGroup;
+import com.archive.backend.search.read.FoundAuthor;
+import com.archive.backend.search.read.FoundGroup;
 import com.archive.backend.search.read.QuickSearch;
 import com.archive.backend.search.read.QuickSearchResult;
 import com.archive.backend.search.read.QuickSection;
@@ -33,9 +33,9 @@ public class TypesenseQuickSearch implements QuickSearch {
     @Override
     public QuickSearchResult find(String keyword, @Nullable String platform, int limit) {
         List<MultiSearchCollectionParameters> searches = List.of(
-                search("software", "title,alternative_titles", "title_sort", "platform", keyword, platform, limit),
-                search("authors", "name,labels,real_name", "name_sort", "platforms", keyword, platform, limit),
-                search("groups", "name,labels,group_name", "name_sort", "platforms", keyword, platform, limit));
+                TypesenseSection.SOFTWARE.search(keyword, platform, 0, limit),
+                TypesenseSection.AUTHORS.search(keyword, platform, 0, limit),
+                TypesenseSection.GROUPS.search(keyword, platform, 0, limit));
         List<MultiSearchResultItem> results = call(
                 "quick search",
                 () -> client.multiSearch
@@ -47,30 +47,8 @@ public class TypesenseQuickSearch implements QuickSearch {
                 section(results.get(2), TypesenseQuickSearch::group));
     }
 
-    /** The best matches first; equal ones in name order. */
-    private static MultiSearchCollectionParameters search(
-            String collection,
-            String queryBy,
-            String sortField,
-            String platformField,
-            String keyword,
-            @Nullable String platform,
-            int limit) {
-        MultiSearchCollectionParameters search = new MultiSearchCollectionParameters().collection(collection);
-        search.setQ(keyword);
-        search.setQueryBy(queryBy);
-        search.setSortBy("_text_match:desc," + sortField + ":asc");
-        search.setPerPage(limit);
-        if (platform != null) {
-            search.setFilterBy(platformField + ":=`" + platform + "`");
-        }
-        return search;
-    }
-
     private static <T> QuickSection<T> section(MultiSearchResultItem result, Function<Map<String, Object>, T> read) {
-        if (result.getError() != null) {
-            throw new SearchIndexException("Typesense refused a quick search: " + result.getError());
-        }
+        TypesenseSection.answered(result);
         return new QuickSection<>(
                 result.getHits().stream()
                         .map(hit -> read.apply(hit.getDocument()))
@@ -78,16 +56,16 @@ public class TypesenseQuickSearch implements QuickSearch {
                 Objects.requireNonNullElse(result.getFound(), 0));
     }
 
-    private static QuickAuthor author(Map<String, Object> doc) {
+    static FoundAuthor author(Map<String, Object> doc) {
         String name = String.valueOf(doc.get("name"));
         Object realName = doc.get("real_name");
-        return new QuickAuthor(
+        return new FoundAuthor(
                 UUID.fromString(String.valueOf(doc.get("id"))),
                 name,
                 realName == null || name.equals(realName) ? null : String.valueOf(realName));
     }
 
-    private static QuickGroup group(Map<String, Object> doc) {
-        return new QuickGroup(UUID.fromString(String.valueOf(doc.get("id"))), String.valueOf(doc.get("name")));
+    static FoundGroup group(Map<String, Object> doc) {
+        return new FoundGroup(UUID.fromString(String.valueOf(doc.get("id"))), String.valueOf(doc.get("name")));
     }
 }

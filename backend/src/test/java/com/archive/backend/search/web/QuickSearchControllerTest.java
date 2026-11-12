@@ -12,8 +12,8 @@ import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.search.app.QuickSearchHandler;
 import com.archive.backend.search.app.QuickSearchQuery;
 import com.archive.backend.search.domain.CatalogKeyword;
-import com.archive.backend.search.read.QuickAuthor;
-import com.archive.backend.search.read.QuickGroup;
+import com.archive.backend.search.read.FoundAuthor;
+import com.archive.backend.search.read.FoundGroup;
 import com.archive.backend.search.read.QuickSearchResult;
 import com.archive.backend.search.read.QuickSection;
 import com.archive.backend.search.read.SoftwareCatalogItem;
@@ -56,9 +56,9 @@ class QuickSearchControllerTest {
                         new QuickSection<>(
                                 List.of(new SoftwareCatalogItem(ELITE, "Elite", LocalDate.of(1987, 5, 1))), 12),
                         new QuickSection<>(
-                                List.of(new QuickAuthor(ZED, "Zed", "John Doe"), new QuickAuthor(CARL, "Carl", null)),
+                                List.of(new FoundAuthor(ZED, "Zed", "John Doe"), new FoundAuthor(CARL, "Carl", null)),
                                 2),
-                        new QuickSection<>(List.of(new QuickGroup(SQUAD, "ZS")), 1)));
+                        new QuickSection<>(List.of(new FoundGroup(SQUAD, "ZS")), 1)));
     }
 
     private QuickSearchQuery asked() {
