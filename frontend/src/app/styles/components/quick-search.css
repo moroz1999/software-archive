@@ -1,0 +1,13 @@
+:root {
+    /* The spacing of the capitals of the caption of a kind. */
+    --quick-search-caption-letter-spacing: 0.05em;
+
+    /* The corners of a match. */
+    --quick-search-option-radius: var(--radius-sm);
+
+    /* The background of the match chosen by the arrow keys or under the pointer. */
+    --quick-search-option-chosen-bg: var(--background-deep);
+
+    /* The icon of the kind, quieter than the title. */
+    --quick-search-icon-opacity: 0.6;
+}

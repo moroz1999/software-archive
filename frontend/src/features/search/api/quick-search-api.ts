@@ -1,9 +1,8 @@
-import {toAuthorId} from '@/entities/authors';
-import {toGroupId} from '@/entities/groups';
 import type {PlatformCode} from '@/entities/platforms';
 import {parseSoftware} from '@/entities/software';
-import {getJson, type JsonObject, mapResponse, readArray, readNullableString, readNumber, readObject, readString} from '@/shared/api';
+import {getJson, type JsonObject, mapResponse, readArray, readNumber, readObject} from '@/shared/api';
 import type {QuickSearchResult, QuickSection} from '../model/quick-search';
+import {parseFoundAuthor, parseFoundGroup} from './found-api';
 
 function parseSection<T>(value: unknown, what: string, read: (item: unknown) => T): QuickSection<T> {
     const dto: JsonObject = readObject(value, what);
@@ -21,14 +20,8 @@ export async function fetchQuickSearch(keyword: string, platform: PlatformCode |
         const dto = readObject(json, 'quick search');
         return {
             software: parseSection(dto['software'], 'software', parseSoftware),
-            authors: parseSection(dto['authors'], 'author', (item) => {
-                const author = readObject(item, 'author');
-                return {id: toAuthorId(readString(author, 'id')), name: readString(author, 'name'), realName: readNullableString(author, 'realName')};
-            }),
-            groups: parseSection(dto['groups'], 'group', (item) => {
-                const group = readObject(item, 'group');
-                return {id: toGroupId(readString(group, 'id')), name: readString(group, 'name')};
-            }),
+            authors: parseSection(dto['authors'], 'author', parseFoundAuthor),
+            groups: parseSection(dto['groups'], 'group', parseFoundGroup),
         };
     });
 }

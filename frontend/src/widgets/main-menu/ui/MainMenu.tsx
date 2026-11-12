@@ -4,7 +4,7 @@ import {PlatformSwitch} from '@/entities/platforms';
 import {GROUPS_PATH} from '@/entities/groups';
 import {SOFTWARE_LIST_PATH} from '@/entities/software';
 import {LanguageSwitch} from '@/features/language-switch';
-import {QuickSearch} from '@/features/quick-search';
+import {QuickSearch} from '@/features/search';
 import {HOME_PATH} from '@/shared/config';
 import {Inline} from '@/shared/ui/inline';
 import {NavBar, NavBarLink} from '@/shared/ui/nav-bar';

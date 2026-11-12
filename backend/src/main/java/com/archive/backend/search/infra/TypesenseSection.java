@@ -36,6 +36,16 @@ enum TypesenseSection {
         return search;
     }
 
+    /** {@code limit} matches from {@code offset} on, in the order of {@link #search}. */
+    MultiSearchCollectionParameters window(String keyword, @Nullable String platform, int offset, int limit) {
+        MultiSearchCollectionParameters search = search(keyword, platform, 0, limit);
+        search.setPage(null);
+        search.setPerPage(null);
+        search.setOffset(offset);
+        search.setLimit(limit);
+        return search;
+    }
+
     /** The answer of a search of the section; fails when Typesense refused it. */
     static MultiSearchResultItem answered(MultiSearchResultItem result) {
         if (result.getError() != null) {

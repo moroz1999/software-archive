@@ -9,7 +9,7 @@ PostgreSQL stays the source of truth: every change and every full page of an ent
 1. **Index infrastructure** — the `software` collection, the outbox, the worker, the rebuild. *Built.*
 2. **Software catalog** — `/software` reads from Typesense, with the year, category and country filters ([software-list.md](software-list.md)). *Built.*
 3. **Quick search** — the `authors` and `groups` collections, the header button and the window with brief results. ([quick-search.md](quick-search.md)). *Built.*
-4. **Full search** — a page of every section of its own: people and groups through the reads below, software through the software catalog. *Being built: the reads are built.*
+4. **Full search** — one list of the matches of every kind, paged ([full-search.md](full-search.md)). *Built.*
 5. Later: the author and group catalogs move to Typesense.
 
 ## Collections
@@ -30,8 +30,8 @@ Platforms of people and groups are those of the software their labels are credit
   - As built: one `multi_search` with the main search and, for each chosen filter, a search with `per_page=0` that asks only its own facet; `max_facet_values` is 1000. The keyword is matched over `title` and `alternative_titles`, the page sorted by `title_sort`, the lowercased title. A card's release day is stored with the document, not indexed.
 - **Quick search.** One `multi_search` over the three collections with the keyword and the platform: a few hits and the count of matches per section.
   - As built: five hits per section, by `_text_match` and then by the lowercased title or name; a blank keyword finds nothing without asking Typesense.
-- **Full search.** A page of one section: the keyword and the platform as in the quick search, with the page asked.
-  - As built: people and groups, each a single search of its collection in the order of the quick search; a blank keyword finds nothing without asking Typesense. Software is the software catalog of the keyword ([software-list.md](software-list.md)).
+- **Full search.** The keyword and the platform as in the quick search, over the kinds asked. The matches of the kinds, in their order, make one list cut into pages; a page takes from each kind the part that falls on it.
+  - As built: one `multi_search` with `per_page=0` for the count of every kind, then one with `offset` and `limit` for the part of each kind on the page, in the order of the quick search; fifty a page. A blank keyword finds nothing without asking Typesense.
 - **Typesense unavailable.** A read fails as a system error and goes to the error dialog ([error-handling.md](../error-handling.md)). Edits are not affected.
 
 ## Synchronization
@@ -66,10 +66,10 @@ The rebuild runs inside the backend, in the process of the worker: by itself whe
 - With Typesense down, an edit is saved; once it is back, the worker applies the edit or the deletion.
 - With Typesense down, a search or catalog read shows the error dialog.
 - A failed rebuild leaves the search on the previous collections.
-- Full search: going to page 2 of software keeps the current pages of people and groups.
+- Full search: page 2 continues the list of page 1 across the kinds, and every count stays the count of all matches of its kind.
 
 ## REST
 
 `GET /api/search/quick?q={keyword}&platform={code}` — `software`, `authors`, `groups`, each `{items, total}`: `items` the first five matches, `total` the count of all. Software as in the catalog (`id`, `title`, `releaseDate`); a person `id`, `name` (the main name), `realName` (`null` when unknown or the main name); a group `id`, `name`. A missing or blank keyword gives empty sections. `400 platform.code-invalid`; a system error when Typesense does not answer.
 
-`GET /api/search/authors?q={keyword}&platform={code}&page={n}&size={n}` and `GET /api/search/groups?…` — a page of the section in the page contract ([backend.md](../backend.md#shared-building-blocks)), a person and a group as in the quick search. A missing or blank keyword gives an empty page. Errors as in the quick search.
+`GET /api/search?q={keyword}&platform={code}&types={kinds}&page={n}` — `types` the codes `author`, `group`, `software` joined by commas, every kind when missing; `page` counted from 0. `sets`, one per kind on the page in the order of the kinds, each `{type, total, items}`: `total` the count of all matches of the kind, `items` as in the quick search; `page` the page metadata of the page contract ([backend.md](../backend.md#shared-building-blocks)), fifty a page. A missing or blank keyword gives no sets. `400 search.type-invalid`, `400 platform.code-invalid`; a system error when Typesense does not answer.

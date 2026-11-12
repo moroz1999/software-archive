@@ -12,6 +12,7 @@
 @import url("./chip.css");
 @import url("./dialog.css");
 @import url("./field-group.css");
+@import url("./full-search.css");
 @import url("./grid.css");
 @import url("./group-form.css");
 @import url("./group-form-skeleton.css");
@@ -27,6 +28,7 @@
 @import url("./loading-state.css");
 @import url("./language-switch.css");
 @import url("./platform-switch.css");
+@import url("./quick-search.css");
 @import url("./icon.css");
 @import url("./nav-bar.css");
 @import url("./nav-chips.css");

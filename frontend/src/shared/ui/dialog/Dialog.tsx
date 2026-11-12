@@ -21,10 +21,12 @@ export interface DialogProps {
     readonly focusField?: boolean;
     /** Closes by a click on the backdrop and by a cross next to the title too, for a window with nothing to lose. */
     readonly dismissible?: boolean;
+    /** Takes the place of the title, such as a field the window is about; the title then only names it for assistive technology. */
+    readonly header?: ReactNode;
 }
 
 /** Modal dialog rendered over the page; closes on Escape. */
-export function Dialog({open, title, onClose, children, actions, role = 'dialog', focusField = false, dismissible = false}: DialogProps) {
+export function Dialog({open, title, onClose, children, actions, role = 'dialog', focusField = false, dismissible = false, header}: DialogProps) {
     const {t} = useTranslation();
     const titleId = useId();
     const ref = useRef<HTMLDivElement>(null);
@@ -77,18 +79,26 @@ export function Dialog({open, title, onClose, children, actions, role = 'dialog'
 
     return createPortal(
         <div ref={backdrop} data-testid="dialog-backdrop" className={styles.backdrop}>
-            <div ref={ref} role={role} aria-modal="true" aria-labelledby={titleId} tabIndex={-1} className={styles.dialog}>
+            <div
+                ref={ref}
+                role={role}
+                aria-modal="true"
+                aria-labelledby={header === undefined ? titleId : undefined}
+                aria-label={header === undefined ? undefined : title}
+                tabIndex={-1}
+                className={styles.dialog}
+            >
                 <Stack gap="lg">
                     {dismissible
                         ? (
                             <Inline gap="sm" align="center" justify="between">
-                                <Heading level={2} id={titleId}>{title}</Heading>
+                                {header === undefined ? <Heading level={2} id={titleId}>{title}</Heading> : <div className={styles.header}>{header}</div>}
                                 <Button color="transparent" size="sm" square ariaLabel={t('actions.close')} onClick={onClose}>
                                     <CloseIcon/>
                                 </Button>
                             </Inline>
                         )
-                        : <Heading level={2} id={titleId}>{title}</Heading>}
+                        : header ?? <Heading level={2} id={titleId}>{title}</Heading>}
                     {children}
                     {actions !== undefined && <Inline gap="sm" justify="end">{actions}</Inline>}
                 </Stack>

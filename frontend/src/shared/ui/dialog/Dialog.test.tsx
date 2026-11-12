@@ -1,5 +1,5 @@
 import {describe, expect, it, vi} from 'vitest';
-import {render, screen} from '@testing-library/react';
+import {render, screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {Dialog} from './Dialog';
 import {ErrorDialog} from './ErrorDialog';
@@ -46,6 +46,16 @@ describe(Dialog, () => {
         await userEvent.click(screen.getByRole('dialog', {name: 'Search'}));
 
         expect(onClose).not.toHaveBeenCalled();
+    });
+
+    it('shows the header in place of the title, the title naming the window', () => {
+        render(<Dialog open title="Search" onClose={vi.fn<() => void>()} header={<input aria-label="Field"/>} dismissible>Body</Dialog>);
+
+        const dialog = screen.getByRole('dialog', {name: 'Search'});
+
+        expect(within(dialog).getByRole('textbox', {name: 'Field'})).toBeInTheDocument();
+        expect(within(dialog).queryByRole('heading')).not.toBeInTheDocument();
+        expect(within(dialog).getByRole('button', {name: 'Close'})).toBeInTheDocument();
     });
 
     it('offers no cross and ignores the backdrop by default', async () => {

@@ -18,7 +18,9 @@ import {loadGroupsPage, preloadGroupsPage, shouldPreloadGroupsPage} from '@/page
 import {loadHomePage, preloadHomePage} from '@/pages/home';
 import {loadReleaseEditPage, preloadReleaseEditPage} from '@/pages/release-edit';
 import {loadReleaseNewPage, preloadReleaseNewPage} from '@/pages/release-new';
+import {loadSearchPage, preloadSearchPage, shouldPreloadSearchPage} from '@/pages/search';
 import {loadSoftwarePage, preloadSoftwarePage, shouldPreloadSoftwarePage} from '@/pages/software';
+import {SEARCH_PATH} from '@/features/search';
 import {SOFTWARE_CATEGORY_ROUTE} from '@/features/software/catalog';
 import {loadSoftwareEditPage, preloadSoftwareEditPage} from '@/pages/software-edit';
 import {loadSoftwareNewPage} from '@/pages/software-new';
@@ -80,6 +82,13 @@ const routes = (queryClient: QueryClient): RouteObject[] => [{Component: AppLayo
         {path: CATEGORIES_PATH, loader: preloadCategoriesPage(queryClient), lazy: {Component: loadCategoriesPage}, HydrateFallback: nothing},
         {path: CATEGORY_NEW_PATH, loader: preloadCategoryNewPage(queryClient), lazy: {Component: loadCategoryNewPage}, HydrateFallback: nothing},
         {path: CATEGORY_EDIT_ROUTE, loader: preloadCategoryEditPage(queryClient), lazy: {Component: loadCategoryEditPage}, HydrateFallback: nothing},
+        {
+            path: SEARCH_PATH,
+            loader: preloadSearchPage(queryClient),
+            shouldRevalidate: shouldPreloadSearchPage,
+            lazy: {Component: loadSearchPage},
+            HydrateFallback: nothing,
+        },
         {path: '*', loader: unknownAddress, Component: nothing},
     ]},
 ]}];

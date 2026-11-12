@@ -22,3 +22,8 @@
 .dialog:focus {
     outline: none;
 }
+
+.header {
+    flex: 1;
+    min-width: 0;
+}

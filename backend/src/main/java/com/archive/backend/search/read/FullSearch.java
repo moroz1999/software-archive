@@ -1,18 +1,11 @@
 package com.archive.backend.search.read;
 
+import java.util.Set;
 import org.jspecify.annotations.Nullable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
-/**
- * The full search of people and of groups, a section at a time, the best matches first. Fails with an unchecked
- * exception when the engine does not answer.
- */
+/** The full search over the kinds asked. Fails with an unchecked exception when the engine does not answer. */
 public interface FullSearch {
 
-    /** A page of the people the keyword matches, of the platform when one is given. */
-    Page<FoundAuthor> authors(String keyword, @Nullable String platform, Pageable pageable);
-
-    /** A page of the groups the keyword matches, of the platform when one is given. */
-    Page<FoundGroup> groups(String keyword, @Nullable String platform, Pageable pageable);
+    /** Page {@code number}, of {@code size} matches, of the keyword over the kinds, of the platform when one is given. */
+    FullSearchResult find(String keyword, @Nullable String platform, Set<FoundType> kinds, int number, int size);
 }

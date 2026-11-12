@@ -11,10 +11,19 @@ import com.archive.backend.search.domain.GroupDocument;
 import com.archive.backend.search.domain.SearchCollection;
 import com.archive.backend.search.domain.SearchDocument;
 import com.archive.backend.search.domain.SearchEntityType;
+import com.archive.backend.search.domain.SoftwareDocument;
 import com.archive.backend.search.read.FoundAuthor;
 import com.archive.backend.search.read.FoundGroup;
+import com.archive.backend.search.read.FoundSet;
+import com.archive.backend.search.read.FoundType;
+import com.archive.backend.search.read.FullSearchResult;
+import com.archive.backend.search.read.SoftwareCatalogItem;
+import java.time.LocalDate;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,37 +31,45 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.testcontainers.typesense.TypesenseContainer;
 
 /**
- * The full search of people and of groups (docs/domain/search.md#full-search): every test puts collections of its own
- * in use, holding exactly the entities below.
+ * The full search: one list of people, then groups, then software, cut into pages (docs/domain/search.md#full-search).
+ * Every test puts collections of its own in use, holding exactly the entities below: matched by "z", three people
+ * and two groups of the vector, four software of the vector, and one of each of the BK.
  */
 @SpringBootTest
 @Import({TestcontainersConfiguration.class, TypesenseTestConfiguration.class})
 class TypesenseFullSearchIT {
 
-    private static final UUID ZED = UUID.fromString("00000000-0000-0000-00fb-000000000011");
-    private static final UUID ZORRO = UUID.fromString("00000000-0000-0000-00fb-000000000012");
-    private static final UUID JOHN = UUID.fromString("00000000-0000-0000-00fb-000000000013");
-    private static final UUID ZAK = UUID.fromString("00000000-0000-0000-00fb-000000000014");
-    private static final UUID SQUAD = UUID.fromString("00000000-0000-0000-00fb-000000000021");
-    private static final UUID ZONE = UUID.fromString("00000000-0000-0000-00fb-000000000022");
-    private static final UUID CREW = UUID.fromString("00000000-0000-0000-00fb-000000000023");
+    private static final Set<FoundType> ALL = EnumSet.allOf(FoundType.class);
 
-    /** Three people of the vector matched by "z", one of them by the real name only; one of the BK. */
+    private static UUID id(int n) {
+        return UUID.fromString("00000000-0000-0000-00fb-%012d".formatted(n));
+    }
+
     private static final List<AuthorDocument> AUTHORS = List.of(
-            new AuthorDocument(ZED, "Zed", List.of("Zed"), "Zed Smith", List.of("vector")),
-            new AuthorDocument(ZORRO, "Zorro", List.of("Zorro"), null, List.of("vector")),
-            new AuthorDocument(JOHN, "John", List.of("John"), "Zak Doe", List.of("vector")),
-            new AuthorDocument(ZAK, "Zak", List.of("Zak"), null, List.of("bk")));
+            new AuthorDocument(id(11), "Zed", List.of("Zed"), "Zed Smith", List.of("vector")),
+            new AuthorDocument(id(12), "Zorro", List.of("Zorro"), null, List.of("vector")),
+            new AuthorDocument(id(13), "John", List.of("John"), "Zak Doe", List.of("vector")),
+            new AuthorDocument(id(14), "Zak", List.of("Zak"), null, List.of("bk")));
 
     private static final List<GroupDocument> GROUPS = List.of(
-            new GroupDocument(SQUAD, "ZS", List.of("ZS"), "Zed Squad", List.of("vector")),
-            new GroupDocument(ZONE, "Zone", List.of("Zone"), "Zone", List.of("vector")),
-            new GroupDocument(CREW, "CRW", List.of("CRW"), "Zero Crew", List.of("bk")));
+            new GroupDocument(id(21), "ZS", List.of("ZS"), "Zed Squad", List.of("vector")),
+            new GroupDocument(id(22), "Zone", List.of("Zone"), "Zone", List.of("vector")),
+            new GroupDocument(id(23), "CRW", List.of("CRW"), "Zero Crew", List.of("bk")));
+
+    private static final List<SoftwareDocument> SOFTWARE = IntStream.rangeClosed(31, 35)
+            .mapToObj(n -> new SoftwareDocument(
+                    id(n),
+                    "Zynaps " + n,
+                    LocalDate.of(1987, 5, 1),
+                    List.of(),
+                    n == 35 ? "bk" : "vector",
+                    1987,
+                    List.of(),
+                    List.of()))
+            .toList();
 
     @Autowired
     private TypesenseFullSearch search;
@@ -73,6 +90,7 @@ class TypesenseFullSearchIT {
     void putTheEntitiesInUse() {
         putInUse(SearchEntityType.AUTHOR, AUTHORS);
         putInUse(SearchEntityType.GROUP, GROUPS);
+        putInUse(SearchEntityType.SOFTWARE, SOFTWARE);
     }
 
     @AfterEach
@@ -80,55 +98,82 @@ class TypesenseFullSearchIT {
         new TypesenseProbe(typesense).resume();
     }
 
-    @Test
-    void givesThePeopleAPageAtATimeWithTheCountOfAll() {
-        Page<FoundAuthor> first = search.authors("z", "vector", PageRequest.of(0, 2));
-        Page<FoundAuthor> second = search.authors("z", "vector", PageRequest.of(1, 2));
+    private static List<String> kindsAndSizes(FullSearchResult result) {
+        return result.sets().stream()
+                .map(set -> set.kind() + ":" + size(set) + "/" + set.total())
+                .toList();
+    }
 
-        assertThat(first.getContent()).hasSize(2);
-        assertThat(first.getTotalElements()).isEqualTo(3);
-        assertThat(first.getTotalPages()).isEqualTo(2);
-        assertThat(Stream.concat(first.stream(), second.stream()).map(FoundAuthor::id))
-                .containsExactlyInAnyOrder(ZED, ZORRO, JOHN);
+    private static int size(FoundSet set) {
+        return switch (set) {
+            case FoundSet.Authors authors -> authors.items().size();
+            case FoundSet.Groups groups -> groups.items().size();
+            case FoundSet.Software software -> software.items().size();
+        };
     }
 
     @Test
-    void givesAPersonUnderTheMainNameWithTheRealName() {
-        assertThat(search.authors("smith", null, PageRequest.of(0, 50)).getContent())
-                .containsExactly(new FoundAuthor(ZED, "Zed", "Zed Smith"));
+    void listsPeopleThenGroupsThenSoftwareAcrossThePages() {
+        FullSearchResult first = search.find("z", "vector", ALL, 0, 4);
+        FullSearchResult second = search.find("z", "vector", ALL, 1, 4);
+        FullSearchResult third = search.find("z", "vector", ALL, 2, 4);
+
+        assertThat(first.total()).isEqualTo(9);
+        assertThat(first.totalPages()).isEqualTo(3);
+        assertThat(kindsAndSizes(first)).containsExactly("AUTHOR:3/3", "GROUP:1/2");
+        assertThat(kindsAndSizes(second)).containsExactly("GROUP:1/2", "SOFTWARE:3/4");
+        assertThat(kindsAndSizes(third)).containsExactly("SOFTWARE:1/4");
     }
 
     @Test
-    void peopleFollowThePlatform() {
-        assertThat(search.authors("zak", "bk", PageRequest.of(0, 50)).map(FoundAuthor::id))
-                .containsExactly(ZAK);
-        assertThat(search.authors("zak", null, PageRequest.of(0, 50)).map(FoundAuthor::id))
-                .containsExactlyInAnyOrder(ZAK, JOHN);
+    void givesEveryMatchOnceOverThePages() {
+        List<UUID> groups = IntStream.range(0, 3)
+                .mapToObj(page -> search.find("z", "vector", ALL, page, 4))
+                .flatMap(result -> result.sets().stream())
+                .flatMap(set -> set instanceof FoundSet.Groups g ? g.items().stream() : Stream.empty())
+                .map(FoundGroup::id)
+                .toList();
+
+        assertThat(groups).containsExactlyInAnyOrder(id(21), id(22));
     }
 
     @Test
-    void givesTheGroupsAPageAtATimeOfThePlatform() {
-        Page<FoundGroup> first = search.groups("z", "vector", PageRequest.of(0, 1));
-        Page<FoundGroup> second = search.groups("z", "vector", PageRequest.of(1, 1));
+    void givesThePeopleUnderTheMainNameAndTheSoftwareAsCards() {
+        FullSearchResult result = search.find("smith", null, ALL, 0, 50);
+        FullSearchResult software = search.find("zynaps", "bk", ALL, 0, 50);
 
-        assertThat(first.getTotalElements()).isEqualTo(2);
-        assertThat(Stream.concat(first.stream(), second.stream()))
-                .containsExactlyInAnyOrder(new FoundGroup(SQUAD, "ZS"), new FoundGroup(ZONE, "Zone"));
+        assertThat(result.sets())
+                .containsExactly(new FoundSet.Authors(1, List.of(new FoundAuthor(id(11), "Zed", "Zed Smith"))));
+        assertThat(software.sets())
+                .containsExactly(new FoundSet.Software(
+                        1, List.of(new SoftwareCatalogItem(id(35), "Zynaps 35", LocalDate.of(1987, 5, 1)))));
     }
 
     @Test
-    void aPageBeyondTheMatchesIsEmpty() {
-        Page<FoundGroup> page = search.groups("zero", null, PageRequest.of(3, 50));
+    void searchesOnlyTheKindsAsked() {
+        FullSearchResult result = search.find("z", "vector", Set.of(FoundType.SOFTWARE, FoundType.GROUP), 0, 4);
 
-        assertThat(page.getContent()).isEmpty();
-        assertThat(page.getTotalElements()).isEqualTo(1);
+        assertThat(result.total()).isEqualTo(6);
+        assertThat(kindsAndSizes(result)).containsExactly("GROUP:2/2", "SOFTWARE:2/4");
+    }
+
+    @Test
+    void aPageBeyondTheMatchesHasNoSets() {
+        FullSearchResult result = search.find("z", "vector", ALL, 5, 4);
+
+        assertThat(result.sets()).isEmpty();
+        assertThat(result.total()).isEqualTo(9);
+    }
+
+    @Test
+    void findsNothingOfAKeywordMatchingNothing() {
+        assertThat(search.find("qqqq", null, ALL, 0, 50)).isEqualTo(FullSearchResult.empty(0, 50));
     }
 
     @Test
     void failsWhileTypesenseIsDown() {
         new TypesenseProbe(typesense).freeze();
 
-        assertThatThrownBy(() -> search.authors("z", null, PageRequest.of(0, 50)))
-                .isInstanceOf(RuntimeException.class);
+        assertThatThrownBy(() -> search.find("z", null, ALL, 0, 50)).isInstanceOf(RuntimeException.class);
     }
 }

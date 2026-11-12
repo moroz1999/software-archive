@@ -1,0 +1,22 @@
+.caption {
+    text-transform: uppercase;
+    letter-spacing: var(--quick-search-caption-letter-spacing);
+}
+
+.option {
+    border-radius: var(--quick-search-option-radius);
+}
+
+.option:hover,
+.chosen {
+    background: var(--quick-search-option-chosen-bg);
+}
+
+.icon {
+    opacity: var(--quick-search-icon-opacity);
+}
+
+.title {
+    flex: 1;
+    min-width: 0;
+}

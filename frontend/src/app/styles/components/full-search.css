@@ -1,0 +1,4 @@
+:root {
+    /* Height of a row of the skeleton of people and groups, as of a row of their tables. */
+    --full-search-skeleton-row-height: 40px;
+}
