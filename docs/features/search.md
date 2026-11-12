@@ -25,7 +25,7 @@ Platforms of people and groups are those of the software their labels are credit
 
 ## Reads
 
-- **Software catalog.** The chosen filters go to `filter_by`; year, category and country are asked through `facet_by`; an empty keyword is `q=*`. The answer is the page and, for each facet, the values with counts over the whole filtered result. `max_facet_values` fits the interface. The values of an active filter come from a separate search without its own condition, keeping the keyword and the other conditions; all searches of one view go in one `multi_search`.
+- **Software catalog.** The category and the chosen filters go to `filter_by`; year and country are asked through `facet_by`, the category never; an empty keyword is `q=*`. The answer is the page and, for each facet, the values with counts over the whole filtered result. `max_facet_values` fits the interface. The values of an active filter come from a separate search without its own condition, keeping the keyword, the category and the other conditions; all searches of one view go in one `multi_search`.
   - As built: one `multi_search` with the main search and, for each chosen filter, a search with `per_page=0` that asks only its own facet; `max_facet_values` is 1000. The keyword is matched over `title` and `alternative_titles`, the page sorted by `title_sort`, the lowercased title. A card's release day is stored with the document, not indexed.
 - **Quick search.** One `multi_search` over the three collections with the keyword and the platform: a few hits and the count of matches per section.
   - As built: five hits per section, by `_text_match` and then by the lowercased title or name; a blank keyword finds nothing without asking Typesense.

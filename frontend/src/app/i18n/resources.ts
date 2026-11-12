@@ -1,6 +1,6 @@
 export const resources = {
     en: {translation: {
-        language: {label: 'Language', choose: 'Choose a language'},
+        language: {label: 'Language'},
         navigation: {mainMenu: 'Main menu', home: 'Home', software: 'Software', authors: 'Authors', groups: 'Groups', categories: 'Categories'},
         actions: {
             addSoftware: 'Add software', editSoftware: 'Edit software', save: 'Save', edit: 'Edit', delete: 'Delete',
@@ -16,8 +16,8 @@ export const resources = {
         filters: {
             platform: 'Platform', allPlatforms: 'All platforms', country: 'Country', anyCountry: 'Any country', city: 'City',
             anyCity: 'Any city', firstLetter: 'First letter', all: 'All', filter: 'Filter', filterLabel: 'Filter {{label}}',
-            search: 'Search', year: 'Year', anyYear: 'Any year', category: 'Category', allCategories: 'All categories',
-            subcategories: 'Subcategories', withCount: '{{label}} ({{count}})',
+            search: 'Search', year: 'Year', anyYear: 'Any year', allCategories: 'All categories',
+            withCount: '{{label}} ({{count}})',
         },
         fields: {
             title: 'Title', platform: 'Platform', description: 'Description', releaseDate: 'Release date', version: 'Version',
@@ -93,7 +93,7 @@ export const resources = {
         },
     }},
     ru: {translation: {
-        language: {label: 'Язык', choose: 'Выберите язык'},
+        language: {label: 'Язык'},
         navigation: {mainMenu: 'Главное меню', home: 'Главная', software: 'Программы', authors: 'Авторы', groups: 'Группы', categories: 'Категории'},
         actions: {
             addSoftware: 'Добавить программу', editSoftware: 'Редактировать программу', save: 'Сохранить', edit: 'Редактировать',
@@ -109,8 +109,8 @@ export const resources = {
         filters: {
             platform: 'Платформа', allPlatforms: 'Все платформы', country: 'Страна', anyCountry: 'Любая страна', city: 'Город',
             anyCity: 'Любой город', firstLetter: 'Первая буква', all: 'Все', filter: 'Фильтр', filterLabel: 'Фильтр: {{label}}',
-            search: 'Поиск', year: 'Год', anyYear: 'Любой год', category: 'Категория', allCategories: 'Все категории',
-            subcategories: 'Подкатегории', withCount: '{{label}} ({{count}})',
+            search: 'Поиск', year: 'Год', anyYear: 'Любой год', allCategories: 'Все категории',
+            withCount: '{{label}} ({{count}})',
         },
         fields: {
             title: 'Название', platform: 'Платформа', description: 'Описание', releaseDate: 'Дата выпуска', version: 'Версия',

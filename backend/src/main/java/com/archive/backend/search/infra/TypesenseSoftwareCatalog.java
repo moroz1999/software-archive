@@ -28,8 +28,8 @@ import org.typesense.model.MultiSearchResultItem;
 import org.typesense.model.MultiSearchSearchesParameter;
 
 /**
- * The software catalog in one {@code multi_search}: the page with the values of the filters not chosen, and for each
- * chosen filter a search of its values alone, without its own condition (docs/features/search.md#reads).
+ * The software catalog of a category in one {@code multi_search}: the page with the values of the filters not chosen,
+ * and for each chosen filter a search of its values alone, without its own condition (docs/features/search.md#reads).
  */
 @Repository
 @RequiredArgsConstructor
@@ -43,7 +43,6 @@ public class TypesenseSoftwareCatalog implements SoftwareCatalog {
     /** A filter of the catalog: its field and its chosen value, if any. */
     private enum Facet {
         YEARS("year"),
-        CATEGORIES("categories"),
         COUNTRIES("countries");
 
         private final String field;
@@ -56,7 +55,6 @@ public class TypesenseSoftwareCatalog implements SoftwareCatalog {
         Object chosen(SoftwareCatalogFilter filter) {
             return switch (this) {
                 case YEARS -> filter.year();
-                case CATEGORIES -> filter.category();
                 case COUNTRIES -> filter.country();
             };
         }
@@ -112,10 +110,6 @@ public class TypesenseSoftwareCatalog implements SoftwareCatalog {
                                 value -> new YearCount(Integer.parseInt(value.value()), value.count())),
                         values(
                                 counts,
-                                Facet.CATEGORIES,
-                                value -> new IdCount(UUID.fromString(value.value()), value.count())),
-                        values(
-                                counts,
                                 Facet.COUNTRIES,
                                 value -> new IdCount(UUID.fromString(value.value()), value.count()))));
     }
@@ -128,6 +122,10 @@ public class TypesenseSoftwareCatalog implements SoftwareCatalog {
         List<String> conditions = new ArrayList<>();
         if (filter.platform() != null) {
             conditions.add("platform:=`" + filter.platform() + "`");
+        }
+        // The category is where the catalog is, not a filter: every search keeps it.
+        if (filter.category() != null) {
+            conditions.add("categories:=`" + filter.category() + "`");
         }
         for (Facet facet : Facet.values()) {
             Object value = facet.chosen(filter);

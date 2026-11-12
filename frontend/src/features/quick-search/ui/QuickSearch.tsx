@@ -7,6 +7,7 @@ import {SOFTWARE_LIST_PATH, softwarePath} from '@/entities/software';
 import {Button} from '@/shared/ui/button';
 import {Dialog} from '@/shared/ui/dialog';
 import {Field} from '@/shared/ui/field';
+import {SearchIcon} from '@/shared/ui/icon';
 import {Inline} from '@/shared/ui/inline';
 import {Input} from '@/shared/ui/input';
 import {LoadingState} from '@/shared/ui/loading-state';
@@ -32,10 +33,17 @@ export function QuickSearch() {
 
     return (
         <>
-            <Button color="transparent" onClick={() => {
-                setOpenAt(location.key);
-            }}>{t('quickSearch.open')}</Button>
-            <Dialog open={openAt !== null} title={t('quickSearch.title')} onClose={close} focusField>
+            <Button
+                color="transparent"
+                square
+                ariaLabel={t('quickSearch.open')}
+                onClick={() => {
+                    setOpenAt(location.key);
+                }}
+            >
+                <SearchIcon/>
+            </Button>
+            <Dialog open={openAt !== null} title={t('quickSearch.title')} onClose={close} focusField dismissible>
                 <QuickSearchProvider>
                     <Stack gap="lg">
                         <KeywordField/>

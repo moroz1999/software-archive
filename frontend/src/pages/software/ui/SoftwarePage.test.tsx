@@ -9,7 +9,7 @@ import {loadSoftwarePage, preloadSoftwarePage} from '../index';
 
 const ALPHA = {id: '00000000-0000-0000-0001-000000000001', title: 'Fixture Software Alpha', releaseDate: '1985-03-02'};
 const GAMES = '00000000-0000-0000-00fd-0000000000c1';
-const FACETS = {years: [{value: 1985, count: 1}], categories: [{value: GAMES, count: 1}], countries: []};
+const FACETS = {years: [{value: 1985, count: 1}], countries: []};
 
 function catalog() {
     return json({...pageResponse([ALPHA]), facets: FACETS});
@@ -41,7 +41,7 @@ describe('SoftwarePage', () => {
 
         await expect(screen.findByRole('heading', {level: 1, name: 'Software'})).resolves.toBeInTheDocument();
         await expect(screen.findByRole('article', {name: 'Fixture Software Alpha'})).resolves.toBeInTheDocument();
-        await expect(screen.findByRole('link', {name: 'Games (1)'})).resolves.toBeInTheDocument();
+        await expect(screen.findByRole('link', {name: 'Games'})).resolves.toBeInTheDocument();
     });
 
     it('offers to add software and leads from a card to its software', async () => {
@@ -61,7 +61,7 @@ describe('SoftwarePage', () => {
         await screen.findByRole('heading', {level: 1, name: 'Software'});
 
         expect(screen.getByRole('article', {name: 'Fixture Software Alpha'})).toBeInTheDocument();
-        expect(screen.getByRole('link', {name: 'Games (1)'})).toBeInTheDocument();
+        expect(screen.getByRole('link', {name: 'Games'})).toBeInTheDocument();
         expect(screen.queryByTestId('software-catalog-skeleton')).not.toBeInTheDocument();
         expect(fetchMock.mock.calls.map(([url]) => url)).toStrictEqual(expect.arrayContaining([
             '/api/software?page=0&size=20&year=1985', '/api/categories', '/api/countries',

@@ -5,6 +5,7 @@ import {Select} from '@/shared/ui/select';
 import {platformsQuery} from '../api/platform-queries';
 import {parsePlatformCode} from '../model/platform';
 import {usePlatformSelection} from '../model/platform-selection-context';
+import styles from './PlatformSwitch.module.css';
 
 /**
  * The switch of the platform for the whole archive, at the top of every page (docs/domain/hardware.md): its choices
@@ -19,6 +20,7 @@ export function PlatformSwitch() {
     return (
         <Select
             id={id}
+            className={styles.switch}
             ariaLabel={t('filters.platform')}
             value={platform ?? ''}
             onChange={(value) => {

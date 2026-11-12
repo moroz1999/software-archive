@@ -8,15 +8,18 @@ export interface TextLinkProps {
     /** A path of this app is navigated client-side; anything else is a plain link. */
     readonly href: string;
     readonly tone?: TypographyTone;
+    /** The link of the page shown: marked as current and set off from the others. */
+    readonly current?: boolean;
     /** External contour only; see docs/styles.md. */
     readonly className?: string;
 }
 
 /** A link inside text: takes the variant of the text around it and only sets the tone. */
-export function TextLink({children, href, tone = 'link', className}: TextLinkProps) {
-    const linkClass = typographyToneClassName(tone, className);
+export function TextLink({children, href, tone = 'link', current = false, className}: TextLinkProps) {
+    const linkClass = typographyToneClassName(current ? 'strong' : tone, className);
+    const ariaCurrent = current ? 'page' : undefined;
     if (isAppHref(href)) {
-        return <Link to={href} className={linkClass}>{children}</Link>;
+        return <Link to={href} aria-current={ariaCurrent} className={linkClass}>{children}</Link>;
     }
-    return <a href={href} className={linkClass}>{children}</a>;
+    return <a href={href} aria-current={ariaCurrent} className={linkClass}>{children}</a>;
 }

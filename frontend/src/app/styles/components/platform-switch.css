@@ -1,0 +1,4 @@
+:root {
+    /* Width of the platform switch in the header, so the longest platform names fit. */
+    --platform-switch-width: 180px;
+}

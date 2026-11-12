@@ -1,4 +1,3 @@
-import {toCategoryId} from '@/entities/categories';
 import {toCountryId} from '@/entities/locations';
 import type {PlatformCode} from '@/entities/platforms';
 import {parseSoftware} from '@/entities/software';
@@ -36,7 +35,6 @@ export async function fetchSoftwareCatalog(
             page: parsePage(json, parseSoftware),
             facets: {
                 years: parseCounts(facets['years'], 'year', (dto) => readNumber(dto, 'value')),
-                categories: parseCounts(facets['categories'], 'category', (dto) => toCategoryId(readString(dto, 'value'))),
                 countries: parseCounts(facets['countries'], 'country', (dto) => toCountryId(readString(dto, 'value'))),
             },
         };

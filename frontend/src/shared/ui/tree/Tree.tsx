@@ -16,12 +16,14 @@ export interface TreeProps {
     readonly ariaLabel: string;
     readonly expandLabel: (name: string) => string;
     readonly collapseLabel: (name: string) => string;
+    /** The items unfolded when the tree appears, such as the path to the current one. */
+    readonly initiallyExpanded?: readonly string[];
 }
 
-/** A collapsible tree of rows: an item with children unfolds them under itself; everything starts folded. */
-export function Tree({items, ariaLabel, expandLabel, collapseLabel}: TreeProps) {
+/** A collapsible tree of rows: an item with children unfolds them under itself; it starts folded but for the items given. */
+export function Tree({items, ariaLabel, expandLabel, collapseLabel, initiallyExpanded = []}: TreeProps) {
     // Which items are unfolded is the tree's own UI state.
-    const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
+    const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set(initiallyExpanded));
 
     function toggle(id: string) {
         setExpanded((current) => {

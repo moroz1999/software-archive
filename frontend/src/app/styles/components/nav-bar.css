@@ -11,9 +11,8 @@
     /* Gap between the links. */
     --nav-bar-gap: var(--space-4);
 
-    /* Gap between the links and the controls next to them, and the width of the controls. */
+    /* Gap between the links and the controls next to them. */
     --nav-bar-actions-gap: var(--space-16);
-    --nav-bar-actions-width: 200px;
 
     /* Link: height, padding, corner radius, text. */
     --nav-bar-link-height: 36px;

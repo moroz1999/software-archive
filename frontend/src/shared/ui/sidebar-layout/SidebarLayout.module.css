@@ -1,0 +1,18 @@
+.layout {
+    display: grid;
+    grid-template-columns: var(--sidebar-layout-aside-width) minmax(0, 1fr);
+    align-items: start;
+    gap: var(--sidebar-layout-gap);
+}
+
+.aside,
+.content {
+    min-width: 0;
+}
+
+/* Tablet and mobile: narrower than 992px. */
+@media (width < 992px) {
+    .layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

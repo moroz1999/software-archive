@@ -25,6 +25,9 @@
 @import url("./item-row.css");
 @import url("./label-entries-skeleton.css");
 @import url("./loading-state.css");
+@import url("./language-switch.css");
+@import url("./platform-switch.css");
+@import url("./icon.css");
 @import url("./nav-bar.css");
 @import url("./nav-chips.css");
 @import url("./page-layout.css");
@@ -34,6 +37,7 @@
 @import url("./software-catalog.css");
 @import url("./radio.css");
 @import url("./select.css");
+@import url("./sidebar-layout.css");
 @import url("./skeleton.css");
 @import url("./software-card-skeleton.css");
 @import url("./software-form.css");

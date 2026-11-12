@@ -28,6 +28,35 @@ describe(Dialog, () => {
 
         expect(onClose).toHaveBeenCalledExactlyOnceWith();
     });
+
+    it('closes by the cross and by a click on the backdrop when dismissible', async () => {
+        const onClose = vi.fn<() => void>();
+        render(<Dialog open title="Search" onClose={onClose} dismissible>Body</Dialog>);
+
+        await userEvent.click(screen.getByRole('button', {name: 'Close'}));
+        await userEvent.click(screen.getByTestId('dialog-backdrop'));
+
+        expect(onClose).toHaveBeenCalledTimes(2);
+    });
+
+    it('stays open on a click inside the window when dismissible', async () => {
+        const onClose = vi.fn<() => void>();
+        render(<Dialog open title="Search" onClose={onClose} dismissible>Body</Dialog>);
+
+        await userEvent.click(screen.getByRole('dialog', {name: 'Search'}));
+
+        expect(onClose).not.toHaveBeenCalled();
+    });
+
+    it('offers no cross and ignores the backdrop by default', async () => {
+        const onClose = vi.fn<() => void>();
+        render(<Dialog open title="Delete" onClose={onClose}>Body</Dialog>);
+
+        await userEvent.click(screen.getByTestId('dialog-backdrop'));
+
+        expect(screen.queryByRole('button', {name: 'Close'})).not.toBeInTheDocument();
+        expect(onClose).not.toHaveBeenCalled();
+    });
 });
 
 describe(ErrorDialog, () => {

@@ -12,8 +12,8 @@ export interface SelectProps {
     /** The chosen value, not the event; empty for the placeholder. */
     readonly onChange: (value: string) => void;
     readonly options: readonly SelectOption[];
-    /** The option of no choice, with the empty value. */
-    readonly placeholder: string;
+    /** The option of no choice, with the empty value; without it a choice is always made. */
+    readonly placeholder?: string | undefined;
     /** Accessible name when no label points to the select. */
     readonly ariaLabel?: string | undefined;
     readonly invalid?: boolean | undefined;
@@ -24,7 +24,7 @@ export interface SelectProps {
     readonly className?: string;
 }
 
-/** A choice of one option out of a list, the placeholder standing for no choice. */
+/** A choice of one option out of a list, the placeholder, when given, standing for no choice. */
 export function Select({id, value, onChange, options, placeholder, ariaLabel, invalid = false, describedBy, disabled, className}: SelectProps) {
     return (
         <select
@@ -39,7 +39,7 @@ export function Select({id, value, onChange, options, placeholder, ariaLabel, in
             disabled={disabled}
             className={classNames(styles.select, invalid && styles.invalid, className)}
         >
-            <option value="">{placeholder}</option>
+            {placeholder !== undefined && <option value="">{placeholder}</option>}
             {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
         </select>
     );

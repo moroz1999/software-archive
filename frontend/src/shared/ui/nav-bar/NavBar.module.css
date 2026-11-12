@@ -17,7 +17,7 @@
 }
 
 .actions {
-    width: var(--nav-bar-actions-width);
+    flex: none;
 }
 
 .list {

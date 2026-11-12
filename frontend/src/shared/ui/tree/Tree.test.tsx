@@ -37,4 +37,14 @@ describe(Tree, () => {
         expect(screen.queryByText('Alpha one')).not.toBeInTheDocument();
         expect(screen.getByRole('button', {name: 'Expand Alpha'})).toHaveAttribute('aria-expanded', 'false');
     });
+
+    it('opens with the items given unfolded, and they fold as any other', async () => {
+        render(<Tree items={ITEMS} ariaLabel="Things" expandLabel={(name) => `Expand ${name}`} collapseLabel={(name) => `Collapse ${name}`} initiallyExpanded={['a']}/>);
+
+        expect(screen.getByText('Alpha one')).toBeInTheDocument();
+
+        await userEvent.click(screen.getByRole('button', {name: 'Collapse Alpha'}));
+
+        expect(screen.queryByText('Alpha one')).not.toBeInTheDocument();
+    });
 });

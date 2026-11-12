@@ -63,7 +63,6 @@ class SoftwareCatalogControllerTest {
                                 41),
                         new SoftwareCatalogFacets(
                                 List.of(new YearCount(1987, 30), new YearCount(1989, 11)),
-                                List.of(new IdCount(GAMES, 41)),
                                 List.of(new IdCount(FINLAND, 7)))));
     }
 
@@ -74,7 +73,7 @@ class SoftwareCatalogControllerTest {
     }
 
     @Test
-    void answersThePageWithTheValuesOfEveryFilter() throws Exception {
+    void answersThePageWithTheValuesOfTheYearAndCountryFilters() throws Exception {
         mvc.perform(get("/api/software"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].id").value(ELITE.toString()))
@@ -87,8 +86,7 @@ class SoftwareCatalogControllerTest {
                 .andExpect(jsonPath("$.facets.years[0].value").value(1987))
                 .andExpect(jsonPath("$.facets.years[0].count").value(30))
                 .andExpect(jsonPath("$.facets.years[1].value").value(1989))
-                .andExpect(jsonPath("$.facets.categories[0].value").value(GAMES.toString()))
-                .andExpect(jsonPath("$.facets.categories[0].count").value(41))
+                .andExpect(jsonPath("$.facets.categories").doesNotExist())
                 .andExpect(jsonPath("$.facets.countries[0].value").value(FINLAND.toString()))
                 .andExpect(jsonPath("$.facets.countries[0].count").value(7));
     }

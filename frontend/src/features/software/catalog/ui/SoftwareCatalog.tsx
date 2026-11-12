@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import type {CategoryNode} from '@/entities/categories';
+import type {CategoryId, CategoryNode} from '@/entities/categories';
 import {toCountryId} from '@/entities/locations';
 import {SoftwareCard, SoftwareCardSkeleton, softwarePath} from '@/entities/software';
 import {useSkeleton} from '@/shared/lib/loading';
@@ -9,11 +9,12 @@ import {Field} from '@/shared/ui/field';
 import {Inline} from '@/shared/ui/inline';
 import {Input} from '@/shared/ui/input';
 import {LoadingState} from '@/shared/ui/loading-state';
-import {NavChip, NavChips} from '@/shared/ui/nav-chips';
 import {Pagination} from '@/shared/ui/pagination';
 import {Select} from '@/shared/ui/select';
+import {SidebarLayout} from '@/shared/ui/sidebar-layout';
 import {Stack} from '@/shared/ui/stack';
-import {Text} from '@/shared/ui/typography';
+import {Text, TextLink} from '@/shared/ui/typography';
+import {Tree, type TreeItem} from '@/shared/ui/tree';
 import {branchTo} from '../lib/category-branch';
 import type {FacetCount} from '../model/catalog';
 import {catalogHref} from '../model/catalog-filter';
@@ -25,14 +26,15 @@ const SKELETON_CARDS = [1, 2, 3, 4, 5, 6, 7, 8];
 /** How long the keyword waits for the visitor to stop typing before it is looked for. */
 const KEYWORD_DELAY_MS = 300;
 
-/** The software catalog with its keyword, filters, categories and pages, inside a SoftwareCatalogProvider. */
+/** The software catalog: the categories to go through beside the keyword, the filters, the cards and the pages; inside a SoftwareCatalogProvider. */
 export function SoftwareCatalog() {
     return (
-        <Stack gap="lg">
-            <Filters/>
-            <Categories/>
-            <Cards/>
-        </Stack>
+        <SidebarLayout aside={<Categories/>}>
+            <Stack gap="lg">
+                <Filters/>
+                <Cards/>
+            </Stack>
+        </SidebarLayout>
     );
 }
 
@@ -127,43 +129,48 @@ function Filters() {
     );
 }
 
-/** The path down to the chosen category, and the subcategories that have software, with their counts. */
+function toItem(node: CategoryNode, hrefOf: (node: CategoryNode | null) => string, current: CategoryId | null, changing: boolean): TreeItem {
+    return {
+        id: node.id,
+        name: node.title,
+        content: <CategoryLink href={hrefOf(node)} current={node.id === current} changing={changing}>{node.title}</CategoryLink>,
+        children: node.children.map((child) => toItem(child, hrefOf, current, changing)),
+    };
+}
+
+/** A category of the tree; locked, it is shown but leads nowhere. */
+function CategoryLink({href, current, changing, children}: {readonly href: string; readonly current: boolean; readonly changing: boolean; readonly children: string}) {
+    return changing
+        ? <Text as="span" tone={current ? 'strong' : 'muted'}>{children}</Text>
+        : <TextLink href={href} current={current}>{children}</TextLink>;
+}
+
+/**
+ * The way through the catalog: the whole category tree, folded but for the path to the current category. A category
+ * keeps the keyword and the filters and starts from the first page; nothing is counted.
+ */
 function Categories() {
     const {t} = useTranslation();
-    const {filter, catalog, categories, changing} = useSoftwareCatalog();
+    const {filter, categories, changing} = useSoftwareCatalog();
     const tree = categories.data;
-    const facets = catalog.data?.facets;
-    if (tree === undefined || facets === undefined) {
+    if (tree === undefined) {
         return null;
     }
-    const branch = filter.category === null ? [] : branchTo(tree, filter.category);
-    const below: readonly CategoryNode[] = filter.category === null ? tree : branch.at(-1)?.children ?? [];
-    const counts = new Map(facets.categories.map(({value, count}) => [value, count]));
-    const offered = below.flatMap((node) => {
-        const count = counts.get(node.id) ?? 0;
-        return count > 0 ? [{node, count}] : [];
-    });
     const hrefOf = (node: CategoryNode | null) => catalogHref({...filter, category: node?.id ?? null, page: 0});
+    const path = filter.category === null ? [] : branchTo(tree, filter.category).map((node) => node.id);
     return (
-        <Stack gap="sm">
-            {branch.length > 0 && (
-                <NavChips label={t('filters.category')}>
-                    <NavChip href={hrefOf(null)} disabled={changing}>{t('filters.allCategories')}</NavChip>
-                    {branch.map((node) => (
-                        <NavChip key={node.id} href={hrefOf(node)} active={node.id === filter.category} disabled={changing}>{node.title}</NavChip>
-                    ))}
-                </NavChips>
-            )}
-            {offered.length > 0 && (
-                <NavChips label={t('filters.subcategories')}>
-                    {offered.map(({node, count}) => (
-                        <NavChip key={node.id} href={hrefOf(node)} disabled={changing}>
-                            {t('filters.withCount', {label: node.title, count})}
-                        </NavChip>
-                    ))}
-                </NavChips>
-            )}
-        </Stack>
+        <nav aria-label={t('navigation.categories')}>
+            <Stack gap="sm">
+                <CategoryLink href={hrefOf(null)} current={filter.category === null} changing={changing}>{t('filters.allCategories')}</CategoryLink>
+                <Tree
+                    items={tree.map((node) => toItem(node, hrefOf, filter.category, changing))}
+                    ariaLabel={t('navigation.categories')}
+                    expandLabel={(name) => t('category.expand', {name})}
+                    collapseLabel={(name) => t('category.collapse', {name})}
+                    initiallyExpanded={path}
+                />
+            </Stack>
+        </nav>
     );
 }
 

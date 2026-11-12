@@ -1,5 +1,8 @@
 import {type ReactNode, useEffect, useId, useRef} from 'react';
 import {createPortal} from 'react-dom';
+import {useTranslation} from 'react-i18next';
+import {Button} from '../button';
+import {CloseIcon} from '../icon';
 import {Inline} from '../inline';
 import {Stack} from '../stack';
 import {Heading} from '../typography';
@@ -16,12 +19,16 @@ export interface DialogProps {
     readonly role?: 'dialog' | 'alertdialog';
     /** Opens with the focus in its first field instead of on the window, for a window that is a field above all. */
     readonly focusField?: boolean;
+    /** Closes by a click on the backdrop and by a cross next to the title too, for a window with nothing to lose. */
+    readonly dismissible?: boolean;
 }
 
 /** Modal dialog rendered over the page; closes on Escape. */
-export function Dialog({open, title, onClose, children, actions, role = 'dialog', focusField = false}: DialogProps) {
+export function Dialog({open, title, onClose, children, actions, role = 'dialog', focusField = false, dismissible = false}: DialogProps) {
+    const {t} = useTranslation();
     const titleId = useId();
     const ref = useRef<HTMLDivElement>(null);
+    const backdrop = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (!open) {
@@ -40,15 +47,48 @@ export function Dialog({open, title, onClose, children, actions, role = 'dialog'
         };
     }, [open, onClose, focusField]);
 
+    // A click on the backdrop closes the window only when it started there too, so a selection dragged out of the
+    // window keeps it open; the keyboard closes it by Escape.
+    useEffect(() => {
+        const element = backdrop.current;
+        if (!open || !dismissible || element === null) {
+            return undefined;
+        }
+        let pressedOnBackdrop = false;
+        const onPointerDown = (event: PointerEvent) => {
+            pressedOnBackdrop = event.target === element;
+        };
+        const onClick = (event: MouseEvent) => {
+            if (pressedOnBackdrop && event.target === element) {
+                onClose();
+            }
+        };
+        element.addEventListener('pointerdown', onPointerDown);
+        element.addEventListener('click', onClick);
+        return () => {
+            element.removeEventListener('pointerdown', onPointerDown);
+            element.removeEventListener('click', onClick);
+        };
+    }, [open, dismissible, onClose]);
+
     if (!open) {
         return null;
     }
 
     return createPortal(
-        <div className={styles.backdrop}>
+        <div ref={backdrop} data-testid="dialog-backdrop" className={styles.backdrop}>
             <div ref={ref} role={role} aria-modal="true" aria-labelledby={titleId} tabIndex={-1} className={styles.dialog}>
                 <Stack gap="lg">
-                    <Heading level={2} id={titleId}>{title}</Heading>
+                    {dismissible
+                        ? (
+                            <Inline gap="sm" align="center" justify="between">
+                                <Heading level={2} id={titleId}>{title}</Heading>
+                                <Button color="transparent" size="sm" square ariaLabel={t('actions.close')} onClick={onClose}>
+                                    <CloseIcon/>
+                                </Button>
+                            </Inline>
+                        )
+                        : <Heading level={2} id={titleId}>{title}</Heading>}
                     {children}
                     {actions !== undefined && <Inline gap="sm" justify="end">{actions}</Inline>}
                 </Stack>

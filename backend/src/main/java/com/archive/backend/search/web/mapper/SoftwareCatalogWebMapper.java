@@ -53,7 +53,6 @@ public interface SoftwareCatalogWebMapper {
                         catalog.facets().years().stream()
                                 .map(SoftwareCatalogWebMapper::toValue)
                                 .toList(),
-                        ids(catalog.facets().categories()),
                         ids(catalog.facets().countries())));
     }
 

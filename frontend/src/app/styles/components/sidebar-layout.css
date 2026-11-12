@@ -1,0 +1,7 @@
+:root {
+    /* Width of the narrow column beside the content. */
+    --sidebar-layout-aside-width: 260px;
+
+    /* Space between the column and the content, and between them when stacked. */
+    --sidebar-layout-gap: var(--gap-xl);
+}

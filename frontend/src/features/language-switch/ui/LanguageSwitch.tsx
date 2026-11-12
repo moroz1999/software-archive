@@ -2,6 +2,7 @@ import {useId} from 'react';
 import {useTranslation} from 'react-i18next';
 import {parseUiLanguage, storeUiLanguage} from '@/shared/lib/i18n';
 import {Select} from '@/shared/ui/select';
+import styles from './LanguageSwitch.module.css';
 
 const OPTIONS = [{value: 'en', label: 'English'}, {value: 'ru', label: 'Русский'}] as const;
 
@@ -14,6 +15,7 @@ export function LanguageSwitch() {
     return (
         <Select
             id={id}
+            className={styles.switch}
             value={language}
             onChange={(value) => {
                 const next = parseUiLanguage(value);
@@ -23,7 +25,6 @@ export function LanguageSwitch() {
                 }
             }}
             options={OPTIONS}
-            placeholder={t('language.choose')}
             ariaLabel={t('language.label')}
         />
     );

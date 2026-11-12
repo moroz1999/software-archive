@@ -184,13 +184,6 @@ class TypesenseSoftwareCatalogIT {
         SoftwareCatalogPage page = catalog.find(vector(), PageRequest.of(0, 1));
 
         assertThat(page.facets().years()).containsExactlyInAnyOrder(new YearCount(1987, 2), new YearCount(1989, 1));
-        assertThat(page.facets().categories())
-                .containsExactlyInAnyOrder(
-                        new IdCount(GAMES, 3),
-                        new IdCount(ACTION, 2),
-                        new IdCount(SHOOTERS, 1),
-                        new IdCount(PUZZLE, 1),
-                        new IdCount(DEMOSCENE, 1));
         assertThat(page.facets().countries())
                 .containsExactlyInAnyOrder(new IdCount(FINLAND, 2), new IdCount(BRITAIN, 1));
     }
@@ -200,8 +193,6 @@ class TypesenseSoftwareCatalogIT {
         SoftwareCatalogPage page = find(new SoftwareCatalogFilter(null, "vector", 1987, null, null));
 
         assertThat(page.facets().years()).containsExactlyInAnyOrder(new YearCount(1987, 2), new YearCount(1989, 1));
-        assertThat(page.facets().categories())
-                .containsExactlyInAnyOrder(new IdCount(GAMES, 2), new IdCount(ACTION, 2), new IdCount(SHOOTERS, 1));
         assertThat(page.facets().countries())
                 .containsExactlyInAnyOrder(new IdCount(FINLAND, 1), new IdCount(BRITAIN, 1));
     }
@@ -214,6 +205,15 @@ class TypesenseSoftwareCatalogIT {
         assertThat(page.facets().years()).containsExactly(new YearCount(1987, 1));
         assertThat(page.facets().countries())
                 .containsExactlyInAnyOrder(new IdCount(FINLAND, 1), new IdCount(BRITAIN, 1));
+    }
+
+    @Test
+    void countsTheFiltersInsideTheCategory() {
+        SoftwareCatalogPage page = find(new SoftwareCatalogFilter(null, "vector", null, PUZZLE, null));
+
+        assertThat(titles(page)).containsExactly("tetris");
+        assertThat(page.facets().years()).containsExactly(new YearCount(1989, 1));
+        assertThat(page.facets().countries()).containsExactly(new IdCount(FINLAND, 1));
     }
 
     @Test

@@ -11,7 +11,6 @@ const FINLAND = '00000000-0000-0000-00fd-0000000000f1';
 
 const FACETS = {
     years: [{value: 1987, count: 2}],
-    categories: [{value: GAMES, count: 3}],
     countries: [{value: FINLAND, count: 1}],
 };
 
@@ -61,13 +60,7 @@ describe(fetchSoftwareCatalog, () => {
     });
 
     it('fails with a system error on malformed values of a filter', async () => {
-        stubFetch(catalogResponse([], {years: [{value: '1987', count: 2}], categories: [], countries: []}));
-
-        await expect(fetchSoftwareCatalog(filterOf(''), null, new AbortController().signal)).rejects.toBeInstanceOf(SystemError);
-    });
-
-    it('fails with a system error on a category that is no id', async () => {
-        stubFetch(catalogResponse([], {years: [], categories: [{value: 'games', count: 2}], countries: []}));
+        stubFetch(catalogResponse([], {years: [{value: '1987', count: 2}], countries: []}));
 
         await expect(fetchSoftwareCatalog(filterOf(''), null, new AbortController().signal)).rejects.toBeInstanceOf(SystemError);
     });

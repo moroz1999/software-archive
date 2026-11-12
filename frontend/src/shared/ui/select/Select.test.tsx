@@ -16,6 +16,12 @@ describe(Select, () => {
         expect(select).toHaveClass('select');
     });
 
+    it('offers only the options without a placeholder', () => {
+        render(<Select id="country" ariaLabel="Country" value="no" onChange={vi.fn()} options={OPTIONS}/>);
+
+        expect(screen.getAllByRole('option').map((option) => option.textContent)).toStrictEqual(['Finland', 'Norway']);
+    });
+
     it('hands over the chosen value, empty for the placeholder', async () => {
         const onChange = vi.fn<(value: string) => void>();
         render(<Select id="country" ariaLabel="Country" value="no" onChange={onChange} options={OPTIONS} placeholder="Any country"/>);

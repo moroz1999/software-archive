@@ -12,6 +12,10 @@
     font-family: inherit;
     font-size: var(--select-font-size);
     line-height: var(--select-line-height);
+
+    /* A choice too long for the select is cut with an ellipsis. */
+    text-overflow: ellipsis;
+    white-space: nowrap;
     transition: border-color var(--select-transition) ease-in-out, box-shadow var(--select-transition) ease-in-out;
 }
 

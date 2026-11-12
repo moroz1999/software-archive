@@ -55,6 +55,25 @@ describe(QuickSearch, () => {
         unsubscribers.length = 0;
     });
 
+    it('closes the window by its cross', async () => {
+        stubFetchRoutes(routes({}));
+        openPage();
+
+        await userEvent.click(screen.getByRole('button', {name: 'Search'}));
+        await userEvent.click(within(screen.getByRole('dialog', {name: 'Search'})).getByRole('button', {name: 'Close'}));
+
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('shows the search button as an icon named for screen readers', () => {
+        stubFetchRoutes(routes({}));
+        openPage();
+
+        const button = screen.getByRole('button', {name: 'Search'});
+
+        expect(button).toHaveTextContent(/^$/);
+    });
+
     it('opens a window with the field ready for typing', async () => {
         stubFetchRoutes(routes({}));
         openPage();

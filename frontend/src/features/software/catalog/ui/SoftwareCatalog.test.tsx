@@ -29,10 +29,8 @@ const TREE = [
 ];
 const COUNTRIES = [{id: BRITAIN, name: 'Britain'}, {id: FINLAND, name: 'Finland'}];
 
-/** Demoscene has no software here: the catalog does not offer it. */
 const FACETS = {
     years: [{value: 1987, count: 2}, {value: 1989, count: 1}],
-    categories: [{value: GAMES, count: 3}, {value: ACTION, count: 2}, {value: SHOOTERS, count: 1}, {value: PUZZLE, count: 1}],
     countries: [{value: FINLAND, count: 2}, {value: BRITAIN, count: 1}],
 };
 
@@ -66,9 +64,6 @@ async function cardTitles(): Promise<string[]> {
     return screen.getAllByRole('article').map((card) => within(card).getAllByRole('link')[0]?.textContent ?? '');
 }
 
-function chipsOf(name: string): string[] {
-    return within(screen.getByRole('navigation', {name})).getAllByRole('listitem').map((item) => item.textContent.trim());
-}
 
 describe(SoftwareCatalog, () => {
     const unsubscribers: (() => void)[] = [];
@@ -145,31 +140,44 @@ describe(SoftwareCatalog, () => {
         expect(router.state.location.search).toBe(`?country=${BRITAIN}`);
     });
 
-    it('offers the top of the category tree that has software, with counts', async () => {
+    it('offers the whole category tree to go through, folded, without counts', async () => {
         stubFetchRoutes(routes({[ALL]: catalog([ELITE])}));
 
         openCatalog();
 
-        await screen.findByRole('link', {name: 'Games (3)'});
+        const categories = within(await screen.findByRole('navigation', {name: 'Categories'}));
+        await categories.findByRole('link', {name: 'Games'});
 
-        expect(chipsOf('Subcategories')).toStrictEqual(['Games (3)']);
-        expect(screen.getByRole('link', {name: 'Games (3)'})).toHaveAttribute('href', `/software/category/${GAMES}`);
+        expect(categories.getByRole('link', {name: 'All categories'})).toHaveAttribute('aria-current', 'page');
+        expect(categories.getByRole('link', {name: 'Games'})).toHaveAttribute('href', `/software/category/${GAMES}`);
+        expect(categories.getByRole('link', {name: 'Demoscene'})).toBeInTheDocument();
+        expect(categories.queryByRole('link', {name: 'Action'})).not.toBeInTheDocument();
     });
 
-    it('shows the path to the chosen category and offers its subcategories', async () => {
-        stubFetchRoutes(routes({[`/api/software?page=2&size=20&q=e&category=${ACTION}`]: catalog([ELITE], {number: 2, totalPages: 3})}));
+    it('unfolds a category to its subcategories', async () => {
+        stubFetchRoutes(routes({[ALL]: catalog([ELITE])}));
+        openCatalog();
+        const categories = within(await screen.findByRole('navigation', {name: 'Categories'}));
 
-        openCatalog(`/software/category/${ACTION}?q=e&page=3`);
+        await userEvent.click(await categories.findByRole('button', {name: 'Expand Games'}));
 
-        await screen.findByRole('link', {name: 'Shooters (1)'});
+        expect(categories.getByRole('link', {name: 'Action'})).toHaveAttribute('href', `/software/category/${ACTION}`);
+        expect(categories.getByRole('link', {name: 'Puzzle'})).toBeInTheDocument();
+    });
 
-        expect(chipsOf('Category')).toStrictEqual(['All categories', 'Games', 'Action']);
-        expect(within(screen.getByRole('navigation', {name: 'Category'})).getByRole('link', {name: 'All categories'}))
-            .toHaveAttribute('href', '/software?q=e');
-        expect(within(screen.getByRole('navigation', {name: 'Category'})).getByRole('link', {name: 'Games'}))
-            .toHaveAttribute('href', `/software/category/${GAMES}?q=e`);
-        expect(chipsOf('Subcategories')).toStrictEqual(['Shooters (1)']);
-        expect(screen.getByRole('link', {name: 'Shooters (1)'})).toHaveAttribute('href', `/software/category/${SHOOTERS}?q=e`);
+    it('opens with the path to the current category unfolded and the category marked', async () => {
+        stubFetchRoutes(routes({[`/api/software?page=2&size=20&q=e&category=${SHOOTERS}`]: catalog([ELITE], {number: 2, totalPages: 3})}));
+
+        openCatalog(`/software/category/${SHOOTERS}?q=e&page=3`);
+
+        const categories = within(await screen.findByRole('navigation', {name: 'Categories'}));
+        const shooters = await categories.findByRole('link', {name: 'Shooters'});
+
+        expect(shooters).toHaveAttribute('aria-current', 'page');
+        expect(shooters).toHaveAttribute('href', `/software/category/${SHOOTERS}?q=e`);
+        expect(categories.getByRole('link', {name: 'All categories'})).toHaveAttribute('href', '/software?q=e');
+        expect(categories.getByRole('link', {name: 'Games'})).not.toHaveAttribute('aria-current');
+        expect(categories.getByRole('link', {name: 'Demoscene'})).toBeInTheDocument();
     });
 
     it('keeps the category in the path when another year is chosen', async () => {
@@ -211,7 +219,7 @@ describe(SoftwareCatalog, () => {
     });
 
     it('says when nothing is found', async () => {
-        stubFetchRoutes(routes({[`${ALL}&q=zzz`]: catalog([], {facets: {years: [], categories: [], countries: []}})}));
+        stubFetchRoutes(routes({[`${ALL}&q=zzz`]: catalog([], {facets: {years: [], countries: []}})}));
 
         openCatalog('/software?q=zzz');
 
