@@ -2,6 +2,7 @@ package com.archive.backend.group.app;
 
 import com.archive.backend.geo.domain.Places;
 import com.archive.backend.group.domain.Group;
+import com.archive.backend.group.domain.GroupMemberSets;
 import com.archive.backend.group.domain.GroupNotFoundException;
 import com.archive.backend.group.domain.GroupRepository;
 import com.archive.backend.group.domain.GroupTypes;
@@ -17,12 +18,14 @@ public class UpdateGroupHandler {
     private final GroupRepository repository;
     private final GroupTypes groupTypes;
     private final Places places;
+    private final GroupMemberSets memberSets;
     private final ApplicationEventPublisher events;
 
     @Transactional
     public void handle(UpdateGroupCommand c) {
         Group group = repository.findById(c.id()).orElseThrow(GroupNotFoundException::new);
         group.edit(c.name(), c.notes(), groupTypes.of(c.types()), c.labels(), places.locations(c.locations()));
+        group.changeMembers(memberSets.of(c.members()));
         repository.save(group);
         group.pullEvents().forEach(events::publishEvent);
     }

@@ -1,0 +1,21 @@
+:root {
+    /* Space between selected chips and the search field. */
+    --multi-entity-autocomplete-gap: var(--space-8);
+    --multi-entity-autocomplete-chips-gap: var(--space-4);
+
+    /* Framed dropdown surface. */
+    --multi-entity-autocomplete-border-width: var(--border-width-thin);
+    --multi-entity-autocomplete-border-color: var(--border-color);
+    --multi-entity-autocomplete-radius: var(--radius-lg);
+    --multi-entity-autocomplete-bg: var(--surface);
+    --multi-entity-autocomplete-shadow: var(--shadow-md);
+    --multi-entity-autocomplete-list-max-height: 240px;
+
+    /* Search result rows. */
+    --multi-entity-autocomplete-option-padding: var(--space-8) var(--space-12);
+    --multi-entity-autocomplete-option-text: var(--text-color);
+    --multi-entity-autocomplete-option-active-bg: var(--background-deep);
+    --multi-entity-autocomplete-focus-outline: var(--border-width-thin) solid var(--focus-ring-color);
+    --multi-entity-autocomplete-focus-offset: -1px;
+    --multi-entity-autocomplete-status-padding: var(--space-12);
+}

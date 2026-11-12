@@ -3,7 +3,9 @@ package com.archive.backend.software.app;
 import com.archive.backend.category.domain.CategorySets;
 import com.archive.backend.hardware.domain.HardwareSets;
 import com.archive.backend.software.domain.Software;
+import com.archive.backend.software.domain.SoftwareCreditSets;
 import com.archive.backend.software.domain.SoftwareNotFoundException;
+import com.archive.backend.software.domain.SoftwareReferenceSets;
 import com.archive.backend.software.domain.SoftwareRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -17,6 +19,8 @@ public class UpdateSoftwareHandler {
     private final SoftwareRepository repository;
     private final HardwareSets hardwareSets;
     private final CategorySets categorySets;
+    private final SoftwareReferenceSets referenceSets;
+    private final SoftwareCreditSets creditSets;
     private final ApplicationEventPublisher events;
 
     @Transactional
@@ -27,7 +31,9 @@ public class UpdateSoftwareHandler {
                 c.description(),
                 c.releaseDate(),
                 hardwareSets.of(c.platform(), c.hardware()),
-                categorySets.of(c.categories()));
+                categorySets.of(c.categories()),
+                referenceSets.of(c.publishers(), c.developers()));
+        software.changeCredits(creditSets.of(c.credits()));
         repository.save(software);
         software.pullEvents().forEach(events::publishEvent);
     }

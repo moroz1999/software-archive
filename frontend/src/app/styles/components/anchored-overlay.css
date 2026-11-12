@@ -1,0 +1,5 @@
+:root {
+    /* Space from the anchor and the stacking layer shared by anchored overlays. */
+    --anchored-overlay-gap: var(--space-4);
+    --anchored-overlay-layer: var(--layer-overlay);
+}

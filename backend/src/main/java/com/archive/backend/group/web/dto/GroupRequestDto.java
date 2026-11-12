@@ -1,5 +1,6 @@
 package com.archive.backend.group.web.dto;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -12,7 +13,17 @@ public record GroupRequestDto(
         @Nullable String notes,
         @Nullable List<String> types,
         @Nullable List<LabelDto> labels,
-        @Nullable List<LocationDto> locations) {
+        @Nullable List<LocationDto> locations,
+        @Nullable List<MemberDto> members) {
+
+    public GroupRequestDto(
+            @Nullable String name,
+            @Nullable String notes,
+            @Nullable List<String> types,
+            @Nullable List<LabelDto> labels,
+            @Nullable List<LocationDto> locations) {
+        this(name, notes, types, labels, locations, null);
+    }
 
     public record LabelDto(
             @Nullable UUID id,
@@ -23,4 +34,11 @@ public record GroupRequestDto(
             @Nullable UUID country,
             @Nullable UUID city,
             @Nullable Boolean primary) {}
+
+    public record MemberDto(
+            @Nullable UUID id,
+            @Nullable String type,
+            @Nullable List<String> roles,
+            @Nullable LocalDate startDate,
+            @Nullable LocalDate endDate) {}
 }

@@ -4,10 +4,12 @@ import {Button} from '@/shared/ui/button';
 import {Field} from '@/shared/ui/field';
 import {Inline} from '@/shared/ui/inline';
 import {Input} from '@/shared/ui/input';
+import {MemberRoleEditor} from '@/shared/ui/member-role-editor';
 import {Stack} from '@/shared/ui/stack';
 import {Textarea} from '@/shared/ui/textarea';
 import {Text} from '@/shared/ui/typography';
 import {NAME_PROBLEM_KEYS} from '../config/messages';
+import {fetchGroupPeople} from '../api/group-api';
 import {useGroupForm} from '../model/group-form-context';
 import {GroupTypesField} from './GroupTypesField';
 import styles from './GroupForm.module.css';
@@ -25,7 +27,7 @@ export interface GroupFormProps {
 /** The fields of a group inside a GroupFormProvider, which holds their values and checks them. */
 export function GroupForm({submitLabel, labels, locations, actions}: GroupFormProps) {
     const {t} = useTranslation();
-    const {values, errors, refusals, change, submit, busy, error} = useGroupForm();
+    const {values, errors, refusals, change, changeMembers, submit, busy, error} = useGroupForm();
 
     function onSubmit(event: SyntheticEvent) {
         event.preventDefault();
@@ -42,6 +44,16 @@ export function GroupForm({submitLabel, labels, locations, actions}: GroupFormPr
                 <GroupTypesField/>
                 {labels}
                 {locations}
+                <MemberRoleEditor
+                    label={t('group.members')}
+                    value={values.members ?? []}
+                    onChange={changeMembers}
+                    search={fetchGroupPeople}
+                    roles={GROUP_MEMBER_ROLES.map((code) => ({code, title: t(`roles.group.${code}`)}))}
+                    showDates
+                    disabled={busy}
+                    error={refusals.members}
+                />
                 <Field label={t('group.notes')} error={refusals.notes}>
                     {(control) => <Textarea {...control} value={values.notes} onChange={change('notes')} disabled={busy}/>}
                 </Field>
@@ -53,3 +65,7 @@ export function GroupForm({submitLabel, labels, locations, actions}: GroupFormPr
         </form>
     );
 }
+
+const GROUP_MEMBER_ROLES = [
+    'coder', 'cracker', 'graphician', 'hardware', 'musician', 'organizer', 'support', 'tester', 'gamedesigner', 'unknown',
+] as const;

@@ -1,4 +1,4 @@
-export {createGroup, deleteGroup, fetchGroup, fetchGroupTypes, updateGroup} from './api/group-api';
+export {createGroup, deleteGroup, fetchGroup, fetchGroupPeople, fetchGroupTypes, updateGroup} from './api/group-api';
 export {GROUP_QUERY_KEY, groupDetailsQuery, groupTypesQuery} from './api/group-queries';
 export {GROUP_EDIT_ROUTE, GROUP_NEW_PATH, GROUP_ROUTE, groupEditPath, GROUPS_PATH, groupPath} from './config/paths';
 export {

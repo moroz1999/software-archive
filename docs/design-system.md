@@ -29,7 +29,7 @@ Built:
 - Content: [Text, Heading, Label, TextLink](design-system/typography.md), [Badge](design-system/badge.md), [Chip](design-system/chip.md), [ImagePlaceholder](design-system/image-placeholder.md), [Table](design-system/table.md), [Tree](design-system/tree.md)
 - Controls: [Button](design-system/button.md), [Toggle](design-system/toggle.md)
 - Navigation: [NavBar, NavBarLink](design-system/nav-bar.md), [NavChips, NavChip](design-system/nav-chips.md), [Pagination](design-system/pagination.md)
-- Forms: [Input, Textarea](design-system/input.md), [Select](design-system/select.md), [Field](design-system/field.md), [Checkbox](design-system/checkbox.md), [MultiSelectFilter](design-system/multi-select-filter.md), [TreeChecklist](design-system/tree-checklist.md)
+- Forms: [Input, Textarea](design-system/input.md), [Select](design-system/select.md), [Field](design-system/field.md), [Checkbox](design-system/checkbox.md), [MultiSelectFilter](design-system/multi-select-filter.md), [MultiEntityAutocomplete](design-system/multi-entity-autocomplete.md), [TreeChecklist](design-system/tree-checklist.md)
 - Loading: [Skeleton](design-system/skeletons.md), [Spinner](design-system/spinner.md), [LoadingState](design-system/loading-states.md)
 - Errors and overlays: [ErrorState](design-system/error-state.md), [Dialog, ErrorDialog](design-system/dialog.md), [ConfirmDialog](design-system/confirm-dialog.md)
 
@@ -66,7 +66,7 @@ Planned, built when a feature first needs them (each gets its document then):
 - `InputRange`, `MinMaxRange`
 - `TagsInput`, `TagsField`
 - `MultilangField` — value per language
-- `EntityAutocomplete`, `MultiEntityAutocomplete`
+- `EntityAutocomplete`
 - `FileUpload`, `ImageUpload`
 - `FilterBar`, `FilterPicker`, `SortSelect`
 

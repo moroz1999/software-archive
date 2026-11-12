@@ -1,15 +1,20 @@
 package com.archive.backend.shared.config;
 
+import com.archive.backend.author.domain.PersonReferenceCatalog;
 import com.archive.backend.category.domain.CategoryCatalog;
 import com.archive.backend.category.domain.CategoryHierarchy;
 import com.archive.backend.category.domain.CategoryParents;
 import com.archive.backend.category.domain.CategorySets;
 import com.archive.backend.geo.domain.GeoCatalog;
 import com.archive.backend.geo.domain.Places;
+import com.archive.backend.group.domain.GroupMemberSets;
 import com.archive.backend.group.domain.GroupTypeCatalog;
 import com.archive.backend.group.domain.GroupTypes;
 import com.archive.backend.hardware.domain.HardwareCatalog;
 import com.archive.backend.hardware.domain.HardwareSets;
+import com.archive.backend.software.domain.SoftwareCreditSets;
+import com.archive.backend.software.domain.SoftwareReferenceCatalog;
+import com.archive.backend.software.domain.SoftwareReferenceSets;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -35,6 +40,11 @@ public class DomainServicesConfig {
     }
 
     @Bean
+    public GroupMemberSets groupMemberSets(PersonReferenceCatalog catalog) {
+        return new GroupMemberSets(catalog);
+    }
+
+    @Bean
     public HardwareSets hardwareSets(HardwareCatalog catalog) {
         return new HardwareSets(catalog);
     }
@@ -42,5 +52,15 @@ public class DomainServicesConfig {
     @Bean
     public Places places(GeoCatalog catalog) {
         return new Places(catalog);
+    }
+
+    @Bean
+    public SoftwareReferenceSets softwareReferenceSets(SoftwareReferenceCatalog catalog) {
+        return new SoftwareReferenceSets(catalog);
+    }
+
+    @Bean
+    public SoftwareCreditSets softwareCreditSets(PersonReferenceCatalog catalog) {
+        return new SoftwareCreditSets(catalog);
     }
 }

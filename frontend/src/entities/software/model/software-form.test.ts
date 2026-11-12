@@ -6,14 +6,14 @@ describe(validateSoftwareForm, () => {
     it('turns filled values into a draft', () => {
         expect(validateSoftwareForm({title: 'Elite', description: 'Space trading', releaseDate: '1985-09-20', platform: 'vector', hardware: [], categories: []})).toStrictEqual({
             ok: true,
-            draft: {title: 'Elite', description: 'Space trading', releaseDate: '1985-09-20', platform: 'vector', hardware: [], categories: []},
+            draft: {title: 'Elite', description: 'Space trading', releaseDate: '1985-09-20', platform: 'vector', hardware: [], categories: [], publishers: [], developers: [], credits: []},
         });
     });
 
     it('turns empty optional values into unknown ones', () => {
         expect(validateSoftwareForm({title: 'Elite', description: '  ', releaseDate: '', platform: 'vector', hardware: [], categories: []})).toStrictEqual({
             ok: true,
-            draft: {title: 'Elite', description: null, releaseDate: null, platform: 'vector', hardware: [], categories: []},
+            draft: {title: 'Elite', description: null, releaseDate: null, platform: 'vector', hardware: [], categories: [], publishers: [], developers: [], credits: []},
         });
     });
 
@@ -48,7 +48,7 @@ describe('the hardware of the draft', () => {
 
 describe(toSoftwareFormValues, () => {
     it('is empty for new software', () => {
-        expect(toSoftwareFormValues()).toStrictEqual({title: '', description: '', releaseDate: '', platform: '', hardware: [], categories: []});
+        expect(toSoftwareFormValues()).toStrictEqual({title: '', description: '', releaseDate: '', platform: '', hardware: [], categories: [], publishers: [], developers: [], credits: []});
     });
 
     it('holds the values of existing software, unknown ones empty', () => {
@@ -60,7 +60,7 @@ describe(toSoftwareFormValues, () => {
             platform: {code: toSoftwarePlatformCode('bk'), name: 'BK'},
             hardware: [],
             categories: [],
-        })).toStrictEqual({title: 'Elite', description: '', releaseDate: '1985-09-20', platform: 'bk', hardware: [], categories: []});
+        })).toStrictEqual({title: 'Elite', description: '', releaseDate: '1985-09-20', platform: 'bk', hardware: [], categories: [], publishers: [], developers: [], credits: []});
     });
 
     it('holds the codes of the hardware of the software', () => {

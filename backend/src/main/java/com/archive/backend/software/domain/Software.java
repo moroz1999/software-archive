@@ -33,6 +33,9 @@ public final class Software {
      */
     private CategorySet categories;
 
+    private SoftwareReferences references;
+    private SoftwareCredits credits;
+
     private final List<Release> releases;
 
     @Getter(lombok.AccessLevel.NONE)
@@ -45,6 +48,8 @@ public final class Software {
             @Nullable LocalDate releaseDate,
             HardwareSet hardware,
             CategorySet categories,
+            SoftwareReferences references,
+            SoftwareCredits credits,
             List<Release> releases) {
         this.id = Objects.requireNonNull(id, "id");
         this.title = Objects.requireNonNull(title, "title");
@@ -52,8 +57,68 @@ public final class Software {
         this.releaseDate = releaseDate;
         this.hardware = Objects.requireNonNull(hardware, "hardware");
         this.categories = Objects.requireNonNull(categories, "categories");
+        this.references = Objects.requireNonNull(references, "references");
+        this.credits = Objects.requireNonNull(credits, "credits");
         releases.forEach(release -> requireOwn(release.hardware()));
         this.releases = new ArrayList<>(releases);
+    }
+
+    public Software(
+            SoftwareId id,
+            SoftwareTitle title,
+            @Nullable SoftwareDescription description,
+            @Nullable LocalDate releaseDate,
+            HardwareSet hardware,
+            CategorySet categories,
+            SoftwareReferences references,
+            List<Release> releases) {
+        this(id, title, description, releaseDate, hardware, categories, references, SoftwareCredits.EMPTY, releases);
+    }
+
+    public Software(
+            SoftwareId id,
+            SoftwareTitle title,
+            @Nullable SoftwareDescription description,
+            @Nullable LocalDate releaseDate,
+            HardwareSet hardware,
+            CategorySet categories,
+            List<Release> releases) {
+        this(
+                id,
+                title,
+                description,
+                releaseDate,
+                hardware,
+                categories,
+                SoftwareReferences.EMPTY,
+                SoftwareCredits.EMPTY,
+                releases);
+    }
+
+    public static Software create(
+            SoftwareId id,
+            SoftwareTitle title,
+            @Nullable SoftwareDescription description,
+            @Nullable LocalDate releaseDate,
+            HardwareSet hardware,
+            CategorySet categories,
+            SoftwareReferences references,
+            SoftwareCredits credits) {
+        Software software =
+                new Software(id, title, description, releaseDate, hardware, categories, references, credits, List.of());
+        software.markChanged();
+        return software;
+    }
+
+    public static Software create(
+            SoftwareId id,
+            SoftwareTitle title,
+            @Nullable SoftwareDescription description,
+            @Nullable LocalDate releaseDate,
+            HardwareSet hardware,
+            CategorySet categories,
+            SoftwareReferences references) {
+        return create(id, title, description, releaseDate, hardware, categories, references, SoftwareCredits.EMPTY);
     }
 
     public static Software create(
@@ -63,9 +128,7 @@ public final class Software {
             @Nullable LocalDate releaseDate,
             HardwareSet hardware,
             CategorySet categories) {
-        Software software = new Software(id, title, description, releaseDate, hardware, categories, List.of());
-        software.events.add(new SoftwareChanged(id));
-        return software;
+        return create(id, title, description, releaseDate, hardware, categories, SoftwareReferences.EMPTY);
     }
 
     public PlatformCode getPlatform() {
@@ -80,7 +143,8 @@ public final class Software {
             @Nullable SoftwareDescription description,
             @Nullable LocalDate releaseDate,
             HardwareSet hardware,
-            CategorySet categories) {
+            CategorySet categories,
+            SoftwareReferences references) {
         if (!hardware.platform().equals(getPlatform()) && releasesHaveHardware()) {
             throw new SoftwarePlatformLockedException();
         }
@@ -89,7 +153,23 @@ public final class Software {
         this.releaseDate = releaseDate;
         this.hardware = hardware;
         this.categories = categories;
-        events.add(new SoftwareChanged(id));
+        this.references = references;
+        markChanged();
+    }
+
+    public void edit(
+            SoftwareTitle title,
+            @Nullable SoftwareDescription description,
+            @Nullable LocalDate releaseDate,
+            HardwareSet hardware,
+            CategorySet categories) {
+        edit(title, description, releaseDate, hardware, categories, references);
+    }
+
+    /** Replaces all people credited by this software item. */
+    public void changeCredits(SoftwareCredits credits) {
+        this.credits = Objects.requireNonNull(credits, "credits");
+        markChanged();
     }
 
     /** Tells the software is going: its repository deletes it. */
@@ -141,5 +221,12 @@ public final class Software {
 
     private boolean releasesHaveHardware() {
         return releases.stream().anyMatch(release -> !release.hardware().isEmpty());
+    }
+
+    private void markChanged() {
+        SoftwareChanged changed = new SoftwareChanged(id);
+        if (!events.contains(changed)) {
+            events.add(changed);
+        }
     }
 }

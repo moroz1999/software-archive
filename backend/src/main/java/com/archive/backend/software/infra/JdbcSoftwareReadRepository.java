@@ -1,12 +1,15 @@
 package com.archive.backend.software.infra;
 
+import com.archive.backend.label.read.MainNameSql;
 import com.archive.backend.software.read.ReleaseDetails;
 import com.archive.backend.software.read.SoftwareCategory;
 import com.archive.backend.software.read.SoftwareCategoryStep;
+import com.archive.backend.software.read.SoftwareCredit;
 import com.archive.backend.software.read.SoftwareDetails;
 import com.archive.backend.software.read.SoftwareHardware;
 import com.archive.backend.software.read.SoftwarePlatform;
 import com.archive.backend.software.read.SoftwareReadRepository;
+import com.archive.backend.software.read.SoftwareReferenceOption;
 import com.archive.backend.software.read.SoftwareRelease;
 import com.archive.backend.software.read.SoftwareSummary;
 import java.sql.Date;
@@ -14,6 +17,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,8 +90,93 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                         day(rs, "release_date"),
                         new SoftwarePlatform(rs.getString("code"), rs.getString("name")),
                         hardware("software_hardware", "software_id", id),
-                        categories(id)))
+                        categories(id),
+                        publishers(id),
+                        developers(id),
+                        credits(id)))
                 .optional();
+    }
+
+    private List<SoftwareCredit> credits(UUID softwareId) {
+        return jdbc.sql("WITH " + MainNameSql.PEOPLE + """
+                        SELECT COALESCE(c.person_id, c.label_id) AS id,
+                               CASE WHEN c.person_id IS NULL THEN 'author-label' ELSE 'author' END AS type,
+                               CASE WHEN c.person_id IS NOT NULL THEN p.main_name ELSE l.name ||
+                                   CASE WHEN p.main_name IS NULL OR p.main_name = l.name THEN '' ELSE ' — ' || p.main_name END END AS title,
+                               c.role_codes
+                        FROM software_contribution c
+                        LEFT JOIN label l ON l.id = c.label_id
+                        LEFT JOIN named_person p ON p.person_id = COALESCE(c.person_id, l.person_id)
+                        WHERE c.software_id = :id
+                        ORDER BY lower(CASE WHEN c.person_id IS NOT NULL THEN p.main_name ELSE l.name END), c.id
+                        """)
+                .param("id", softwareId)
+                .query((rs, row) -> new SoftwareCredit(
+                        rs.getObject("id", UUID.class),
+                        rs.getString("type"),
+                        rs.getString("title"),
+                        Arrays.asList((String[]) rs.getArray("role_codes").getArray())))
+                .list();
+    }
+
+    private List<SoftwareReferenceOption> publishers(UUID softwareId) {
+        return jdbc.sql("WITH " + MainNameSql.PEOPLE + ", " + MainNameSql.GROUPS + """
+                        , refs AS (
+                            SELECT p.person_id AS id, 'author' AS type, p.main_name AS title
+                            FROM software_publisher_author r
+                            JOIN named_person p ON p.person_id = r.author_id
+                            WHERE r.software_id = :id
+                            UNION ALL
+                            SELECT g.group_id, 'group', g.main_name
+                            FROM software_publisher_group r
+                            JOIN named_group g ON g.group_id = r.group_id
+                            WHERE r.software_id = :id
+                            UNION ALL
+                            SELECT l.id, 'author-label', l.name || CASE
+                                WHEN p.real_name IS NULL OR p.real_name = l.name THEN '' ELSE ' — ' || p.real_name END
+                            FROM software_publisher_author_label r
+                            JOIN label l ON l.id = r.label_id
+                            LEFT JOIN named_person p ON p.person_id = l.person_id
+                            WHERE r.software_id = :id
+                            UNION ALL
+                            SELECT l.id, 'group-label', l.name || CASE
+                                WHEN g.group_name IS NULL OR g.group_name = l.name THEN '' ELSE ' — ' || g.group_name END
+                            FROM software_publisher_group_label r
+                            JOIN label l ON l.id = r.label_id
+                            LEFT JOIN named_group g ON g.group_id = l.group_id
+                            WHERE r.software_id = :id
+                        )
+                        SELECT id, type, title FROM refs ORDER BY lower(title), type, id
+                        """)
+                .param("id", softwareId)
+                .query(JdbcSoftwareReadRepository::reference)
+                .list();
+    }
+
+    private List<SoftwareReferenceOption> developers(UUID softwareId) {
+        return jdbc.sql("WITH " + MainNameSql.GROUPS + """
+                        , refs AS (
+                            SELECT g.group_id AS id, 'group' AS type, g.main_name AS title
+                            FROM software_developer_group r
+                            JOIN named_group g ON g.group_id = r.group_id
+                            WHERE r.software_id = :id
+                            UNION ALL
+                            SELECT l.id, 'group-label', l.name || CASE
+                                WHEN g.group_name IS NULL OR g.group_name = l.name THEN '' ELSE ' — ' || g.group_name END
+                            FROM software_developer_label r
+                            JOIN label l ON l.id = r.label_id
+                            LEFT JOIN named_group g ON g.group_id = l.group_id
+                            WHERE r.software_id = :id
+                        )
+                        SELECT id, type, title FROM refs ORDER BY lower(title), type, id
+                        """)
+                .param("id", softwareId)
+                .query(JdbcSoftwareReadRepository::reference)
+                .list();
+    }
+
+    private static SoftwareReferenceOption reference(ResultSet rs, int row) throws SQLException {
+        return new SoftwareReferenceOption(rs.getObject("id", UUID.class), rs.getString("type"), rs.getString("title"));
     }
 
     @Override

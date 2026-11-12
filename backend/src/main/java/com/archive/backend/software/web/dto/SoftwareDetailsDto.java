@@ -12,4 +12,10 @@ public record SoftwareDetailsDto(
         @Nullable LocalDate releaseDate,
         SoftwarePlatformDto platform,
         List<SoftwareHardwareDto> hardware,
-        List<SoftwareCategoryDto> categories) {}
+        List<SoftwareCategoryDto> categories,
+        List<SoftwareReferenceDto> publishers,
+        List<SoftwareReferenceDto> developers,
+        List<SoftwareCreditDto> credits) {
+
+    public record SoftwareCreditDto(UUID id, String type, String title, List<String> roles) {}
+}

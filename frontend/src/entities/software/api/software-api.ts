@@ -4,20 +4,46 @@ import {
     type Hardware,
     type SoftwareDetails,
     type SoftwareId,
+    type SoftwareReference,
+    type SoftwareReferenceType,
     toHardwareGroup,
     toReleaseDate,
     toSoftwarePlatformCode,
+    toSoftwareReferenceType,
     toSoftwareId,
     toSoftwareTitle,
 } from '../model/software';
 import type {SoftwareDraft} from '../model/software-form';
+import type {EntityAutocompleteOption} from '@/shared/ui/multi-entity-autocomplete';
 
 function softwarePath(id: SoftwareId): string {
     return `/api/software/${id}`;
 }
 
 function toBody(draft: SoftwareDraft): unknown {
-    return {title: draft.title, description: draft.description, releaseDate: draft.releaseDate, platform: draft.platform, hardware: draft.hardware, categories: draft.categories};
+    const reference = ({id, type}: SoftwareReference) => ({id, type});
+    return {
+        title: draft.title,
+        description: draft.description,
+        releaseDate: draft.releaseDate,
+        platform: draft.platform,
+        hardware: draft.hardware,
+        categories: draft.categories,
+        publishers: draft.publishers.map(reference),
+        developers: draft.developers.map(reference),
+        credits: (draft.credits ?? []).map(({id, type, roles}) => ({id, type, roles})),
+    };
+}
+
+function parseSoftwareReferences(raw: unknown, name: string): readonly SoftwareReference[] {
+    return readArray(raw, name).map((item) => {
+        const reference = readObject(item, `${name} item`);
+        return {
+            id: readString(reference, 'id'),
+            type: toSoftwareReferenceType(readString(reference, 'type')),
+            title: readString(reference, 'title'),
+        };
+    });
 }
 
 /** The hardware of a release or software, or of a platform's reference book. */
@@ -53,8 +79,46 @@ export async function fetchSoftware(id: SoftwareId, signal: AbortSignal): Promis
                     }),
                 };
             }),
+            publishers: parseSoftwareReferences(dto['publishers'], 'publishers'),
+            developers: parseSoftwareReferences(dto['developers'], 'developers'),
+            credits: parseSoftwareCredits(dto['credits']),
         };
     });
+}
+
+function parseSoftwareCredits(raw: unknown): NonNullable<SoftwareDetails['credits']> {
+    return readArray(raw, 'credits').map((item) => {
+        const credit = readObject(item, 'credit');
+        return {
+            id: readString(credit, 'id'),
+            type: readString(credit, 'type'),
+            title: readString(credit, 'title'),
+            roles: readArray(credit['roles'], 'credit roles').map((role) => {
+                if (typeof role !== 'string') {
+                    throw new TypeError('A credit role must be a string.');
+                }
+                return role;
+            }),
+            startDate: '',
+            endDate: '',
+        };
+    });
+}
+
+/** Finds people, groups and their labels for one typed multi-select. */
+export async function fetchSoftwareReferences(
+    types: readonly SoftwareReferenceType[],
+    query: string,
+    signal: AbortSignal,
+): Promise<readonly SoftwareReference[]> {
+    const params = new URLSearchParams({types: types.join(','), query});
+    const json = await getJson(`/api/entity-lookup?${params.toString()}`, signal);
+    return mapResponse(() => parseSoftwareReferences(readObject(json, 'software reference lookup')['items'], 'items'));
+}
+
+/** Finds people and their aliases for software credits. */
+export async function fetchSoftwarePeople(query: string, signal: AbortSignal): Promise<readonly EntityAutocompleteOption[]> {
+    return fetchSoftwareReferences(['author', 'author-label'], query, signal);
 }
 
 /** The releases of one software, each with the hardware it shows: `GET /api/software/{id}/releases`. */

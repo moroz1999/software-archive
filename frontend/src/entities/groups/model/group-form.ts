@@ -1,4 +1,5 @@
 import {type TitleProblem, titleProblem} from '@/shared/lib/title';
+import type {MemberRoleValue} from '@/shared/ui/member-role-editor';
 import type {GroupDetails} from './group';
 
 /** A label in the form: a new one has no id yet. */
@@ -23,6 +24,7 @@ export interface GroupFormValues {
     readonly types: readonly string[];
     readonly labels: readonly GroupFormLabel[];
     readonly locations: readonly GroupFormLocation[];
+    readonly members?: readonly MemberRoleValue[];
 }
 
 /** A group to be created or saved, as the form produced it. */
@@ -32,6 +34,7 @@ export interface GroupDraft {
     readonly types: readonly string[];
     readonly labels: readonly GroupFormLabel[];
     readonly locations: readonly {readonly country: string; readonly city: string | null; readonly primary: boolean}[];
+    readonly members?: readonly MemberRoleValue[];
 }
 
 export interface GroupFormErrors {
@@ -81,6 +84,7 @@ export function validateGroupForm(values: GroupFormValues): GroupFormResult {
                 city: location.city === '' ? null : location.city,
                 primary: location.primary,
             })),
+            members: values.members ?? [],
         },
     };
 }
@@ -97,5 +101,13 @@ export function toGroupFormValues(group?: GroupDetails): GroupFormValues {
             city: location.cityId ?? '',
             primary: location.primary,
         })) ?? [],
+        members: group?.members.flatMap((member) => member.id === null ? [] : [{
+            id: member.id,
+            type: member.type,
+            title: member.title,
+            roles: member.roles,
+            startDate: member.startDate ?? '',
+            endDate: member.endDate ?? '',
+        }]) ?? [],
     };
 }

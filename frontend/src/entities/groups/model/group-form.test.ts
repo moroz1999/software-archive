@@ -6,7 +6,7 @@ const LABEL = '00000000-0000-0000-0004-000000000001';
 const FINLAND = '00000000-0000-0000-0002-000000000001';
 const HELSINKI = '00000000-0000-0000-0002-000000000011';
 
-const EMPTY: GroupFormValues = {name: '', notes: '', types: [], labels: [], locations: []};
+const EMPTY: GroupFormValues = {name: '', notes: '', types: [], labels: [], locations: [], members: []};
 const CREW: GroupFormValues = {...EMPTY, name: 'Crew Ltd', types: ['demogroup']};
 
 describe(validateGroupForm, () => {
@@ -25,6 +25,7 @@ describe(validateGroupForm, () => {
                 types: ['demogroup', 'label'],
                 labels: [{id: LABEL, name: 'Crew', display: true}, {id: null, name: 'CRW', display: false}],
                 locations: [{country: FINLAND, city: HELSINKI, primary: true}],
+                members: [],
             },
         });
     });
@@ -32,7 +33,7 @@ describe(validateGroupForm, () => {
     it('turns empty optional values into unknown ones', () => {
         expect(validateGroupForm({...CREW, notes: '  ', locations: [{country: FINLAND, city: '', primary: true}]})).toStrictEqual({
             ok: true,
-            draft: {name: 'Crew Ltd', notes: null, types: ['demogroup'], labels: [], locations: [{country: FINLAND, city: null, primary: true}]},
+            draft: {name: 'Crew Ltd', notes: null, types: ['demogroup'], labels: [], locations: [{country: FINLAND, city: null, primary: true}], members: []},
         });
     });
 
@@ -87,6 +88,7 @@ describe(toGroupFormValues, () => {
             types: ['demogroup'],
             labels: [{id: LABEL, name: 'Crew', display: true}],
             locations: [{country: FINLAND, city: '', primary: true}],
+            members: [],
         });
     });
 });

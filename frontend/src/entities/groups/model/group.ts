@@ -23,9 +23,15 @@ export interface GroupLocation {
 
 /** A member under the label they were a member under; the person behind it when known, with their main name unless it is that label. */
 export interface GroupMember {
+    readonly id: string | null;
+    readonly type: 'author' | 'author-label';
+    readonly title: string;
     readonly name: string;
     readonly personId: string | null;
     readonly personName: string | null;
+    readonly roles: readonly string[];
+    readonly startDate: string | null;
+    readonly endDate: string | null;
 }
 
 /** A group inside another one, or one containing it, under its main name. */

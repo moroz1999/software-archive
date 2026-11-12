@@ -24,7 +24,9 @@ import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.shared.domain.error.RuleViolationException;
 import com.archive.backend.software.domain.Software;
+import com.archive.backend.software.domain.SoftwareCreditSets;
 import com.archive.backend.software.domain.SoftwareDescription;
+import com.archive.backend.software.domain.SoftwareReferenceSets;
 import com.archive.backend.software.domain.SoftwareTitle;
 import java.time.LocalDate;
 import java.util.Set;
@@ -33,8 +35,13 @@ import org.junit.jupiter.api.Test;
 class UpdateSoftwareHandlerTest {
 
     private final InMemorySoftwareRepository repository = new InMemorySoftwareRepository();
-    private final UpdateSoftwareHandler handler =
-            new UpdateSoftwareHandler(repository, hardwareSets(), categorySets(), event -> {});
+    private final UpdateSoftwareHandler handler = new UpdateSoftwareHandler(
+            repository,
+            hardwareSets(),
+            categorySets(),
+            new SoftwareReferenceSets(reference -> true),
+            new SoftwareCreditSets(reference -> true),
+            event -> {});
 
     @Test
     void storesTheEditedSoftware() {

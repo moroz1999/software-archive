@@ -2,10 +2,15 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import {SystemError} from '@/shared/api';
 import {json, noContent, stubFetch} from '@/shared/lib/test';
 import {toReleaseDate, toSoftwareId, toSoftwarePlatformCode, toSoftwareTitle} from '../model/software';
+import type {SoftwareDraft} from '../model/software-form';
 import {createSoftware, deleteSoftware, fetchSoftware, fetchSoftwareReleases, updateSoftware} from './software-api';
 
 const GAMES = '00000000-0000-0000-0006-000000000001';
 const ACTION = '00000000-0000-0000-0006-000000000002';
+const PUBLISHER = '00000000-0000-0000-0003-000000000001';
+const DEVELOPER = '00000000-0000-0000-0004-000000000001';
+const AUTHOR_LABEL = 'author-label';
+const GROUP = 'group';
 const ID = toSoftwareId('00000000-0000-0000-0001-000000000001');
 const DRAFT = {
     title: toSoftwareTitle('Elite'),
@@ -14,7 +19,9 @@ const DRAFT = {
     platform: toSoftwarePlatformCode('vector'),
     hardware: ['vector06c', 'ay8910'],
     categories: [GAMES],
-};
+    publishers: [{id: PUBLISHER, type: AUTHOR_LABEL, title: 'J.P. — Jane Publisher'}],
+    developers: [{id: DEVELOPER, type: GROUP, title: 'Nebula Studio'}],
+} satisfies SoftwareDraft;
 const VECTOR = {code: 'vector', name: 'Vector'};
 const VECTOR06C = {code: 'vector06c', name: 'Vector-06C', group: 'computers'};
 const AY = {code: 'ay8910', name: 'AY-3-8910', group: 'sound'};
@@ -29,11 +36,17 @@ describe(fetchSoftware, () => {
         const fetchMock = stubFetch(json({
             id: ID, title: 'Elite', description: 'Space trading', releaseDate: null, platform: VECTOR, hardware: [VECTOR06C],
             categories: [{id: ACTION, title: 'Action', branch: [{id: GAMES, title: 'Games'}, {id: ACTION, title: 'Action'}]}],
+            publishers: [{id: PUBLISHER, type: AUTHOR_LABEL, title: 'J.P. — Jane Publisher'}],
+            developers: [{id: DEVELOPER, type: GROUP, title: 'Nebula Studio'}],
+            credits: [],
         }));
 
         await expect(fetchSoftware(ID, new AbortController().signal)).resolves.toStrictEqual({
             id: ID, title: 'Elite', description: 'Space trading', releaseDate: null, platform: VECTOR, hardware: [VECTOR06C],
             categories: [{id: ACTION, title: 'Action', branch: [{id: GAMES, title: 'Games'}, {id: ACTION, title: 'Action'}]}],
+            publishers: [{id: PUBLISHER, type: AUTHOR_LABEL, title: 'J.P. — Jane Publisher'}],
+            developers: [{id: DEVELOPER, type: GROUP, title: 'Nebula Studio'}],
+            credits: [],
         });
         expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/software/${ID}`);
     });
@@ -109,7 +122,7 @@ describe(createSoftware, () => {
         expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/software');
         expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
             method: 'POST',
-            body: '{"title":"Elite","description":null,"releaseDate":"1985-09-20","platform":"vector","hardware":["vector06c","ay8910"],"categories":["00000000-0000-0000-0006-000000000001"]}',
+            body: '{"title":"Elite","description":null,"releaseDate":"1985-09-20","platform":"vector","hardware":["vector06c","ay8910"],"categories":["00000000-0000-0000-0006-000000000001"],"publishers":[{"id":"00000000-0000-0000-0003-000000000001","type":"author-label"}],"developers":[{"id":"00000000-0000-0000-0004-000000000001","type":"group"}],"credits":[]}',
         });
     });
 });
@@ -126,7 +139,7 @@ describe(updateSoftware, () => {
         expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/software/${ID}`);
         expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
             method: 'PUT',
-            body: '{"title":"Elite","description":null,"releaseDate":"1985-09-20","platform":"vector","hardware":["vector06c","ay8910"],"categories":["00000000-0000-0000-0006-000000000001"]}',
+            body: '{"title":"Elite","description":null,"releaseDate":"1985-09-20","platform":"vector","hardware":["vector06c","ay8910"],"categories":["00000000-0000-0000-0006-000000000001"],"publishers":[{"id":"00000000-0000-0000-0003-000000000001","type":"author-label"}],"developers":[{"id":"00000000-0000-0000-0004-000000000001","type":"group"}],"credits":[]}',
         });
     });
 });

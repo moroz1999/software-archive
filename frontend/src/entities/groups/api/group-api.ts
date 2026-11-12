@@ -13,6 +13,7 @@ import {
 } from '@/shared/api';
 import {type GroupDetails, type GroupId, type GroupLabel, type GroupLocation, type GroupMember, type RelatedGroup, toGroupId} from '../model/group';
 import type {GroupDraft} from '../model/group-form';
+import type {EntityAutocompleteOption} from '@/shared/ui/multi-entity-autocomplete';
 
 function groupPath(id: GroupId): string {
     return `/api/groups/${id}`;
@@ -25,6 +26,9 @@ function toBody(draft: GroupDraft): unknown {
         types: draft.types,
         labels: draft.labels.map((label) => ({id: label.id, name: label.name, display: label.display})),
         locations: draft.locations.map((location) => ({country: location.country, city: location.city, primary: location.primary})),
+        members: (draft.members ?? []).map(({id, type, roles, startDate, endDate}) => ({
+            id, type, roles, startDate: startDate === '' ? null : startDate, endDate: endDate === '' ? null : endDate,
+        })),
     };
 }
 
@@ -46,7 +50,17 @@ function parseLocation(item: unknown): GroupLocation {
 
 function parseMember(item: unknown): GroupMember {
     const dto = readObject(item, 'member');
-    return {name: readString(dto, 'name'), personId: readNullableString(dto, 'personId'), personName: readNullableString(dto, 'personName')};
+    return {
+        id: readNullableString(dto, 'id'),
+        type: readString(dto, 'type') === 'author-label' ? 'author-label' : 'author',
+        title: readString(dto, 'title'),
+        name: readString(dto, 'name'),
+        personId: readNullableString(dto, 'personId'),
+        personName: readNullableString(dto, 'personName'),
+        roles: readStringArray(dto['roles'], 'member roles'),
+        startDate: readNullableString(dto, 'startDate'),
+        endDate: readNullableString(dto, 'endDate'),
+    };
 }
 
 function parseRelated(item: unknown): RelatedGroup {
@@ -93,4 +107,14 @@ export async function deleteGroup(id: GroupId): Promise<void> {
 export async function fetchGroupTypes(signal: AbortSignal): Promise<readonly string[]> {
     const json = await getJson('/api/group-types', signal);
     return mapResponse(() => readStringArray(json, 'group types'));
+}
+
+/** Finds people and their aliases for the group roster. */
+export async function fetchGroupPeople(query: string, signal: AbortSignal): Promise<readonly EntityAutocompleteOption[]> {
+    const params = new URLSearchParams({types: 'author,author-label', query});
+    const json = await getJson(`/api/entity-lookup?${params.toString()}`, signal);
+    return mapResponse(() => readArray(readObject(json, 'person lookup')['items'], 'items').map((item) => {
+        const option = readObject(item, 'person');
+        return {id: readString(option, 'id'), type: readString(option, 'type'), title: readString(option, 'title')};
+    }));
 }

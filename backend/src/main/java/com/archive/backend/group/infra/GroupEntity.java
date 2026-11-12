@@ -21,7 +21,7 @@ import org.hibernate.annotations.SQLRestriction;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A group with its details; its memberships are not part of it and go with it when it is deleted.
+ * A group with its details and roster.
  */
 @Entity
 @Table(name = "\"group\"")
@@ -64,4 +64,8 @@ public class GroupEntity {
     @JoinColumn(name = "entity_id", nullable = false)
     @SQLRestriction("entity_type = 'GROUP'")
     private List<GroupLocationEntity> locations = new ArrayList<>();
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "group_id", nullable = false)
+    private List<GroupMemberEntity> members = new ArrayList<>();
 }

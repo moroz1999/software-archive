@@ -16,4 +16,32 @@ public record SoftwareDetails(
         @Nullable LocalDate releaseDate,
         SoftwarePlatform platform,
         List<SoftwareHardware> hardware,
-        List<SoftwareCategory> categories) {}
+        List<SoftwareCategory> categories,
+        List<SoftwareReferenceOption> publishers,
+        List<SoftwareReferenceOption> developers,
+        List<SoftwareCredit> credits) {
+
+    public SoftwareDetails(
+            UUID id,
+            String title,
+            @Nullable String description,
+            @Nullable LocalDate releaseDate,
+            SoftwarePlatform platform,
+            List<SoftwareHardware> hardware,
+            List<SoftwareCategory> categories,
+            List<SoftwareReferenceOption> publishers,
+            List<SoftwareReferenceOption> developers) {
+        this(id, title, description, releaseDate, platform, hardware, categories, publishers, developers, List.of());
+    }
+
+    public SoftwareDetails(
+            UUID id,
+            String title,
+            @Nullable String description,
+            @Nullable LocalDate releaseDate,
+            SoftwarePlatform platform,
+            List<SoftwareHardware> hardware,
+            List<SoftwareCategory> categories) {
+        this(id, title, description, releaseDate, platform, hardware, categories, List.of(), List.of(), List.of());
+    }
+}

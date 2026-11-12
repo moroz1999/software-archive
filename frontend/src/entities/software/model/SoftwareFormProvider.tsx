@@ -17,11 +17,11 @@ export interface SoftwareFormProviderProps {
     readonly children: ReactNode;
 }
 
-const FIELDS = ['title', 'description', 'releaseDate', 'platform', 'hardware', 'categories'] as const satisfies readonly (keyof SoftwareFormValues)[];
+const FIELDS = ['title', 'description', 'releaseDate', 'platform', 'hardware', 'categories', 'publishers', 'developers', 'credits'] as const satisfies readonly (keyof SoftwareFormValues)[];
 
 /** The values of a software form being filled in, their format rules and why the last submit was refused. */
 export function SoftwareFormProvider({onSubmit, initial, platforms = [], busy = false, error, messages = {}, children}: SoftwareFormProviderProps) {
-    const [values, setValues] = useState<SoftwareFormValues>(() => initial ?? toSoftwareFormValues());
+    const [values, setValues] = useState<SoftwareFormValues>(() => ({...toSoftwareFormValues(), ...initial}));
     const [errors, setErrors] = useState<SoftwareFormErrors>({});
     // Fields edited since the refusal arrived: their refusal no longer applies. A new refusal starts afresh.
     const [edited, setEdited] = useState<{readonly error: BusinessError | undefined; readonly fields: ReadonlySet<string>}>({error, fields: new Set()});
@@ -52,6 +52,18 @@ export function SoftwareFormProvider({onSubmit, initial, platforms = [], busy = 
         changeCategories: (ids) => {
             setValues((current) => ({...current, categories: ids}));
             markEdited('categories');
+        },
+        changePublishers: (references) => {
+            setValues((current) => ({...current, publishers: references}));
+            markEdited('publishers');
+        },
+        changeDevelopers: (references) => {
+            setValues((current) => ({...current, developers: references}));
+            markEdited('developers');
+        },
+        changeCredits: (credits) => {
+            setValues((current) => ({...current, credits}));
+            markEdited('credits');
         },
         submit: () => {
             const result = validateSoftwareForm(values);

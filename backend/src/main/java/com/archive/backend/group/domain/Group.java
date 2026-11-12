@@ -14,8 +14,8 @@ import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A team behind its labels, with a name of its own and at least one type (docs/domain/authors.md#groups). Its members
- * are changed apart from these details.
+ * A team behind its labels, with a name of its own, at least one type and its roster
+ * (docs/domain/authors.md#groups).
  */
 @Getter
 public final class Group {
@@ -26,6 +26,7 @@ public final class Group {
     private GroupTypeSet types;
     private OwnLabels labels;
     private Locations locations;
+    private GroupMembers members;
 
     @Getter(lombok.AccessLevel.NONE)
     private final List<DomainEvent> events = new ArrayList<>();
@@ -36,13 +37,38 @@ public final class Group {
             @Nullable GroupNotes notes,
             GroupTypeSet types,
             OwnLabels labels,
-            Locations locations) {
+            Locations locations,
+            GroupMembers members) {
         this.id = Objects.requireNonNull(id, "id");
         this.name = Objects.requireNonNull(name, "name");
         this.notes = notes;
         this.types = Objects.requireNonNull(types, "types");
         this.labels = Objects.requireNonNull(labels, "labels");
         this.locations = Objects.requireNonNull(locations, "locations");
+        this.members = Objects.requireNonNull(members, "members");
+    }
+
+    public Group(
+            GroupId id,
+            GroupName name,
+            @Nullable GroupNotes notes,
+            GroupTypeSet types,
+            OwnLabels labels,
+            Locations locations) {
+        this(id, name, notes, types, labels, locations, GroupMembers.EMPTY);
+    }
+
+    public static Group create(
+            GroupId id,
+            GroupName name,
+            @Nullable GroupNotes notes,
+            GroupTypeSet types,
+            List<LabelDraft> labels,
+            Locations locations,
+            GroupMembers members) {
+        Group group = new Group(id, name, notes, types, OwnLabels.of(labels), locations, members);
+        group.markChanged();
+        return group;
     }
 
     public static Group create(
@@ -52,9 +78,7 @@ public final class Group {
             GroupTypeSet types,
             List<LabelDraft> labels,
             Locations locations) {
-        Group group = new Group(id, name, notes, types, OwnLabels.of(labels), locations);
-        group.events.add(new GroupChanged(id));
-        return group;
+        return create(id, name, notes, types, labels, locations, GroupMembers.EMPTY);
     }
 
     /**
@@ -68,12 +92,18 @@ public final class Group {
             Locations locations) {
         OwnLabels edited = this.labels.replace(labels);
         events.add(labelsChanged());
-        events.add(new GroupChanged(id));
+        markChanged();
         this.name = Objects.requireNonNull(name, "name");
         this.notes = notes;
         this.types = Objects.requireNonNull(types, "types");
         this.labels = edited;
         this.locations = Objects.requireNonNull(locations, "locations");
+    }
+
+    /** Replaces the complete roster of this group. */
+    public void changeMembers(GroupMembers members) {
+        this.members = Objects.requireNonNull(members, "members");
+        markChanged();
     }
 
     /** Tells the group is going: its repository deletes it and leaves its labels to nobody. */
@@ -84,6 +114,13 @@ public final class Group {
 
     private OwnerOfLabelsChanged labelsChanged() {
         return new OwnerOfLabelsChanged(labels.all().stream().map(OwnLabel::id).collect(Collectors.toSet()));
+    }
+
+    private void markChanged() {
+        GroupChanged changed = new GroupChanged(id);
+        if (!events.contains(changed)) {
+            events.add(changed);
+        }
     }
 
     /**

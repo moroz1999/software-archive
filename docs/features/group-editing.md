@@ -1,6 +1,6 @@
 # Group Editing
 
-Adding, editing and deleting groups: teams with a name of their own, at least one type, their labels and locations ([domain/authors.md](../domain/authors.md#group)). Members and member groups are not part of this form.
+Adding, editing and deleting groups: teams with a name of their own, at least one type, their labels, locations and members ([domain/authors.md](../domain/authors.md#group)). Member groups are not part of this form.
 
 ## Pages
 
@@ -15,6 +15,7 @@ Adding, editing and deleting groups: teams with a name of their own, at least on
 - Name (required, at most 255 characters), Types, Labels, Locations, Notes (multi-line), in one narrow column; Cancel and the submit button at its bottom right — the same layout as the author form ([author-editing.md](author-editing.md)).
 - Types: a checkbox for every type of the reference book, under its code; at least one is needed, "Choose at least one type." under Types on submit.
 - Labels and Locations: the same editors and rules as for authors — exactly one display name among the labels and exactly one primary location, a label taken away stays in the archive as a label of nobody. A group may have no labels: it is then shown under its name.
+- Members: people and their aliases are found remotely by name; every selected member has removable role chips and optional start and end days. The form replaces the complete roster.
 - Format rules are checked before sending; errors appear under their fields on submit and clear when the field is edited. Empty notes are sent as unknown (`null`).
 - While saving, the fields and the buttons are locked.
 
@@ -34,7 +35,7 @@ Adding, editing and deleting groups: teams with a name of their own, at least on
 | Call | Answer | Errors |
 |---|---|---|
 | `GET /api/group-types` | `200`, the codes of the reference book by code | — |
-| `POST /api/groups` `{name, notes, types: [code], labels: [{id, name, display}], locations: [{country, city, primary}]}` | `201`, `Location: /api/groups/{id}`, `{id}` | `400 title.required` / `400 title.too-long` for the name or a label name, `400 group.type-code-blank`, `400 location.empty`, `400` for malformed JSON or ids; `422 group.types-required`, `422 group.type-unknown` (field `types`), `422 label.not-own`, `422 label.display-one` (field `labels`), `422 location.unknown`, `422 location.primary-one` (field `locations`) |
+| `POST /api/groups` with the form values and `members: [{id, type, roles, startDate, endDate}]` | `201`, `Location: /api/groups/{id}`, `{id}` | Format errors; `422 group.member-unknown` under Members; the existing type, label and location refusals |
 | `PUT /api/groups/{id}` (same body) | `204` | `404 group.not-found`; the errors of `POST` |
 | `DELETE /api/groups/{id}` | `204` | `404 group.not-found` |
 

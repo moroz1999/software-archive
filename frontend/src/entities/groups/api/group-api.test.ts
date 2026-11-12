@@ -14,8 +14,15 @@ const CREW = {
     labels: [{id: '00000000-0000-0000-0004-000000000001', name: 'Crew', display: true}],
     locations: [{countryId: '00000000-0000-0000-0002-000000000001', country: 'Finland', cityId: null, city: null, primary: true}],
     members: [
-        {name: 'хакер федя', personId: '00000000-0000-0000-0003-000000000001', personName: 'MASTERSOFT'},
-        {name: 'Ghost', personId: null, personName: null},
+        {
+            id: '00000000-0000-0000-0004-000000000002', type: 'author-label', title: 'хакер федя',
+            name: 'хакер федя', personId: '00000000-0000-0000-0003-000000000001', personName: 'MASTERSOFT',
+            roles: ['coder'], startDate: '1990-01-01', endDate: null,
+        },
+        {
+            id: null, type: 'author-label', title: 'Ghost', name: 'Ghost', personId: null, personName: null,
+            roles: ['unknown'], startDate: null, endDate: null,
+        },
     ],
     memberGroups: [{id: '00000000-0000-0000-0005-000000000002', name: 'Band'}],
     groups: [{id: '00000000-0000-0000-0005-000000000003', name: 'Alpha'}],
@@ -55,7 +62,7 @@ const DRAFT = {
 };
 const BODY = '{"name":"Crew Ltd","notes":null,"types":["demogroup"],'
     + '"labels":[{"id":"00000000-0000-0000-0004-000000000001","name":"Crew","display":true},{"id":null,"name":"CRW","display":false}],'
-    + '"locations":[{"country":"00000000-0000-0000-0002-000000000001","city":null,"primary":true}]}';
+    + '"locations":[{"country":"00000000-0000-0000-0002-000000000001","city":null,"primary":true}],"members":[]}';
 
 describe(createGroup, () => {
     afterEach(() => {

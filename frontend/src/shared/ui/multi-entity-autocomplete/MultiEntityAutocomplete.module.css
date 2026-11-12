@@ -1,0 +1,59 @@
+.root {
+    display: flex;
+    flex-direction: column;
+    gap: var(--multi-entity-autocomplete-gap);
+    min-width: 0;
+}
+
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--multi-entity-autocomplete-chips-gap);
+}
+
+.anchor {
+    width: 100%;
+}
+
+.overlay {
+    overflow: hidden;
+    border-width: var(--multi-entity-autocomplete-border-width);
+    border-style: solid;
+    border-color: var(--multi-entity-autocomplete-border-color);
+    border-radius: var(--multi-entity-autocomplete-radius);
+    background: var(--multi-entity-autocomplete-bg);
+    box-shadow: var(--multi-entity-autocomplete-shadow);
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    max-height: var(--multi-entity-autocomplete-list-max-height);
+    overflow: auto;
+}
+
+.option {
+    width: 100%;
+    padding: var(--multi-entity-autocomplete-option-padding);
+    border: 0;
+    background: transparent;
+    color: var(--multi-entity-autocomplete-option-text);
+    text-align: left;
+    cursor: pointer;
+}
+
+.option:hover,
+.option[aria-selected="true"] {
+    background: var(--multi-entity-autocomplete-option-active-bg);
+}
+
+.option:focus-visible {
+    outline: var(--multi-entity-autocomplete-focus-outline);
+    outline-offset: var(--multi-entity-autocomplete-focus-offset);
+}
+
+.status {
+    display: flex;
+    justify-content: center;
+    padding: var(--multi-entity-autocomplete-status-padding);
+}

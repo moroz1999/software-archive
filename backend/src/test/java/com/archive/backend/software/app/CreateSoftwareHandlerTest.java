@@ -18,8 +18,10 @@ import com.archive.backend.category.domain.CategorySet;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.shared.domain.error.RuleViolationException;
+import com.archive.backend.software.domain.SoftwareCreditSets;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
+import com.archive.backend.software.domain.SoftwareReferenceSets;
 import com.archive.backend.software.domain.SoftwareTitle;
 import java.time.LocalDate;
 import java.util.Set;
@@ -28,8 +30,13 @@ import org.junit.jupiter.api.Test;
 class CreateSoftwareHandlerTest {
 
     private final InMemorySoftwareRepository repository = new InMemorySoftwareRepository();
-    private final CreateSoftwareHandler handler =
-            new CreateSoftwareHandler(repository, hardwareSets(), categorySets(), event -> {});
+    private final CreateSoftwareHandler handler = new CreateSoftwareHandler(
+            repository,
+            hardwareSets(),
+            categorySets(),
+            new SoftwareReferenceSets(reference -> true),
+            new SoftwareCreditSets(reference -> true),
+            event -> {});
 
     @Test
     void storesNewSoftwareUnderANewId() {

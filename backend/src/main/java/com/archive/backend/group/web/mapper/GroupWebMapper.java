@@ -1,5 +1,8 @@
 package com.archive.backend.group.web.mapper;
 
+import com.archive.backend.author.domain.PersonReference;
+import com.archive.backend.author.domain.PersonReferenceId;
+import com.archive.backend.author.domain.PersonReferenceType;
 import com.archive.backend.geo.domain.CityId;
 import com.archive.backend.geo.domain.CountryId;
 import com.archive.backend.geo.domain.LocationDraft;
@@ -7,6 +10,7 @@ import com.archive.backend.group.app.CreateGroupCommand;
 import com.archive.backend.group.app.ListGroupsQuery;
 import com.archive.backend.group.app.UpdateGroupCommand;
 import com.archive.backend.group.domain.GroupId;
+import com.archive.backend.group.domain.GroupMemberDraft;
 import com.archive.backend.group.domain.GroupName;
 import com.archive.backend.group.domain.GroupNotes;
 import com.archive.backend.group.domain.GroupTypeCode;
@@ -48,7 +52,8 @@ public interface GroupWebMapper {
                 toNotes(request.notes()),
                 toTypes(request.types()),
                 toLabels(request.labels()),
-                toLocations(request.locations()));
+                toLocations(request.locations()),
+                toMembers(request.members()));
     }
 
     default UpdateGroupCommand toUpdate(UUID id, GroupRequestDto request) {
@@ -58,7 +63,8 @@ public interface GroupWebMapper {
                 toNotes(request.notes()),
                 toTypes(request.types()),
                 toLabels(request.labels()),
-                toLocations(request.locations()));
+                toLocations(request.locations()),
+                toMembers(request.members()));
     }
 
     // Request scalars -> value objects.
@@ -109,6 +115,28 @@ public interface GroupWebMapper {
                 country == null ? null : new CountryId(country),
                 city == null ? null : new CityId(city),
                 Boolean.TRUE.equals(location.primary()));
+    }
+
+    private static List<GroupMemberDraft> toMembers(@Nullable List<GroupRequestDto.MemberDto> members) {
+        return members == null
+                ? List.of()
+                : members.stream().map(GroupWebMapper::toMember).toList();
+    }
+
+    private static GroupMemberDraft toMember(GroupRequestDto.MemberDto member) {
+        UUID id = member.id();
+        if (id == null) {
+            throw new InvalidValueException("person.reference-id-required", "A person reference id is required.");
+        }
+        String type = member.type();
+        if (type == null) {
+            throw new InvalidValueException("person.reference-type-invalid", "A person reference type is required.");
+        }
+        return new GroupMemberDraft(
+                new PersonReference(PersonReferenceType.fromCode(type), new PersonReferenceId(id)),
+                member.roles() == null ? List.of() : member.roles(),
+                member.startDate(),
+                member.endDate());
     }
 
     default ListGroupsQuery toListQuery(

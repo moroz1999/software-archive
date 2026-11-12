@@ -14,4 +14,13 @@ public record SoftwareRequestDto(
         @Nullable LocalDate releaseDate,
         @Nullable String platform,
         @Nullable List<String> hardware,
-        @Nullable List<UUID> categories) {}
+        @Nullable List<UUID> categories,
+        @Nullable List<SoftwareReferenceRequestDto> publishers,
+        @Nullable List<SoftwareReferenceRequestDto> developers,
+        @Nullable List<CreditDto> credits) {
+
+    public record CreditDto(
+            @Nullable UUID id,
+            @Nullable String type,
+            @Nullable List<String> roles) {}
+}

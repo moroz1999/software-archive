@@ -10,7 +10,9 @@ import com.archive.backend.group.read.RelatedGroup;
 import com.archive.backend.label.read.LetterFilterSql;
 import com.archive.backend.label.read.MainNameSql;
 import com.archive.backend.label.read.PlatformFilterSql;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -181,16 +183,31 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
      */
     private List<GroupMember> members(UUID groupId) {
         return jdbc.sql("WITH " + MainNameSql.PEOPLE + """
-                        SELECT l.name, l.person_id, CASE WHEN p.main_name = l.name THEN NULL ELSE p.main_name END AS person_name
+                        SELECT COALESCE(gm.person_id, gm.label_id) AS id,
+                               CASE WHEN gm.person_id IS NULL THEN 'author-label' ELSE 'author' END AS type,
+                               CASE WHEN gm.person_id IS NOT NULL THEN p.main_name ELSE l.name ||
+                                   CASE WHEN p.main_name IS NULL OR p.main_name = l.name THEN '' ELSE ' — ' || p.main_name END END AS title,
+                               COALESCE(l.name, p.main_name) AS name,
+                               COALESCE(gm.person_id, l.person_id) AS person_id,
+                               CASE WHEN gm.person_id IS NOT NULL OR p.main_name = l.name THEN NULL ELSE p.main_name END AS person_name,
+                               gm.role_codes, gm.start_date, gm.end_date
                         FROM group_member gm
-                        JOIN label l ON l.id = gm.label_id
-                        LEFT JOIN named_person p ON p.person_id = l.person_id
+                        LEFT JOIN label l ON l.id = gm.label_id
+                        LEFT JOIN named_person p ON p.person_id = COALESCE(gm.person_id, l.person_id)
                         WHERE gm.group_id = :id
-                        ORDER BY lower(l.name), l.id
+                        ORDER BY lower(COALESCE(l.name, p.main_name)), COALESCE(gm.person_id, gm.label_id)
                         """)
                 .param("id", groupId)
                 .query((rs, row) -> new GroupMember(
-                        rs.getString("name"), rs.getObject("person_id", UUID.class), rs.getString("person_name")))
+                        rs.getObject("id", UUID.class),
+                        rs.getString("type"),
+                        rs.getString("title"),
+                        rs.getString("name"),
+                        rs.getObject("person_id", UUID.class),
+                        rs.getString("person_name"),
+                        Arrays.asList((String[]) rs.getArray("role_codes").getArray()),
+                        rs.getObject("start_date", LocalDate.class),
+                        rs.getObject("end_date", LocalDate.class)))
                 .list();
     }
 

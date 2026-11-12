@@ -15,7 +15,7 @@ export interface GroupFormProviderProps {
     readonly children: ReactNode;
 }
 
-const FIELDS = ['name', 'notes', 'types', 'labels', 'locations'] as const satisfies readonly (keyof GroupFormValues)[];
+const FIELDS = ['name', 'notes', 'types', 'labels', 'locations', 'members'] as const satisfies readonly (keyof GroupFormValues)[];
 
 function withoutErrorOf(errors: GroupFormErrors, field: keyof GroupFormValues): GroupFormErrors {
     return Object.fromEntries(Object.entries(errors).filter(([key]) => key !== field));
@@ -55,6 +55,9 @@ export function GroupFormProvider({onSubmit, initial, busy = false, error, messa
         },
         changeLocations: (locations) => {
             edit('locations', {locations});
+        },
+        changeMembers: (members) => {
+            edit('members', {members});
         },
         submit: () => {
             const result = validateGroupForm(values);

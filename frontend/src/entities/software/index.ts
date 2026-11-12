@@ -1,5 +1,5 @@
 export {createRelease, deleteRelease, fetchPlatformHardware, fetchSoftwareRelease, updateRelease} from './api/release-api';
-export {createSoftware, deleteSoftware, fetchSoftware, fetchSoftwareReleases, updateSoftware} from './api/software-api';
+export {createSoftware, deleteSoftware, fetchSoftware, fetchSoftwarePeople, fetchSoftwareReleases, updateSoftware} from './api/software-api';
 export {fetchLatestSoftware, parseSoftware} from './api/fetch-software-page';
 export {platformHardwareQuery, querySoftwareWithHardware, SOFTWARE_QUERY_KEY, softwareDetailsQuery, softwareReleaseQuery, softwareReleasesQuery} from './api/software-queries';
 export {
@@ -30,10 +30,13 @@ export {
     type ReleaseDate,
     type Software,
     type SoftwareCategory,
+    type SoftwareCredit,
     type SoftwareDetails,
     type SoftwareId,
     type SoftwarePlatform,
     type SoftwarePlatformCode,
+    type SoftwareReference,
+    type SoftwareReferenceType,
     type SoftwareTitle,
     parseSoftwareId,
     requireSoftwareId,

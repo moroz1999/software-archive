@@ -8,6 +8,7 @@ export function editGroupMessages(t: TFunction): BusinessMessages {
         '422': t('errors.business.refused'),
         'group.types-required': t('validation.groupTypesRequired'),
         'group.type-unknown': t('errors.groupTypeUnknown'),
+        'group.member-unknown': t('errors.groupMemberUnknown'),
         'label.not-own': t('errors.labelNotOwn'),
         'label.display-one': t('errors.labelDisplayOne'),
         'location.unknown': t('errors.locationUnknown'),

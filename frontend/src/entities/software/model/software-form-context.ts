@@ -1,4 +1,6 @@
 import {createRequiredContext} from '@/shared/lib/context';
+import type {SoftwareReference} from './software';
+import type {MemberRoleValue} from '@/shared/ui/member-role-editor';
 import type {PlatformChoice, SoftwareFormErrors, SoftwareFormValues} from './software-form';
 
 /** The texts of a refusal under the fields it names. */
@@ -11,11 +13,16 @@ export interface SoftwareFormState {
     /** Why the last submit was refused, under the fields the refusal names; a field's text clears once it is edited. */
     readonly refusals: SoftwareFormRefusals;
     /** The change handler of a text field. */
-    readonly change: (field: Exclude<keyof SoftwareFormValues, 'hardware' | 'categories'>) => (value: string) => void;
+    readonly change: (field: 'title' | 'description' | 'releaseDate' | 'platform') => (value: string) => void;
     /** Replaces the chosen hardware. */
     readonly changeHardware: (codes: readonly string[]) => void;
     /** Replaces the chosen categories. */
     readonly changeCategories: (ids: readonly string[]) => void;
+    /** Replaces the chosen publishers. */
+    readonly changePublishers: (references: readonly SoftwareReference[]) => void;
+    /** Replaces the chosen developer companies. */
+    readonly changeDevelopers: (references: readonly SoftwareReference[]) => void;
+    readonly changeCredits: (credits: readonly MemberRoleValue[]) => void;
     /** Checks the format rules and hands the draft on only when they pass. */
     readonly submit: () => void;
     /** The platforms to choose from. */

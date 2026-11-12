@@ -5,6 +5,8 @@ Software (a production) is a release of a program: the work itself, as it is kno
 - It is for exactly one platform and has its base hardware — see [hardware.md](hardware.md).
 - It has a title, a description and a release date (a day, without time).
 - It can be in categories of the archive's tree — see [categories.md](categories.md).
+- It can name any number of publishers: people, groups, or the exact aliases under which they published it.
+- It can name any number of developer companies: groups or the exact group aliases under which they developed it. A person cannot be a developer company.
 - The title follows the common title rules (see the domain index). The description and the release date may be unknown.
 - Software can be added, edited and deleted, its base hardware with it, chosen from the hardware of its platform. For now anyone can do it; access rules come later.
 - Deleting software deletes what belongs only to it: its releases, alternative titles, languages, links and credits.
@@ -24,7 +26,7 @@ A release (a version) is a version of the software. It never lives apart from it
 
 ## Credits
 
-Credits tell who made the software. A credit connects the software to a label — the name the work was released under — with a role (code, graphics, music, etc.) and optional notes. Credits name the label rather than the person or group behind it, so the archive shows the name under which the work was actually released, even before anyone knows whose it is.
+Credits tell who made the software. A credited author is a person or the exact alias they used for the work and has one or several roles (code, graphics, music, etc.); without a chosen role it is recorded as unknown.
 
 ## Fresh software
 The home page shows the software most recently added to the archive, newest first.

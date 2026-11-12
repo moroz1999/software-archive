@@ -4,6 +4,7 @@ import {authorPath, toAuthorId} from '@/entities/authors';
 import {locationText, primaryFirst} from '@/entities/locations';
 import {groupEditPath, type GroupDetails, GroupDetailsProvider, type GroupId, groupPath, type GroupMember, type RelatedGroup, useGroupDetails} from '@/entities/groups';
 import {Button} from '@/shared/ui/button';
+import {Chip} from '@/shared/ui/chip';
 import {Inline} from '@/shared/ui/inline';
 import {PageLayout} from '@/shared/ui/page-layout';
 import {Skeleton} from '@/shared/ui/skeleton';
@@ -94,10 +95,16 @@ function Details({group}: {readonly group: GroupDetails}) {
 
 /** The label a member was a member under, leading to the person behind it when known, with their main name when it is another one. */
 function Member({member}: {readonly member: GroupMember}) {
+    const {t} = useTranslation();
+    const dates = [member.startDate, member.endDate].some((date) => date !== null)
+        ? `${member.startDate ?? '…'} – ${member.endDate ?? '…'}`
+        : null;
     return (
         <Inline gap="sm" align="baseline" wrap>
             <Text>{member.personId === null ? member.name : <TextLink href={authorPath(toAuthorId(member.personId))}>{member.name}</TextLink>}</Text>
             {member.personName !== null && <>{' '}<Text variant="bodySm" tone="muted">{member.personName}</Text></>}
+            {member.roles.map((role) => <Chip key={role} size="sm">{t(`roles.group.${role}`)}</Chip>)}
+            {dates !== null && <Text variant="bodySm" tone="muted">{dates}</Text>}
         </Inline>
     );
 }

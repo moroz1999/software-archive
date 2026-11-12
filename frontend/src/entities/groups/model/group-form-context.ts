@@ -1,5 +1,6 @@
 import {createRequiredContext} from '@/shared/lib/context';
 import type {GroupFormErrors, GroupFormLabel, GroupFormLocation, GroupFormValues} from './group-form';
+import type {MemberRoleValue} from '@/shared/ui/member-role-editor';
 
 /** The texts of a refusal under the fields it names. */
 export type GroupFormRefusals = Readonly<Partial<Record<keyof GroupFormValues, string>>>;
@@ -15,6 +16,7 @@ export interface GroupFormState {
     readonly changeTypes: (types: readonly string[]) => void;
     readonly changeLabels: (labels: readonly GroupFormLabel[]) => void;
     readonly changeLocations: (locations: readonly GroupFormLocation[]) => void;
+    readonly changeMembers: (members: readonly MemberRoleValue[]) => void;
     /** Checks the format rules and hands the draft on only when they pass. */
     readonly submit: () => void;
     /** Saving runs: the form is locked. */

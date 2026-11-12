@@ -18,7 +18,7 @@ A label taken away from its owner is not deleted: it becomes a label of nobody a
 People and groups are located in countries, or in cities of them; one place counts once. An owner with locations has exactly one primary location, the one they are best known from.
 
 ## Group membership
-Who was in a group is recorded as it was, by the label they were a member under: the group ZHOPAGROUP had "хакер федя" as a member, a label of Fyodor Ivanko, who is known as MASTERSOFT today. The member stays "хакер федя". A member label may belong to nobody known yet.
+Who was in a group is recorded as a person or as the exact alias they used there: the group ZHOPAGROUP had "хакер федя" as a member, an alias of Fyodor Ivanko, who is known as MASTERSOFT today. The member stays "хакер федя". A membership carries one or several roles and may state its start and end days; without a chosen role it is recorded as unknown.
 Membership belongs to the group: it is always changed as a change of the group, even when it is started from the page of a person.
 A group can also be a member of another group. This is a relation of its own, between the groups themselves, apart from the labels that are members.
 The labels of a group are its alternative names (ZHOPAS, ZS), not its members.
@@ -48,7 +48,7 @@ Groups and their labels. The name of the group stands next to every entry of it,
 The page of a person: the main name, the real name, notes, all their labels, their locations (the primary one first) and the groups they were members of, each under the group's main name with the label they were a member under, unless it is their main name ("ZHOPAGROUP as хакер федя").
 
 ## Group page
-The page of a group: the main name, the name, the group types, notes, all its labels, its locations (the primary one first), its members under the labels they were members under — each with the person's main name next to it when it is another one, and leading to the person when known —, the groups that are members of it and the groups it is a member of.
+The page of a group: the main name, the name, the group types, notes, all its labels, its locations (the primary one first), its members under the selected person name or alias with their roles and dates, the groups that are members of it and the groups it is a member of.
 
 ## Adding, editing and deleting
 People and groups are added, edited and deleted in the archive; for now anyone can do it.

@@ -88,6 +88,20 @@ function Details({software}: {readonly software: SoftwareDetails}) {
                     </Stack>
                 </Stack>
             )}
+            {(software.credits?.length ?? 0) > 0 && (
+                <Section label={t('fields.credits')}>
+                    <Stack as="ul" gap="xs" ariaLabel={t('fields.credits')}>
+                        {software.credits?.map((credit) => (
+                            <li key={`${credit.type}:${credit.id}`}>
+                                <Inline gap="xs" align="center" wrap>
+                                    <Text>{credit.title}</Text>
+                                    {credit.roles.map((role) => <Chip key={role} size="sm">{t(`roles.software.${role}`)}</Chip>)}
+                                </Inline>
+                            </li>
+                        ))}
+                    </Stack>
+                </Section>
+            )}
             {lines.length > 0 && (
                 <Stack gap="sm">
                     {lines.map((line, index) => <Text key={index}>{line}</Text>)}

@@ -15,6 +15,7 @@ import com.archive.backend.geo.domain.CountryId;
 import com.archive.backend.geo.domain.Location;
 import com.archive.backend.geo.domain.LocationDraft;
 import com.archive.backend.geo.domain.Place;
+import com.archive.backend.group.domain.GroupMemberSets;
 import com.archive.backend.group.domain.GroupName;
 import com.archive.backend.group.domain.GroupNotes;
 import com.archive.backend.label.domain.LabelDraft;
@@ -30,7 +31,8 @@ import org.junit.jupiter.api.Test;
 class UpdateGroupHandlerTest {
 
     private final InMemoryGroupRepository repository = new InMemoryGroupRepository();
-    private final UpdateGroupHandler handler = new UpdateGroupHandler(repository, groupTypes(), places(), event -> {});
+    private final UpdateGroupHandler handler = new UpdateGroupHandler(
+            repository, groupTypes(), places(), new GroupMemberSets(reference -> true), event -> {});
 
     @Test
     void storesTheEditedGroup() {

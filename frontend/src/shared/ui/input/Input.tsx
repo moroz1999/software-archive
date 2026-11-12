@@ -1,3 +1,4 @@
+import type {KeyboardEventHandler, Ref} from 'react';
 import {classNames} from '@/shared/lib/class-names';
 import styles from './Input.module.css';
 
@@ -18,10 +19,19 @@ export interface InputProps {
     readonly maxLength?: number;
     /** External contour only; see docs/styles.md. */
     readonly className?: string;
+    readonly role?: 'combobox';
+    readonly ariaAutocomplete?: 'list';
+    readonly ariaControls?: string | undefined;
+    readonly ariaExpanded?: boolean | undefined;
+    readonly ariaActiveDescendant?: string | undefined;
+    readonly onKeyDown?: KeyboardEventHandler<HTMLInputElement>;
+    readonly onFocus?: () => void;
+    readonly onBlur?: () => void;
+    readonly inputRef?: Ref<HTMLInputElement>;
 }
 
 /** One-line text or date input. */
-export function Input({id, value, onChange, type = 'text', ariaLabel, invalid = false, describedBy, disabled, maxLength, placeholder, className}: InputProps) {
+export function Input({id, value, onChange, type = 'text', ariaLabel, invalid = false, describedBy, disabled, maxLength, placeholder, className, role, ariaAutocomplete, ariaControls, ariaExpanded, ariaActiveDescendant, onKeyDown, onFocus, onBlur, inputRef}: InputProps) {
     return (
         <input
             id={id}
@@ -33,10 +43,19 @@ export function Input({id, value, onChange, type = 'text', ariaLabel, invalid = 
             aria-label={ariaLabel}
             aria-invalid={invalid}
             aria-describedby={describedBy}
+            role={role}
+            aria-autocomplete={ariaAutocomplete}
+            aria-controls={ariaControls}
+            aria-expanded={ariaExpanded}
+            aria-activedescendant={ariaActiveDescendant}
             disabled={disabled}
             maxLength={maxLength}
             placeholder={placeholder}
             className={classNames(styles.input, invalid && styles.invalid, className)}
+            onKeyDown={onKeyDown}
+            onFocus={onFocus}
+            onBlur={onBlur}
+            ref={inputRef}
         />
     );
 }

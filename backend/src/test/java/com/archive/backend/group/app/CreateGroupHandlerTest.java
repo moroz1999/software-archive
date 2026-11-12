@@ -12,6 +12,7 @@ import com.archive.backend.geo.domain.Location;
 import com.archive.backend.geo.domain.LocationDraft;
 import com.archive.backend.geo.domain.Place;
 import com.archive.backend.group.domain.GroupId;
+import com.archive.backend.group.domain.GroupMemberSets;
 import com.archive.backend.group.domain.GroupName;
 import com.archive.backend.group.domain.GroupNotes;
 import com.archive.backend.group.domain.GroupTypeCode;
@@ -26,7 +27,8 @@ import org.junit.jupiter.api.Test;
 class CreateGroupHandlerTest {
 
     private final InMemoryGroupRepository repository = new InMemoryGroupRepository();
-    private final CreateGroupHandler handler = new CreateGroupHandler(repository, groupTypes(), places(), event -> {});
+    private final CreateGroupHandler handler = new CreateGroupHandler(
+            repository, groupTypes(), places(), new GroupMemberSets(reference -> true), event -> {});
 
     @Test
     void storesANewGroupUnderANewId() {

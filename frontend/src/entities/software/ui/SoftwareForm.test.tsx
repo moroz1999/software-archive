@@ -29,6 +29,8 @@ function renderForm({actions, categories, ...props}: FormProps = {}) {
 }
 
 const GAMES = '00000000-0000-0000-0006-000000000001';
+const PUBLISHER = '00000000-0000-0000-0003-000000000001';
+const DEVELOPER = '00000000-0000-0000-0004-000000000001';
 
 /** Stands in for the field of the categories: their tree is of another slice. */
 function GamesOnly() {
@@ -71,7 +73,68 @@ describe(SoftwareForm, () => {
         await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Platform'}), 'BK');
         await userEvent.click(screen.getByRole('button', {name: 'Save'}));
 
-        expect(onSubmit).toHaveBeenCalledExactlyOnceWith({title: 'Elite', description: 'Space trading', releaseDate: '1985-09-20', platform: 'bk', hardware: [], categories: []});
+        expect(onSubmit).toHaveBeenCalledExactlyOnceWith({
+            title: 'Elite',
+            description: 'Space trading',
+            releaseDate: '1985-09-20',
+            platform: 'bk',
+            hardware: [],
+            categories: [],
+            publishers: [],
+            developers: [],
+            credits: [],
+        });
+    });
+
+    it('finds publishers and developers by aliases and submits the chosen references', async () => {
+        stubFetchRoutes(new Map([
+            ['/api/hardware?platform=agat', json([])],
+            [
+                '/api/entity-lookup?types=author%2Cauthor-label%2Cgroup%2Cgroup-label&query=j.p.',
+                json({items: [{id: PUBLISHER, type: 'author-label', title: 'J.P. — Jane Publisher'}]}),
+            ],
+            [
+                '/api/entity-lookup?types=group%2Cgroup-label&query=nebula',
+                json({items: [{id: DEVELOPER, type: 'group', title: 'Nebula Studio'}]}),
+            ],
+        ]));
+        const {onSubmit} = renderForm({
+            initial: {title: 'Elite', description: '', releaseDate: '', platform: 'agat', hardware: [], categories: []},
+        });
+
+        expect(screen.getByRole('combobox', {name: 'Publishers'})).toBeInTheDocument();
+        expect(screen.getByRole('combobox', {name: 'Developers'})).toBeInTheDocument();
+
+        await userEvent.type(screen.getByRole('combobox', {name: 'Publishers'}), 'j.p.');
+        await userEvent.click(await screen.findByRole('option', {name: 'J.P. — Jane Publisher'}));
+        await userEvent.type(screen.getByRole('combobox', {name: 'Developers'}), 'nebula');
+        await userEvent.click(await screen.findByRole('option', {name: 'Nebula Studio'}));
+        await userEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        expect(onSubmit).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
+            publishers: [{id: PUBLISHER, type: 'author-label', title: 'J.P. — Jane Publisher'}],
+            developers: [{id: DEVELOPER, type: 'group', title: 'Nebula Studio'}],
+        }));
+    });
+
+    it('shows refusals under publishers and developers', () => {
+        renderForm({
+            error: new BusinessError(422, 'software.publisher-unknown', [
+                {field: 'publishers', code: 'software.publisher-unknown'},
+                {field: 'developers', code: 'software.developer-unknown'},
+            ]),
+            messages: {
+                'software.publisher-unknown': 'One of the publishers is not in the archive any more.',
+                'software.developer-unknown': 'One of the developers is not in the archive any more.',
+            },
+        });
+
+        expect(screen.queryByRole('combobox', {name: 'Publishers'})).toHaveAccessibleDescription(
+            'One of the publishers is not in the archive any more.',
+        );
+        expect(screen.queryByRole('combobox', {name: 'Developers'})).toHaveAccessibleDescription(
+            'One of the developers is not in the archive any more.',
+        );
     });
 
     it('offers the platforms to choose from', () => {

@@ -196,6 +196,15 @@ class FixturesIT {
     }
 
     @Test
+    void aFixtureSoftwareHasPublishersAndDeveloperCompaniesUnderOwnersAndAliases() throws Exception {
+        mvc.perform(get("/api/software/{id}", ELITE))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.publishers[*].type")
+                        .value(containsInAnyOrder("author", "author-label", "group", "group-label")))
+                .andExpect(jsonPath("$.developers[*].type").value(containsInAnyOrder("group", "group-label")));
+    }
+
+    @Test
     void aFixtureSoftwareHasAReleaseWithItsOwnSoundAndOneShowingTheHardwareOfTheSoftware() throws Exception {
         List<Map<String, Object>> releases = JsonPath.read(body(get("/api/software/{id}/releases", ELITE)), "$");
 

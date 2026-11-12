@@ -1,6 +1,7 @@
 package com.archive.backend.group.app;
 
 import com.archive.backend.geo.domain.LocationDraft;
+import com.archive.backend.group.domain.GroupMemberDraft;
 import com.archive.backend.group.domain.GroupName;
 import com.archive.backend.group.domain.GroupNotes;
 import com.archive.backend.group.domain.GroupTypeCode;
@@ -14,4 +15,15 @@ public record CreateGroupCommand(
         @Nullable GroupNotes notes,
         Set<GroupTypeCode> types,
         List<LabelDraft> labels,
-        List<LocationDraft> locations) {}
+        List<LocationDraft> locations,
+        List<GroupMemberDraft> members) {
+
+    public CreateGroupCommand(
+            GroupName name,
+            @Nullable GroupNotes notes,
+            Set<GroupTypeCode> types,
+            List<LabelDraft> labels,
+            List<LocationDraft> locations) {
+        this(name, notes, types, labels, locations, List.of());
+    }
+}

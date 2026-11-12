@@ -2,6 +2,7 @@ import {NotFoundError} from '@/shared/api';
 import {type Brand} from '@/shared/lib/brand';
 import {titleProblem} from '@/shared/lib/title';
 import {isUuid} from '@/shared/lib/uuid';
+import type {MemberRoleValue} from '@/shared/ui/member-role-editor';
 
 export type SoftwareId = Brand<string, 'SoftwareId'>;
 export type SoftwareTitle = Brand<string, 'SoftwareTitle'>;
@@ -9,6 +10,18 @@ export type SoftwareTitle = Brand<string, 'SoftwareTitle'>;
 export type ReleaseDate = Brand<string, 'ReleaseDate'>;
 /** The code of the platform software is for: `vector` (docs/domain/hardware.md). */
 export type SoftwarePlatformCode = Brand<string, 'SoftwarePlatformCode'>;
+
+export const SOFTWARE_REFERENCE_TYPES = ['author', 'author-label', 'group', 'group-label'] as const;
+export type SoftwareReferenceType = (typeof SOFTWARE_REFERENCE_TYPES)[number];
+
+/** A person, group or one of their labels chosen under the exact name shown in the form. */
+export interface SoftwareReference {
+    readonly id: string;
+    readonly type: SoftwareReferenceType;
+    readonly title: string;
+}
+
+export type SoftwareCredit = MemberRoleValue;
 
 export interface Software {
     readonly id: SoftwareId;
@@ -22,6 +35,9 @@ export interface SoftwareDetails extends Software {
     readonly platform: SoftwarePlatform;
     readonly hardware: readonly Hardware[];
     readonly categories: readonly SoftwareCategory[];
+    readonly publishers?: readonly SoftwareReference[];
+    readonly developers?: readonly SoftwareReference[];
+    readonly credits?: readonly SoftwareCredit[];
 }
 
 /** A category software is in, with its branch from the top of the tree down to itself (docs/domain/categories.md). */
@@ -102,10 +118,18 @@ export function toSoftwarePlatformCode(raw: string): SoftwarePlatformCode {
 }
 
 const HARDWARE_GROUP_SET: ReadonlySet<string> = new Set(HARDWARE_GROUPS);
+const SOFTWARE_REFERENCE_TYPE_SET: ReadonlySet<string> = new Set(SOFTWARE_REFERENCE_TYPES);
 
 export function toHardwareGroup(raw: string): HardwareGroup {
     if (!HARDWARE_GROUP_SET.has(raw)) {
         throw new TypeError(`Invalid hardware group: ${raw}`);
     }
     return raw as HardwareGroup;
+}
+
+export function toSoftwareReferenceType(raw: string): SoftwareReferenceType {
+    if (!SOFTWARE_REFERENCE_TYPE_SET.has(raw)) {
+        throw new TypeError(`Invalid software reference type: ${raw}`);
+    }
+    return raw as SoftwareReferenceType;
 }

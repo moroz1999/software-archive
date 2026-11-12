@@ -1,5 +1,8 @@
 package com.archive.backend.software.infra;
 
+import com.archive.backend.author.domain.PersonReference;
+import com.archive.backend.author.domain.PersonReferenceId;
+import com.archive.backend.author.domain.PersonReferenceType;
 import com.archive.backend.category.domain.CategoryId;
 import com.archive.backend.category.domain.CategorySet;
 import com.archive.backend.hardware.domain.HardwareCode;
@@ -13,11 +16,19 @@ import com.archive.backend.software.domain.ReleaseTitle;
 import com.archive.backend.software.domain.ReleaseType;
 import com.archive.backend.software.domain.ReleaseVersion;
 import com.archive.backend.software.domain.Software;
+import com.archive.backend.software.domain.SoftwareCreditDraft;
+import com.archive.backend.software.domain.SoftwareCredits;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
+import com.archive.backend.software.domain.SoftwareReference;
+import com.archive.backend.software.domain.SoftwareReferenceId;
+import com.archive.backend.software.domain.SoftwareReferenceType;
+import com.archive.backend.software.domain.SoftwareReferences;
 import com.archive.backend.software.domain.SoftwareTitle;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.mapstruct.Mapper;
 
@@ -39,6 +50,10 @@ public interface SoftwareMapper {
                 entity.getReleaseDate(),
                 toHardware(platform, entity.getHardware()),
                 categories,
+                references(entity),
+                SoftwareCredits.restore(entity.getCredits().stream()
+                        .map(SoftwareMapper::toCredit)
+                        .toList()),
                 entity.getReleases().stream()
                         .map(release -> toRelease(platform, release))
                         .toList());
@@ -55,6 +70,16 @@ public interface SoftwareMapper {
         entity.setHardware(fromHardware(software.getHardware()));
         entity.setCategories(
                 software.getCategories().ids().stream().map(CategoryId::value).collect(Collectors.toSet()));
+        SoftwareReferences references = software.getReferences();
+        entity.setPublisherAuthors(ids(references.publishers(), SoftwareReferenceType.AUTHOR));
+        entity.setPublisherGroups(ids(references.publishers(), SoftwareReferenceType.GROUP));
+        entity.setPublisherAuthorLabels(ids(references.publishers(), SoftwareReferenceType.AUTHOR_LABEL));
+        entity.setPublisherGroupLabels(ids(references.publishers(), SoftwareReferenceType.GROUP_LABEL));
+        entity.setDeveloperGroups(ids(references.developers(), SoftwareReferenceType.GROUP));
+        entity.setDeveloperLabels(ids(references.developers(), SoftwareReferenceType.GROUP_LABEL));
+        entity.setCredits(software.getCredits().all().stream()
+                .map(SoftwareMapper::fromCredit)
+                .collect(Collectors.toCollection(ArrayList::new)));
         entity.setReleases(software.getReleases().stream()
                 .map(SoftwareMapper::fromRelease)
                 .collect(Collectors.toCollection(ArrayList::new)));
@@ -68,6 +93,32 @@ public interface SoftwareMapper {
 
     private static Set<String> fromHardware(HardwareSet hardware) {
         return hardware.codes().stream().map(HardwareCode::value).collect(Collectors.toSet());
+    }
+
+    private static SoftwareReferences references(SoftwareEntity entity) {
+        Set<SoftwareReference> publishers = new java.util.HashSet<>();
+        publishers.addAll(references(entity.getPublisherAuthors(), SoftwareReferenceType.AUTHOR));
+        publishers.addAll(references(entity.getPublisherGroups(), SoftwareReferenceType.GROUP));
+        publishers.addAll(references(entity.getPublisherAuthorLabels(), SoftwareReferenceType.AUTHOR_LABEL));
+        publishers.addAll(references(entity.getPublisherGroupLabels(), SoftwareReferenceType.GROUP_LABEL));
+        Set<SoftwareReference> developers = new java.util.HashSet<>();
+        developers.addAll(references(entity.getDeveloperGroups(), SoftwareReferenceType.GROUP));
+        developers.addAll(references(entity.getDeveloperLabels(), SoftwareReferenceType.GROUP_LABEL));
+        return SoftwareReferences.restore(publishers, developers);
+    }
+
+    private static Set<SoftwareReference> references(Set<UUID> ids, SoftwareReferenceType type) {
+        return ids.stream()
+                .map(id -> new SoftwareReference(type, new SoftwareReferenceId(id)))
+                .collect(Collectors.toSet());
+    }
+
+    private static Set<UUID> ids(Set<SoftwareReference> references, SoftwareReferenceType... types) {
+        Set<SoftwareReferenceType> allowed = Set.of(types);
+        return references.stream()
+                .filter(reference -> allowed.contains(reference.type()))
+                .map(reference -> reference.id().value())
+                .collect(Collectors.toSet());
     }
 
     private static Release toRelease(PlatformCode platform, SoftwareReleaseEntity entity) {
@@ -98,6 +149,27 @@ public interface SoftwareMapper {
         entity.setReleaseDate(content.releaseDate());
         entity.setDescription(description == null ? null : description.value());
         entity.setHardware(fromHardware(release.hardware()));
+        return entity;
+    }
+
+    private static SoftwareCreditDraft toCredit(SoftwareCreditEntity entity) {
+        UUID person = entity.getPersonId();
+        return new SoftwareCreditDraft(
+                new PersonReference(
+                        person == null ? PersonReferenceType.AUTHOR_LABEL : PersonReferenceType.AUTHOR,
+                        new PersonReferenceId(person == null ? Objects.requireNonNull(entity.getLabelId()) : person)),
+                entity.getRoleCodes());
+    }
+
+    private static SoftwareCreditEntity fromCredit(SoftwareCreditDraft credit) {
+        SoftwareCreditEntity entity = new SoftwareCreditEntity();
+        UUID id = credit.person().id().value();
+        if (credit.person().type() == PersonReferenceType.AUTHOR) {
+            entity.setPersonId(id);
+        } else {
+            entity.setLabelId(id);
+        }
+        entity.setRoleCodes(new ArrayList<>(credit.roles()));
         return entity;
     }
 }

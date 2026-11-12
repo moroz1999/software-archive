@@ -131,7 +131,9 @@ class SoftwareControllerTest {
                 .andExpect(jsonPath("$.id").value(ID.toString()))
                 .andExpect(jsonPath("$.title").value("Elite"))
                 .andExpect(jsonPath("$.description").value("Space trading"))
-                .andExpect(jsonPath("$.releaseDate").value("1985-09-20"));
+                .andExpect(jsonPath("$.releaseDate").value("1985-09-20"))
+                .andExpect(jsonPath("$.publishers").isArray())
+                .andExpect(jsonPath("$.developers").isArray());
     }
 
     @Test
@@ -260,6 +262,42 @@ class SoftwareControllerTest {
                         .content("{\"title\":\"Elite\"}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("platform.required"));
+        verify(createHandler, never()).handle(any());
+    }
+
+    @Test
+    void answers400ForAPublisherOfAnUnknownReferenceType() throws Exception {
+        when(createHandler.handle(any(CreateSoftwareCommand.class))).thenReturn(new SoftwareId(ID));
+
+        mvc.perform(post("/api/software")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "title": "Elite",
+                                  "platform": "vector",
+                                  "publishers": [
+                                    {"id": "00000000-0000-0000-0003-000000000001", "type": "software"}
+                                  ]
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("software.reference-type-invalid"));
+        verify(createHandler, never()).handle(any());
+    }
+
+    @Test
+    void answers400ForAPublisherWithoutAnId() throws Exception {
+        mvc.perform(post("/api/software")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "title": "Elite",
+                                  "platform": "vector",
+                                  "publishers": [{"type": "author"}]
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("software.reference-id-required"));
         verify(createHandler, never()).handle(any());
     }
 
