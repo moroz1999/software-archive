@@ -1,3 +1,4 @@
+import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
     CATEGORIES_PATH,
@@ -20,6 +21,8 @@ export interface CategoryEditorProps {
     readonly onSaved: () => void;
     /** Called once the category is deleted. */
     readonly onDeleted: () => void;
+    /** Navigation shared by the management pages. */
+    readonly navigation?: ReactNode;
 }
 
 /** The page of editing one category: Delete next to the title, the form with Cancel and Save under it. */
@@ -33,7 +36,7 @@ export function CategoryEditor(props: CategoryEditorProps) {
     );
 }
 
-function LoadedEditor({onSaved, onDeleted}: CategoryEditorProps) {
+function LoadedEditor({onSaved, onDeleted, navigation}: CategoryEditorProps) {
     const {t} = useTranslation();
     const query = useCategoryDetails();
     const skeleton = useSkeleton(query);
@@ -41,6 +44,7 @@ function LoadedEditor({onSaved, onDeleted}: CategoryEditorProps) {
     if (skeleton || query.isPending) {
         return (
             <PageLayout title={t('actions.editCategory')}>
+                {navigation}
                 <div data-testid="category-editor-skeleton"><CategoryFormSkeleton/></div>
             </PageLayout>
         );
@@ -51,6 +55,7 @@ function LoadedEditor({onSaved, onDeleted}: CategoryEditorProps) {
     }
     return (
         <PageLayout title={t('actions.editCategory')} actions={<DeleteCategoryButton category={query.data} onDeleted={onDeleted}/>}>
+            {navigation}
             <EditCategoryProvider category={query.data} onSaved={onSaved}>
                 <CategoryForm
                     submitLabel={t('actions.save')}

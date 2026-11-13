@@ -1,0 +1,53 @@
+.frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: var(--card-screenshots-bg);
+}
+
+.picture {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    visibility: hidden;
+}
+
+.shown {
+    visibility: visible;
+}
+
+.strips {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    gap: var(--card-screenshots-indicator-gap);
+    padding: var(--card-screenshots-indicator-inset);
+}
+
+/* Each strip owns its share of the width; its bar at the bottom marks the picture shown. */
+.strip {
+    display: flex;
+    flex: 1;
+    align-items: flex-end;
+}
+
+.strip::after {
+    content: '';
+    width: 100%;
+    height: var(--card-screenshots-indicator-height);
+    border-radius: var(--card-screenshots-indicator-radius);
+    background: var(--card-screenshots-indicator-bg);
+    opacity: 0;
+    transition: opacity var(--card-screenshots-indicator-duration);
+}
+
+.frame:hover .strip::after {
+    opacity: 1;
+}
+
+.active::after {
+    background: var(--card-screenshots-indicator-active-bg);
+}

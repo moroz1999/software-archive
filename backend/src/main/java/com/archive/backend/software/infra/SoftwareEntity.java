@@ -95,4 +95,10 @@ public class SoftwareEntity {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "software_id", nullable = false)
     private List<SoftwareCreditEntity> credits = new ArrayList<>();
+
+    /** The screenshots in their order. */
+    @ElementCollection
+    @CollectionTable(name = "software_screenshot", joinColumns = @JoinColumn(name = "software_id"))
+    @OrderColumn(name = "position")
+    private List<ScreenshotRow> screenshots = new ArrayList<>();
 }

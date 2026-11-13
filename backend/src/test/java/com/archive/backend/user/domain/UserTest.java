@@ -112,6 +112,36 @@ class UserTest {
     }
 
     @Test
+    void anAdministratorChoosesTheGroupsOfAUserWhoStaysAMember() {
+        User user = confirmed();
+        user.grant(UserGroup.ADMIN);
+
+        user.changeGroups(new GrantedGroups(Set.of(UserGroup.MODERATOR)));
+
+        assertThat(user.getGroups()).containsExactlyInAnyOrder(UserGroup.MEMBER, UserGroup.MODERATOR);
+    }
+
+    @Test
+    void noGroupsChosenLeaveAMemberOnly() {
+        User user = confirmed();
+        user.grant(UserGroup.MODERATOR);
+
+        user.changeGroups(new GrantedGroups(Set.of()));
+
+        assertThat(user.getGroups()).containsExactly(UserGroup.MEMBER);
+    }
+
+    @Test
+    void anUnconfirmedAccountGetsNoGroups() {
+        User user = registered();
+
+        assertThatThrownBy(() -> user.changeGroups(new GrantedGroups(Set.of(UserGroup.MODERATOR))))
+                .isInstanceOf(UnconfirmedUserGroupsException.class)
+                .hasFieldOrPropertyWithValue("code", "user.unconfirmed-groups");
+        assertThat(user.getGroups()).isEmpty();
+    }
+
+    @Test
     void aConfirmedUserSignsInWithTheirPassword() {
         assertThatCode(() -> confirmed().authenticate(new Password("password1"), HASHER))
                 .doesNotThrowAnyException();

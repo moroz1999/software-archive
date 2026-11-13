@@ -7,6 +7,13 @@ spring:
     hibernate:
       ddl-auto: validate
     show-sql: true
+  servlet:
+    multipart:
+      # Above the size of one screenshot, so the archive itself says which file is too large.
+      max-file-size: 50MB
+      max-request-size: 200MB
+      # Every uploaded file goes to a temporary file at once: screenshots are streamed from there, never held in memory.
+      file-size-threshold: 0
   mail:
     # Mailpit of docker-compose catches every letter: http://localhost:8025
     host: localhost
@@ -16,6 +23,10 @@ spring:
     # Fixtures are repeatable migrations applied only with the "fixtures" profile;
     # a database seeded with them must still start without it.
     ignore-migration-patterns: "*:future,repeatable:missing"
+
+screenshots:
+  # Business data like the database: kept outside the build, backed up with it.
+  storage-path: ../upload
 
 search:
   typesense:

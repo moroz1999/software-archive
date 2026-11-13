@@ -45,7 +45,7 @@ describe(CreateGroupProvider, () => {
 
         const post = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST');
 
-        expect(post?.[1]?.body).toBe('{"name":"Crew Ltd","notes":null,"types":["demogroup"],"labels":[],"locations":[]}');
+        expect(post?.[1]?.body).toBe('{"name":"Crew Ltd","notes":null,"types":["demogroup"],"labels":[],"locations":[],"members":[]}');
     });
 
     it('sends nothing without a name and a type and says so at each', async () => {

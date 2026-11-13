@@ -1,0 +1,19 @@
+.titleBone {
+    width: var(--release-view-title-bone-width);
+    height: var(--release-view-title-bone-height);
+}
+
+.labelBone {
+    width: var(--release-view-label-bone-width);
+    height: var(--release-view-label-bone-height);
+}
+
+.lineBone {
+    width: var(--release-view-line-bone-width);
+    height: var(--release-view-text-bone-height);
+}
+
+.textBone {
+    width: 100%;
+    height: var(--release-view-text-bone-height);
+}

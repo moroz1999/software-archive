@@ -10,7 +10,7 @@ const CARL = '00000000-0000-0000-00fd-000000000012';
 const SQUAD = '00000000-0000-0000-00fd-000000000021';
 
 const FOUND = {
-    software: {items: [{id: ELITE, title: 'Elite', releaseDate: '1987-05-01'}], total: 12},
+    software: {items: [{id: ELITE, title: 'Elite', releaseDate: '1987-05-01', screenshots: []}], total: 12},
     authors: {items: [{id: ZED, name: 'Zed', realName: 'John Doe'}, {id: CARL, name: 'Carl', realName: null}], total: 2},
     groups: {items: [{id: SQUAD, name: 'ZS'}], total: 1},
 };
@@ -38,7 +38,7 @@ describe(fetchQuickSearch, () => {
         const result = await fetchQuickSearch('z', null, new AbortController().signal);
 
         expect(result).toStrictEqual({
-            software: {items: [{id: ELITE, title: 'Elite', releaseDate: '1987-05-01'}], total: 12},
+            software: {items: [{id: ELITE, title: 'Elite', releaseDate: '1987-05-01', screenshots: []}], total: 12},
             authors: {items: [{id: ZED, name: 'Zed', realName: 'John Doe'}, {id: CARL, name: 'Carl', realName: null}], total: 2},
             groups: {items: [{id: SQUAD, name: 'ZS'}], total: 1},
         });

@@ -45,6 +45,7 @@ import com.archive.backend.software.read.SoftwareDetails;
 import com.archive.backend.software.read.SoftwareHardware;
 import com.archive.backend.software.read.SoftwarePlatform;
 import com.archive.backend.software.read.SoftwareRelease;
+import com.archive.backend.software.read.SoftwareScreenshot;
 import com.archive.backend.software.read.SoftwareSummary;
 import com.archive.backend.software.web.mapper.SoftwareWebMapperImpl;
 import com.archive.backend.user.domain.Actor;
@@ -113,6 +114,43 @@ class SoftwareControllerTest {
                 .andExpect(jsonPath("$.content[0].id").value(ID.toString()))
                 .andExpect(jsonPath("$.content[0].title").value("Title"))
                 .andExpect(jsonPath("$.page.size").value(12));
+    }
+
+    @Test
+    void sendsTheScreenshotsTheCardsOfTheLatestSoftwareShow() throws Exception {
+        UUID shot = UUID.fromString("00000000-0000-0000-0055-000000000001");
+        when(latestHandler.handle(new ListLatestSoftwareQuery(null, PageRequest.of(0, 12))))
+                .thenReturn(new PageImpl<>(
+                        List.of(new SoftwareSummary(ID, "Title", null, List.of(new SoftwareScreenshot(shot)))),
+                        PageRequest.of(0, 12),
+                        1));
+
+        mvc.perform(get("/api/software/latest").param("size", "12"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].screenshots[0].id").value(shot.toString()))
+                .andExpect(jsonPath("$.content[0].screenshots[0].url").value("/api/screenshots/" + shot));
+    }
+
+    @Test
+    void sendsTheScreenshotsOfEachRelease() throws Exception {
+        UUID shot = UUID.fromString("00000000-0000-0000-0055-000000000002");
+        when(releasesHandler.handle(new ListSoftwareReleasesQuery(Actor.anonymous(), new SoftwareId(ID))))
+                .thenReturn(List.of(new SoftwareRelease(
+                        RELEASE,
+                        "Elite AY",
+                        null,
+                        "mod",
+                        null,
+                        null,
+                        List.of(),
+                        List.of(new SoftwareScreenshot(shot)),
+                        null,
+                        false)));
+
+        mvc.perform(get("/api/software/{id}/releases", ID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].screenshots[0].id").value(shot.toString()))
+                .andExpect(jsonPath("$[0].screenshots[0].url").value("/api/screenshots/" + shot));
     }
 
     @Test

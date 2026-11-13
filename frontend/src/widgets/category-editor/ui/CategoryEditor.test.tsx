@@ -39,7 +39,7 @@ describe(CategoryEditor, () => {
 
         expect(screen.getByRole('heading', {level: 1, name: 'Edit category'})).toBeInTheDocument();
         expect(screen.getByRole('button', {name: 'Delete'})).toBeInTheDocument();
-        expect(screen.getByRole('link', {name: 'Cancel'})).toHaveAttribute('href', '/categories');
+        expect(screen.getByRole('link', {name: 'Cancel'})).toHaveAttribute('href', '/management/categories');
     });
 
     it('saves the category', async () => {

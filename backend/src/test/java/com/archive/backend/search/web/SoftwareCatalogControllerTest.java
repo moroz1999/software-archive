@@ -44,6 +44,7 @@ import org.springframework.test.web.servlet.MockMvc;
 class SoftwareCatalogControllerTest {
 
     private static final UUID ELITE = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    private static final UUID TITLE_SCREEN = UUID.fromString("00000000-0000-0000-0055-000000000001");
     private static final UUID GAMES = UUID.fromString("00000000-0000-0000-0000-000000000020");
     private static final UUID FINLAND = UUID.fromString("00000000-0000-0000-0000-000000000030");
 
@@ -58,7 +59,8 @@ class SoftwareCatalogControllerTest {
         when(handler.handle(any(ListSoftwareCatalogQuery.class)))
                 .thenReturn(new SoftwareCatalogPage(
                         new PageImpl<>(
-                                List.of(new SoftwareCatalogItem(ELITE, "Elite", LocalDate.of(1987, 5, 1))),
+                                List.of(new SoftwareCatalogItem(
+                                        ELITE, "Elite", LocalDate.of(1987, 5, 1), List.of(TITLE_SCREEN))),
                                 PageRequest.of(0, 20),
                                 41),
                         new SoftwareCatalogFacets(
@@ -70,6 +72,14 @@ class SoftwareCatalogControllerTest {
         ArgumentCaptor<ListSoftwareCatalogQuery> query = ArgumentCaptor.forClass(ListSoftwareCatalogQuery.class);
         verify(handler).handle(query.capture());
         return query.getValue();
+    }
+
+    @Test
+    void answersEveryCardWithTheScreenshotsItShows() throws Exception {
+        mvc.perform(get("/api/software"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].screenshots[0].id").value(TITLE_SCREEN.toString()))
+                .andExpect(jsonPath("$.content[0].screenshots[0].url").value("/api/screenshots/" + TITLE_SCREEN));
     }
 
     @Test

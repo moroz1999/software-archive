@@ -33,4 +33,7 @@ public interface SpringDataUserRepository extends JpaRepository<UserEntity, UUID
 
     @Query("select count(u) > 0 from UserEntity u join u.groups g where g = :group")
     boolean existsInGroup(@Param("group") String group);
+
+    @Query("select count(u) > 0 from UserEntity u join u.groups g where g = :group and u.id <> :id")
+    boolean existsInGroupBesides(@Param("group") String group, @Param("id") UUID id);
 }

@@ -68,9 +68,19 @@ class ListSoftwareReleasesHandlerTest {
                 false));
         reads.addReleases(
                 ID,
-                new SoftwareRelease(UUID.randomUUID(), "Elite", null, "original", null, null, List.of(), null, false),
                 new SoftwareRelease(
-                        UUID.randomUUID(), "Elite AY", null, "mod", null, null, List.of(), MEMBER_ID.value(), false));
+                        UUID.randomUUID(), "Elite", null, "original", null, null, List.of(), List.of(), null, false),
+                new SoftwareRelease(
+                        UUID.randomUUID(),
+                        "Elite AY",
+                        null,
+                        "mod",
+                        null,
+                        null,
+                        List.of(),
+                        List.of(),
+                        MEMBER_ID.value(),
+                        false));
 
         assertThat(handler.handle(new ListSoftwareReleasesQuery(MEMBER, new SoftwareId(ID))))
                 .extracting(SoftwareRelease::title, SoftwareRelease::canChange)
@@ -100,7 +110,8 @@ class ListSoftwareReleasesHandlerTest {
                 false));
         reads.addReleases(
                 ID,
-                new SoftwareRelease(UUID.randomUUID(), "Elite", null, "original", null, null, List.of(), null, false));
+                new SoftwareRelease(
+                        UUID.randomUUID(), "Elite", null, "original", null, null, List.of(), List.of(), null, false));
 
         assertThat(handler.handle(new ListSoftwareReleasesQuery(MEMBER, new SoftwareId(ID))))
                 .extracting(SoftwareRelease::canChange)

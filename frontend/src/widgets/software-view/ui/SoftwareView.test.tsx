@@ -44,9 +44,19 @@ const AY_MOD = {
 
 const MEMBER = {id: '00000000-0000-0000-0009-000000000001', name: 'Zed', email: 'zed@example.com', groups: ['member'], abilities: ['add-entries']};
 
-/** Answers the details and the releases of the software, and who reads them. */
-function stubFetch(details: () => Response, releases: () => Response = json([AY_MOD]), me: () => Response = json(MEMBER)) {
-    return stubFetchRoutes(new Map([[`/api/software/${ID}`, details], [`/api/software/${ID}/releases`, releases], ['/api/auth/me', me]]));
+const SHOTS = [
+    {id: '00000000-0000-0000-0055-000000000001', url: '/api/screenshots/00000000-0000-0000-0055-000000000001'},
+    {id: '00000000-0000-0000-0055-000000000002', url: '/api/screenshots/00000000-0000-0000-0055-000000000002'},
+];
+
+/** Answers the details, the screenshots and the releases of the software, and who reads them. */
+function stubFetch(details: () => Response, releases: () => Response = json([AY_MOD]), me: () => Response = json(MEMBER), screenshots: () => Response = json([])) {
+    return stubFetchRoutes(new Map([
+        [`/api/software/${ID}`, details],
+        [`/api/software/${ID}/screenshots`, screenshots],
+        [`/api/software/${ID}/releases`, releases],
+        ['/api/auth/me', me],
+    ]));
 }
 
 function renderView(id: string) {
@@ -92,6 +102,28 @@ describe(SoftwareView, () => {
         expect(screen.getByText('Vector')).toBeInTheDocument();
         expect(within(within(details).getByRole('group', {name: 'Computers'})).getByText('Vector-06C')).toBeInTheDocument();
         expect(within(within(details).getByRole('group', {name: 'Sound'})).getByText('Beeper')).toBeInTheDocument();
+    });
+
+    it('shows the screenshots of the software between its details and its releases', async () => {
+        stubFetch(json(ELITE), json([AY_MOD]), json(MEMBER), json(SHOTS));
+        renderView(ID);
+
+        const screenshots = await screen.findByRole('region', {name: 'Screenshots'});
+
+        expect(within(screenshots).getAllByRole('button', {name: /^Screenshot \d of 2$/u})).toHaveLength(2);
+
+        const releases = screen.getByRole('region', {name: 'Releases'});
+
+        expect(screenshots.compareDocumentPosition(releases) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+
+    it('shows no screenshots section for software without screenshots', async () => {
+        stubFetch(json(ELITE));
+        renderView(ID);
+
+        await screen.findByRole('region', {name: 'Releases'});
+
+        expect(screen.queryByRole('region', {name: 'Screenshots'})).not.toBeInTheDocument();
     });
 
     it('shows the releases of the software with the hardware each one shows', async () => {

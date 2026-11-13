@@ -6,9 +6,12 @@ import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.Data;
@@ -48,4 +51,10 @@ public class SoftwareReleaseEntity {
     @CollectionTable(name = "software_release_hardware", joinColumns = @JoinColumn(name = "release_id"))
     @Column(name = "hardware_code")
     private Set<String> hardware = new HashSet<>();
+
+    /** The screenshots in their order. */
+    @ElementCollection
+    @CollectionTable(name = "software_release_screenshot", joinColumns = @JoinColumn(name = "release_id"))
+    @OrderColumn(name = "position")
+    private List<ScreenshotRow> screenshots = new ArrayList<>();
 }

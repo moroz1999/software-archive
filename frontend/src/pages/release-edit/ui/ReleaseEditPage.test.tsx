@@ -1,5 +1,5 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {screen} from '@testing-library/react';
+import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {createMemoryRouter, RouterProvider} from 'react-router';
 import {createQueryClient} from '@/shared/api';
@@ -8,8 +8,9 @@ import {loadReleaseEditPage, preloadReleaseEditPage} from '../index';
 
 const ID = '00000000-0000-0000-0001-000000000001';
 const RELEASE = '00000000-0000-0000-0007-000000000002';
-const ELITE = {id: ID, title: 'Elite', description: null, releaseDate: null, platform: {code: 'vector', name: 'Vector'}, hardware: [], categories: [], canChange: true};
+const ELITE = {id: ID, title: 'Elite', description: null, releaseDate: null, platform: {code: 'vector', name: 'Vector'}, hardware: [], categories: [], publishers: [], developers: [], credits: [], canChange: true};
 const AY = {code: 'ay8910', name: 'AY-3-8910', group: 'sound'};
+const SHOT = {id: '00000000-0000-0000-0055-000000000001', url: '/api/screenshots/00000000-0000-0000-0055-000000000001'};
 const AY_MOD = {id: RELEASE, title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: null, description: null, hardware: [AY]};
 
 function renderRoute() {
@@ -26,6 +27,7 @@ function answer() {
         [`/api/software/${ID}`, json(ELITE)],
         ['/api/hardware?platform=vector', json([AY])],
         [`/api/software/${ID}/releases/${RELEASE}`, json(AY_MOD)],
+        [`/api/software/${ID}/releases/${RELEASE}/screenshots`, json([SHOT])],
     ]));
 }
 
@@ -43,6 +45,16 @@ describe('ReleaseEditPage', () => {
         expect(screen.getByRole('textbox', {name: 'Version'})).toHaveValue('1.1');
         expect(screen.getByRole('checkbox', {name: 'AY-3-8910'})).toBeChecked();
         expect(screen.queryByTestId('release-editor-skeleton')).not.toBeInTheDocument();
+    });
+
+    it('offers the screenshots of the release to change below its form', async () => {
+        answer();
+
+        renderRoute();
+
+        const screenshots = await screen.findByRole('list', {name: 'Screenshots'});
+
+        expect(within(screenshots).getByRole('img', {name: 'Screenshot 1'})).toHaveAttribute('src', SHOT.url);
     });
 
     it('returns to the software after saving', async () => {

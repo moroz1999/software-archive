@@ -9,10 +9,11 @@ The page of one software ([domain/software.md](../domain/software.md)) at `/soft
 - Platform: the software's platform.
 - Categories: each category of the software with its whole branch from the top of the tree, one line of chips joined by "›" per category (`Games › Action › Shooters`), in the order of the tree; the section is left out without categories.
 - Hardware: the software's base hardware, grouped by hardware group in the fixed order computers, storage, DOS, sound, controls, expansion; the section is left out without hardware.
+- Screenshots: a gallery of the software's own screenshots, left out without any ([screenshots.md](screenshots.md#pages)).
 - Releases: "Add release" next to the heading ([release-editing.md](release-editing.md)); "No releases known yet." when there are none. Otherwise:
-  - a table of Title (with the description under it), Year, Version, Type, Hardware and "Edit", in the order they come; Title sorts from A, Year from the newest with unknown years last, a second click turns the order round;
+  - a table of Title (leading to the release page, with the first screenshot beside it and the description under it), Year, Version, Type, Hardware and "Edit", in the order they come; Title sorts from A, Year from the newest with unknown years last, a second click turns the order round;
   - "Type" shows the releases of one type, offered only when they are of more than one; an unknown type is not shown;
-  - "Table / Cards" switches to cards with the same facts; a phone always shows cards, with nothing to switch.
+  - "Table / Cards" switches to cards with the same facts and the screenshots of each release; a phone always shows cards, with nothing to switch.
 
 ## Hardware of a release
 
@@ -20,6 +21,7 @@ Each release shows its effective hardware ([domain/hardware.md](../domain/hardwa
 
 ## Loading and errors
 
+- The screenshots are a lazy block too, with thumbnail skeletons until they come.
 - The releases are a lazy block below: they load when they come into view, with a skeleton until then. It repeats their layout so nothing jumps: the bar with the View toggle at its end, the same table header over rows as high as real ones, the columns fixed in width; cards on a phone.
 - The page preloads the software's details ([data-loading.md](../data-loading.md)): within 300 ms it appears filled, otherwise with a skeleton of the heading and the details.
 - Unknown software, and an id in the URL that cannot be one, show the not found page ([error-handling.md](../error-handling.md)); a malformed id is never sent to the backend.
@@ -30,6 +32,6 @@ Each release shows its effective hardware ([domain/hardware.md](../domain/hardwa
 | Call | Answer | Errors |
 |---|---|---|
 | `GET /api/software/{id}` | the same call as the editing ([software-editing.md](software-editing.md#rest)) | |
-| `GET /api/software/{id}/releases` | `[{id, title, version, type, releaseDate, description, hardware: [{code, name, group}]}]` by release day, unknown days last; `title` falls back to the software's title | `404 software.not-found`; `400` for a malformed id |
+| `GET /api/software/{id}/releases` | `[{id, title, version, type, releaseDate, description, hardware: [{code, name, group}], screenshots: [{id, url}]}]` by release day, unknown days last; `title` falls back to the software's title | `404 software.not-found`; `400` for a malformed id |
 
 `type` is one of `original`, `rerelease`, `adaptation`, `localization`, `bugfix`, `mod`, `crack`, `mia`, `corrupted`, `compilation`, `incomplete`, `demoversion`, `unknown`; `group` is one of `computers`, `storage`, `dos`, `sound`, `controls`, `expansion`.

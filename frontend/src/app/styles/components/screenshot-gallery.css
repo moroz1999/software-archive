@@ -1,0 +1,22 @@
+:root {
+    /* Narrowest a thumbnail gets before the grid takes fewer columns, and the space between thumbnails. */
+    --screenshot-gallery-thumbnail-min-width: 200px;
+    --screenshot-gallery-gap: var(--gap-md);
+
+    /* Frame of a thumbnail: its border, its color under the pointer and its corners. */
+    --screenshot-gallery-thumbnail-border: var(--border-width-thin) solid var(--border-light);
+    --screenshot-gallery-thumbnail-hover-border-color: var(--border-focused);
+    --screenshot-gallery-thumbnail-radius: var(--radius-md);
+
+    /* Fill around a picture that does not fill its place. */
+    --screenshot-gallery-thumbnail-bg: var(--background-deep);
+
+    /* Ring of the thumbnail in focus. */
+    --screenshot-gallery-focus-outline: var(--border-width-thick) solid var(--focus-ring-color);
+
+    /* How fast the frame of a thumbnail follows the pointer. */
+    --screenshot-gallery-duration: var(--animation-sm);
+
+    /* Tallest a picture gets in the viewer, so its buttons stay on screen. */
+    --screenshot-gallery-picture-max-height: 70vh;
+}

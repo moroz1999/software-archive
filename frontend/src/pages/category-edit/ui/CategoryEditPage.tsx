@@ -1,5 +1,6 @@
 import {useNavigate, useParams} from 'react-router';
 import {CATEGORIES_PATH, requireCategoryId} from '@/entities/categories';
+import {ManagementTabs} from '@/features/user/management-navigation';
 import {CategoryEditor} from '@/widgets/category-editor';
 
 export function CategoryEditPage() {
@@ -8,5 +9,5 @@ export function CategoryEditPage() {
     function backToTree() {
         void navigate(CATEGORIES_PATH);
     }
-    return <CategoryEditor id={id} onSaved={backToTree} onDeleted={backToTree}/>;
+    return <CategoryEditor id={id} onSaved={backToTree} onDeleted={backToTree} navigation={<ManagementTabs/>}/>;
 }

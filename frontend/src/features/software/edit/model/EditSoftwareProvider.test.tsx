@@ -48,7 +48,7 @@ describe(EditSoftwareProvider, () => {
 
         expect(fetchMock.mock.calls.find(([url]) => url === `/api/software/${SOFTWARE.id}`)?.[1]).toMatchObject({
             method: 'PUT',
-            body: '{"title":"Elite Plus","description":"Space trading","releaseDate":"1985-09-20","platform":"vector","hardware":[],"categories":[]}',
+            body: '{"title":"Elite Plus","description":"Space trading","releaseDate":"1985-09-20","platform":"vector","hardware":[],"categories":[],"publishers":[],"developers":[],"credits":[]}',
         });
     });
 

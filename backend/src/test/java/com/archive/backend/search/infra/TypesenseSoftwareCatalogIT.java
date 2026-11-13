@@ -44,14 +44,19 @@ class TypesenseSoftwareCatalogIT {
     private static final UUID FINLAND = UUID.fromString("00000000-0000-0000-00fd-0000000000f1");
     private static final UUID BRITAIN = UUID.fromString("00000000-0000-0000-00fd-0000000000f2");
 
-    private static final SoftwareDocument ELITE = software(
-            1,
+    private static final UUID TITLE_SCREEN = UUID.fromString("00000000-0000-0000-00fd-0000000000a1");
+    private static final UUID IN_GAME = UUID.fromString("00000000-0000-0000-00fd-0000000000a2");
+
+    private static final SoftwareDocument ELITE = new SoftwareDocument(
+            UUID.fromString("00000000-0000-0000-00fd-000000000001"),
             "Elite",
+            LocalDate.of(1987, 5, 1),
             List.of("Элита"),
             "vector",
-            LocalDate.of(1987, 5, 1),
+            1987,
             List.of(SHOOTERS, ACTION, GAMES),
-            List.of(FINLAND));
+            List.of(FINLAND),
+            List.of(TITLE_SCREEN, IN_GAME));
     private static final SoftwareDocument EXOLON = software(
             2, "Exolon", List.of(), "vector", LocalDate.of(1987, 9, 1), List.of(ACTION, GAMES), List.of(BRITAIN));
     private static final SoftwareDocument TETRIS = software(
@@ -134,7 +139,8 @@ class TypesenseSoftwareCatalogIT {
         SoftwareCatalogPage page = find(new SoftwareCatalogFilter("Elite", "vector", null, null, null));
 
         assertThat(page.items().getContent())
-                .containsExactly(new SoftwareCatalogItem(ELITE.id(), "Elite", LocalDate.of(1987, 5, 1)));
+                .containsExactly(new SoftwareCatalogItem(
+                        ELITE.id(), "Elite", LocalDate.of(1987, 5, 1), List.of(TITLE_SCREEN, IN_GAME)));
         assertThat(find(new SoftwareCatalogFilter("Demo", "vector", null, null, null))
                         .items()
                         .getContent())

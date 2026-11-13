@@ -2,6 +2,7 @@ package com.archive.backend.software.infra;
 
 import static com.archive.backend.user.TestActors.MEMBER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 import com.archive.backend.TestcontainersConfiguration;
 import com.archive.backend.software.read.ReleaseDetails;
@@ -11,6 +12,7 @@ import com.archive.backend.software.read.SoftwareDetails;
 import com.archive.backend.software.read.SoftwareHardware;
 import com.archive.backend.software.read.SoftwarePlatform;
 import com.archive.backend.software.read.SoftwareRelease;
+import com.archive.backend.software.read.SoftwareScreenshot;
 import com.archive.backend.software.read.SoftwareSummary;
 import com.archive.backend.user.TestActors;
 import java.time.LocalDate;
@@ -93,6 +95,79 @@ class JdbcSoftwareReadRepositoryIT {
 
         assertThat(page.getContent()).extracting(SoftwareSummary::title).containsExactly("Tetris");
         assertThat(page.getTotalElements()).isEqualTo(1);
+    }
+
+    private static SoftwareScreenshot shot(int n) {
+        return new SoftwareScreenshot(UUID.fromString("00000000-0000-0000-0055-%012d".formatted(n)));
+    }
+
+    /** Stores the screenshots of the software, in the order given. */
+    private void softwareShots(UUID software, SoftwareScreenshot... shots) {
+        for (int i = 0; i < shots.length; i++) {
+            jdbc.update(
+                    "INSERT INTO software_screenshot (software_id, position, id, format) VALUES (?, ?, ?, 'png')",
+                    software,
+                    i,
+                    shots[i].id());
+        }
+    }
+
+    private void releaseShots(UUID release, SoftwareScreenshot... shots) {
+        for (int i = 0; i < shots.length; i++) {
+            jdbc.update(
+                    "INSERT INTO software_release_screenshot (release_id, position, id, format) VALUES (?, ?, ?, 'png')",
+                    release,
+                    i,
+                    shots[i].id());
+        }
+    }
+
+    private List<SoftwareScreenshot> cardOf(UUID software) {
+        return reads.findLatest(null, PageRequest.of(0, 10)).getContent().stream()
+                .filter(summary -> summary.id().equals(software))
+                .findFirst()
+                .orElseThrow()
+                .screenshots();
+    }
+
+    @Test
+    void readsTheScreenshotsOfSoftwareAndOfAReleaseInTheirOrder() {
+        // Positions stored out of the order of the ids.
+        softwareShots(ELITE, shot(2), shot(1), shot(3));
+        releaseShots(AY_MOD, shot(5), shot(4));
+
+        assertThat(reads.findScreenshots(ELITE)).containsExactly(shot(2), shot(1), shot(3));
+        assertThat(reads.findReleaseScreenshots(AY_MOD)).containsExactly(shot(5), shot(4));
+        assertThat(reads.findReleaseScreenshots(ORIGINAL)).isEmpty();
+        assertThat(reads.findScreenshots(TETRIS)).isEmpty();
+    }
+
+    @Test
+    void readsTheScreenshotsOfEveryRelease() {
+        releaseShots(AY_MOD, shot(5), shot(4));
+
+        assertThat(reads.findReleases(ELITE))
+                .extracting(SoftwareRelease::id, SoftwareRelease::screenshots)
+                .containsExactly(
+                        tuple(FIRST, List.of()), tuple(AY_MOD, List.of(shot(5), shot(4))), tuple(ORIGINAL, List.of()));
+    }
+
+    @Test
+    void theCardShowsTheScreenshotsOfTheReleasesInTheirOrderWhenTheSoftwareHasNoneOfItsOwn() {
+        releaseShots(ORIGINAL, shot(6));
+        releaseShots(AY_MOD, shot(5), shot(4));
+        releaseShots(FIRST, shot(7));
+
+        assertThat(cardOf(ELITE)).containsExactly(shot(7), shot(5), shot(4), shot(6));
+        assertThat(cardOf(TETRIS)).isEmpty();
+    }
+
+    @Test
+    void theCardShowsOnlyTheOwnScreenshotsOfSoftwareThatHasThem() {
+        releaseShots(AY_MOD, shot(5));
+        softwareShots(ELITE, shot(2), shot(1));
+
+        assertThat(cardOf(ELITE)).containsExactly(shot(2), shot(1));
     }
 
     @Test

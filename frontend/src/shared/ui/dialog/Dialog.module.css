@@ -19,6 +19,10 @@
     color: var(--dialog-text);
 }
 
+.wide {
+    max-width: var(--dialog-wide-max-width);
+}
+
 .dialog:focus {
     outline: none;
 }

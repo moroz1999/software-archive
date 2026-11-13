@@ -7,7 +7,9 @@ import org.springframework.data.jpa.repository.Lock;
 
 public interface SpringDataSessionRepository extends JpaRepository<SessionEntity, String> {
 
-    /** Locks the session, so two refreshes with one secret cannot both succeed. */
+    /**
+     * Locks the session, so two refreshes with one secret cannot both succeed.
+     */
     @Override
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<SessionEntity> findById(String digest);

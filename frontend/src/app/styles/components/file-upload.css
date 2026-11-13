@@ -1,0 +1,12 @@
+:root {
+    /* Outline marking where dragged files drop, unseen until files come over: its line, corners and color. */
+    --file-upload-border: var(--border-width-thick) dashed transparent;
+    --file-upload-radius: var(--radius-md);
+    --file-upload-over-border: var(--border-focused);
+
+    /* How fast the outline follows the dragged files. */
+    --file-upload-duration: var(--animation-sm);
+
+    /* The hidden input keeps a size, so it still takes the files chosen. */
+    --file-upload-input-size: 1px;
+}

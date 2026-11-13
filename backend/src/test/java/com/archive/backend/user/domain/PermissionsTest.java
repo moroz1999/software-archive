@@ -62,6 +62,15 @@ class PermissionsTest {
     }
 
     @Test
+    void onlyAnAdministratorManagesUsers() {
+        assertThat(ADMIN_AMY.mayManageUsers()).isTrue();
+        assertThat(MEMBER_AMY.mayManageUsers()).isFalse();
+        assertThat(new Actor(ZED, Set.of(UserGroup.MEMBER, UserGroup.MODERATOR)).mayManageUsers())
+                .isFalse();
+        assertThat(Actor.anonymous().mayManageUsers()).isFalse();
+    }
+
+    @Test
     void anActionNotAllowedTellsWhy() {
         assertThatCode(() -> MEMBER_ZED.requireAllowed(true)).doesNotThrowAnyException();
         assertThatThrownBy(() -> MEMBER_ZED.requireAllowed(false)).isInstanceOf(ChangeForbiddenException.class);

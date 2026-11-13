@@ -443,3 +443,22 @@ VALUES ('00000000-0000-0000-0001-000000000001', '623ec340-9a17-5999-9331-9a52e9f
        ('00000000-0000-0000-0001-000000000004', 'b3570270-ca07-57bf-97d5-f2fbb7a7130a'), -- Tetris: Games → Puzzle
        ('00000000-0000-0000-0001-000000000007', '6d216531-2ade-55cd-82dc-daa5d654176a'), -- Agat Chess: … → Chess
        ('00000000-0000-0000-0001-000000000017', 'ccd66987-944c-5932-a6d8-87d1293f7dfa'); -- Бейсик: … → Programming languages
+
+-- Screenshots, here because deleting the releases above deletes theirs. Their pictures are in db/fixtures/screenshots,
+-- named by the ids, and are copied to the file storage on startup with the fixtures profile.
+-- Ids: 00000000-0000-0000-000a-{n}. Elite has screenshots of its own and its AY mod one more; Tetris (BK) has none of
+-- its own, only its 11M release has, so its card shows those; every other software has none.
+
+DELETE FROM software_screenshot WHERE software_id = '00000000-0000-0000-0001-000000000001';
+DELETE FROM software_release_screenshot
+WHERE release_id IN ('00000000-0000-0000-0007-000000000002', '00000000-0000-0000-0007-000000000004');
+
+INSERT INTO software_screenshot (software_id, position, id, format)
+VALUES ('00000000-0000-0000-0001-000000000001', 0, '00000000-0000-0000-000a-000000000001', 'png'),
+       ('00000000-0000-0000-0001-000000000001', 1, '00000000-0000-0000-000a-000000000002', 'png'),
+       ('00000000-0000-0000-0001-000000000001', 2, '00000000-0000-0000-000a-000000000003', 'png');
+
+INSERT INTO software_release_screenshot (release_id, position, id, format)
+VALUES ('00000000-0000-0000-0007-000000000002', 0, '00000000-0000-0000-000a-000000000004', 'png'),
+       ('00000000-0000-0000-0007-000000000004', 0, '00000000-0000-0000-000a-000000000005', 'png'),
+       ('00000000-0000-0000-0007-000000000004', 1, '00000000-0000-0000-000a-000000000006', 'png');

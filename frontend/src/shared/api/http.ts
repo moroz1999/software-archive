@@ -52,3 +52,8 @@ export async function putJson(path: string, body: unknown): Promise<void> {
 export async function deleteResource(path: string): Promise<void> {
     await send(path, {method: 'DELETE', headers: {Accept: 'application/json'}});
 }
+
+/** POSTs a multipart form, such as files, and returns the JSON answer. */
+export async function postForm(path: string, form: FormData): Promise<unknown> {
+    return readJson(await send(path, {method: 'POST', headers: {Accept: 'application/json'}, body: form}));
+}

@@ -55,7 +55,7 @@ describe(fetchSoftwareCatalog, () => {
         const catalog = await fetchSoftwareCatalog(filterOf(''), null, new AbortController().signal);
 
         expect(catalog.page).toMatchObject({number: 0, totalElements: 41, totalPages: 3});
-        expect(catalog.page.items).toStrictEqual([{id: ELITE, title: 'Elite', releaseDate: '1987-05-01'}]);
+        expect(catalog.page.items).toStrictEqual([{id: ELITE, title: 'Elite', releaseDate: '1987-05-01', screenshots: []}]);
         expect(catalog.facets).toStrictEqual(FACETS);
     });
 

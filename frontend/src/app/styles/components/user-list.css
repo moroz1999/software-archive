@@ -1,0 +1,4 @@
+:root {
+    /* Height of a row of the skeleton of the users, as of a row of their table. */
+    --user-list-skeleton-row-height: 40px;
+}

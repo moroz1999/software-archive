@@ -1,0 +1,3 @@
+.skeletonRow {
+    height: var(--user-list-skeleton-row-height);
+}

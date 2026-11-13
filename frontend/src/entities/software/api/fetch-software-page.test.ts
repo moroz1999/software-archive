@@ -26,6 +26,15 @@ describe(fetchLatestSoftware, () => {
         expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/software/latest?size=12&platform=msx');
     });
 
+    it('reads the screenshots each card shows, none when missing', async () => {
+        const shot = {id: '00000000-0000-0000-0055-000000000001', url: '/api/screenshots/00000000-0000-0000-0055-000000000001'};
+        stubFetch(json(pageResponse([{...ALPHA, screenshots: [shot]}, ALPHA])));
+
+        const page = await fetchLatestSoftware(null, new AbortController().signal);
+
+        expect(page.items.map((software) => software.screenshots)).toStrictEqual([[shot], []]);
+    });
+
     it('fails with a system error when an item is malformed', async () => {
         stubFetch(json(pageResponse([{...ALPHA, id: 'not-a-uuid'}])));
 

@@ -28,7 +28,7 @@ describe(CategoryTree, () => {
         renderTree();
 
         expect(screen.getByTestId('category-tree-skeleton')).toBeInTheDocument();
-        await expect(screen.findByRole('link', {name: 'Games'})).resolves.toHaveAttribute('href', `/categories/${GAMES}/edit`);
+        await expect(screen.findByRole('link', {name: 'Games'})).resolves.toHaveAttribute('href', `/management/categories/${GAMES}/edit`);
         expect(screen.getByRole('link', {name: 'Demoscene'})).toBeInTheDocument();
         expect(screen.queryByRole('link', {name: 'Action'})).not.toBeInTheDocument();
     });
@@ -44,7 +44,7 @@ describe(CategoryTree, () => {
 
         await userEvent.click(expand);
 
-        expect(screen.getByRole('link', {name: 'Action'})).toHaveAttribute('href', `/categories/${ACTION}/edit`);
+        expect(screen.getByRole('link', {name: 'Action'})).toHaveAttribute('href', `/management/categories/${ACTION}/edit`);
         expect(screen.queryByRole('link', {name: 'Shooters'})).not.toBeInTheDocument();
 
         await userEvent.click(screen.getByRole('button', {name: 'Collapse Games'}));
@@ -59,7 +59,7 @@ describe(CategoryTree, () => {
         await userEvent.click(await screen.findByRole('button', {name: 'Expand Games'}));
         await userEvent.click(screen.getByRole('button', {name: 'Expand Action'}));
 
-        expect(screen.getByRole('link', {name: 'Shooters'})).toHaveAttribute('href', `/categories/${SHOOTERS}/edit`);
+        expect(screen.getByRole('link', {name: 'Shooters'})).toHaveAttribute('href', `/management/categories/${SHOOTERS}/edit`);
     });
 
     it('says when there are no categories', async () => {

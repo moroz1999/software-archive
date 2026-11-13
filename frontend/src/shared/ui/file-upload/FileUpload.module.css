@@ -1,0 +1,22 @@
+.zone {
+    position: relative;
+    display: inline-flex;
+    border: var(--file-upload-border);
+    border-radius: var(--file-upload-radius);
+    transition: border-color var(--file-upload-duration);
+}
+
+/* Files are dragged over it: dropping them takes them. */
+.over {
+    border-color: var(--file-upload-over-border);
+}
+
+/* The choice of files opens through the button; the input itself is not shown. */
+.input {
+    position: absolute;
+    width: var(--file-upload-input-size);
+    height: var(--file-upload-input-size);
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}

@@ -4,7 +4,9 @@ import com.archive.backend.shared.domain.ddd.ValueObject;
 import com.archive.backend.shared.domain.error.InvalidValueException;
 import java.util.Objects;
 
-/** The name a user is known by in the archive; one account per name, whatever its letter case. */
+/**
+ * The name a user is known by in the archive; one account per name, whatever its letter case.
+ */
 @ValueObject
 public record UserName(String value) {
 

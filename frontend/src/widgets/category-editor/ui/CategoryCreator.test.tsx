@@ -19,7 +19,7 @@ describe(CategoryCreator, () => {
         renderWithQueries(<MemoryRouter><CategoryCreator onCreated={onCreated}/></MemoryRouter>);
 
         expect(screen.getByRole('heading', {level: 1, name: 'Add category'})).toBeInTheDocument();
-        expect(screen.getByRole('link', {name: 'Cancel'})).toHaveAttribute('href', '/categories');
+        expect(screen.getByRole('link', {name: 'Cancel'})).toHaveAttribute('href', '/management/categories');
 
         await userEvent.type(screen.getByRole('textbox', {name: 'Title'}), 'Action');
         await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Parent'}), await screen.findByRole('option', {name: 'Games'}));

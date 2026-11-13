@@ -6,7 +6,7 @@ The page of the tree of categories ([domain/categories.md](../domain/categories.
 
 | Page | Path | Content |
 |---|---|---|
-| Categories | `/categories` | "Add category" next to the page title; the tree, folded to its top |
+| Categories | `/management/categories` | "Add category" next to the page title; the management tabs; the tree, folded to its top |
 
 - Every category is a link to its editing ([category-editing.md](category-editing.md)). A category with subcategories has a toggle before it ("Expand …" / "Collapse …") that unfolds them under it; the tree is the `Tree` of the design system.
 - An empty tree says "No categories yet."

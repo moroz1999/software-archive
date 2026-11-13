@@ -1,6 +1,7 @@
 package com.archive.backend.software.infra;
 
 import com.archive.backend.label.read.MainNameSql;
+import com.archive.backend.software.read.CardScreenshotsSql;
 import com.archive.backend.software.read.ReleaseDetails;
 import com.archive.backend.software.read.SoftwareCategory;
 import com.archive.backend.software.read.SoftwareCategoryStep;
@@ -11,6 +12,7 @@ import com.archive.backend.software.read.SoftwarePlatform;
 import com.archive.backend.software.read.SoftwareReadRepository;
 import com.archive.backend.software.read.SoftwareReferenceOption;
 import com.archive.backend.software.read.SoftwareRelease;
+import com.archive.backend.software.read.SoftwareScreenshot;
 import com.archive.backend.software.read.SoftwareSummary;
 import java.sql.Date;
 import java.sql.ResultSet;
@@ -49,27 +51,31 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
 
     @Override
     public Page<SoftwareSummary> findLatest(@Nullable String platform, Pageable pageable) {
-        return page(platform, "created_at DESC, id", Pageable.ofSize(pageable.getPageSize()));
+        return page(platform, "s.created_at DESC, s.id", Pageable.ofSize(pageable.getPageSize()));
     }
 
     private Page<SoftwareSummary> page(@Nullable String platform, String order, Pageable pageable) {
         Map<String, Object> params = new HashMap<>();
         String where = "";
         if (platform != null) {
-            where = " WHERE platform_code = :platform";
+            where = " WHERE s.platform_code = :platform";
             params.put("platform", platform);
         }
-        long total = jdbc.sql("SELECT count(*) FROM software" + where)
+        long total = jdbc.sql("SELECT count(*) FROM software s" + where)
                 .params(params)
                 .query(Long.class)
                 .single();
         params.put("limit", pageable.getPageSize());
         params.put("offset", pageable.getOffset());
-        List<SoftwareSummary> content = jdbc.sql("SELECT id, title, release_date FROM software" + where + " ORDER BY "
-                        + order + " LIMIT :limit OFFSET :offset")
+        List<SoftwareSummary> content = jdbc.sql("SELECT s.id, s.title, s.release_date, " + CardScreenshotsSql.of("s")
+                        + " AS screenshots FROM software s" + where + " ORDER BY " + order
+                        + " LIMIT :limit OFFSET :offset")
                 .params(params)
                 .query((rs, row) -> new SoftwareSummary(
-                        rs.getObject("id", UUID.class), rs.getString("title"), day(rs, "release_date")))
+                        rs.getObject("id", UUID.class),
+                        rs.getString("title"),
+                        day(rs, "release_date"),
+                        screenshots(rs)))
                 .list();
         return new PageImpl<>(content, pageable, total);
     }
@@ -202,6 +208,7 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                             day(rs, "release_date"),
                             rs.getString("description"),
                             hardware("software_release_hardware", "release_id", id),
+                            findReleaseScreenshots(id),
                             rs.getObject("added_by", UUID.class),
                             false);
                 })
@@ -281,5 +288,28 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     private static @Nullable LocalDate day(ResultSet rs, String column) throws SQLException {
         Date date = rs.getDate(column);
         return date == null ? null : date.toLocalDate();
+    }
+
+    @Override
+    public List<SoftwareScreenshot> findScreenshots(UUID softwareId) {
+        return screenshots("software_screenshot", "software_id", softwareId);
+    }
+
+    @Override
+    public List<SoftwareScreenshot> findReleaseScreenshots(UUID releaseId) {
+        return screenshots("software_release_screenshot", "release_id", releaseId);
+    }
+
+    private List<SoftwareScreenshot> screenshots(String table, String ownerColumn, UUID ownerId) {
+        return jdbc.sql("SELECT id FROM " + table + " WHERE " + ownerColumn + " = :id ORDER BY position")
+                .param("id", ownerId)
+                .query((rs, row) -> new SoftwareScreenshot(rs.getObject("id", UUID.class)))
+                .list();
+    }
+
+    private static List<SoftwareScreenshot> screenshots(ResultSet rs) throws SQLException {
+        return Arrays.stream((UUID[]) rs.getArray("screenshots").getArray())
+                .map(SoftwareScreenshot::new)
+                .toList();
     }
 }

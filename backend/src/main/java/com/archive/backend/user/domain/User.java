@@ -19,7 +19,9 @@ import org.jspecify.annotations.Nullable;
 @Getter
 public final class User {
 
-    /** How long a confirmation link works. */
+    /**
+     * How long a confirmation link works.
+     */
     public static final Duration CONFIRMATION_LIFETIME = Duration.ofDays(7);
 
     private final UserId id;
@@ -53,7 +55,9 @@ public final class User {
         this.confirmation = confirmation;
     }
 
-    /** A new unconfirmed account, waiting for its confirmation link, mailed in the given language. */
+    /**
+     * A new unconfirmed account, waiting for its confirmation link, mailed in the given language.
+     */
     public static User register(
             UserId id,
             UserName name,
@@ -67,7 +71,9 @@ public final class User {
         return user;
     }
 
-    /** Replaces the confirmation link of an unconfirmed account with a new one. */
+    /**
+     * Replaces the confirmation link of an unconfirmed account with a new one.
+     */
     public void renewConfirmation(ConfirmationToken token, Instant now, InterfaceLanguage language) {
         if (status == UserStatus.CONFIRMED) {
             throw new UserAlreadyConfirmedException();
@@ -76,7 +82,9 @@ public final class User {
         events.add(new ConfirmationLinkIssued(email, name, token, language));
     }
 
-    /** Confirms the account by the secret of its link; a confirmed account is a member. */
+    /**
+     * Confirms the account by the secret of its link; a confirmed account is a member.
+     */
     public void confirm(ConfirmationToken token, Instant now) {
         PendingConfirmation pending = confirmation;
         if (pending == null || !pending.digest().equals(token.digest())) {
@@ -94,14 +102,30 @@ public final class User {
         groups.add(group);
     }
 
-    /** Checks the password only. */
+    /**
+     * Gives a confirmed user the groups an administrator chose; every confirmed user stays a member.
+     */
+    public void changeGroups(GrantedGroups granted) {
+        if (status != UserStatus.CONFIRMED) {
+            throw new UnconfirmedUserGroupsException();
+        }
+        groups.clear();
+        groups.add(UserGroup.MEMBER);
+        groups.addAll(granted.groups());
+    }
+
+    /**
+     * Checks the password only.
+     */
     public void verifyPassword(Password password, PasswordHasher hasher) {
         if (!hasher.matches(password, passwordHash)) {
             throw new CredentialsInvalidException();
         }
     }
 
-    /** Checks the user may sign in with the password. */
+    /**
+     * Checks the user may sign in with the password.
+     */
     public void authenticate(Password password, PasswordHasher hasher) {
         verifyPassword(password, hasher);
         if (status != UserStatus.CONFIRMED) {
@@ -109,7 +133,9 @@ public final class User {
         }
     }
 
-    /** Unconfirmed, with an expired link: it holds neither its name nor its email any more. */
+    /**
+     * Unconfirmed, with an expired link: it holds neither its name nor its email any more.
+     */
     public boolean isAbandoned(Instant now) {
         PendingConfirmation pending = confirmation;
         return status == UserStatus.UNCONFIRMED && pending != null && !now.isBefore(pending.expiresAt());

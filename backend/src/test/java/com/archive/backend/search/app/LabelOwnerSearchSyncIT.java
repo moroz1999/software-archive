@@ -12,6 +12,9 @@ import com.archive.backend.author.app.DeleteAuthorHandler;
 import com.archive.backend.author.app.UpdateAuthorCommand;
 import com.archive.backend.author.app.UpdateAuthorHandler;
 import com.archive.backend.author.domain.AuthorId;
+import com.archive.backend.author.domain.PersonReference;
+import com.archive.backend.author.domain.PersonReferenceId;
+import com.archive.backend.author.domain.PersonReferenceType;
 import com.archive.backend.author.domain.RealName;
 import com.archive.backend.group.app.CreateGroupCommand;
 import com.archive.backend.group.app.CreateGroupHandler;
@@ -33,10 +36,12 @@ import com.archive.backend.software.app.DeleteSoftwareCommand;
 import com.archive.backend.software.app.DeleteSoftwareHandler;
 import com.archive.backend.software.app.UpdateSoftwareCommand;
 import com.archive.backend.software.app.UpdateSoftwareHandler;
+import com.archive.backend.software.domain.SoftwareCreditDraft;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareTitle;
 import com.archive.backend.user.TestActors;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -155,17 +160,27 @@ class LabelOwnerSearchSyncIT {
         return id;
     }
 
-    /** Credits are not edited in the archive yet: written straight into the table. */
-    private void credit(SoftwareId software, String label) {
-        jdbc.update(
-                "INSERT INTO software_contribution (software_id, label_id) VALUES (?, ?)",
-                software.value(),
-                labelNamed(label).value());
-    }
-
-    private void moveToPlatform(SoftwareId id, String platform) {
+    /** Moves the software to the platform, crediting the labels named: an edit of software replaces all its credits. */
+    private void moveToPlatform(SoftwareId id, String platform, String... credited) {
+        List<SoftwareCreditDraft> credits = Arrays.stream(credited)
+                .map(label -> new SoftwareCreditDraft(
+                        new PersonReference(
+                                PersonReferenceType.AUTHOR_LABEL,
+                                new PersonReferenceId(labelNamed(label).value())),
+                        List.of()))
+                .toList();
         updateSoftware.handle(new UpdateSoftwareCommand(
-                ADMIN, id, new SoftwareTitle("Elite"), null, null, new PlatformCode(platform), Set.of(), Set.of()));
+                ADMIN,
+                id,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                new PlatformCode(platform),
+                Set.of(),
+                Set.of(),
+                Set.of(),
+                Set.of(),
+                credits));
     }
 
     private Map<String, Object> authorDocument(AuthorId id) throws Exception {
@@ -238,10 +253,8 @@ class LabelOwnerSearchSyncIT {
         AuthorId zed = zedZedson();
         GroupId squad = zedSquad();
         SoftwareId elite = elite("vector");
-        credit(elite, "Z");
-        credit(elite, "Squad");
 
-        moveToPlatform(elite, "bk");
+        moveToPlatform(elite, "bk", "Z", "Squad");
         worker.handle();
 
         assertThat(listIn(authorDocument(zed), "platforms")).containsExactly("bk");
@@ -253,9 +266,7 @@ class LabelOwnerSearchSyncIT {
         AuthorId zed = zedZedson();
         GroupId squad = zedSquad();
         SoftwareId elite = elite("vector");
-        credit(elite, "Zed");
-        credit(elite, "ZS");
-        moveToPlatform(elite, "vector");
+        moveToPlatform(elite, "vector", "Zed", "ZS");
         worker.handle();
         assertThat(listIn(authorDocument(zed), "platforms")).containsExactly("vector");
 

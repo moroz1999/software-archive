@@ -41,6 +41,7 @@
 @import url("./place-filters.css");
 @import url("./software-catalog.css");
 @import url("./radio.css");
+@import url("./release-view.css");
 @import url("./select.css");
 @import url("./sidebar-layout.css");
 @import url("./skeleton.css");
@@ -52,8 +53,14 @@
 @import url("./spinner.css");
 @import url("./stack.css");
 @import url("./table.css");
+@import url("./tabs.css");
 @import url("./textarea.css");
 @import url("./toggle.css");
 @import url("./tree.css");
 @import url("./tree-checklist.css");
 @import url("./typography.css");
+@import url("./user-list.css");
+@import url("./card-screenshots.css");
+@import url("./file-upload.css");
+@import url("./screenshot-gallery.css");
+@import url("./screenshots-editor.css");

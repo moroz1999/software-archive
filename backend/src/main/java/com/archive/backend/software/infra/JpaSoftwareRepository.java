@@ -6,7 +6,10 @@ import com.archive.backend.category.domain.CategorySet;
 import com.archive.backend.software.domain.Software;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareRepository;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -36,7 +39,25 @@ public class JpaSoftwareRepository implements SoftwareRepository {
 
     @Override
     public void save(Software software) {
-        springDataSoftwareRepository.save(mapper.toEntity(software));
+        SoftwareEntity entity = mapper.toEntity(software);
+        springDataSoftwareRepository.findById(entity.getId()).ifPresent(stored -> keepCreditRows(stored, entity));
+        springDataSoftwareRepository.save(entity);
+    }
+
+    /**
+     * A credit of the same person or label stays its row: written anew, it would be inserted before the old row is
+     * deleted, and one person or label is credited once per software.
+     */
+    private static void keepCreditRows(SoftwareEntity stored, SoftwareEntity entity) {
+        Map<UUID, UUID> rows = stored.getCredits().stream()
+                .collect(Collectors.toMap(
+                        JpaSoftwareRepository::creditedId, credit -> Objects.requireNonNull(credit.getId())));
+        entity.getCredits().forEach(credit -> credit.setId(rows.get(creditedId(credit))));
+    }
+
+    private static UUID creditedId(SoftwareCreditEntity credit) {
+        UUID person = credit.getPersonId();
+        return person == null ? Objects.requireNonNull(credit.getLabelId()) : person;
     }
 
     @Override

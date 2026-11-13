@@ -34,7 +34,9 @@ public class GetCurrentUserHandler {
         return repository.findCurrent(id.value()).map(user -> user.withAbilities(abilities(q.actor())));
     }
 
-    /** What the actor may do beyond reading, by the codes the frontend knows (docs/features/accounts.md). */
+    /**
+     * What the actor may do beyond reading, by the codes the frontend knows (docs/features/accounts.md).
+     */
     private static List<String> abilities(Actor actor) {
         List<String> abilities = new ArrayList<>();
         if (actor.mayAddEntries()) {

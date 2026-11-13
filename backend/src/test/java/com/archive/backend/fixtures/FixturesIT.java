@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -52,6 +53,28 @@ class FixturesIT {
         mvc.perform(get("/api/software").param("size", "100"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[*].title").value(hasItems("Elite", "Manic Miner", "Knight Lore")));
+    }
+
+    @Test
+    void fixtureScreenshotsAreServedWithTheirPictures() throws Exception {
+        mvc.perform(get("/api/software/{id}/screenshots", ELITE))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(3)))
+                .andExpect(jsonPath("$[0].id").value("00000000-0000-0000-000a-000000000001"));
+        mvc.perform(get("/api/screenshots/{id}", "00000000-0000-0000-000a-000000000001"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", "image/png"));
+        mvc.perform(get("/api/screenshots/{id}", "00000000-0000-0000-000a-000000000006"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void theCardOfFixtureSoftwareWithoutScreenshotsOfItsOwnShowsThoseOfItsRelease() throws Exception {
+        mvc.perform(get("/api/software/latest").param("platform", "bk").param("size", "100"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[?(@.id == '00000000-0000-0000-0001-000000000004')].screenshots[*].id")
+                        .value(contains(
+                                "00000000-0000-0000-000a-000000000005", "00000000-0000-0000-000a-000000000006")));
     }
 
     @Test

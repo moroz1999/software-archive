@@ -7,6 +7,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
 import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.author.domain.PersonReference;
+import com.archive.backend.author.domain.PersonReferenceId;
+import com.archive.backend.author.domain.PersonReferenceType;
 import com.archive.backend.category.domain.CategoryId;
 import com.archive.backend.category.domain.CategoryLine;
 import com.archive.backend.category.domain.CategorySet;
@@ -21,7 +24,11 @@ import com.archive.backend.software.domain.ReleaseId;
 import com.archive.backend.software.domain.ReleaseTitle;
 import com.archive.backend.software.domain.ReleaseType;
 import com.archive.backend.software.domain.ReleaseVersion;
+import com.archive.backend.software.domain.Screenshot;
+import com.archive.backend.software.domain.ScreenshotFormat;
+import com.archive.backend.software.domain.ScreenshotId;
 import com.archive.backend.software.domain.Software;
+import com.archive.backend.software.domain.SoftwareCreditDraft;
 import com.archive.backend.software.domain.SoftwareCredits;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
@@ -172,6 +179,92 @@ class JpaSoftwareRepositoryIT {
         assertThat(jdbc.queryForObject("SELECT count(*) FROM software_release", Integer.class))
                 .isZero();
         assertThat(jdbc.queryForObject("SELECT count(*) FROM software_release_hardware", Integer.class))
+                .isZero();
+    }
+
+    private static Screenshot shot(int n, ScreenshotFormat format) {
+        return new Screenshot(new ScreenshotId(UUID.fromString("00000000-0000-0000-0055-%012d".formatted(n))), format);
+    }
+
+    @Test
+    void storesTheScreenshotsOfTheSoftwareAndOfItsReleasesInTheirOrder() {
+        Software software = Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE, CategorySet.EMPTY);
+        software.addRelease(AY_MOD, AY_MOD_CONTENT, NO_HARDWARE, AddedBy.NOBODY);
+        software.addScreenshots(null, List.of(shot(1, ScreenshotFormat.PNG), shot(2, ScreenshotFormat.GIF)), ADMIN);
+        software.addScreenshots(AY_MOD, List.of(shot(3, ScreenshotFormat.WEBP)), ADMIN);
+        repository.save(software);
+        springDataSoftwareRepository.flush();
+        entityManager.clear();
+
+        Software loaded = repository.findById(ID).orElseThrow();
+        assertThat(loaded.screenshots(null).all())
+                .containsExactly(shot(1, ScreenshotFormat.PNG), shot(2, ScreenshotFormat.GIF));
+        assertThat(loaded.screenshots(AY_MOD).all()).containsExactly(shot(3, ScreenshotFormat.WEBP));
+    }
+
+    @Test
+    void storesReorderedAndRemovedScreenshots() {
+        Software software = Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE, CategorySet.EMPTY);
+        software.addRelease(AY_MOD, AY_MOD_CONTENT, NO_HARDWARE, AddedBy.NOBODY);
+        software.addScreenshots(
+                null,
+                List.of(shot(1, ScreenshotFormat.PNG), shot(2, ScreenshotFormat.PNG), shot(3, ScreenshotFormat.PNG)),
+                ADMIN);
+        software.addScreenshots(AY_MOD, List.of(shot(4, ScreenshotFormat.PNG), shot(5, ScreenshotFormat.PNG)), ADMIN);
+        repository.save(software);
+        springDataSoftwareRepository.flush();
+        entityManager.clear();
+
+        Software loaded = repository.findById(ID).orElseThrow();
+        loaded.reorderScreenshots(
+                null,
+                List.of(
+                        shot(3, ScreenshotFormat.PNG).id(),
+                        shot(1, ScreenshotFormat.PNG).id(),
+                        shot(2, ScreenshotFormat.PNG).id()),
+                ADMIN);
+        loaded.removeScreenshot(null, shot(1, ScreenshotFormat.PNG).id(), ADMIN);
+        loaded.reorderScreenshots(
+                AY_MOD,
+                List.of(
+                        shot(5, ScreenshotFormat.PNG).id(),
+                        shot(4, ScreenshotFormat.PNG).id()),
+                ADMIN);
+        repository.save(loaded);
+        springDataSoftwareRepository.flush();
+        entityManager.clear();
+
+        Software stored = repository.findById(ID).orElseThrow();
+        assertThat(stored.screenshots(null).all())
+                .containsExactly(shot(3, ScreenshotFormat.PNG), shot(2, ScreenshotFormat.PNG));
+        assertThat(stored.screenshots(AY_MOD).all())
+                .containsExactly(shot(5, ScreenshotFormat.PNG), shot(4, ScreenshotFormat.PNG));
+    }
+
+    @Test
+    void deletesTheScreenshotsWithTheirSoftwareAndRelease() {
+        Software software = Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE, CategorySet.EMPTY);
+        software.addRelease(AY_MOD, AY_MOD_CONTENT, NO_HARDWARE, AddedBy.NOBODY);
+        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_HARDWARE, AddedBy.NOBODY);
+        software.addScreenshots(null, List.of(shot(1, ScreenshotFormat.PNG)), ADMIN);
+        software.addScreenshots(AY_MOD, List.of(shot(2, ScreenshotFormat.PNG)), ADMIN);
+        software.addScreenshots(ORIGINAL, List.of(shot(3, ScreenshotFormat.PNG)), ADMIN);
+        repository.save(software);
+        springDataSoftwareRepository.flush();
+        entityManager.clear();
+
+        Software loaded = repository.findById(ID).orElseThrow();
+        loaded.removeRelease(AY_MOD, ADMIN);
+        repository.save(loaded);
+        springDataSoftwareRepository.flush();
+        assertThat(jdbc.queryForList("SELECT id FROM software_release_screenshot", UUID.class))
+                .containsExactly(shot(3, ScreenshotFormat.PNG).id().value());
+
+        repository.delete(repository.findById(ID).orElseThrow());
+        springDataSoftwareRepository.flush();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM software_screenshot", Integer.class))
+                .isZero();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM software_release_screenshot", Integer.class))
                 .isZero();
     }
 
@@ -364,5 +457,39 @@ class JpaSoftwareRepositoryIT {
         Software stored = repository.findById(ID).orElseThrow();
         assertThat(stored.getAddedBy()).isEqualTo(AddedBy.NOBODY);
         assertThat(stored.getReleases()).extracting(Release::addedBy).containsExactly(AddedBy.NOBODY);
+    }
+
+    @Test
+    void savesSoftwareWithItsCreditsAgain() {
+        UUID person = UUID.fromString("00000000-0000-0000-0000-0000000000a1");
+        UUID label = UUID.fromString("00000000-0000-0000-0000-0000000000a2");
+        jdbc.update("INSERT INTO person (id) VALUES (?)", person);
+        jdbc.update("INSERT INTO label (id, name, person_id) VALUES (?, 'Zed', ?)", label, person);
+        repository.save(Software.create(
+                ID,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                NO_HARDWARE,
+                CategorySet.EMPTY,
+                SoftwareReferences.EMPTY,
+                SoftwareCredits.restore(List.of(new SoftwareCreditDraft(
+                        new PersonReference(PersonReferenceType.AUTHOR_LABEL, new PersonReferenceId(label)),
+                        List.of("code"))))));
+        springDataSoftwareRepository.flush();
+        entityManager.clear();
+
+        // Any change of the software saves its credits as they are, such as a screenshot added.
+        Software loaded = repository.findById(ID).orElseThrow();
+        repository.save(loaded);
+        springDataSoftwareRepository.flush();
+        entityManager.clear();
+
+        assertThat(repository.findById(ID).orElseThrow().getCredits().all())
+                .extracting(credit -> credit.person().id().value(), SoftwareCreditDraft::roles)
+                .containsExactly(tuple(label, List.of("code")));
+        assertThat(jdbc.queryForObject(
+                        "SELECT count(*) FROM software_contribution WHERE software_id = ?", Integer.class, ID.value()))
+                .isEqualTo(1);
     }
 }

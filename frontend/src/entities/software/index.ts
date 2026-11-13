@@ -1,12 +1,15 @@
 export {createRelease, deleteRelease, fetchPlatformHardware, fetchSoftwareRelease, updateRelease} from './api/release-api';
 export {createSoftware, deleteSoftware, fetchSoftware, fetchSoftwarePeople, fetchSoftwareReleases, updateSoftware} from './api/software-api';
 export {fetchLatestSoftware, parseSoftware} from './api/fetch-software-page';
-export {platformHardwareQuery, querySoftwareWithHardware, SOFTWARE_QUERY_KEY, softwareDetailsQuery, softwareReleaseQuery, softwareReleasesQuery} from './api/software-queries';
+export {deleteScreenshot, reorderScreenshots, uploadScreenshots} from './api/screenshot-api';
+export {platformHardwareQuery, querySoftwareWithHardware, screenshotsQuery, SOFTWARE_QUERY_KEY, softwareDetailsQuery, softwareReleaseQuery, softwareReleasesQuery} from './api/software-queries';
 export {
     RELEASE_EDIT_ROUTE,
     RELEASE_NEW_ROUTE,
+    RELEASE_ROUTE,
     releaseEditPath,
     releaseNewPath,
+    releasePath,
     SOFTWARE_EDIT_ROUTE,
     SOFTWARE_LIST_PATH,
     SOFTWARE_NEW_PATH,
@@ -22,6 +25,18 @@ export {type ReleaseFormState, useReleaseForm} from './model/release-form-contex
 export {ReleaseFormProvider, type ReleaseFormProviderProps} from './model/ReleaseFormProvider';
 export {useReleaseDetails} from './model/release-details-context';
 export {ReleaseDetailsProvider, type ReleaseDetailsProviderProps} from './model/ReleaseDetailsProvider';
+export {
+    movedScreenshot,
+    type Screenshot,
+    SCREENSHOT_MAX_BYTES,
+    SCREENSHOT_TYPES,
+    type ScreenshotFileProblem,
+    screenshotFileProblem,
+    type ScreenshotId,
+    toScreenshotId,
+} from './model/screenshot';
+export {useScreenshots} from './model/screenshots-context';
+export {ScreenshotsProvider, type ScreenshotsProviderProps} from './model/ScreenshotsProvider';
 export {usePlatformHardware} from './model/platform-hardware-context';
 export {PlatformHardwareProvider, type PlatformHardwareProviderProps} from './model/PlatformHardwareProvider';
 export {
@@ -59,3 +74,4 @@ export {SoftwareForm, type SoftwareFormProps} from './ui/SoftwareForm';
 export {SoftwareFormSkeleton} from './ui/SoftwareFormSkeleton';
 export {ReleaseForm, type ReleaseFormProps} from './ui/ReleaseForm';
 export {SoftwareReleases, type SoftwareReleasesProps} from './ui/SoftwareReleases';
+export {SoftwareScreenshots, type SoftwareScreenshotsProps} from './ui/SoftwareScreenshots';

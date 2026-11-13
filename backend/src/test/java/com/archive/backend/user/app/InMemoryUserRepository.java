@@ -64,6 +64,12 @@ class InMemoryUserRepository implements UserRepository {
     }
 
     @Override
+    public boolean hasAdminBesides(UserId id) {
+        return items.values().stream()
+                .anyMatch(user -> !user.getId().equals(id) && user.getGroups().contains(UserGroup.ADMIN));
+    }
+
+    @Override
     public void save(User user) {
         items.put(user.getId(), user);
     }

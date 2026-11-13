@@ -26,6 +26,7 @@ const VECTOR = {code: 'vector', name: 'Vector'};
 const VECTOR06C = {code: 'vector06c', name: 'Vector-06C', group: 'computers'};
 const AY = {code: 'ay8910', name: 'AY-3-8910', group: 'sound'};
 const RELEASE = '00000000-0000-0000-0007-000000000001';
+const SHOT = '00000000-0000-0000-0055-000000000001';
 
 describe(fetchSoftware, () => {
     afterEach(() => {
@@ -95,14 +96,21 @@ describe(fetchSoftwareReleases, () => {
         vi.unstubAllGlobals();
     });
 
-    it('reads the releases of one software', async () => {
+    it('reads the releases of one software with their screenshots', async () => {
         const release = {
             id: RELEASE, title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: '1990-03-01', description: null, hardware: [AY], canChange: true,
+            screenshots: [{id: SHOT, url: `/api/screenshots/${SHOT}`}],
         };
         const fetchMock = stubFetch(json([release]));
 
         await expect(fetchSoftwareReleases(ID, new AbortController().signal)).resolves.toStrictEqual([release]);
         expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/software/${ID}/releases`);
+    });
+
+    it('reads a release without screenshots as having none', async () => {
+        stubFetch(json([{id: RELEASE, title: 'Elite', version: null, type: 'original', releaseDate: null, description: null, hardware: [], canChange: false}]));
+
+        await expect(fetchSoftwareReleases(ID, new AbortController().signal)).resolves.toMatchObject([{screenshots: []}]);
     });
 
     it('fails with a system error on a release of an unknown type', async () => {

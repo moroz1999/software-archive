@@ -23,7 +23,7 @@ import org.jspecify.annotations.Nullable;
 import org.mapstruct.Mapper;
 import org.springframework.data.domain.Pageable;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = CardScreenshotWebMapper.class)
 public interface FullSearchWebMapper {
 
     FoundAuthorDto toAuthor(FoundAuthor author);

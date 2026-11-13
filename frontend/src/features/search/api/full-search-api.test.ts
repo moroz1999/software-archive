@@ -13,7 +13,7 @@ const FOUND = {
     sets: [
         {type: 'author', total: 52, items: [{id: ZED, name: 'Zed', realName: 'John Doe'}]},
         {type: 'group', total: 1, items: [{id: SQUAD, name: 'ZS'}]},
-        {type: 'software', total: 51, items: [{id: ELITE, title: 'Elite', releaseDate: '1987-05-01'}]},
+        {type: 'software', total: 51, items: [{id: ELITE, title: 'Elite', releaseDate: '1987-05-01', screenshots: []}]},
     ],
     page: PAGE,
 };
@@ -42,7 +42,7 @@ describe(fetchFullSearch, () => {
             sets: [
                 {kind: 'author', total: 52, items: [{id: ZED, name: 'Zed', realName: 'John Doe'}]},
                 {kind: 'group', total: 1, items: [{id: SQUAD, name: 'ZS'}]},
-                {kind: 'software', total: 51, items: [{id: ELITE, title: 'Elite', releaseDate: '1987-05-01'}]},
+                {kind: 'software', total: 51, items: [{id: ELITE, title: 'Elite', releaseDate: '1987-05-01', screenshots: []}]},
             ],
             page: {number: 1, size: 50, totalElements: 104, totalPages: 3},
         });

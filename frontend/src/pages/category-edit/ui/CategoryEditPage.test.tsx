@@ -1,5 +1,5 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {screen} from '@testing-library/react';
+import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {createMemoryRouter, RouterProvider} from 'react-router';
 import {createQueryClient} from '@/shared/api';
@@ -12,12 +12,13 @@ const ACTION = '00000000-0000-0000-0006-000000000002';
 /** What the page loads besides the category: the tree to choose the parent from. */
 const AROUND = new Map([['/api/categories', json([{id: GAMES, title: 'Games', children: [{id: ACTION, title: 'Action', children: []}]}])]]);
 
-function renderRoute(path = `/categories/${ACTION}/edit`) {
+function renderRoute(path = `/management/categories/${ACTION}/edit`) {
     const queryClient = createQueryClient();
     const router = createMemoryRouter([
-        {path: '/categories', element: <p>Categories list</p>},
+        {path: '/management/categories', element: <p>Categories list</p>},
+        {path: '/categories', element: <p>Old categories list</p>},
         {
-            path: '/categories/:id/edit',
+            path: '/management/categories/:id/edit',
             loader: preloadCategoryEditPage(queryClient),
             lazy: {Component: loadCategoryEditPage},
             HydrateFallback: () => null,
@@ -38,7 +39,9 @@ describe('CategoryEditPage', () => {
         renderRoute();
 
         await screen.findByRole('heading', {level: 1, name: 'Edit category'});
+        const management = within(screen.getByRole('navigation', {name: 'Management'}));
 
+        expect(management.getByRole('link', {name: 'Categories'})).toHaveAttribute('aria-current', 'page');
         expect(screen.getByRole('textbox', {name: 'Title'})).toHaveValue('Action');
         expect(screen.getByRole('option', {name: 'Games', selected: true})).toBeInTheDocument();
         expect(screen.queryByTestId('category-editor-skeleton')).not.toBeInTheDocument();
@@ -66,7 +69,7 @@ describe('CategoryEditPage', () => {
     it('is a page that does not exist for an id that cannot be one', async () => {
         const fetchMock = stubFetchAround(AROUND, noContent());
 
-        renderRoute('/categories/games/edit');
+        renderRoute('/management/categories/games/edit');
 
         await expect(screen.findByText('Not found page')).resolves.toBeInTheDocument();
         expect(fetchMock).not.toHaveBeenCalled();

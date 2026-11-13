@@ -4,6 +4,7 @@ import com.archive.backend.software.read.ReleaseDetails;
 import com.archive.backend.software.read.SoftwareDetails;
 import com.archive.backend.software.read.SoftwareReadRepository;
 import com.archive.backend.software.read.SoftwareRelease;
+import com.archive.backend.software.read.SoftwareScreenshot;
 import com.archive.backend.software.read.SoftwareSummary;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,7 +24,13 @@ class InMemorySoftwareReadRepository implements SoftwareReadRepository {
     private final List<SoftwareDetails> items = new ArrayList<>();
     private final Map<UUID, List<SoftwareRelease>> releases = new HashMap<>();
     private final Map<UUID, List<ReleaseDetails>> releaseDetails = new HashMap<>();
+    private final Map<UUID, List<SoftwareScreenshot>> screenshots = new HashMap<>();
     private @Nullable String lastPlatform;
+
+    /** The screenshots of the software or the release with the id. */
+    void addScreenshots(UUID ownerId, SoftwareScreenshot... ofOwner) {
+        screenshots.put(ownerId, List.of(ofOwner));
+    }
 
     void add(SoftwareDetails details) {
         items.add(details);
@@ -70,5 +77,15 @@ class InMemorySoftwareReadRepository implements SoftwareReadRepository {
         return releaseDetails.getOrDefault(softwareId, List.of()).stream()
                 .filter(release -> release.id().equals(releaseId))
                 .findFirst();
+    }
+
+    @Override
+    public List<SoftwareScreenshot> findScreenshots(UUID softwareId) {
+        return screenshots.getOrDefault(softwareId, List.of());
+    }
+
+    @Override
+    public List<SoftwareScreenshot> findReleaseScreenshots(UUID releaseId) {
+        return screenshots.getOrDefault(releaseId, List.of());
     }
 }

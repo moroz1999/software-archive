@@ -20,6 +20,7 @@ public record SoftwareRelease(
         @Nullable LocalDate releaseDate,
         @Nullable String description,
         List<SoftwareHardware> hardware,
+        List<SoftwareScreenshot> screenshots,
         @Nullable UUID addedBy,
         boolean canChange) {
 
@@ -32,12 +33,13 @@ public record SoftwareRelease(
             @Nullable LocalDate releaseDate,
             @Nullable String description,
             List<SoftwareHardware> hardware) {
-        this(id, title, version, type, releaseDate, description, hardware, null, false);
+        this(id, title, version, type, releaseDate, description, hardware, List.of(), null, false);
     }
 
     /** The same release, telling whether the actor may change it. */
     public SoftwareRelease withCanChange(boolean canChange) {
-        return new SoftwareRelease(id, title, version, type, releaseDate, description, hardware, addedBy, canChange);
+        return new SoftwareRelease(
+                id, title, version, type, releaseDate, description, hardware, screenshots, addedBy, canChange);
     }
 
     /**
@@ -50,6 +52,7 @@ public record SoftwareRelease(
                         base.stream().filter(item -> !own.contains(item.group())), hardware.stream())
                 .sorted(Comparator.comparingInt(SoftwareHardware::groupOrder))
                 .toList();
-        return new SoftwareRelease(id, title, version, type, releaseDate, description, shown, addedBy, canChange);
+        return new SoftwareRelease(
+                id, title, version, type, releaseDate, description, shown, screenshots, addedBy, canChange);
     }
 }

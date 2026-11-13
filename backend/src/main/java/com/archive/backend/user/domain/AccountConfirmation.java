@@ -13,7 +13,9 @@ public final class AccountConfirmation {
         this.users = users;
     }
 
-    /** The confirmed account, not stored yet. */
+    /**
+     * The confirmed account, not stored yet.
+     */
     public User confirm(ConfirmationToken token, Instant now) {
         User user = users.findByConfirmation(token.digest()).orElseThrow(ConfirmationInvalidException::new);
         user.confirm(token, now);

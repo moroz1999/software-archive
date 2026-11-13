@@ -43,6 +43,7 @@ describe(GroupCreator, () => {
             types: ['demogroup'],
             labels: [{id: null, name: 'Crew', display: true}],
             locations: [{country: FINLAND, city: null, primary: true}],
+            members: [],
         }));
     });
 

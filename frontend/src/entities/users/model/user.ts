@@ -19,6 +19,21 @@ export interface CurrentUser {
     readonly abilities: readonly Ability[];
 }
 
+/** A group an administrator gives on purpose; every confirmed user is a member besides. */
+export type GrantedGroup = 'admin' | 'moderator';
+
+/** An account in the list of users an administrator keeps. */
+export interface UserEntry {
+    readonly id: UserId;
+    readonly name: string;
+    readonly email: string;
+    /** Whether the account opened its confirmation link. */
+    readonly confirmed: boolean;
+    /** When the account registered, as an ISO instant. */
+    readonly registeredAt: string;
+    readonly groups: readonly UserGroup[];
+}
+
 export function toUserId(raw: string): UserId {
     if (!isUuid(raw)) {
         throw new TypeError(`Invalid user id: ${raw}`);

@@ -30,6 +30,8 @@ The backend connects to PostgreSQL on `localhost:5432` and applies Flyway migrat
 
 On start the backend also builds the search collections in Typesense when there are none yet; `make reindex` starts it building them anew from the database (`--search.rebuild=true`). Without Typesense the backend still starts and saves edits; the search catches up once Typesense is back ([features/search.md](features/search.md)).
 
+Uploaded screenshots are files in `upload` at the root of the repository (`screenshots.storage-path`), outside the containers and git: they are business data like the database, so keep and back them up together with it ([features/screenshots.md](features/screenshots.md#storage)). The fixtures profile puts the fixture pictures there.
+
 Check the database from the container:
 
 ```bash

@@ -9,7 +9,9 @@ public interface UserRepository {
 
     Optional<User> findById(UserId id);
 
-    /** The account whose user name or email is the login, whatever the letter case. */
+    /**
+     * The account whose user name or email is the login, whatever the letter case.
+     */
     Optional<User> findByLogin(Login login);
 
     Optional<User> findByName(UserName name);
@@ -19,6 +21,11 @@ public interface UserRepository {
     Optional<User> findByConfirmation(TokenDigest digest);
 
     boolean hasAdmin();
+
+    /**
+     * Whether an account other than this one is an administrator.
+     */
+    boolean hasAdminBesides(UserId id);
 
     void save(User user);
 

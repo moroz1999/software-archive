@@ -19,8 +19,10 @@ import {
 import {CreateReleaseProvider} from '@/features/release/create';
 import {DeleteReleaseButton} from '@/features/release/delete';
 import {EditReleaseProvider} from '@/features/release/edit';
+import {ScreenshotsEditorSection} from '@/features/software/screenshots';
 import {useSkeleton} from '@/shared/lib/loading';
 import {PageLayout} from '@/shared/ui/page-layout';
+import {Stack} from '@/shared/ui/stack';
 
 export interface ReleaseCreatorProps {
     readonly softwareId: SoftwareId;
@@ -49,7 +51,7 @@ export interface ReleaseEditorProps {
     readonly onDone: () => void;
 }
 
-/** The page of editing one release: its form, saving and deleting. */
+/** The page of editing one release: its form, saving and deleting, and its screenshots below. */
 export function ReleaseEditor({softwareId, releaseId, onDone}: ReleaseEditorProps) {
     const {t} = useTranslation();
     return (
@@ -58,9 +60,12 @@ export function ReleaseEditor({softwareId, releaseId, onDone}: ReleaseEditorProp
                 <ReleaseDetailsProvider softwareId={softwareId} releaseId={releaseId}>
                     <ReleaseGate>
                         {(release) => (
-                            <EditReleaseProvider software={software} release={release} hardware={hardware} onSaved={onDone}>
-                                <ReleaseForm submitLabel={t('actions.save')} actions={<DeleteReleaseButton software={software} release={release} onDeleted={onDone}/>}/>
-                            </EditReleaseProvider>
+                            <Stack gap="xl">
+                                <EditReleaseProvider software={software} release={release} hardware={hardware} onSaved={onDone}>
+                                    <ReleaseForm submitLabel={t('actions.save')} actions={<DeleteReleaseButton software={software} release={release} onDeleted={onDone}/>}/>
+                                </EditReleaseProvider>
+                                <ScreenshotsEditorSection softwareId={softwareId} releaseId={releaseId}/>
+                            </Stack>
                         )}
                     </ReleaseGate>
                 </ReleaseDetailsProvider>

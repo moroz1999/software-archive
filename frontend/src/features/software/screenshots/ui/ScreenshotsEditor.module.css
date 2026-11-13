@@ -1,0 +1,9 @@
+/* A screenshot in the 4:3 of every screenshot, whole inside it. */
+.picture {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: contain;
+    border-radius: var(--screenshots-editor-picture-radius);
+    background: var(--screenshots-editor-picture-bg);
+}

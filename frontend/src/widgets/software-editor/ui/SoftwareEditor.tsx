@@ -1,7 +1,9 @@
 import {SoftwareDetailsProvider, SoftwareForm, type SoftwareId, SoftwareFormSkeleton, useSoftwareDetails} from '@/entities/software';
 import {DeleteSoftwareButton} from '@/features/software/delete';
 import {EditSoftwareProvider} from '@/features/software/edit';
+import {ScreenshotsEditorSection} from '@/features/software/screenshots';
 import {useSkeleton} from '@/shared/lib/loading';
+import {Stack} from '@/shared/ui/stack';
 import {SoftwareCategoriesField} from './SoftwareCategoriesField';
 
 export interface SoftwareEditorProps {
@@ -12,7 +14,7 @@ export interface SoftwareEditorProps {
     readonly onDeleted: () => void;
 }
 
-/** Editing of one software: its form with its categories, saving and deleting. */
+/** Editing of one software: its form with its categories, saving and deleting, and its screenshots below. */
 export function SoftwareEditor(props: SoftwareEditorProps) {
     return (
         <SoftwareDetailsProvider key={props.id} id={props.id}>
@@ -34,11 +36,14 @@ function LoadedEditor({id, onSaved, onDeleted}: SoftwareEditorProps) {
         return null;
     }
     return (
-        <EditSoftwareProvider software={query.data} onSaved={() => {
-            onSaved(id);
-        }}>
-            <SoftwareForm submitLabel={t('actions.save')} actions={<DeleteSoftwareButton software={query.data} onDeleted={onDeleted}/>} categories={<SoftwareCategoriesField/>}/>
-        </EditSoftwareProvider>
+        <Stack gap="xl">
+            <EditSoftwareProvider software={query.data} onSaved={() => {
+                onSaved(id);
+            }}>
+                <SoftwareForm submitLabel={t('actions.save')} actions={<DeleteSoftwareButton software={query.data} onDeleted={onDeleted}/>} categories={<SoftwareCategoriesField/>}/>
+            </EditSoftwareProvider>
+            <ScreenshotsEditorSection softwareId={id}/>
+        </Stack>
     );
 }
 import {useTranslation} from 'react-i18next';

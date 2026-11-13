@@ -92,6 +92,7 @@ describe(GroupEditor, () => {
             types: ['demogroup'],
             labels: [{id: CREW_LABEL, name: 'Crew', display: true}, {id: null, name: 'CRW', display: false}],
             locations: [{country: FINLAND, city: HELSINKI, primary: true}],
+            members: [],
         }));
     });
 

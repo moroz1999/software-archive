@@ -31,7 +31,9 @@ public record TokenDigest(String value) {
         }
     }
 
-    /** A new random secret of 256 bits, URL-safe. */
+    /**
+     * A new random secret of 256 bits, URL-safe.
+     */
     public static String randomSecret() {
         byte[] bytes = new byte[32];
         RANDOM.nextBytes(bytes);

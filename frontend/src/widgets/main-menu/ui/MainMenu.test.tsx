@@ -6,10 +6,13 @@ import {CurrentUserProvider} from '@/entities/users';
 import {json, noContent, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {MainMenu} from './MainMenu';
 
-function renderAt(path: string) {
+const MEMBER = {id: '00000000-0000-0000-0009-000000000001', name: 'Zed', email: 'zed@example.com', groups: ['member'], abilities: ['add-entries']};
+const ADMIN = {...MEMBER, groups: ['admin', 'member'], abilities: ['add-entries', 'keep-categories']};
+
+function renderAt(path: string, me: () => Response = noContent()) {
     stubFetchRoutes(new Map([
         ['/api/platforms', json([{code: 'vector', name: 'Vector'}])],
-        ['/api/auth/me', noContent()],
+        ['/api/auth/me', me],
     ]));
     renderWithQueries((
         <CurrentUserProvider>
@@ -30,7 +33,7 @@ describe(MainMenu, () => {
         expect(screen.getByRole('combobox', {name: 'Platform'})).toHaveValue('');
     });
 
-    it('leads to the home page, the software, the authors, the groups and the categories', () => {
+    it('leads to the public sections without offering management to a visitor', () => {
         renderAt('/');
 
         const menu = within(screen.getByRole('navigation', {name: 'Main menu'}));
@@ -39,7 +42,22 @@ describe(MainMenu, () => {
         expect(menu.getByRole('link', {name: 'Software'})).toHaveAttribute('href', '/software');
         expect(menu.getByRole('link', {name: 'Authors'})).toHaveAttribute('href', '/authors');
         expect(menu.getByRole('link', {name: 'Groups'})).toHaveAttribute('href', '/groups');
-        expect(menu.getByRole('link', {name: 'Categories'})).toHaveAttribute('href', '/categories');
+        expect(menu.queryByRole('link', {name: 'Management'})).not.toBeInTheDocument();
+    });
+
+    it('offers management to an administrator', async () => {
+        renderAt('/', json(ADMIN));
+
+        await expect(screen.findByRole('link', {name: 'Management'})).resolves.toHaveAttribute('href', '/management/categories');
+        expect(screen.queryByRole('link', {name: 'Categories'})).not.toBeInTheDocument();
+    });
+
+    it('does not offer management to a signed-in member', async () => {
+        renderAt('/', json(MEMBER));
+
+        await vi.waitFor(() => {
+            expect(screen.queryByRole('link', {name: 'Management'})).not.toBeInTheDocument();
+        });
     });
 
     it('offers the quick search', () => {
@@ -68,12 +86,21 @@ describe(MainMenu, () => {
         ['/authors/00000000-0000-0000-0003-000000000001', 'Authors'],
         ['/groups', 'Groups'],
         ['/groups/00000000-0000-0000-0005-000000000001', 'Groups'],
-        ['/categories', 'Categories'],
-        ['/categories/00000000-0000-0000-0006-000000000001/edit', 'Categories'],
     ])('marks the section of %s', (path, section) => {
         renderAt(path);
 
         expect(screen.getByRole('link', {name: section})).toHaveAttribute('aria-current', 'page');
+        expect(screen.getByRole('link', {name: 'Home'})).not.toHaveAttribute('aria-current');
+    });
+
+    it.each([
+        '/management/categories',
+        '/management/categories/00000000-0000-0000-0006-000000000001/edit',
+        '/management/users',
+    ])('marks management as the section of %s', async (path) => {
+        renderAt(path, json(ADMIN));
+
+        await expect(screen.findByRole('link', {name: 'Management'})).resolves.toHaveAttribute('aria-current', 'page');
         expect(screen.getByRole('link', {name: 'Home'})).not.toHaveAttribute('aria-current');
     });
 });

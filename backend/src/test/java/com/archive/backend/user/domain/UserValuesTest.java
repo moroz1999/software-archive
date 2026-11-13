@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.archive.backend.shared.domain.error.InvalidValueException;
+import java.util.List;
+import java.util.Set;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.Test;
 
@@ -91,6 +93,32 @@ class UserValuesTest {
         for (UserGroup group : UserGroup.values()) {
             assertThat(UserGroup.ofCode(group.code())).isEqualTo(group);
         }
+    }
+
+    @Test
+    void administratorsAndModeratorsAreTheGroupsGivenOnPurpose() {
+        assertThat(GrantedGroups.ofCodes(List.of("admin", "moderator")))
+                .isEqualTo(new GrantedGroups(Set.of(UserGroup.ADMIN, UserGroup.MODERATOR)));
+        assertThat(GrantedGroups.ofCodes(List.of())).isEqualTo(new GrantedGroups(Set.of()));
+    }
+
+    @Test
+    void membersAndPublicVisitorsAreNotGivenOnPurpose() {
+        assertInvalid(() -> GrantedGroups.ofCodes(List.of("member")), "user.group-invalid");
+        assertInvalid(() -> GrantedGroups.ofCodes(List.of("public-visitor")), "user.group-invalid");
+        assertInvalid(() -> new GrantedGroups(Set.of(UserGroup.MEMBER)), "user.group-invalid");
+    }
+
+    @Test
+    void anUnknownGroupIsInvalid() {
+        assertInvalid(() -> GrantedGroups.ofCodes(List.of("owner")), "user.group-invalid");
+    }
+
+    @Test
+    void aSearchOfUsersIsWhatWasTypedWithoutSurroundingSpaces() {
+        assertThat(UserSearch.of("  zed ")).isEqualTo(new UserSearch("zed"));
+        assertThat(UserSearch.of("   ")).isNull();
+        assertThat(UserSearch.of(null)).isNull();
     }
 
     @Test

@@ -15,6 +15,10 @@ import com.archive.backend.software.domain.ReleaseId;
 import com.archive.backend.software.domain.ReleaseTitle;
 import com.archive.backend.software.domain.ReleaseType;
 import com.archive.backend.software.domain.ReleaseVersion;
+import com.archive.backend.software.domain.Screenshot;
+import com.archive.backend.software.domain.ScreenshotFormat;
+import com.archive.backend.software.domain.ScreenshotId;
+import com.archive.backend.software.domain.Screenshots;
 import com.archive.backend.software.domain.Software;
 import com.archive.backend.software.domain.SoftwareCreditDraft;
 import com.archive.backend.software.domain.SoftwareCredits;
@@ -27,6 +31,7 @@ import com.archive.backend.software.domain.SoftwareReferences;
 import com.archive.backend.software.domain.SoftwareTitle;
 import com.archive.backend.user.infra.AddedByRows;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -58,7 +63,8 @@ public interface SoftwareMapper {
                 entity.getReleases().stream()
                         .map(release -> toRelease(platform, release))
                         .toList(),
-                AddedByRows.toAddedBy(entity.getAddedBy()));
+                AddedByRows.toAddedBy(entity.getAddedBy()),
+                toScreenshots(entity.getScreenshots()));
     }
 
     default SoftwareEntity toEntity(Software software) {
@@ -86,7 +92,21 @@ public interface SoftwareMapper {
         entity.setReleases(software.getReleases().stream()
                 .map(SoftwareMapper::fromRelease)
                 .collect(Collectors.toCollection(ArrayList::new)));
+        entity.setScreenshots(fromScreenshots(software.getScreenshots()));
         return entity;
+    }
+
+    private static Screenshots toScreenshots(List<ScreenshotRow> rows) {
+        return new Screenshots(rows.stream()
+                .map(row -> new Screenshot(new ScreenshotId(row.getId()), ScreenshotFormat.fromCode(row.getFormat())))
+                .toList());
+    }
+
+    private static List<ScreenshotRow> fromScreenshots(Screenshots screenshots) {
+        return screenshots.all().stream()
+                .map(screenshot -> new ScreenshotRow(
+                        screenshot.id().value(), screenshot.format().code()))
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     private static HardwareSet toHardware(PlatformCode platform, Set<String> codes) {
@@ -137,7 +157,8 @@ public interface SoftwareMapper {
                         entity.getReleaseDate(),
                         description == null ? null : new ReleaseDescription(description)),
                 toHardware(platform, entity.getHardware()),
-                AddedByRows.toAddedBy(entity.getAddedBy()));
+                AddedByRows.toAddedBy(entity.getAddedBy()),
+                toScreenshots(entity.getScreenshots()));
     }
 
     private static SoftwareReleaseEntity fromRelease(Release release) {
@@ -154,6 +175,7 @@ public interface SoftwareMapper {
         entity.setDescription(description == null ? null : description.value());
         entity.setHardware(fromHardware(release.hardware()));
         entity.setAddedBy(AddedByRows.fromAddedBy(release.addedBy()));
+        entity.setScreenshots(fromScreenshots(release.screenshots()));
         return entity;
     }
 

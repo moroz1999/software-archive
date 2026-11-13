@@ -1,0 +1,5 @@
+:root {
+    /* Corners of a screenshot and the fill around a picture that does not fill its place. */
+    --screenshots-editor-picture-radius: var(--radius-md);
+    --screenshots-editor-picture-bg: var(--background-deep);
+}

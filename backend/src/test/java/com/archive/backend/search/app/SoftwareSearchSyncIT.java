@@ -35,12 +35,24 @@ import com.archive.backend.label.domain.LabelDraft;
 import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.search.TypesenseProbe;
+import com.archive.backend.software.app.AddScreenshotsCommand;
+import com.archive.backend.software.app.AddScreenshotsHandler;
+import com.archive.backend.software.app.CreateReleaseCommand;
+import com.archive.backend.software.app.CreateReleaseHandler;
 import com.archive.backend.software.app.CreateSoftwareCommand;
 import com.archive.backend.software.app.CreateSoftwareHandler;
+import com.archive.backend.software.app.DeleteScreenshotCommand;
+import com.archive.backend.software.app.DeleteScreenshotHandler;
 import com.archive.backend.software.app.DeleteSoftwareCommand;
 import com.archive.backend.software.app.DeleteSoftwareHandler;
 import com.archive.backend.software.app.UpdateSoftwareCommand;
 import com.archive.backend.software.app.UpdateSoftwareHandler;
+import com.archive.backend.software.domain.ReleaseContent;
+import com.archive.backend.software.domain.ReleaseId;
+import com.archive.backend.software.domain.ReleaseType;
+import com.archive.backend.software.domain.ScreenshotId;
+import com.archive.backend.software.domain.ScreenshotImage;
+import com.archive.backend.software.domain.ScreenshotImages;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareTitle;
 import com.archive.backend.user.TestActors;
@@ -88,6 +100,15 @@ class SoftwareSearchSyncIT {
 
     @Autowired
     private DeleteSoftwareHandler deleteSoftware;
+
+    @Autowired
+    private CreateReleaseHandler createRelease;
+
+    @Autowired
+    private AddScreenshotsHandler addScreenshots;
+
+    @Autowired
+    private DeleteScreenshotHandler deleteScreenshot;
 
     @Autowired
     private CreateCategoryHandler createCategory;
@@ -217,6 +238,36 @@ class SoftwareSearchSyncIT {
         worker.handle();
 
         assertThat(document(elite)).doesNotContainKey("year");
+    }
+
+    private List<ScreenshotId> screenshots(SoftwareId software, @Nullable ReleaseId release, int count) {
+        List<ScreenshotImage> images = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            images.add(ScreenshotImages.image(ScreenshotImages.png()));
+        }
+        return addScreenshots.handle(new AddScreenshotsCommand(ADMIN, software, release, images));
+    }
+
+    private static List<String> strings(List<ScreenshotId> ids) {
+        return ids.stream().map(id -> id.value().toString()).toList();
+    }
+
+    @Test
+    void indexesTheScreenshotsTheCardShowsOwnFirstThoseOfTheReleasesWithoutThem() throws Exception {
+        SoftwareId elite = create("Elite");
+        ReleaseId ayMod = createRelease.handle(new CreateReleaseCommand(
+                ADMIN, elite, new ReleaseContent(null, null, ReleaseType.MOD, null, null), Set.of()));
+        List<ScreenshotId> ofRelease = screenshots(elite, ayMod, 2);
+        worker.handle();
+        assertThat(listIn(document(elite), "screenshots")).containsExactlyElementsOf(strings(ofRelease));
+
+        List<ScreenshotId> own = screenshots(elite, null, 1);
+        worker.handle();
+        assertThat(listIn(document(elite), "screenshots")).containsExactlyElementsOf(strings(own));
+
+        deleteScreenshot.handle(new DeleteScreenshotCommand(ADMIN, elite, null, own.get(0)));
+        worker.handle();
+        assertThat(listIn(document(elite), "screenshots")).containsExactlyElementsOf(strings(ofRelease));
     }
 
     @Test

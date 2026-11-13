@@ -1,3 +1,4 @@
+import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
 import {CATEGORIES_PATH, CategoryForm, type CategoryId, CategoryTreeProvider} from '@/entities/categories';
 import {CreateCategoryProvider} from '@/features/category/create';
@@ -7,13 +8,16 @@ import {PageLayout} from '@/shared/ui/page-layout';
 export interface CategoryCreatorProps {
     /** Called with the new category's id once it is added. */
     readonly onCreated: (id: CategoryId) => void;
+    /** Navigation shared by the management pages. */
+    readonly navigation?: ReactNode;
 }
 
 /** The page of adding a category: its title and its parent in the tree; Cancel returns to the categories. */
-export function CategoryCreator({onCreated}: CategoryCreatorProps) {
+export function CategoryCreator({onCreated, navigation}: CategoryCreatorProps) {
     const {t} = useTranslation();
     return (
         <PageLayout title={t('actions.addCategory')}>
+            {navigation}
             <CategoryTreeProvider>
                 <CreateCategoryProvider onCreated={onCreated}>
                     <CategoryForm

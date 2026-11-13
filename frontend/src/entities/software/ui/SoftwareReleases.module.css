@@ -10,6 +10,16 @@
 .hardwareColumn { width: var(--software-releases-hardware-column-width); }
 .actionsColumn { width: var(--software-releases-actions-column-width); }
 
+/* The first screenshot of a release beside its title, in the 4:3 of every screenshot. */
+.thumbnail {
+    flex-shrink: 0;
+    width: var(--software-releases-thumbnail-width);
+    aspect-ratio: 4 / 3;
+    object-fit: contain;
+    border-radius: var(--software-releases-thumbnail-radius);
+    background: var(--software-releases-thumbnail-bg);
+}
+
 /* Bones, each as high as the line or control it stands for. */
 .toggleBone {
     width: var(--software-releases-toggle-bone-width);

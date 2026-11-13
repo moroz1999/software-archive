@@ -28,4 +28,10 @@ public interface SoftwareReadRepository {
      * A release of the software as it states itself; empty when the software has no such release.
      */
     Optional<ReleaseDetails> findRelease(UUID softwareId, UUID releaseId);
+
+    /** The software's own screenshots in their order; none for unknown software. */
+    List<SoftwareScreenshot> findScreenshots(UUID softwareId);
+
+    /** The screenshots of a release in their order; none for an unknown release. */
+    List<SoftwareScreenshot> findReleaseScreenshots(UUID releaseId);
 }

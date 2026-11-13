@@ -1,0 +1,13 @@
+:root {
+    /* Page heading placeholder. */
+    --release-view-title-bone-width: 320px;
+    --release-view-title-bone-height: var(--space-40);
+
+    /* Label placeholders over release facts. */
+    --release-view-label-bone-width: var(--space-64);
+    --release-view-label-bone-height: var(--space-16);
+
+    /* Value and description line placeholders. */
+    --release-view-line-bone-width: 160px;
+    --release-view-text-bone-height: var(--space-20);
+}

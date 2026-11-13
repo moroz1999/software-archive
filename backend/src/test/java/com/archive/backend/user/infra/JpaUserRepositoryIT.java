@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.archive.backend.TestcontainersConfiguration;
 import com.archive.backend.user.domain.ConfirmationToken;
 import com.archive.backend.user.domain.Email;
+import com.archive.backend.user.domain.GrantedGroups;
 import com.archive.backend.user.domain.InterfaceLanguage;
 import com.archive.backend.user.domain.Login;
 import com.archive.backend.user.domain.PasswordHash;
@@ -19,6 +20,7 @@ import jakarta.persistence.EntityManager;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
@@ -74,6 +76,41 @@ class JpaUserRepositoryIT {
         assertThat(found.getConfirmation()).isNull();
         assertThat(repository.findByConfirmation(token.digest())).isEmpty();
         assertThat(repository.hasAdmin()).isTrue();
+    }
+
+    @Test
+    void keepsTheGroupsAnAdministratorChose() {
+        ConfirmationToken token = new ConfirmationToken("token");
+        User user = user(1, "Zed", token);
+        user.confirm(token, NOW);
+        user.grant(UserGroup.ADMIN);
+        repository.save(user);
+        flushAndClear();
+
+        User found = repository.findById(id(1)).orElseThrow();
+        found.changeGroups(new GrantedGroups(Set.of(UserGroup.MODERATOR)));
+        repository.save(found);
+        flushAndClear();
+
+        assertThat(repository.findById(id(1)).orElseThrow().getGroups())
+                .containsExactlyInAnyOrder(UserGroup.MEMBER, UserGroup.MODERATOR);
+    }
+
+    @Test
+    void tellsWhetherAnotherAccountIsAnAdministrator() {
+        ConfirmationToken zedToken = new ConfirmationToken("zed");
+        User zed = user(1, "Zed", zedToken);
+        zed.confirm(zedToken, NOW);
+        zed.grant(UserGroup.ADMIN);
+        repository.save(zed);
+        ConfirmationToken axeToken = new ConfirmationToken("axe");
+        User axe = user(2, "Axe", axeToken);
+        axe.confirm(axeToken, NOW);
+        repository.save(axe);
+        flushAndClear();
+
+        assertThat(repository.hasAdminBesides(id(1))).isFalse();
+        assertThat(repository.hasAdminBesides(id(2))).isTrue();
     }
 
     @Test

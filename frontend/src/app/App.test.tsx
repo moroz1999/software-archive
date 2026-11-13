@@ -8,7 +8,7 @@ import {App} from './App';
 import {type AppRouter, createAppRouter} from './router';
 
 const ALPHA = {id: '00000000-0000-0000-0001-000000000001', title: 'Fixture Software Alpha', releaseDate: '1985-03-02'};
-const ALPHA_DETAILS = {...ALPHA, description: null, platform: {code: 'vector', name: 'Vector'}, hardware: [], categories: [], canChange: true};
+const ALPHA_DETAILS = {...ALPHA, description: null, platform: {code: 'vector', name: 'Vector'}, hardware: [], categories: [], publishers: [], developers: [], credits: [], canChange: true};
 const AY_MOD = '00000000-0000-0000-0007-000000000002';
 const AY_MOD_DETAILS = {id: AY_MOD, title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: null, description: null, hardware: [], canChange: true};
 const ZED = '00000000-0000-0000-0003-000000000001';
@@ -16,15 +16,17 @@ const CREW = '00000000-0000-0000-0005-000000000001';
 const ZED_DETAILS = {id: ZED, name: 'Zed', realName: null, notes: null, labels: [], locations: [], groups: [{id: CREW, name: 'Crew', as: null}], canChange: true};
 const CREW_DETAILS = {
     id: CREW, name: 'Crew', groupName: 'Crew Ltd', notes: null, types: [], labels: [], locations: [],
-    members: [{name: 'Zed', personId: ZED, personName: null}], memberGroups: [], groups: [],
+    members: [{id: ZED, type: 'author', title: 'Zed', name: 'Zed', personId: ZED, personName: null, roles: [], startDate: null, endDate: null}], memberGroups: [], groups: [],
     canChange: true,
 };
 
-/** What every page or the software page loads besides its own data: the platforms of the switch, the releases, the hardware to choose. */
+/** What every page or the software page loads besides its own data: the platforms of the switch, the releases, the screenshots, the hardware to choose. */
 const AROUND = new Map([
     ['/api/platforms', json([{code: 'vector', name: 'Vector'}])],
     ['/api/categories', json([])],
     [`/api/software/${ALPHA.id}/releases`, json([])],
+    [`/api/software/${ALPHA.id}/screenshots`, json([])],
+    [`/api/software/${ALPHA.id}/releases/${AY_MOD}/screenshots`, json([])],
     ['/api/hardware?platform=vector', json([])],
     // A visitor: nobody is signed in.
     ['/api/auth/me', noContent()],

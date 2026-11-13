@@ -1,0 +1,17 @@
+:root {
+    /* Fill around a picture that does not fill the 4:3 frame. */
+    --card-screenshots-bg: var(--background-deep);
+
+    /* Bars marking the pictures along the bottom of the frame: their gap, inset from the edges, height and corners. */
+    --card-screenshots-indicator-gap: var(--space-4);
+    --card-screenshots-indicator-inset: var(--space-8);
+    --card-screenshots-indicator-height: var(--space-4);
+    --card-screenshots-indicator-radius: var(--radius-pill);
+
+    /* Bar of a picture not shown, and of the one shown. */
+    --card-screenshots-indicator-bg: var(--overlay-bg);
+    --card-screenshots-indicator-active-bg: var(--primary-500);
+
+    /* How fast the bars appear when the pointer comes over the frame. */
+    --card-screenshots-indicator-duration: var(--animation-sm);
+}

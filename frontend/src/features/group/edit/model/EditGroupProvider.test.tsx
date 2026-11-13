@@ -47,7 +47,7 @@ describe(EditGroupProvider, () => {
         expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/groups/${GROUP.id}`);
         expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
             method: 'PUT',
-            body: '{"name":"Crew","notes":"Since 1990","types":["demogroup","crack group"],"labels":[],"locations":[]}',
+            body: '{"name":"Crew","notes":"Since 1990","types":["demogroup","crack group"],"labels":[],"locations":[],"members":[]}',
         });
     });
 

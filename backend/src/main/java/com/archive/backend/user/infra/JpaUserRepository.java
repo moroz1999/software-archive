@@ -55,11 +55,18 @@ public class JpaUserRepository implements UserRepository {
     }
 
     @Override
+    public boolean hasAdminBesides(UserId id) {
+        return springData.existsInGroupBesides(UserGroup.ADMIN.code(), id.value());
+    }
+
+    @Override
     public void save(User user) {
         springData.save(toEntity(user));
     }
 
-    /** Its sessions go with it (the schema cascades). */
+    /**
+     * Its sessions go with it (the schema cascades).
+     */
     @Override
     public void delete(User user) {
         springData.deleteById(user.getId().value());

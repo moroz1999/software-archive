@@ -1,5 +1,6 @@
 import {useId} from 'react';
 import {useTranslation} from 'react-i18next';
+import {CardScreenshots} from '@/shared/ui/card-screenshots';
 import {ImagePlaceholder} from '@/shared/ui/image-placeholder';
 import {Inset} from '@/shared/ui/inset';
 import {Panel} from '@/shared/ui/panel';
@@ -20,7 +21,9 @@ export function SoftwareCard({software, href}: SoftwareCardProps) {
     const {t} = useTranslation();
     return (
         <Panel as="article" labelledBy={titleId} radius="xl" padding="none" contentBleed>
-            <ImagePlaceholder label={t('empty.noScreenshot')}/>
+            {software.screenshots !== undefined && software.screenshots.length > 0
+                ? <CardScreenshots urls={software.screenshots.map((screenshot) => screenshot.url)} alt={software.title}/>
+                : <ImagePlaceholder label={t('empty.noScreenshot')}/>}
             <Inset padding="lg">
                 <Stack gap="md">
                     <Heading level={3} id={titleId} truncate><TextLink href={href} tone="inherit">{software.title}</TextLink></Heading>

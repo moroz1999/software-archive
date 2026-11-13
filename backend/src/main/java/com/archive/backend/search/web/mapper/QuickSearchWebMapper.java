@@ -17,7 +17,7 @@ import java.util.function.Function;
 import org.jspecify.annotations.Nullable;
 import org.mapstruct.Mapper;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = CardScreenshotWebMapper.class)
 public interface QuickSearchWebMapper {
 
     SoftwareCatalogItemDto toSoftware(SoftwareCatalogItem item);

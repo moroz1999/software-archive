@@ -4,6 +4,7 @@ import static com.archive.backend.search.infra.SqlArrays.list;
 
 import com.archive.backend.search.domain.SoftwareDocument;
 import com.archive.backend.search.domain.SoftwareDocuments;
+import com.archive.backend.software.read.CardScreenshotsSql;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -44,7 +45,9 @@ public class JdbcSoftwareDocuments implements SoftwareDocuments {
                            OR (el.entity_type = 'GROUP' AND el.entity_id = l.group_id)
                          LEFT JOIN city ON city.id = el.city_id
                          WHERE sc.software_id = s.id
-                           AND COALESCE(el.country_id, city.country_id) IS NOT NULL) AS countries
+                           AND COALESCE(el.country_id, city.country_id) IS NOT NULL) AS countries,
+            """ + CardScreenshotsSql.of("s") + """
+             AS screenshots
             FROM software s
             """;
 
@@ -76,6 +79,7 @@ public class JdbcSoftwareDocuments implements SoftwareDocuments {
                 rs.getString("platform_code"),
                 rs.getObject("year", Integer.class),
                 list(rs.getArray("categories"), UUID.class),
-                list(rs.getArray("countries"), UUID.class));
+                list(rs.getArray("countries"), UUID.class),
+                list(rs.getArray("screenshots"), UUID.class));
     }
 }

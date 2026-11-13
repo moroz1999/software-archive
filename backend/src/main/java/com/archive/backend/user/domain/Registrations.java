@@ -18,7 +18,9 @@ public final class Registrations {
         this.hasher = hasher;
     }
 
-    /** The new account, not stored yet; abandoned accounts in its way are deleted. */
+    /**
+     * The new account, not stored yet; abandoned accounts in its way are deleted.
+     */
     public User register(UserName name, Email email, Password password, Instant now, InterfaceLanguage language) {
         Optional<User> nameHolder = users.findByName(name);
         Optional<User> emailHolder = users.findByEmail(email);

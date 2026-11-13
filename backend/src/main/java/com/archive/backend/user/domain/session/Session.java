@@ -15,7 +15,9 @@ import lombok.Getter;
 @Getter
 public final class Session {
 
-    /** How long a session lasts without being refreshed. */
+    /**
+     * How long a session lasts without being refreshed.
+     */
     public static final Duration LIFETIME = Duration.ofDays(30);
 
     private final TokenDigest digest;

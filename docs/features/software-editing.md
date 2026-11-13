@@ -8,7 +8,7 @@ Adding, editing and deleting software ([domain/software.md](../domain/software.m
 |---|---|---|
 | Software list | `/software` | "Add software" next to the page title; a card's title leads to the software's page ([software-view.md](software-view.md)), whose "Edit" leads to the editing |
 | Add software | `/software/new` | Empty form, "Add software" submits; back to the list after adding |
-| Edit software | `/software/{id}/edit` | Form with the software's values, "Save" and "Delete"; back to the software's page after saving, to the list after deleting |
+| Edit software | `/software/{id}/edit` | Form with the software's values, "Save" and "Delete"; back to the software's page after saving, to the list after deleting; the software's screenshots below the form ([screenshots.md](screenshots.md#pages)) |
 
 ## Form
 

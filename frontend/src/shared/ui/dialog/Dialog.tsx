@@ -6,6 +6,7 @@ import {CloseIcon} from '../icon';
 import {Inline} from '../inline';
 import {Stack} from '../stack';
 import {Heading} from '../typography';
+import {classNames} from '@/shared/lib/class-names';
 import styles from './Dialog.module.css';
 
 export interface DialogProps {
@@ -23,10 +24,12 @@ export interface DialogProps {
     readonly dismissible?: boolean;
     /** Takes the place of the title, such as a field the window is about; the title then only names it for assistive technology. */
     readonly header?: ReactNode;
+    /** `wide` for a window about a picture, which needs the room. */
+    readonly width?: 'md' | 'wide';
 }
 
 /** Modal dialog rendered over the page; closes on Escape. */
-export function Dialog({open, title, onClose, children, actions, role = 'dialog', focusField = false, dismissible = false, header}: DialogProps) {
+export function Dialog({open, title, onClose, children, actions, role = 'dialog', focusField = false, dismissible = false, header, width = 'md'}: DialogProps) {
     const {t} = useTranslation();
     const titleId = useId();
     const ref = useRef<HTMLDivElement>(null);
@@ -86,7 +89,7 @@ export function Dialog({open, title, onClose, children, actions, role = 'dialog'
                 aria-labelledby={header === undefined ? titleId : undefined}
                 aria-label={header === undefined ? undefined : title}
                 tabIndex={-1}
-                className={styles.dialog}
+                className={classNames(styles.dialog, width === 'wide' && styles.wide)}
             >
                 <Stack gap="lg">
                     {dismissible

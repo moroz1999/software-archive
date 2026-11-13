@@ -14,6 +14,7 @@ import com.archive.backend.group.read.RelatedGroup;
 import com.archive.backend.user.TestActors;
 import java.util.List;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -232,9 +233,9 @@ class JdbcGroupReadRepositoryIT {
                                 new GroupLocation(FINLAND, "Finland", HELSINKI, "Helsinki", true),
                                 new GroupLocation(NORWAY, "Norway", null, null, false)),
                         List.of(
-                                new GroupMember("Ghost", null, null),
-                                new GroupMember("Zed", ZED, null),
-                                new GroupMember("хакер федя", FEDYA, "MASTERSOFT")),
+                                labelMember(id(214), "Ghost", "Ghost", null, null),
+                                labelMember(id(213), "Zed", "Zed", ZED, null),
+                                labelMember(id(212), "хакер федя — MASTERSOFT", "хакер федя", FEDYA, "MASTERSOFT")),
                         List.of(new RelatedGroup(BAND, "Band")),
                         List.of(new RelatedGroup(OLDIES, "Alpha"))));
     }
@@ -299,5 +300,11 @@ class JdbcGroupReadRepositoryIT {
 
         assertThat(reads.findById(CREW))
                 .hasValueSatisfying(group -> assertThat(group.addedBy()).isEqualTo(MEMBER_ID.value()));
+    }
+
+    /** A member known by its label, with no roles nor dates given. */
+    private static GroupMember labelMember(
+            UUID label, String title, String name, @Nullable UUID person, @Nullable String personName) {
+        return new GroupMember(label, "author-label", title, name, person, personName, List.of("unknown"), null, null);
     }
 }

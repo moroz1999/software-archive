@@ -1,5 +1,5 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {screen} from '@testing-library/react';
+import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {json, noContent, renderWithQueries, stubFetchAround, stubFetchRoutes} from '@/shared/lib/test';
 import {type SoftwareId, toSoftwareId} from '@/entities/software';
@@ -11,12 +11,14 @@ const ELITE = {id: ID, title: 'Elite', description: 'Space trading', releaseDate
         id: '00000000-0000-0000-0006-000000000002',
         title: 'Action',
         branch: [{id: '00000000-0000-0000-0006-000000000001', title: 'Games'}, {id: '00000000-0000-0000-0006-000000000002', title: 'Action'}],
-    }], canChange: true};
+    }], publishers: [], developers: [], credits: [], canChange: true};
 const GAMES = '00000000-0000-0000-0006-000000000001';
 const ACTION = '00000000-0000-0000-0006-000000000002';
 const TREE = [{id: GAMES, title: 'Games', children: [{id: ACTION, title: 'Action', children: []}]}];
 /** What the editor loads besides the software itself. */
+const SHOT = {id: '00000000-0000-0000-0055-000000000001', url: '/api/screenshots/00000000-0000-0000-0055-000000000001'};
 const AROUND = new Map([
+    [`/api/software/${ID}/screenshots`, json([SHOT])],
     ['/api/categories', json(TREE)],
     ['/api/platforms', json([{code: 'vector', name: 'Vector'}])],
     ['/api/hardware?platform=vector', json([])],
@@ -34,6 +36,16 @@ describe(SoftwareEditor, () => {
         expect(screen.getByTestId('software-editor-skeleton')).toBeInTheDocument();
         await expect(screen.findByRole('textbox', {name: 'Title'})).resolves.toHaveValue('Elite');
         expect(screen.getByRole('button', {name: 'Delete'})).toBeInTheDocument();
+    });
+
+    it('offers the screenshots of the software to change below the form', async () => {
+        stubFetchAround(AROUND, json(ELITE));
+        renderWithQueries(<SoftwareEditor id={toSoftwareId(ID)} onSaved={vi.fn<(id: SoftwareId) => void>()} onDeleted={vi.fn<() => void>()}/>);
+
+        const screenshots = await screen.findByRole('list', {name: 'Screenshots'});
+
+        expect(within(screenshots).getByRole('img', {name: 'Screenshot 1'})).toHaveAttribute('src', SHOT.url);
+        expect(screen.getByRole('button', {name: 'Add screenshots'})).toBeInTheDocument();
     });
 
     it('reports the software saved', async () => {

@@ -7,10 +7,11 @@ Adding, editing and deleting the releases of software ([domain/software.md](../d
 | Page | Path | Content |
 |---|---|---|
 | Software page | `/software/{id}` | "Add release" next to the Releases heading, "Edit" with every release ([software-view.md](software-view.md)) |
+| Release page | `/software/{id}/releases/{releaseId}` | "Edit" next to the release title ([release-view.md](release-view.md)) |
 | Add release | `/software/{id}/releases/new` | "Add release to {title}": an empty form of unknown type, "Add release" submits |
 | Edit release | `/software/{id}/releases/{releaseId}/edit` | "Edit release of {title}": the release as it states itself, "Save" and "Delete" |
 
-Every page returns to the software's page once done.
+Every page returns to the software's page once done. The editing page has the release's screenshots below the form ([screenshots.md](screenshots.md#pages)).
 
 ## Form
 

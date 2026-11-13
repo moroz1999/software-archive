@@ -6,8 +6,8 @@ Adding, editing and deleting categories of the tree ([domain/categories.md](../d
 
 | Page | Path | Content |
 |---|---|---|
-| Add category | `/categories/new` | Empty form; Cancel and "Add category" both return to the tree ([category-catalog.md](category-catalog.md)) |
-| Edit category | `/categories/{id}/edit` | "Delete" next to the page title; the form with the category's values, Cancel and "Save" back to the tree; the tree after deleting |
+| Add category | `/management/categories/new` | Management tabs and an empty form; Cancel and "Add category" both return to the tree ([category-catalog.md](category-catalog.md)) |
+| Edit category | `/management/categories/{id}/edit` | Management tabs; "Delete" next to the page title; the form with the category's values, Cancel and "Save" back to the tree; the tree after deleting |
 
 ## Form
 

@@ -44,7 +44,9 @@ public class UserEntity {
     @Column(name = "confirmation_expires_at")
     private @Nullable Instant confirmationExpiresAt;
 
-    /** Group codes. */
+    /**
+     * Group codes.
+     */
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "app_user_group", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "user_group")

@@ -1,6 +1,7 @@
 import {type QueryClient, queryOptions} from '@tanstack/react-query';
 import type {ReleaseId} from '../model/release';
 import type {SoftwareId, SoftwarePlatformCode} from '../model/software';
+import {fetchScreenshots} from './screenshot-api';
 import {fetchPlatformHardware, fetchSoftwareRelease} from './release-api';
 import {fetchSoftware, fetchSoftwareReleases} from './software-api';
 
@@ -28,6 +29,14 @@ export function softwareReleaseQuery(softwareId: SoftwareId, releaseId: ReleaseI
     return queryOptions({
         queryKey: [...SOFTWARE_QUERY_KEY, 'release', softwareId, releaseId],
         queryFn: ({signal}) => fetchSoftwareRelease(softwareId, releaseId, signal),
+    });
+}
+
+/** The screenshots of the software itself, or of its release when one is given: a block of their pages. */
+export function screenshotsQuery(softwareId: SoftwareId, releaseId: ReleaseId | null) {
+    return queryOptions({
+        queryKey: [...SOFTWARE_QUERY_KEY, 'screenshots', softwareId, releaseId],
+        queryFn: ({signal}) => fetchScreenshots(softwareId, releaseId, signal),
     });
 }
 

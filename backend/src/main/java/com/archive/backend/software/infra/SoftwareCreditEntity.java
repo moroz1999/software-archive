@@ -20,7 +20,7 @@ public class SoftwareCreditEntity {
 
     @Id
     @GeneratedValue
-    private UUID id;
+    private @Nullable UUID id;
 
     @Column(name = "person_id")
     private @Nullable UUID personId;

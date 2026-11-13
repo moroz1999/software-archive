@@ -22,7 +22,7 @@ import org.mapstruct.Mapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = CardScreenshotWebMapper.class)
 public interface SoftwareCatalogWebMapper {
 
     SoftwareCatalogItemDto toItem(SoftwareCatalogItem item);

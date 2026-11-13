@@ -9,7 +9,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * What the search knows of software (docs/features/search.md#collections): its categories with all their ancestors,
- * and the countries of the owners of its credited labels.
+ * the countries of the owners of its credited labels, and the screenshots its card shows.
  */
 @ValueObject
 public record SoftwareDocument(
@@ -20,8 +20,21 @@ public record SoftwareDocument(
         String platform,
         @Nullable Integer year,
         List<UUID> categories,
-        List<UUID> countries)
+        List<UUID> countries,
+        List<UUID> screenshots)
         implements SearchDocument {
+
+    public SoftwareDocument(
+            UUID id,
+            String title,
+            @Nullable LocalDate releaseDate,
+            List<String> alternativeTitles,
+            String platform,
+            @Nullable Integer year,
+            List<UUID> categories,
+            List<UUID> countries) {
+        this(id, title, releaseDate, alternativeTitles, platform, year, categories, countries, List.of());
+    }
 
     public SoftwareDocument {
         Objects.requireNonNull(id, "id");
@@ -30,6 +43,7 @@ public record SoftwareDocument(
         alternativeTitles = List.copyOf(alternativeTitles);
         categories = List.copyOf(categories);
         countries = List.copyOf(countries);
+        screenshots = List.copyOf(screenshots);
     }
 
     @Override

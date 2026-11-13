@@ -1,6 +1,7 @@
 import {describe, expect, it} from 'vitest';
 import {render, screen, within} from '@testing-library/react';
 import {MemoryRouter} from 'react-router';
+import {toScreenshotId} from '../model/screenshot';
 import {toReleaseDate, toSoftwareId, toSoftwareTitle} from '../model/software';
 import {SoftwareCard} from './SoftwareCard';
 
@@ -19,6 +20,25 @@ describe(SoftwareCard, () => {
         expect(within(card).getByRole('heading', {level: 3, name: 'Fixture Software Alpha'})).toBeInTheDocument();
         expect(within(card).getByRole('img', {name: 'No screenshot yet'})).toBeInTheDocument();
         expect(within(card).getByText('1985')).toBeInTheDocument();
+    });
+
+    it('shows its screenshots in place of the placeholder, the first at once', () => {
+        const screenshots = [
+            {id: toScreenshotId('00000000-0000-0000-0055-000000000001'), url: '/api/screenshots/1'},
+            {id: toScreenshotId('00000000-0000-0000-0055-000000000002'), url: '/api/screenshots/2'},
+        ];
+        render(<MemoryRouter><SoftwareCard software={{...ALPHA, screenshots}} href="/software/1"/></MemoryRouter>);
+
+        const card = screen.getByRole('article', {name: 'Fixture Software Alpha'});
+
+        expect(within(card).getByRole('img', {name: 'Fixture Software Alpha'})).toHaveAttribute('src', '/api/screenshots/1');
+        expect(within(card).queryByRole('img', {name: 'No screenshot yet'})).not.toBeInTheDocument();
+    });
+
+    it('shows the placeholder for no screenshots', () => {
+        render(<MemoryRouter><SoftwareCard software={{...ALPHA, screenshots: []}} href="/software/1"/></MemoryRouter>);
+
+        expect(screen.getByRole('img', {name: 'No screenshot yet'})).toBeInTheDocument();
     });
 
     it('leads by its title to the given page', () => {

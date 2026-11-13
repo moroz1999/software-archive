@@ -10,14 +10,19 @@ import {Skeleton} from '@/shared/ui/skeleton';
 import {Stack} from '@/shared/ui/stack';
 import {Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow, type TableSort} from '@/shared/ui/table';
 import {Toggle} from '@/shared/ui/toggle';
-import {Heading, Text} from '@/shared/ui/typography';
+import {Heading, Text, TextLink} from '@/shared/ui/typography';
 import {CardGrid} from '@/shared/ui/card-grid';
+import {CardScreenshots} from '@/shared/ui/card-screenshots';
+import {releasePath} from '../config/paths';
 import {releaseYear} from '../lib/release-year';
 import type {ReleaseType, SoftwareRelease} from '../model/release';
+import type {SoftwareId} from '../model/software';
 import {useSoftwareReleases} from '../model/software-releases-context';
 import styles from './SoftwareReleases.module.css';
 
 export interface SoftwareReleasesProps {
+    /** The software whose releases these are: when given, every release title leads to its page. */
+    readonly softwareId?: SoftwareId;
     /** What can be done with a release, shown with it, such as a link to edit it. */
     readonly actions?: (release: SoftwareRelease) => ReactNode;
 }
@@ -31,7 +36,7 @@ interface Sort {
 }
 
 /** The releases of the software inside a SoftwareReleasesProvider: a table, or cards on a phone or when asked. */
-export function SoftwareReleases({actions}: SoftwareReleasesProps) {
+export function SoftwareReleases({softwareId, actions}: SoftwareReleasesProps) {
     const {t} = useTranslation();
     const query = useSoftwareReleases();
     const skeleton = useSkeleton(query);
@@ -46,15 +51,16 @@ export function SoftwareReleases({actions}: SoftwareReleasesProps) {
     if (query.data.length === 0) {
         return <Text tone="muted">{t('empty.releases')}</Text>;
     }
-    return <ReleaseList releases={query.data} actions={actions}/>;
+    return <ReleaseList softwareId={softwareId} releases={query.data} actions={actions}/>;
 }
 
 interface ReleaseListProps {
+    readonly softwareId: SoftwareId | undefined;
     readonly releases: readonly SoftwareRelease[];
     readonly actions: SoftwareReleasesProps['actions'];
 }
 
-function ReleaseList({releases, actions}: ReleaseListProps) {
+function ReleaseList({softwareId, releases, actions}: ReleaseListProps) {
     const {t} = useTranslation();
     const phone = useMediaQuery(MOBILE_QUERY);
     const [view, setView] = useState<View>('table');
@@ -99,8 +105,8 @@ function ReleaseList({releases, actions}: ReleaseListProps) {
                 </Inline>
             )}
             {phone || view === 'cards'
-                ? <ReleaseCards releases={shown} actions={actions}/>
-                : <ReleaseTable releases={shown} actions={actions} sort={sort} onSort={sortBy}/>}
+                ? <ReleaseCards softwareId={softwareId} releases={shown} actions={actions}/>
+                : <ReleaseTable softwareId={softwareId} releases={shown} actions={actions} sort={sort} onSort={sortBy}/>}
         </Stack>
     );
 }
@@ -167,7 +173,7 @@ interface ReleaseTableProps extends ReleaseListProps {
     readonly onSort: (field: SortField) => void;
 }
 
-function ReleaseTable({releases, actions, sort, onSort}: ReleaseTableProps) {
+function ReleaseTable({softwareId, releases, actions, sort, onSort}: ReleaseTableProps) {
     const {t} = useTranslation();
     return (
         <Table label={t('release.releases')} fixed>
@@ -176,10 +182,15 @@ function ReleaseTable({releases, actions, sort, onSort}: ReleaseTableProps) {
                 {releases.map((release) => (
                     <TableRow key={release.id}>
                         <TableCell>
-                            <Stack gap="xs">
-                                <Text as="span" tone="strong">{release.title}</Text>
-                                {release.description !== null && <Text as="span" variant="bodySm" tone="muted">{release.description}</Text>}
-                            </Stack>
+                            <Inline gap="md" align="center">
+                                {release.screenshots[0] !== undefined && (
+                                    <img src={release.screenshots[0].url} alt={release.title} loading="lazy" className={styles.thumbnail}/>
+                                )}
+                                <Stack gap="xs">
+                                    <Text as="span" tone="strong"><ReleaseTitle softwareId={softwareId} release={release}/></Text>
+                                    {release.description !== null && <Text as="span" variant="bodySm" tone="muted">{release.description}</Text>}
+                                </Stack>
+                            </Inline>
                         </TableCell>
                         <TableCell align="center">{release.releaseDate === null ? null : releaseYear(release.releaseDate)}</TableCell>
                         <TableCell align="center">{release.version}</TableCell>
@@ -197,20 +208,21 @@ function ReleaseTable({releases, actions, sort, onSort}: ReleaseTableProps) {
     );
 }
 
-function ReleaseCards({releases, actions}: ReleaseListProps) {
+function ReleaseCards({softwareId, releases, actions}: ReleaseListProps) {
     return (
         <CardGrid>
-            {releases.map((release) => <ReleaseCard key={release.id} release={release} actions={actions}/>)}
+            {releases.map((release) => <ReleaseCard key={release.id} softwareId={softwareId} release={release} actions={actions}/>)}
         </CardGrid>
     );
 }
 
 interface ReleaseCardProps {
+    readonly softwareId: SoftwareId | undefined;
     readonly release: SoftwareRelease;
     readonly actions: SoftwareReleasesProps['actions'];
 }
 
-function ReleaseCard({release, actions}: ReleaseCardProps) {
+function ReleaseCard({softwareId, release, actions}: ReleaseCardProps) {
     const {t} = useTranslation();
     const titleId = useId();
     const facts = [
@@ -220,8 +232,11 @@ function ReleaseCard({release, actions}: ReleaseCardProps) {
     return (
         <Panel as="article" labelledBy={titleId} padding="md">
             <Stack gap="sm">
+                {release.screenshots.length > 0 && (
+                    <CardScreenshots urls={release.screenshots.map((screenshot) => screenshot.url)} alt={release.title}/>
+                )}
                 <Inline gap="sm" justify="between" align="center" wrap>
-                    <Heading id={titleId} level={3} variant="title">{release.title}</Heading>
+                    <Heading id={titleId} level={3} variant="title"><ReleaseTitle softwareId={softwareId} release={release}/></Heading>
                     <TypeBadge type={release.type}/>
                 </Inline>
                 {facts.length > 0 && <Text variant="bodySm" tone="muted">{facts.join(' · ')}</Text>}
@@ -235,6 +250,10 @@ function ReleaseCard({release, actions}: ReleaseCardProps) {
             </Stack>
         </Panel>
     );
+}
+
+function ReleaseTitle({softwareId, release}: {readonly softwareId: SoftwareId | undefined; readonly release: SoftwareRelease}) {
+    return softwareId === undefined ? release.title : <TextLink href={releasePath(softwareId, release.id)}>{release.title}</TextLink>;
 }
 
 /** The type of a release; one nobody knows is left out. */

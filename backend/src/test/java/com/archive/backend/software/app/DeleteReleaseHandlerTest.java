@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 class DeleteReleaseHandlerTest {
 
     private final InMemorySoftwareRepository repository = new InMemorySoftwareRepository();
-    private final DeleteReleaseHandler handler = new DeleteReleaseHandler(repository);
+    private final DeleteReleaseHandler handler = new DeleteReleaseHandler(repository, event -> {});
 
     @Test
     void removesTheReleaseFromItsSoftware() {

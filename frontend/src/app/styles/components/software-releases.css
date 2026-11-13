@@ -1,10 +1,15 @@
 :root {
-    /* Fixed widths of the columns but the title: wide enough for a year, a version, a type, a few hardware names, "Edit". */
+    /* Fixed widths of the columns but the title: wide enough for a year, a version, a type, a few hardware names and the edit action. */
     --software-releases-year-column-width: 64px;
     --software-releases-version-column-width: 88px;
     --software-releases-type-column-width: 120px;
     --software-releases-hardware-column-width: 30%;
-    --software-releases-actions-column-width: 88px;
+    --software-releases-actions-column-width: 144px;
+
+    /* The first screenshot beside the title of a release: its width, corners and the fill around a picture. */
+    --software-releases-thumbnail-width: 64px;
+    --software-releases-thumbnail-radius: var(--radius-sm);
+    --software-releases-thumbnail-bg: var(--background-deep);
 
     /* The View toggle: two options on its track (toggle.css). */
     --software-releases-toggle-bone-width: 128px;

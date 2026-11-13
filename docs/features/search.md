@@ -18,7 +18,7 @@ One document per entity, with the entity's id as the document id. Facet values a
 
 | Collection | Matched by the keyword | Filters and facets |
 |---|---|---|
-| `software` | title, alternative titles | platform; release year; categories (each one of the software with all its ancestors); countries |
+| `software` | title, alternative titles | platform; release year; categories (each one of the software with all its ancestors); countries. Beside them, for the card only: the release day and the screenshots ([screenshots.md](screenshots.md#card)) |
 | `authors` | every label of the person, real name | platforms |
 | `groups` | every label of the group, name | platforms |
 

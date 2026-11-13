@@ -57,7 +57,9 @@ public interface AuthWebMapper {
                 toLogin(request.login()), toPassword(request.password()), toLanguage(request.language()));
     }
 
-    /** A browser without a session cookie has no session to refresh. */
+    /**
+     * A browser without a session cookie has no session to refresh.
+     */
     default RefreshSessionCommand toRefresh(@Nullable String cookie) {
         RefreshSecret secret = toSecret(cookie);
         if (secret == null) {

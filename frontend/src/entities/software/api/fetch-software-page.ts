@@ -1,5 +1,6 @@
 import {getJson, mapResponse, type Page, parsePage, readNullableString, readObject, readString} from '@/shared/api';
 import {type Software, toReleaseDate, toSoftwareId, toSoftwareTitle} from '../model/software';
+import {parseScreenshots} from './screenshot-api';
 
 /** Cards of the latest software on the home page. */
 const LATEST_SIZE = 12;
@@ -17,6 +18,7 @@ export function parseSoftware(item: unknown): Software {
         id: toSoftwareId(readString(dto, 'id')),
         title: toSoftwareTitle(readString(dto, 'title')),
         releaseDate: releaseDate === null ? null : toReleaseDate(releaseDate),
+        screenshots: parseScreenshots(dto['screenshots']),
     };
 }
 

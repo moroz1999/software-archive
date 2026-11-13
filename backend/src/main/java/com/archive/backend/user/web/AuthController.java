@@ -64,7 +64,9 @@ public class AuthController {
         return ResponseEntity.noContent().headers(cookies.issue(session)).build();
     }
 
-    /** Replaces the session cookies with new ones; without a session cookie there is nothing to refresh. */
+    /**
+     * Replaces the session cookies with new ones; without a session cookie there is nothing to refresh.
+     */
     @PostMapping("/refresh")
     public ResponseEntity<Void> refresh(
             @CookieValue(name = SessionCookies.REFRESH_COOKIE, required = false) @Nullable String secret) {
@@ -72,7 +74,9 @@ public class AuthController {
         return ResponseEntity.noContent().headers(cookies.issue(session)).build();
     }
 
-    /** Ends the session and clears its cookies, also when the browser holds no session any more. */
+    /**
+     * Ends the session and clears its cookies, also when the browser holds no session any more.
+     */
     @PostMapping("/logout")
     public ResponseEntity<Void> logOut(
             @CookieValue(name = SessionCookies.REFRESH_COOKIE, required = false) @Nullable String secret) {
@@ -80,7 +84,9 @@ public class AuthController {
         return ResponseEntity.noContent().headers(cookies.clear()).build();
     }
 
-    /** The signed-in user; no content for a public visitor with no session to refresh. */
+    /**
+     * The signed-in user; no content for a public visitor with no session to refresh.
+     */
     @GetMapping("/me")
     public ResponseEntity<CurrentUserDto> me(
             Actor actor,

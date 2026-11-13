@@ -13,4 +13,5 @@ public record SoftwareReleaseDto(
         @Nullable LocalDate releaseDate,
         @Nullable String description,
         List<SoftwareHardwareDto> hardware,
+        List<ScreenshotDto> screenshots,
         boolean canChange) {}

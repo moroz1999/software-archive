@@ -1,5 +1,5 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {deleteResource, postJson, postNoContent, putJson} from './http';
+import {deleteResource, postForm, postJson, postNoContent, putJson} from './http';
 import {AuthenticationRequiredError, BusinessError, SystemError} from './errors';
 
 function respond(status: number, body: unknown = null) {
@@ -110,6 +110,27 @@ describe(postNoContent, () => {
         await postNoContent('/api/x');
 
         expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/x', {method: 'POST', headers: {Accept: 'application/json'}});
+    });
+});
+
+describe(postForm, () => {
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
+    it('posts the form as it is, leaving its content type to the browser, and returns the JSON answer', async () => {
+        const fetchMock = respond(201, [{id: '1'}]);
+        const form = new FormData();
+        form.append('files', new File(['png'], 'shot.png', {type: 'image/png'}));
+
+        await expect(postForm('/api/x', form)).resolves.toStrictEqual([{id: '1'}]);
+        expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/x', {method: 'POST', headers: {Accept: 'application/json'}, body: form});
+    });
+
+    it('turns a 422 with a code into a business error', async () => {
+        respond(422, {status: 422, code: 'screenshot.format-unsupported', errors: [{field: 'files', code: 'screenshot.format-unsupported'}]});
+
+        await expect(postForm('/api/x', new FormData())).rejects.toMatchObject({name: 'BusinessError', status: 422, code: 'screenshot.format-unsupported'});
     });
 });
 

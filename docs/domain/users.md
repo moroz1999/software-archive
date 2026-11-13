@@ -26,3 +26,9 @@ What a user may do comes from their groups, and for the entries of the archive a
 A member adds releases to any software. A release can be edited and deleted by whoever added it and by whoever added its software. Categories are kept by administrators only. Entries added before accounts existed belong to nobody: only administrators change them.
 
 The first confirmed account of the archive becomes an administrator.
+
+## Managing users
+Administrators see every account of the archive — confirmed or still waiting for its link — with its email, the day it registered and its groups, and find one by a part of its user name or email.
+An administrator gives a confirmed user the groups given on purpose: administrator and moderator. Being a member comes with confirmation and is not given or taken away; an unconfirmed account gets no groups.
+The archive keeps at least one administrator: the last one cannot lose the group, not even by their own hand.
+A user's new groups take effect once their session renews itself, within a quarter of an hour, without signing them out.

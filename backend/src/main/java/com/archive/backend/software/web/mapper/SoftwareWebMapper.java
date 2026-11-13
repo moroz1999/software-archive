@@ -19,7 +19,9 @@ import com.archive.backend.software.domain.SoftwareReferenceType;
 import com.archive.backend.software.domain.SoftwareTitle;
 import com.archive.backend.software.read.SoftwareDetails;
 import com.archive.backend.software.read.SoftwareRelease;
+import com.archive.backend.software.read.SoftwareScreenshot;
 import com.archive.backend.software.read.SoftwareSummary;
+import com.archive.backend.software.web.dto.ScreenshotDto;
 import com.archive.backend.software.web.dto.SoftwareCreatedDto;
 import com.archive.backend.software.web.dto.SoftwareDetailsDto;
 import com.archive.backend.software.web.dto.SoftwareListItemDto;
@@ -46,6 +48,10 @@ public interface SoftwareWebMapper {
     SoftwareReferenceDto toReference(com.archive.backend.software.read.SoftwareReferenceOption reference);
 
     List<SoftwareReleaseDto> toReleases(List<SoftwareRelease> releases);
+
+    default ScreenshotDto toScreenshot(SoftwareScreenshot screenshot) {
+        return new ScreenshotDto(screenshot.id(), ScreenshotWebMapper.url(screenshot.id()));
+    }
 
     default SoftwareCreatedDto toCreated(SoftwareId id) {
         return new SoftwareCreatedDto(id.value());

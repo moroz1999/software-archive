@@ -172,6 +172,11 @@ public class TypesenseSoftwareCatalog implements SoftwareCatalog {
         return new SoftwareCatalogItem(
                 UUID.fromString(String.valueOf(doc.get("id"))),
                 String.valueOf(doc.get("title")),
-                releaseDate == null ? null : LocalDate.parse((String) releaseDate));
+                releaseDate == null ? null : LocalDate.parse((String) releaseDate),
+                doc.get("screenshots") instanceof List<?> screenshots
+                        ? screenshots.stream()
+                                .map(id -> UUID.fromString(String.valueOf(id)))
+                                .toList()
+                        : List.of());
     }
 }

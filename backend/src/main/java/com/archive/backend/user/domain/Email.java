@@ -6,7 +6,9 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-/** An email, kept in lower case: one account per email, whatever its letter case. */
+/**
+ * An email, kept in lower case: one account per email, whatever its letter case.
+ */
 @ValueObject
 public record Email(String value) {
 

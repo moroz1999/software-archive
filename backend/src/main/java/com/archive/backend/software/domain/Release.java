@@ -14,12 +14,19 @@ public final class Release {
     private ReleaseContent content;
     private HardwareSet hardware;
     private final AddedBy addedBy;
+    private Screenshots screenshots;
 
-    public Release(ReleaseId id, ReleaseContent content, HardwareSet hardware, AddedBy addedBy) {
+    public Release(
+            ReleaseId id, ReleaseContent content, HardwareSet hardware, AddedBy addedBy, Screenshots screenshots) {
         this.id = Objects.requireNonNull(id, "id");
         this.content = Objects.requireNonNull(content, "content");
         this.hardware = Objects.requireNonNull(hardware, "hardware");
         this.addedBy = Objects.requireNonNull(addedBy, "addedBy");
+        this.screenshots = Objects.requireNonNull(screenshots, "screenshots");
+    }
+
+    public Release(ReleaseId id, ReleaseContent content, HardwareSet hardware, AddedBy addedBy) {
+        this(id, content, hardware, addedBy, Screenshots.EMPTY);
     }
 
     public Release(ReleaseId id, ReleaseContent content, HardwareSet hardware) {
@@ -40,6 +47,14 @@ public final class Release {
 
     public AddedBy addedBy() {
         return addedBy;
+    }
+
+    public Screenshots screenshots() {
+        return screenshots;
+    }
+
+    void changeScreenshots(Screenshots screenshots) {
+        this.screenshots = Objects.requireNonNull(screenshots, "screenshots");
     }
 
     void edit(ReleaseContent content, HardwareSet hardware) {

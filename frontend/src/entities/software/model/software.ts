@@ -3,6 +3,7 @@ import {type Brand} from '@/shared/lib/brand';
 import {titleProblem} from '@/shared/lib/title';
 import {isUuid} from '@/shared/lib/uuid';
 import type {MemberRoleValue} from '@/shared/ui/member-role-editor';
+import type {Screenshot} from './screenshot';
 
 export type SoftwareId = Brand<string, 'SoftwareId'>;
 export type SoftwareTitle = Brand<string, 'SoftwareTitle'>;
@@ -27,6 +28,8 @@ export interface Software {
     readonly id: SoftwareId;
     readonly title: SoftwareTitle;
     readonly releaseDate: ReleaseDate | null;
+    /** The screenshots its card shows, as lists give them (docs/domain/software.md#screenshots). */
+    readonly screenshots?: readonly Screenshot[];
 }
 
 /** One software with everything shown about it; its base hardware in the order of the groups, its categories in the order of the tree. */

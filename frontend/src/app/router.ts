@@ -3,8 +3,8 @@ import {createBrowserRouter, type RouteObject} from 'react-router';
 import {AUTHOR_EDIT_ROUTE, AUTHOR_NEW_PATH, AUTHOR_ROUTE, AUTHORS_PATH} from '@/entities/authors';
 import {CATEGORIES_PATH, CATEGORY_EDIT_ROUTE, CATEGORY_NEW_PATH} from '@/entities/categories';
 import {GROUP_EDIT_ROUTE, GROUP_NEW_PATH, GROUP_ROUTE, GROUPS_PATH} from '@/entities/groups';
-import {REGISTER_PATH, VERIFY_EMAIL_PATH} from '@/entities/users';
-import {RELEASE_EDIT_ROUTE, RELEASE_NEW_ROUTE, SOFTWARE_EDIT_ROUTE, SOFTWARE_LIST_PATH, SOFTWARE_NEW_PATH, SOFTWARE_ROUTE} from '@/entities/software';
+import {MANAGEMENT_USERS_PATH, REGISTER_PATH, VERIFY_EMAIL_PATH} from '@/entities/users';
+import {RELEASE_EDIT_ROUTE, RELEASE_NEW_ROUTE, RELEASE_ROUTE, SOFTWARE_EDIT_ROUTE, SOFTWARE_LIST_PATH, SOFTWARE_NEW_PATH, SOFTWARE_ROUTE} from '@/entities/software';
 import {loadAuthorEditPage, preloadAuthorEditPage} from '@/pages/author-edit';
 import {loadAuthorNewPage, preloadAuthorNewPage} from '@/pages/author-new';
 import {loadAuthorViewPage, preloadAuthorViewPage} from '@/pages/author-view';
@@ -12,6 +12,7 @@ import {loadAuthorsPage, preloadAuthorsPage, shouldPreloadAuthorsPage} from '@/p
 import {loadCategoriesPage, preloadCategoriesPage} from '@/pages/categories';
 import {loadCategoryEditPage, preloadCategoryEditPage} from '@/pages/category-edit';
 import {loadCategoryNewPage, preloadCategoryNewPage} from '@/pages/category-new';
+import {loadManagementUsersPage, preloadManagementUsersPage, shouldPreloadManagementUsersPage} from '@/pages/management/users';
 import {loadGroupEditPage, preloadGroupEditPage} from '@/pages/group-edit';
 import {loadGroupNewPage, preloadGroupNewPage} from '@/pages/group-new';
 import {loadGroupViewPage, preloadGroupViewPage} from '@/pages/group-view';
@@ -20,10 +21,12 @@ import {loadHomePage, preloadHomePage} from '@/pages/home';
 import {loadRegisterPage} from '@/pages/account/register';
 import {loadReleaseEditPage, preloadReleaseEditPage} from '@/pages/release-edit';
 import {loadReleaseNewPage, preloadReleaseNewPage} from '@/pages/release-new';
+import {loadReleaseViewPage, preloadReleaseViewPage} from '@/pages/release/view';
 import {loadSearchPage, preloadSearchPage, shouldPreloadSearchPage} from '@/pages/search';
 import {loadSoftwarePage, preloadSoftwarePage, shouldPreloadSoftwarePage} from '@/pages/software';
 import {SEARCH_PATH} from '@/features/search';
 import {SOFTWARE_CATEGORY_ROUTE} from '@/features/software/catalog';
+import {AdministratorRoute} from '@/features/user/management-access';
 import {loadSoftwareEditPage, preloadSoftwareEditPage} from '@/pages/software-edit';
 import {loadSoftwareNewPage} from '@/pages/software-new';
 import {loadSoftwareViewPage, preloadSoftwareViewPage} from '@/pages/software-view';
@@ -61,6 +64,7 @@ const routes = (queryClient: QueryClient): RouteObject[] => [{Component: AppLayo
         {path: SOFTWARE_ROUTE, loader: preloadSoftwareViewPage(queryClient), lazy: {Component: loadSoftwareViewPage}, HydrateFallback: nothing},
         {path: SOFTWARE_EDIT_ROUTE, loader: preloadSoftwareEditPage(queryClient), lazy: {Component: loadSoftwareEditPage}, HydrateFallback: nothing},
         {path: RELEASE_NEW_ROUTE, loader: preloadReleaseNewPage(queryClient), lazy: {Component: loadReleaseNewPage}, HydrateFallback: nothing},
+        {path: RELEASE_ROUTE, loader: preloadReleaseViewPage(queryClient), lazy: {Component: loadReleaseViewPage}, HydrateFallback: nothing},
         {path: RELEASE_EDIT_ROUTE, loader: preloadReleaseEditPage(queryClient), lazy: {Component: loadReleaseEditPage}, HydrateFallback: nothing},
         {
             path: AUTHORS_PATH,
@@ -82,9 +86,18 @@ const routes = (queryClient: QueryClient): RouteObject[] => [{Component: AppLayo
         {path: GROUP_NEW_PATH, loader: preloadGroupNewPage(queryClient), lazy: {Component: loadGroupNewPage}, HydrateFallback: nothing},
         {path: GROUP_ROUTE, loader: preloadGroupViewPage(queryClient), lazy: {Component: loadGroupViewPage}, HydrateFallback: nothing},
         {path: GROUP_EDIT_ROUTE, loader: preloadGroupEditPage(queryClient), lazy: {Component: loadGroupEditPage}, HydrateFallback: nothing},
-        {path: CATEGORIES_PATH, loader: preloadCategoriesPage(queryClient), lazy: {Component: loadCategoriesPage}, HydrateFallback: nothing},
-        {path: CATEGORY_NEW_PATH, loader: preloadCategoryNewPage(queryClient), lazy: {Component: loadCategoryNewPage}, HydrateFallback: nothing},
-        {path: CATEGORY_EDIT_ROUTE, loader: preloadCategoryEditPage(queryClient), lazy: {Component: loadCategoryEditPage}, HydrateFallback: nothing},
+        {Component: AdministratorRoute, children: [
+            {path: CATEGORIES_PATH, loader: preloadCategoriesPage(queryClient), lazy: {Component: loadCategoriesPage}, HydrateFallback: nothing},
+            {path: CATEGORY_NEW_PATH, loader: preloadCategoryNewPage(queryClient), lazy: {Component: loadCategoryNewPage}, HydrateFallback: nothing},
+            {path: CATEGORY_EDIT_ROUTE, loader: preloadCategoryEditPage(queryClient), lazy: {Component: loadCategoryEditPage}, HydrateFallback: nothing},
+            {
+                path: MANAGEMENT_USERS_PATH,
+                loader: preloadManagementUsersPage(queryClient),
+                shouldRevalidate: shouldPreloadManagementUsersPage,
+                lazy: {Component: loadManagementUsersPage},
+                HydrateFallback: nothing,
+            },
+        ]},
         {
             path: SEARCH_PATH,
             loader: preloadSearchPage(queryClient),

@@ -8,6 +8,9 @@
     /* Maximal dialog width. */
     --dialog-max-width: 480px;
 
+    /* Maximal width of a dialog about a picture. */
+    --dialog-wide-max-width: 960px;
+
     /* Inner padding. */
     --dialog-padding: var(--space-24);
 

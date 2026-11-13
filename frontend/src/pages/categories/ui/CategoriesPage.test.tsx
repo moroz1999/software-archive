@@ -1,14 +1,13 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {screen} from '@testing-library/react';
+import {screen, within} from '@testing-library/react';
 import {createMemoryRouter, RouterProvider} from 'react-router';
 import {createQueryClient} from '@/shared/api';
 import {CurrentUserProvider} from '@/entities/users';
-import {json, noContent, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
+import {json, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {loadCategoriesPage, preloadCategoriesPage} from '../index';
 
 const GAMES = '00000000-0000-0000-0006-000000000001';
-const MEMBER = {id: '00000000-0000-0000-0009-000000000001', name: 'Zed', email: 'zed@example.com', groups: ['member'], abilities: ['add-entries']};
-const ADMIN = {...MEMBER, groups: ['admin', 'member'], abilities: ['add-entries', 'keep-categories']};
+const ADMIN = {id: '00000000-0000-0000-0009-000000000001', name: 'Zed', email: 'zed@example.com', groups: ['admin', 'member'], abilities: ['add-entries', 'keep-categories']};
 
 function stubFetch(categories: () => Response, me: () => Response = json(ADMIN)) {
     return stubFetchRoutes(new Map([['/api/categories', categories], ['/api/auth/me', me]]));
@@ -17,8 +16,8 @@ function stubFetch(categories: () => Response, me: () => Response = json(ADMIN))
 function renderRoute() {
     const queryClient = createQueryClient();
     const router = createMemoryRouter([
-        {path: '/categories', loader: preloadCategoriesPage(queryClient), lazy: {Component: loadCategoriesPage}, HydrateFallback: () => null},
-    ], {initialEntries: ['/categories']});
+        {path: '/management/categories', loader: preloadCategoriesPage(queryClient), lazy: {Component: loadCategoriesPage}, HydrateFallback: () => null},
+    ], {initialEntries: ['/management/categories']});
     renderWithQueries(<CurrentUserProvider><RouterProvider router={router}/></CurrentUserProvider>, queryClient);
 }
 
@@ -43,34 +42,19 @@ describe('CategoriesPage', () => {
 
         renderRoute();
 
-        await expect(screen.findByRole('link', {name: 'Add category'})).resolves.toHaveAttribute('href', '/categories/new');
+        await expect(screen.findByRole('link', {name: 'Add category'})).resolves.toHaveAttribute('href', '/management/categories/new');
     });
 
-    it('shows the categories to whoever may not keep them, without adding or editing', async () => {
-        stubFetch(json([{id: GAMES, title: 'Games', children: []}]), json(MEMBER));
+    it('shows the management sections as tabs', async () => {
+        stubFetch(json([]));
 
         renderRoute();
 
-        await expect(screen.findByText('Games')).resolves.toBeInTheDocument();
+        const management = within(await screen.findByRole('navigation', {name: 'Management'}));
 
-        await vi.waitFor(() => {
-            expect(screen.queryByRole('link', {name: 'Add category'})).not.toBeInTheDocument();
-        });
+        expect(management.getByRole('link', {name: 'Categories'})).toHaveAttribute('href', '/management/categories');
+        expect(management.getByRole('link', {name: 'Categories'})).toHaveAttribute('aria-current', 'page');
 
-        expect(screen.queryByRole('link', {name: 'Games'})).not.toBeInTheDocument();
-    });
-
-    it('shows a public visitor the categories, without adding or editing', async () => {
-        stubFetch(json([{id: GAMES, title: 'Games', children: []}]), noContent());
-
-        renderRoute();
-
-        await expect(screen.findByText('Games')).resolves.toBeInTheDocument();
-
-        await vi.waitFor(() => {
-            expect(screen.queryByRole('link', {name: 'Add category'})).not.toBeInTheDocument();
-        });
-
-        expect(screen.queryByRole('link', {name: 'Games'})).not.toBeInTheDocument();
+        expect(management.getByRole('link', {name: 'Users'})).toHaveAttribute('href', '/management/users');
     });
 });

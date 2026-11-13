@@ -21,6 +21,10 @@ const AY_MOD = {
 const FIX = {...AY_MOD, id: '00000000-0000-0000-0007-000000000002', title: 'Elite Fix', version: null, type: 'bugfix', releaseDate: '1988-05-01', description: null};
 const ORIGINAL = {...AY_MOD, id: '00000000-0000-0000-0007-000000000003', title: 'Elite', version: null, type: 'original', releaseDate: null, description: null};
 const UNKNOWN = {...ORIGINAL, id: '00000000-0000-0000-0007-000000000004', type: 'unknown'};
+const SHOTS = [
+    {id: '00000000-0000-0000-0055-000000000001', url: '/api/screenshots/00000000-0000-0000-0055-000000000001'},
+    {id: '00000000-0000-0000-0055-000000000002', url: '/api/screenshots/00000000-0000-0000-0055-000000000002'},
+];
 
 /** The screen of a phone, or of anything wider. */
 function stubScreen(phone: boolean) {
@@ -135,6 +139,26 @@ describe(SoftwareReleases, () => {
         expect(screen.queryByRole('table')).not.toBeInTheDocument();
         expect(['Mod', '1990', '1.1', 'With AY music', 'Vector-06C', 'AY-3-8910', 'Edit Elite AY'].filter((fact) => !card.includes(fact))).toStrictEqual([]);
         expect(screen.getByRole('article', {name: 'Elite'})).toBeInTheDocument();
+    });
+
+    it('shows the first screenshot of a release in its row of the table', async () => {
+        stubFetch(json([{...AY_MOD, screenshots: SHOTS}, ORIGINAL]));
+        renderReleases();
+
+        const table = await screen.findByRole('table', {name: 'Releases'});
+
+        expect(within(within(table).getByRole('row', {name: /Elite AY/u})).getByRole('img', {name: 'Elite AY'})).toHaveAttribute('src', SHOTS[0]?.url);
+        expect(within(within(table).getByRole('row', {name: /^Elite(?! AY)/u})).queryByRole('img')).not.toBeInTheDocument();
+    });
+
+    it('shows the screenshots of a release on its card', async () => {
+        stubFetch(json([{...AY_MOD, screenshots: SHOTS}, ORIGINAL]));
+        renderReleases({phone: true});
+
+        const card = await screen.findByRole('article', {name: 'Elite AY'});
+
+        expect(within(card).getByRole('img', {name: 'Elite AY'})).toHaveAttribute('src', SHOTS[0]?.url);
+        expect(within(screen.getByRole('article', {name: 'Elite'})).queryByRole('img')).not.toBeInTheDocument();
     });
 
     it('shows cards on a phone, with nothing to switch', async () => {

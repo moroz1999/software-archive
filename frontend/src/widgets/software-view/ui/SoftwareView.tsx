@@ -12,6 +12,8 @@ import {
     type SoftwareId,
     SoftwareReleases,
     SoftwareReleasesProvider,
+    SoftwareScreenshots,
+    ScreenshotsProvider,
     useSoftwareDetails,
 } from '@/entities/software';
 import {useInViewport} from '@/shared/lib/screen';
@@ -31,7 +33,7 @@ export interface SoftwareViewProps {
     readonly id: SoftwareId;
 }
 
-/** The page of one software: its title over everything known about it, its releases below. */
+/** The page of one software: its title over everything known about it, its screenshots and its releases below. */
 export function SoftwareView({id}: SoftwareViewProps) {
     return (
         <SoftwareDetailsProvider key={id} id={id}>
@@ -60,6 +62,7 @@ function LoadedView({id}: SoftwareViewProps) {
         <PageLayout title={query.data.title} actions={query.data.canChange && <Button href={softwareEditPath(id)} color="secondary">{t('actions.edit')}</Button>}>
             <Stack gap="xl">
                 <Details software={query.data}/>
+                <Screenshots id={id} title={query.data.title}/>
                 <Releases id={id}/>
             </Stack>
         </PageLayout>
@@ -135,6 +138,18 @@ function Section({label, children}: {readonly label: string; readonly children: 
     );
 }
 
+/** The screenshots come below the details: they are asked for once the block comes into view (docs/data-loading.md). */
+function Screenshots({id, title}: SoftwareViewProps & {readonly title: string}) {
+    const [ref, visible] = useInViewport();
+    return (
+        <div ref={ref}>
+            <ScreenshotsProvider softwareId={id} enabled={visible}>
+                <SoftwareScreenshots title={title}/>
+            </ScreenshotsProvider>
+        </div>
+    );
+}
+
 /** The releases are lower on the page: they are asked for once the block comes into view (docs/data-loading.md). */
 function Releases({id}: SoftwareViewProps) {
     const {t} = useTranslation();
@@ -149,7 +164,7 @@ function Releases({id}: SoftwareViewProps) {
                     {addsEntries && <Button href={releaseNewPath(id)} color="secondary">{t('actions.addRelease')}</Button>}
                 </Inline>
                 <SoftwareReleasesProvider id={id} enabled={visible}>
-                    <SoftwareReleases actions={(release) => release.canChange && (
+                    <SoftwareReleases softwareId={id} actions={(release) => release.canChange && (
                         <Button href={releaseEditPath(id, release.id)} color="secondary" ariaLabel={t('release.editNamed', {title: release.title})}>{t('actions.edit')}</Button>
                     )}/>
                 </SoftwareReleasesProvider>

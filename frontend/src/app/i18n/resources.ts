@@ -1,17 +1,20 @@
 export const resources = {
     en: {translation: {
         language: {label: 'Language'},
-        navigation: {mainMenu: 'Main menu', home: 'Home', software: 'Software', authors: 'Authors', groups: 'Groups', categories: 'Categories'},
+        navigation: {
+            mainMenu: 'Main menu', home: 'Home', software: 'Software', authors: 'Authors', groups: 'Groups',
+            management: 'Management', categories: 'Categories', users: 'Users',
+        },
         actions: {
             addSoftware: 'Add software', editSoftware: 'Edit software', save: 'Save', edit: 'Edit', delete: 'Delete',
             deleteForGood: 'Delete for good', cancel: 'Cancel', close: 'Close', retry: 'Retry', addRelease: 'Add release',
             addAuthor: 'Add author', editAuthor: 'Edit author', remove: 'Remove', addGroup: 'Add group', editGroup: 'Edit group',
             addCategory: 'Add category', editCategory: 'Edit category',
         },
-        pages: {recentlyAdded: 'Recently added', software: 'Software', authors: 'Authors', groups: 'Groups', categories: 'Categories', search: 'Search'},
+        pages: {recentlyAdded: 'Recently added', software: 'Software', authors: 'Authors', groups: 'Groups', categories: 'Categories', search: 'Search', users: 'Users'},
         empty: {
             software: 'No software in the archive yet.', authors: 'No authors found.', groups: 'No groups found.', categories: 'No categories yet.',
-            releases: 'No releases known yet.', nothingFound: 'Nothing found.', noScreenshot: 'No screenshot yet',
+            releases: 'No releases known yet.', nothingFound: 'Nothing found.', noScreenshot: 'No screenshot yet', users: 'No users found.',
         },
         filters: {
             platform: 'Platform', allPlatforms: 'All platforms', country: 'Country', anyCountry: 'Any country', city: 'City',
@@ -84,6 +87,17 @@ export const resources = {
             results: 'Search results for “{{keyword}}”', resultsPage: 'Search results for “{{keyword}}”, page {{page}}',
             kindsLabel: 'Types:', selectAll: 'Select all', kinds: {author: 'Authors', group: 'Groups', software: 'Software'},
             columns: {name: 'Name', realName: 'Real name'}},
+        users: {
+            search: 'Find a user', searchPlaceholder: 'User name or email', find: 'Find', unconfirmed: 'Awaiting confirmation',
+            columns: {name: 'User name', email: 'Email', registered: 'Registered', groups: 'Groups'},
+            groups: {admin: 'Administrator', moderator: 'Moderator', member: 'Member'},
+            changeGroups: 'Groups', changeGroupsOf: 'Change groups of {{name}}', groupsOf: 'Groups of {{name}}',
+            memberNote: 'Every confirmed user is a member.',
+            errors: {
+                lastAdmin: 'The archive keeps at least one administrator.', unconfirmed: 'An unconfirmed account gets no groups.',
+                forbidden: 'Only administrators manage users.',
+            },
+        },
         pagination: {label: 'Pages', previous: 'Previous', next: 'Next'},
         loading: {refreshing: 'Refreshing', searching: 'Searching'},
         selection: {remove: 'Remove {{name}}', selected_one: '{{count}} selected', selected_other: '{{count}} selected'},
@@ -122,7 +136,7 @@ export const resources = {
             add: 'Add release', addTo: 'Add release to {{title}}', edit: 'Edit release', editOf: 'Edit release of {{title}}',
             delete: 'Delete release', releases: 'Releases', noReleases: 'No releases known yet.', view: 'View', table: 'Table',
             deleteQuestion: 'Delete the release {{name}} from the archive?', cards: 'Cards', allTypes: 'All', year: 'Year',
-            versionFact: 'Version {{version}}', editNamed: 'Edit {{title}}',
+            versionFact: 'Version {{version}}', editNamed: 'Edit {{title}}', software: 'Software',
             hardwareHint: 'A group checked here replaces that group of the software.',
             types: {
                 original: 'Original', rerelease: 'Rerelease', adaptation: 'Adaptation', localization: 'Localization', bugfix: 'Bugfix',
@@ -135,23 +149,37 @@ export const resources = {
             deleteQuestion: 'Delete “{{title}}” with all its subcategories? Their software stays in the archive and only leaves them.',
         },
         software: {delete: 'Delete software', deleteQuestion: 'Delete “{{title}}” from the archive?', released: 'Released'},
+        screenshots: {
+            heading: 'Screenshots', numbered: 'Screenshot {{n}}', nOfCount: 'Screenshot {{n}} of {{count}}',
+            previous: 'Previous screenshot', next: 'Next screenshot', none: 'No screenshots yet.', add: 'Add screenshots',
+            hint: 'PNG, JPEG, GIF or WebP, up to 10 MB each.',
+            moveLeft: 'Move screenshot {{n}} left', moveRight: 'Move screenshot {{n}} right', delete: 'Delete screenshot {{n}}',
+            deleteTitle: 'Delete screenshot', deleteQuestion: 'Delete screenshot {{n}} from the archive?',
+            errors: {
+                format: 'Only PNG, JPEG, GIF and WebP pictures can be screenshots.', size: 'A screenshot can be at most 10 MB.',
+                orderOutdated: 'The screenshots have changed meanwhile; here they are as they are now.',
+            },
+        },
         hardwareGroups: {
             computers: 'Computers', storage: 'Storage', dos: 'DOS', sound: 'Sound', controls: 'Controls', expansion: 'Expansion',
         },
     }},
     ru: {translation: {
         language: {label: 'Язык'},
-        navigation: {mainMenu: 'Главное меню', home: 'Главная', software: 'Программы', authors: 'Авторы', groups: 'Группы', categories: 'Категории'},
+        navigation: {
+            mainMenu: 'Главное меню', home: 'Главная', software: 'Программы', authors: 'Авторы', groups: 'Группы',
+            management: 'Управление', categories: 'Категории', users: 'Пользователи',
+        },
         actions: {
             addSoftware: 'Добавить программу', editSoftware: 'Редактировать программу', save: 'Сохранить', edit: 'Редактировать',
             delete: 'Удалить', deleteForGood: 'Удалить навсегда', cancel: 'Отмена', close: 'Закрыть', retry: 'Повторить',
             addRelease: 'Добавить релиз', addAuthor: 'Добавить автора', editAuthor: 'Редактировать автора', remove: 'Убрать', addGroup: 'Добавить группу', editGroup: 'Редактировать группу',
             addCategory: 'Добавить категорию', editCategory: 'Редактировать категорию',
         },
-        pages: {recentlyAdded: 'Недавно добавленное', software: 'Программы', authors: 'Авторы', groups: 'Группы', categories: 'Категории', search: 'Поиск'},
+        pages: {recentlyAdded: 'Недавно добавленное', software: 'Программы', authors: 'Авторы', groups: 'Группы', categories: 'Категории', search: 'Поиск', users: 'Пользователи'},
         empty: {
             software: 'В архиве пока нет программ.', authors: 'Авторы не найдены.', groups: 'Группы не найдены.', categories: 'Категорий пока нет.',
-            releases: 'Сведения о релизах пока отсутствуют.', nothingFound: 'Ничего не найдено.', noScreenshot: 'Скриншота пока нет',
+            releases: 'Сведения о релизах пока отсутствуют.', nothingFound: 'Ничего не найдено.', noScreenshot: 'Скриншота пока нет', users: 'Пользователи не найдены.',
         },
         filters: {
             platform: 'Платформа', allPlatforms: 'Все платформы', country: 'Страна', anyCountry: 'Любая страна', city: 'Город',
@@ -225,6 +253,17 @@ export const resources = {
             results: 'Результаты поиска «{{keyword}}»', resultsPage: 'Результаты поиска «{{keyword}}», страница {{page}}',
             kindsLabel: 'Типы:', selectAll: 'Выбрать все', kinds: {author: 'Авторы', group: 'Группы', software: 'Программы'},
             columns: {name: 'Имя', realName: 'Настоящее имя'}},
+        users: {
+            search: 'Найти пользователя', searchPlaceholder: 'Имя пользователя или email', find: 'Найти', unconfirmed: 'Ждёт подтверждения',
+            columns: {name: 'Имя пользователя', email: 'Email', registered: 'Зарегистрирован', groups: 'Группы'},
+            groups: {admin: 'Администратор', moderator: 'Модератор', member: 'Участник'},
+            changeGroups: 'Группы', changeGroupsOf: 'Изменить группы пользователя {{name}}', groupsOf: 'Группы пользователя {{name}}',
+            memberNote: 'Каждый подтверждённый пользователь — участник.',
+            errors: {
+                lastAdmin: 'В архиве должен остаться хотя бы один администратор.', unconfirmed: 'Неподтверждённому аккаунту группы не выдаются.',
+                forbidden: 'Пользователями управляют только администраторы.',
+            },
+        },
         pagination: {label: 'Страницы', previous: 'Назад', next: 'Вперёд'},
         loading: {refreshing: 'Обновление', searching: 'Поиск'},
         selection: {
@@ -267,7 +306,7 @@ export const resources = {
             editOf: 'Редактировать релиз {{title}}', delete: 'Удалить релиз', releases: 'Релизы',
             noReleases: 'Сведения о релизах пока отсутствуют.', view: 'Вид', table: 'Таблица', cards: 'Карточки', allTypes: 'Все',
             deleteQuestion: 'Удалить релиз {{name}} из архива?', year: 'Год', versionFact: 'Версия {{version}}',
-            editNamed: 'Редактировать {{title}}',
+            editNamed: 'Редактировать {{title}}', software: 'Программа',
             hardwareHint: 'Выбранная здесь группа заменяет соответствующую группу оборудования программы.',
             types: {
                 original: 'Оригинал', rerelease: 'Переиздание', adaptation: 'Адаптация', localization: 'Локализация',
@@ -280,6 +319,17 @@ export const resources = {
             deleteQuestion: 'Удалить «{{title}}» со всеми подкатегориями? Их программы останутся в архиве и только покинут эти категории.',
         },
         software: {delete: 'Удалить программу', deleteQuestion: 'Удалить «{{title}}» из архива?', released: 'Выпущено'},
+        screenshots: {
+            heading: 'Скриншоты', numbered: 'Скриншот {{n}}', nOfCount: 'Скриншот {{n}} из {{count}}',
+            previous: 'Предыдущий скриншот', next: 'Следующий скриншот', none: 'Скриншотов пока нет.', add: 'Добавить скриншоты',
+            hint: 'PNG, JPEG, GIF или WebP, до 10 МБ каждый.',
+            moveLeft: 'Сдвинуть скриншот {{n}} влево', moveRight: 'Сдвинуть скриншот {{n}} вправо', delete: 'Удалить скриншот {{n}}',
+            deleteTitle: 'Удалить скриншот', deleteQuestion: 'Удалить скриншот {{n}} из архива?',
+            errors: {
+                format: 'Скриншотом может быть только картинка PNG, JPEG, GIF или WebP.', size: 'Скриншот может весить не больше 10 МБ.',
+                orderOutdated: 'Скриншоты успели измениться; вот они такими, какие есть сейчас.',
+            },
+        },
         hardwareGroups: {
             computers: 'Компьютеры', storage: 'Носители', dos: 'DOS', sound: 'Звук', controls: 'Управление', expansion: 'Расширения',
         },

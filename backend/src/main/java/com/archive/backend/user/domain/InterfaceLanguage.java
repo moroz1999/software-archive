@@ -20,7 +20,9 @@ public enum InterfaceLanguage {
         return code;
     }
 
-    /** Any language the archive does not speak falls back to English, as the interface does. */
+    /**
+     * Any language the archive does not speak falls back to English, as the interface does.
+     */
     public static InterfaceLanguage ofCode(String code) {
         for (InterfaceLanguage language : values()) {
             if (language.code.equals(code)) {

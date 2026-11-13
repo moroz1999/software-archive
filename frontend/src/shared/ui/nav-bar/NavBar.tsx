@@ -1,5 +1,5 @@
 import type {ReactNode} from 'react';
-import {NavLink} from 'react-router';
+import {Link, useLocation} from 'react-router';
 import {classNames} from '@/shared/lib/class-names';
 import styles from './NavBar.module.css';
 
@@ -29,16 +29,21 @@ export interface NavBarLinkProps {
     readonly href: string;
     /** Current only on its own address, not on the addresses below it. */
     readonly end?: boolean;
+    /** Another path prefix whose pages belong to this section. */
+    readonly activePath?: string;
     readonly children: ReactNode;
 }
 
 /** A section of the bar; marked as current on its address and the addresses below it. */
-export function NavBarLink({href, end = false, children}: NavBarLinkProps) {
+export function NavBarLink({href, end = false, activePath, children}: NavBarLinkProps) {
+    const {pathname} = useLocation();
+    const section = activePath ?? href;
+    const active = pathname === section || (!end && pathname.startsWith(`${section}/`));
     return (
         <li>
-            <NavLink to={href} end={end} className={({isActive}) => classNames(styles.link, isActive && styles.active)}>
+            <Link to={href} aria-current={active ? 'page' : undefined} className={classNames(styles.link, active && styles.active)}>
                 {children}
-            </NavLink>
+            </Link>
         </li>
     );
 }
