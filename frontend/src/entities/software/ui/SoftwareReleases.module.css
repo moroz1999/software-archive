@@ -8,7 +8,6 @@
 .versionColumn { width: var(--software-releases-version-column-width); }
 .typeColumn { width: var(--software-releases-type-column-width); }
 .hardwareColumn { width: var(--software-releases-hardware-column-width); }
-.actionsColumn { width: var(--software-releases-actions-column-width); }
 
 /* The first screenshot of a release beside its title, in the 4:3 of every screenshot. */
 .thumbnail {

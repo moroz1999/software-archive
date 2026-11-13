@@ -150,7 +150,7 @@ function ReleaseHeader({withActions, sort = null, onSort}: ReleaseHeaderProps) {
                 <TableHeaderCell align="center" className={styles.versionColumn}>{t('fields.version')}</TableHeaderCell>
                 <TableHeaderCell className={styles.typeColumn}>{t('fields.type')}</TableHeaderCell>
                 <TableHeaderCell className={styles.hardwareColumn}>{t('fields.hardware')}</TableHeaderCell>
-                {withActions && <TableHeaderCell className={styles.actionsColumn}/>}
+                {withActions && <TableHeaderCell/>}
             </TableRow>
         </TableHead>
     );
@@ -176,7 +176,7 @@ interface ReleaseTableProps extends ReleaseListProps {
 function ReleaseTable({softwareId, releases, actions, sort, onSort}: ReleaseTableProps) {
     const {t} = useTranslation();
     return (
-        <Table label={t('release.releases')} fixed>
+        <Table label={t('release.releases')}>
             <ReleaseHeader sort={sort} onSort={onSort} withActions={actions !== undefined}/>
             <TableBody>
                 {releases.map((release) => (
@@ -281,7 +281,7 @@ function SoftwareReleasesSkeleton({withActions}: {readonly withActions: boolean}
                         <Inline gap="md" wrap>
                             <Skeleton className={classNames(styles.toggleBone, styles.viewToggle)}/>
                         </Inline>
-                        <Table label={t('release.releases')} fixed>
+                        <Table label={t('release.releases')}>
                             <ReleaseHeader withActions={withActions}/>
                             <TableBody>
                                 {SKELETON_ROWS.map((row) => (

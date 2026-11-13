@@ -22,7 +22,7 @@ Each release shows its effective hardware ([domain/hardware.md](../domain/hardwa
 ## Loading and errors
 
 - The screenshots are a lazy block too, with thumbnail skeletons until they come.
-- The releases are a lazy block below: they load when they come into view, with a skeleton until then. It repeats their layout so nothing jumps: the bar with the View toggle at its end, the same table header over rows as high as real ones, the columns fixed in width; cards on a phone.
+- The releases are a lazy block below: they load when they come into view, with a skeleton until then. It repeats their layout so nothing jumps: the bar with the View toggle at its end and the same table header over rows as high as real ones; cards on a phone. The table scrolls sideways when its content needs more room.
 - The page preloads the software's details ([data-loading.md](../data-loading.md)): within 300 ms it appears filled, otherwise with a skeleton of the heading and the details.
 - Unknown software, and an id in the URL that cannot be one, show the not found page ([error-handling.md](../error-handling.md)); a malformed id is never sent to the backend.
 - Any other business error is shown inline with Retry; system errors go to the error dialog ([error-handling.md](../error-handling.md)).
