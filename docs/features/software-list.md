@@ -41,6 +41,6 @@ The way through the catalog, not a filter ([domain/search.md](../domain/search.m
 
 `GET /api/software?q={keyword}&platform={code}&year={year}&category={categoryId}&country={countryId}&page={n}&size={size}` — every parameter optional; a blank keyword is none.
 
-- `content` — the page of software (`id`, `title`, `releaseDate` as an ISO day or `null`, `screenshots` of the card as `[{id, url}]`); `page` — `size`, `number`, `totalElements`, `totalPages`.
+- `content` — the page of software (`id`, `title`, `releaseDate` as a year (`1987`), an ISO day or `null`, `screenshots` of the card as `[{id, url}]`); `page` — `size`, `number`, `totalElements`, `totalPages`.
 - `facets` — `years`, `countries`: the values of each filter, `{value, count}`, counted over the whole result in the category. The values of a chosen filter are counted without its own condition. Categories are not counted.
 - 400 for an invalid platform code (`platform.code-invalid`) or a year, category or country that is not a number or an id.

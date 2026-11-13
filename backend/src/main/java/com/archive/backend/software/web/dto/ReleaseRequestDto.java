@@ -1,6 +1,5 @@
 package com.archive.backend.software.web.dto;
 
-import java.time.LocalDate;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
 
@@ -11,6 +10,6 @@ public record ReleaseRequestDto(
         @Nullable String title,
         @Nullable String version,
         @Nullable String type,
-        @Nullable LocalDate releaseDate,
+        @Nullable String releaseDate,
         @Nullable String description,
         @Nullable List<String> hardware) {}

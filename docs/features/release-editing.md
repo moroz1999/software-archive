@@ -15,7 +15,7 @@ Every page returns to the software's page once done. The editing page has the re
 
 ## Form
 
-- Title (empty: the release is called by its software's title, at most 255 characters), Version (at most 50), Type (required, the fixed list), Release date (a full day), Description.
+- Title (empty: the release is called by its software's title, at most 255 characters), Version (at most 50), Type (required, the fixed list), Release date (a year or a day, one text field with a hint: `1987` or `1987-05-12`), Description.
 - Hardware: the hardware of the software's platform, by group, in the picker the software form uses too ([design-system/multi-select-filter.md](../design-system/multi-select-filter.md)). The form holds only the release's own hardware, not what it shows merged with the software's; a group checked here replaces that group of the software.
 - Archive: one optional file of any type, up to 100 MB. The editing form shows its current original name and size and offers replacement or removal. The chosen archive change is saved atomically with the other fields ([release-files.md](release-files.md)).
 - Format errors, refusals under their fields, locking while saving: as in the software form ([software-editing.md](software-editing.md#form)).
@@ -36,6 +36,6 @@ Every page returns to the software's page once done. The editing page has the re
 |---|---|---|
 | `GET /api/hardware?platform={code}` | `[{code, name, group}]` by group, then name; empty for an unknown platform | `400 platform.required`, `400 platform.code-invalid` |
 | `GET /api/software/{id}/releases/{releaseId}` | `{id, title, version, type, releaseDate, description, hardware, archive}`: its own fields and hardware; `archive` is `null` or `{fileName, size, url}` | `404 software.not-found`, `404 release.not-found` |
-| `POST /api/software/{id}/releases`, multipart `release` (the JSON fields) and optional `archive` | `201`, `Location`, `{id}` | `400 release.type-required`, `400 release.type-invalid`, `400 title.too-long`, `400 release.version-too-long`, `400 hardware.code-invalid`, `422 hardware.unknown`, `422 release.archive-too-large`, `404 software.not-found` |
+| `POST /api/software/{id}/releases`, multipart `release` (the JSON fields) and optional `archive` | `201`, `Location`, `{id}` | `400 release.type-required`, `400 release.type-invalid`, `400 title.too-long`, `400 release.version-too-long`, `400 release-date.invalid` (not a year `1987` or a day `1987-05-12`), `400 hardware.code-invalid`, `422 hardware.unknown`, `422 release.archive-too-large`, `404 software.not-found` |
 | `PUT /api/software/{id}/releases/{releaseId}`, the same multipart fields and optional `removeArchive=true` | `204` | the errors of `POST`, `422 release.archive-change-invalid`, `404 release.not-found` |
 | `DELETE /api/software/{id}/releases/{releaseId}` | `204` | `404 software.not-found`, `404 release.not-found` |

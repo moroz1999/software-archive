@@ -22,7 +22,6 @@ import com.archive.backend.search.web.mapper.FullSearchWebMapperImpl;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
 import com.archive.backend.shared.web.ApiExceptionHandler;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -62,8 +61,7 @@ class FullSearchControllerTest {
                                 new FoundSet.Authors(52, List.of(new FoundAuthor(ZED, "Zed", "John Doe"))),
                                 new FoundSet.Groups(1, List.of(new FoundGroup(SQUAD, "ZS"))),
                                 new FoundSet.Software(
-                                        51,
-                                        List.of(new SoftwareCatalogItem(ELITE, "Elite", LocalDate.of(1987, 5, 1)))))));
+                                        51, List.of(new SoftwareCatalogItem(ELITE, "Elite", "1987-05-01"))))));
     }
 
     private FullSearchQuery asked() {

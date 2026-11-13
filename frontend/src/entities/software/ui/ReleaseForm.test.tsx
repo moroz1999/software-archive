@@ -43,6 +43,27 @@ describe(ReleaseForm, () => {
         });
     });
 
+    it('takes a year alone as the release date and tells how to write one', async () => {
+        const {onSubmit} = renderForm();
+
+        expect(screen.getByText('A year, such as 1987, or a day, such as 1987-05-12.')).toBeInTheDocument();
+
+        await userEvent.type(screen.getByRole('textbox', {name: 'Release date'}), '2026');
+        await userEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        expect(onSubmit).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({releaseDate: '2026'}));
+    });
+
+    it('says under the release date that it is neither a year nor a day', async () => {
+        const {onSubmit} = renderForm();
+
+        await userEvent.type(screen.getByRole('textbox', {name: 'Release date'}), '1987 / 2026');
+        await userEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        expect(onSubmit).not.toHaveBeenCalled();
+        expect(screen.getByText('Enter a year or a full date.')).toBeInTheDocument();
+    });
+
     it('starts a new release of unknown type, offering every type', () => {
         renderForm();
 

@@ -15,11 +15,11 @@ public final class CardScreenshotsSql {
                 COALESCE(
                     (SELECT array_agg(own.id ORDER BY own.position)
                      FROM software_screenshot own WHERE own.software_id = %1$s.id),
-                    (SELECT array_agg(shot.id ORDER BY r.release_date NULLS LAST, lower(COALESCE(r.title, %1$s.title)),
+                    (SELECT array_agg(shot.id ORDER BY %2$s, lower(COALESCE(r.title, %1$s.title)),
                                                        r.id, shot.position)
                      FROM software_release r
                      JOIN software_release_screenshot shot ON shot.release_id = r.id
                      WHERE r.software_id = %1$s.id),
-                    ARRAY[]::uuid[])""".formatted(software);
+                    ARRAY[]::uuid[])""".formatted(software, ReleaseDateSql.order("r"));
     }
 }

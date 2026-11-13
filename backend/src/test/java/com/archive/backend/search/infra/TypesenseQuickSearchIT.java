@@ -16,7 +16,6 @@ import com.archive.backend.search.read.FoundAuthor;
 import com.archive.backend.search.read.FoundGroup;
 import com.archive.backend.search.read.QuickSearchResult;
 import com.archive.backend.search.read.SoftwareCatalogItem;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.IntStream;
@@ -77,7 +76,7 @@ class TypesenseQuickSearchIT {
         return new SoftwareDocument(
                 UUID.fromString("00000000-0000-0000-00fc-00000000000" + n),
                 title,
-                LocalDate.of(1987, 5, 1),
+                "1987-05-01",
                 alternativeTitles,
                 platform,
                 1987,
@@ -113,7 +112,7 @@ class TypesenseQuickSearchIT {
     @Test
     void findsSoftwareByTheBeginningOfItsTitleOrOfAnAlternativeTitle() {
         assertThat(find("Элит", null).software().hits())
-                .containsExactly(new SoftwareCatalogItem(ELITE.id(), "Elite", LocalDate.of(1987, 5, 1)));
+                .containsExactly(new SoftwareCatalogItem(ELITE.id(), "Elite", "1987-05-01"));
         assertThat(find("eli", null).software().hits())
                 .extracting(SoftwareCatalogItem::title)
                 .containsExactly("Elite");

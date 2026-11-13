@@ -48,6 +48,7 @@ import com.archive.backend.software.app.DeleteSoftwareHandler;
 import com.archive.backend.software.app.UpdateSoftwareCommand;
 import com.archive.backend.software.app.UpdateSoftwareHandler;
 import com.archive.backend.software.domain.ReleaseContent;
+import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.ReleaseId;
 import com.archive.backend.software.domain.ReleaseType;
 import com.archive.backend.software.domain.ScreenshotId;
@@ -57,6 +58,7 @@ import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareTitle;
 import com.archive.backend.user.TestActors;
 import java.time.LocalDate;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -168,7 +170,7 @@ class SoftwareSearchSyncIT {
         jdbc.update("DELETE FROM search_outbox");
     }
 
-    private SoftwareId create(String title, @Nullable LocalDate releaseDate, Set<UUID> categories) {
+    private SoftwareId create(String title, @Nullable ReleaseDate releaseDate, Set<UUID> categories) {
         SoftwareId id = createSoftware.handle(new CreateSoftwareCommand(
                 ADMIN,
                 new SoftwareTitle(title),
@@ -182,7 +184,7 @@ class SoftwareSearchSyncIT {
     }
 
     private SoftwareId create(String title) {
-        return create(title, LocalDate.of(1987, 5, 1), Set.of());
+        return create(title, ReleaseDate.ofDay(LocalDate.of(1987, 5, 1)), Set.of());
     }
 
     private Map<String, Object> document(SoftwareId id) throws Exception {
@@ -215,7 +217,7 @@ class SoftwareSearchSyncIT {
 
     @Test
     void indexesCreatedSoftwareWithItsTitlesPlatformYearAndCategoryBranch() throws Exception {
-        SoftwareId elite = create("Elite", LocalDate.of(1987, 5, 1), Set.of(SHOOTERS));
+        SoftwareId elite = create("Elite", ReleaseDate.ofDay(LocalDate.of(1987, 5, 1)), Set.of(SHOOTERS));
         jdbc.update("INSERT INTO software_alternative_titles (software_id, title) VALUES (?, 'Элита')", elite.value());
 
         worker.handle();
@@ -229,6 +231,15 @@ class SoftwareSearchSyncIT {
         assertThat(listIn(doc, "alternative_titles")).containsExactly("Элита");
         assertThat(listIn(doc, "categories"))
                 .containsExactlyInAnyOrder(SHOOTERS.toString(), ACTION.toString(), GAMES.toString());
+    }
+
+    @Test
+    void indexesSoftwareOfWhichOnlyTheYearIsKnownUnderThatYear() throws Exception {
+        SoftwareId joeBlade = create("Joe Blade", ReleaseDate.ofYear(Year.of(1987)), Set.of());
+
+        worker.handle();
+
+        assertThat(document(joeBlade)).containsEntry("release_date", "1987").containsEntry("year", 1987);
     }
 
     @Test
@@ -317,7 +328,7 @@ class SoftwareSearchSyncIT {
 
     @Test
     void movingACategoryChangesTheBranchOfTheSoftwareBelowIt() throws Exception {
-        SoftwareId elite = create("Elite", LocalDate.of(1987, 5, 1), Set.of(SHOOTERS));
+        SoftwareId elite = create("Elite", ReleaseDate.ofDay(LocalDate.of(1987, 5, 1)), Set.of(SHOOTERS));
         worker.handle();
 
         updateCategory.handle(new UpdateCategoryCommand(
@@ -334,7 +345,7 @@ class SoftwareSearchSyncIT {
                 new CreateCategoryCommand(ADMIN, new CategoryTitle("Space"), new CategoryId(GAMES)));
         CategoryId trading =
                 createCategory.handle(new CreateCategoryCommand(ADMIN, new CategoryTitle("Trading"), space));
-        SoftwareId elite = create("Elite", LocalDate.of(1987, 5, 1), Set.of(trading.value()));
+        SoftwareId elite = create("Elite", ReleaseDate.ofDay(LocalDate.of(1987, 5, 1)), Set.of(trading.value()));
         worker.handle();
 
         deleteCategory.handle(new DeleteCategoryCommand(ADMIN, space));

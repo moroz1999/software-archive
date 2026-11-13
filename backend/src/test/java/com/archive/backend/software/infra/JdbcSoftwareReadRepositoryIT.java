@@ -15,7 +15,6 @@ import com.archive.backend.software.read.SoftwareRelease;
 import com.archive.backend.software.read.SoftwareScreenshot;
 import com.archive.backend.software.read.SoftwareSummary;
 import com.archive.backend.user.TestActors;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,6 +46,8 @@ class JdbcSoftwareReadRepositoryIT {
     private static final UUID AY_MOD = id(12);
     /** The oldest. */
     private static final UUID FIRST = id(13);
+    /** Only its year is known: the year of the AY mod. */
+    private static final UUID DISK = id(14);
 
     private static final SoftwareHardware VECTOR06C = new SoftwareHardware("vector06c", "Vector-06C", "computers");
     private static final SoftwareHardware TAPE = new SoftwareHardware("tape", "Tape", "storage");
@@ -63,21 +64,23 @@ class JdbcSoftwareReadRepositoryIT {
     @BeforeEach
     void insert() {
         jdbc.update("""
-                INSERT INTO software (id, title, description, release_date, platform_code, created_at) VALUES
-                    (?, 'Elite', 'Space trading', DATE '1985-09-20', 'vector', TIMESTAMPTZ '2022-01-01 00:00Z'),
-                    (?, 'Tetris', NULL, NULL, 'bk', TIMESTAMPTZ '2020-01-01 00:00Z'),
-                    (?, 'Newest', NULL, NULL, 'vector', TIMESTAMPTZ '2024-01-01 00:00Z')
+                INSERT INTO software (id, title, description, release_year, release_day, platform_code, created_at) VALUES
+                    (?, 'Elite', 'Space trading', 1985, DATE '1985-09-20', 'vector', TIMESTAMPTZ '2022-01-01 00:00Z'),
+                    (?, 'Tetris', NULL, 1989, NULL, 'bk', TIMESTAMPTZ '2020-01-01 00:00Z'),
+                    (?, 'Newest', NULL, NULL, NULL, 'vector', TIMESTAMPTZ '2024-01-01 00:00Z')
                 """, ELITE, TETRIS, NEWEST);
         jdbc.update("""
                 INSERT INTO software_hardware (software_id, hardware_code) VALUES
                     (?, 'joystick'), (?, 'beeper'), (?, 'tape'), (?, 'vector06c')
                 """, ELITE, ELITE, ELITE, ELITE);
         jdbc.update("""
-                INSERT INTO software_release (id, software_id, title, version, type, release_date, description) VALUES
-                    (?, ?, NULL, NULL, 'original', NULL, NULL),
-                    (?, ?, 'Elite AY', '1.1', 'mod', DATE '1990-03-01', 'With AY music'),
-                    (?, ?, 'Elite Beta', '0.9', 'demoversion', DATE '1985-01-01', NULL)
-                """, ORIGINAL, ELITE, AY_MOD, ELITE, FIRST, ELITE);
+                INSERT INTO software_release
+                    (id, software_id, title, version, type, release_year, release_day, description) VALUES
+                    (?, ?, NULL, NULL, 'original', NULL, NULL, NULL),
+                    (?, ?, 'Elite AY', '1.1', 'mod', 1990, DATE '1990-03-01', 'With AY music'),
+                    (?, ?, 'Elite Beta', '0.9', 'demoversion', 1985, DATE '1985-01-01', NULL),
+                    (?, ?, 'Elite Disk', NULL, 'rerelease', 1990, NULL, NULL)
+                """, ORIGINAL, ELITE, AY_MOD, ELITE, FIRST, ELITE, DISK, ELITE);
         jdbc.update("INSERT INTO software_release_hardware (release_id, hardware_code) VALUES (?, 'ay8910')", AY_MOD);
     }
 
@@ -149,7 +152,10 @@ class JdbcSoftwareReadRepositoryIT {
         assertThat(reads.findReleases(ELITE))
                 .extracting(SoftwareRelease::id, SoftwareRelease::screenshots)
                 .containsExactly(
-                        tuple(FIRST, List.of()), tuple(AY_MOD, List.of(shot(5), shot(4))), tuple(ORIGINAL, List.of()));
+                        tuple(FIRST, List.of()),
+                        tuple(DISK, List.of()),
+                        tuple(AY_MOD, List.of(shot(5), shot(4))),
+                        tuple(ORIGINAL, List.of()));
     }
 
     @Test
@@ -177,10 +183,22 @@ class JdbcSoftwareReadRepositoryIT {
                         ELITE,
                         "Elite",
                         "Space trading",
-                        LocalDate.of(1985, 9, 20),
+                        "1985-09-20",
                         new SoftwarePlatform("vector", "Vector"),
                         List.of(VECTOR06C, TAPE, BEEPER, JOYSTICK),
                         List.of()));
+    }
+
+    @Test
+    void readsTheYearOfSoftwareOfWhichOnlyTheYearIsKnown() {
+        assertThat(reads.findById(TETRIS))
+                .hasValueSatisfying(details -> assertThat(details.releaseDate()).isEqualTo("1989"));
+    }
+
+    @Test
+    void readsTheYearOfAReleaseOfWhichOnlyTheYearIsKnown() {
+        assertThat(reads.findRelease(ELITE, DISK))
+                .hasValueSatisfying(details -> assertThat(details.releaseDate()).isEqualTo("1990"));
     }
 
     @Test
@@ -192,16 +210,10 @@ class JdbcSoftwareReadRepositoryIT {
     void readsTheReleasesOldestFirstWithOnlyTheirOwnHardware() {
         assertThat(reads.findReleases(ELITE))
                 .containsExactly(
+                        new SoftwareRelease(FIRST, "Elite Beta", "0.9", "demoversion", "1985-01-01", null, List.of()),
+                        new SoftwareRelease(DISK, "Elite Disk", null, "rerelease", "1990", null, List.of()),
                         new SoftwareRelease(
-                                FIRST, "Elite Beta", "0.9", "demoversion", LocalDate.of(1985, 1, 1), null, List.of()),
-                        new SoftwareRelease(
-                                AY_MOD,
-                                "Elite AY",
-                                "1.1",
-                                "mod",
-                                LocalDate.of(1990, 3, 1),
-                                "With AY music",
-                                List.of(AY)),
+                                AY_MOD, "Elite AY", "1.1", "mod", "1990-03-01", "With AY music", List.of(AY)),
                         new SoftwareRelease(ORIGINAL, "Elite", null, "original", null, null, List.of()));
     }
 
@@ -218,7 +230,7 @@ class JdbcSoftwareReadRepositoryIT {
     void readsAReleaseAsItStatesItself() {
         assertThat(reads.findRelease(ELITE, AY_MOD))
                 .contains(new ReleaseDetails(
-                        AY_MOD, "Elite AY", "1.1", "mod", LocalDate.of(1990, 3, 1), "With AY music", List.of(AY)));
+                        AY_MOD, "Elite AY", "1.1", "mod", "1990-03-01", "With AY music", List.of(AY)));
     }
 
     @Test

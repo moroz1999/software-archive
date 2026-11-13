@@ -1,6 +1,5 @@
 package com.archive.backend.software.read;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -13,7 +12,7 @@ public record ReleaseDetails(
         @Nullable String title,
         @Nullable String version,
         String type,
-        @Nullable LocalDate releaseDate,
+        @Nullable String releaseDate,
         @Nullable String description,
         List<SoftwareHardware> hardware,
         @Nullable ReleaseArchiveDetails archive) {
@@ -23,7 +22,7 @@ public record ReleaseDetails(
             @Nullable String title,
             @Nullable String version,
             String type,
-            @Nullable LocalDate releaseDate,
+            @Nullable String releaseDate,
             @Nullable String description,
             List<SoftwareHardware> hardware) {
         this(id, title, version, type, releaseDate, description, hardware, null);

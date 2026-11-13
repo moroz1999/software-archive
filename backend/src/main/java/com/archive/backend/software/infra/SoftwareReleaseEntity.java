@@ -38,8 +38,11 @@ public class SoftwareReleaseEntity {
     @Column(nullable = false)
     private String type;
 
-    @Column(name = "release_date")
-    private @Nullable LocalDate releaseDate;
+    @Column(name = "release_year")
+    private @Nullable Integer releaseYear;
+
+    @Column(name = "release_day")
+    private @Nullable LocalDate releaseDay;
 
     private @Nullable String description;
 

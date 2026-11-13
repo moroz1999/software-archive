@@ -8,7 +8,6 @@ import com.archive.backend.shared.domain.ddd.AggregateRoot;
 import com.archive.backend.shared.domain.ddd.DomainEvent;
 import com.archive.backend.user.domain.Actor;
 import com.archive.backend.user.domain.AddedBy;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -29,7 +28,7 @@ public final class Software {
     private final SoftwareId id;
     private SoftwareTitle title;
     private @Nullable SoftwareDescription description;
-    private @Nullable LocalDate releaseDate;
+    private @Nullable ReleaseDate releaseDate;
     /**
      * The base hardware the software is released for, on its platform.
      */
@@ -57,7 +56,7 @@ public final class Software {
             SoftwareId id,
             SoftwareTitle title,
             @Nullable SoftwareDescription description,
-            @Nullable LocalDate releaseDate,
+            @Nullable ReleaseDate releaseDate,
             HardwareSet hardware,
             CategorySet categories,
             SoftwareReferences references,
@@ -83,7 +82,7 @@ public final class Software {
             SoftwareId id,
             SoftwareTitle title,
             @Nullable SoftwareDescription description,
-            @Nullable LocalDate releaseDate,
+            @Nullable ReleaseDate releaseDate,
             HardwareSet hardware,
             CategorySet categories,
             SoftwareReferences references,
@@ -108,7 +107,7 @@ public final class Software {
             SoftwareId id,
             SoftwareTitle title,
             @Nullable SoftwareDescription description,
-            @Nullable LocalDate releaseDate,
+            @Nullable ReleaseDate releaseDate,
             HardwareSet hardware,
             CategorySet categories,
             SoftwareReferences references,
@@ -121,7 +120,7 @@ public final class Software {
             SoftwareId id,
             SoftwareTitle title,
             @Nullable SoftwareDescription description,
-            @Nullable LocalDate releaseDate,
+            @Nullable ReleaseDate releaseDate,
             HardwareSet hardware,
             CategorySet categories,
             SoftwareReferences references,
@@ -133,7 +132,7 @@ public final class Software {
             SoftwareId id,
             SoftwareTitle title,
             @Nullable SoftwareDescription description,
-            @Nullable LocalDate releaseDate,
+            @Nullable ReleaseDate releaseDate,
             HardwareSet hardware,
             CategorySet categories,
             List<Release> releases) {
@@ -153,7 +152,7 @@ public final class Software {
             SoftwareId id,
             SoftwareTitle title,
             @Nullable SoftwareDescription description,
-            @Nullable LocalDate releaseDate,
+            @Nullable ReleaseDate releaseDate,
             HardwareSet hardware,
             CategorySet categories,
             SoftwareReferences references,
@@ -169,7 +168,7 @@ public final class Software {
             SoftwareId id,
             SoftwareTitle title,
             @Nullable SoftwareDescription description,
-            @Nullable LocalDate releaseDate,
+            @Nullable ReleaseDate releaseDate,
             HardwareSet hardware,
             CategorySet categories,
             SoftwareReferences references,
@@ -181,7 +180,7 @@ public final class Software {
             SoftwareId id,
             SoftwareTitle title,
             @Nullable SoftwareDescription description,
-            @Nullable LocalDate releaseDate,
+            @Nullable ReleaseDate releaseDate,
             HardwareSet hardware,
             CategorySet categories,
             SoftwareReferences references) {
@@ -192,7 +191,7 @@ public final class Software {
             SoftwareId id,
             SoftwareTitle title,
             @Nullable SoftwareDescription description,
-            @Nullable LocalDate releaseDate,
+            @Nullable ReleaseDate releaseDate,
             HardwareSet hardware,
             CategorySet categories) {
         return create(id, title, description, releaseDate, hardware, categories, SoftwareReferences.EMPTY);
@@ -208,7 +207,7 @@ public final class Software {
     public void edit(
             SoftwareTitle title,
             @Nullable SoftwareDescription description,
-            @Nullable LocalDate releaseDate,
+            @Nullable ReleaseDate releaseDate,
             HardwareSet hardware,
             CategorySet categories,
             SoftwareReferences references) {
@@ -227,7 +226,7 @@ public final class Software {
     public void edit(
             SoftwareTitle title,
             @Nullable SoftwareDescription description,
-            @Nullable LocalDate releaseDate,
+            @Nullable ReleaseDate releaseDate,
             HardwareSet hardware,
             CategorySet categories) {
         edit(title, description, releaseDate, hardware, categories, references);

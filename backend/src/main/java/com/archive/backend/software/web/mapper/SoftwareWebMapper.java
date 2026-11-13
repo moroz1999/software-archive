@@ -10,6 +10,7 @@ import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.software.app.CreateSoftwareCommand;
 import com.archive.backend.software.app.ListLatestSoftwareQuery;
 import com.archive.backend.software.app.UpdateSoftwareCommand;
+import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.SoftwareCreditDraft;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
@@ -74,6 +75,10 @@ public interface SoftwareWebMapper {
         return new ScreenshotDto(screenshot.id(), ScreenshotWebMapper.url(screenshot.id()));
     }
 
+    private static @Nullable ReleaseDate toReleaseDate(@Nullable String date) {
+        return date == null ? null : ReleaseDate.parse(date);
+    }
+
     private static @Nullable ReleaseArchiveDto toArchive(
             UUID softwareId, UUID releaseId, @Nullable ReleaseArchiveDetails archive) {
         return archive == null
@@ -97,7 +102,7 @@ public interface SoftwareWebMapper {
                 actor,
                 toTitle(request.title()),
                 toDescription(request.description()),
-                request.releaseDate(),
+                toReleaseDate(request.releaseDate()),
                 toPlatform(request.platform()),
                 toHardware(request.hardware()),
                 toCategories(request.categories()),
@@ -112,7 +117,7 @@ public interface SoftwareWebMapper {
                 new SoftwareId(id),
                 toTitle(request.title()),
                 toDescription(request.description()),
-                request.releaseDate(),
+                toReleaseDate(request.releaseDate()),
                 toPlatform(request.platform()),
                 toHardware(request.hardware()),
                 toCategories(request.categories()),

@@ -42,7 +42,7 @@ class SoftwareTest {
             new ReleaseTitle("Elite AY"),
             new ReleaseVersion("1.1"),
             ReleaseType.MOD,
-            LocalDate.of(1990, 3, 1),
+            ReleaseDate.ofDay(LocalDate.of(1990, 3, 1)),
             new ReleaseDescription("With AY music"));
 
     private static ReleaseContent content(ReleaseType type) {
@@ -65,14 +65,14 @@ class SoftwareTest {
                 ID,
                 new SoftwareTitle("Elite"),
                 new SoftwareDescription("Space trading"),
-                LocalDate.of(1985, 9, 20),
+                ReleaseDate.ofDay(LocalDate.of(1985, 9, 20)),
                 NO_VECTOR_HARDWARE,
                 CategorySet.EMPTY);
 
         assertThat(software.getId()).isEqualTo(ID);
         assertThat(software.getTitle()).isEqualTo(new SoftwareTitle("Elite"));
         assertThat(software.getDescription()).isEqualTo(new SoftwareDescription("Space trading"));
-        assertThat(software.getReleaseDate()).isEqualTo(LocalDate.of(1985, 9, 20));
+        assertThat(software.getReleaseDate()).isEqualTo(ReleaseDate.ofDay(LocalDate.of(1985, 9, 20)));
         assertThat(software.getPlatform()).isEqualTo(VECTOR);
     }
 
@@ -96,7 +96,7 @@ class SoftwareTest {
                 ID,
                 new SoftwareTitle("Elite"),
                 new SoftwareDescription("Space trading"),
-                LocalDate.of(1985, 9, 20),
+                ReleaseDate.ofDay(LocalDate.of(1985, 9, 20)),
                 VECTOR_06C_SET,
                 CategorySet.EMPTY);
 

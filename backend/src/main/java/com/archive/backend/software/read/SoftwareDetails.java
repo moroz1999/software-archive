@@ -1,6 +1,5 @@
 package com.archive.backend.software.read;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -13,7 +12,7 @@ public record SoftwareDetails(
         UUID id,
         String title,
         @Nullable String description,
-        @Nullable LocalDate releaseDate,
+        @Nullable String releaseDate,
         SoftwarePlatform platform,
         List<SoftwareHardware> hardware,
         List<SoftwareCategory> categories,
@@ -28,7 +27,7 @@ public record SoftwareDetails(
             UUID id,
             String title,
             @Nullable String description,
-            @Nullable LocalDate releaseDate,
+            @Nullable String releaseDate,
             SoftwarePlatform platform,
             List<SoftwareHardware> hardware,
             List<SoftwareCategory> categories,
@@ -71,7 +70,7 @@ public record SoftwareDetails(
             UUID id,
             String title,
             @Nullable String description,
-            @Nullable LocalDate releaseDate,
+            @Nullable String releaseDate,
             SoftwarePlatform platform,
             List<SoftwareHardware> hardware,
             List<SoftwareCategory> categories,
@@ -84,7 +83,7 @@ public record SoftwareDetails(
             UUID id,
             String title,
             @Nullable String description,
-            @Nullable LocalDate releaseDate,
+            @Nullable String releaseDate,
             SoftwarePlatform platform,
             List<SoftwareHardware> hardware,
             List<SoftwareCategory> categories) {

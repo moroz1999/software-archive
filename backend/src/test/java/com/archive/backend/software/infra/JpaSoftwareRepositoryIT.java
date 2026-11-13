@@ -21,6 +21,7 @@ import com.archive.backend.software.domain.Release;
 import com.archive.backend.software.domain.ReleaseArchive;
 import com.archive.backend.software.domain.ReleaseArchiveId;
 import com.archive.backend.software.domain.ReleaseContent;
+import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.ReleaseDescription;
 import com.archive.backend.software.domain.ReleaseId;
 import com.archive.backend.software.domain.ReleaseTitle;
@@ -40,6 +41,7 @@ import com.archive.backend.user.TestActors;
 import com.archive.backend.user.domain.AddedBy;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
+import java.time.Year;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -69,7 +71,7 @@ class JpaSoftwareRepositoryIT {
             new ReleaseTitle("Elite AY"),
             new ReleaseVersion("1.1"),
             ReleaseType.MOD,
-            LocalDate.of(1990, 3, 1),
+            ReleaseDate.ofDay(LocalDate.of(1990, 3, 1)),
             new ReleaseDescription("With AY music"));
     private static final ReleaseContent ORIGINAL_CONTENT =
             new ReleaseContent(null, null, ReleaseType.ORIGINAL, null, null);
@@ -108,7 +110,7 @@ class JpaSoftwareRepositoryIT {
                 ID,
                 new SoftwareTitle("Elite"),
                 new SoftwareDescription("Space trading"),
-                LocalDate.of(1985, 9, 20),
+                ReleaseDate.ofDay(LocalDate.of(1985, 9, 20)),
                 NO_HARDWARE,
                 CategorySet.EMPTY));
         springDataSoftwareRepository.flush();
@@ -116,12 +118,33 @@ class JpaSoftwareRepositoryIT {
         assertThat(repository.findById(ID)).hasValueSatisfying(software -> {
             assertThat(software.getTitle()).isEqualTo(new SoftwareTitle("Elite"));
             assertThat(software.getDescription()).isEqualTo(new SoftwareDescription("Space trading"));
-            assertThat(software.getReleaseDate()).isEqualTo(LocalDate.of(1985, 9, 20));
+            assertThat(software.getReleaseDate()).isEqualTo(ReleaseDate.ofDay(LocalDate.of(1985, 9, 20)));
             assertThat(software.getPlatform()).isEqualTo(VECTOR);
         });
         assertThat(jdbc.queryForObject(
                         "SELECT created_at IS NOT NULL FROM software WHERE id = ?", Boolean.class, ID.value()))
                 .isTrue();
+    }
+
+    @Test
+    void storesTheYearOfSoftwareAndOfItsReleaseWhenOnlyTheYearIsKnown() {
+        ReleaseContent release =
+                new ReleaseContent(null, null, ReleaseType.ORIGINAL, ReleaseDate.ofYear(Year.of(2026)), null);
+        Software software = Software.create(
+                ID,
+                new SoftwareTitle("Joe Blade"),
+                null,
+                ReleaseDate.ofYear(Year.of(1987)),
+                NO_HARDWARE,
+                CategorySet.EMPTY);
+        software.addRelease(ORIGINAL, release, NO_HARDWARE, AddedBy.NOBODY);
+        repository.save(software);
+        springDataSoftwareRepository.flush();
+        entityManager.clear();
+
+        Software loaded = repository.findById(ID).orElseThrow();
+        assertThat(loaded.getReleaseDate()).isEqualTo(ReleaseDate.ofYear(Year.of(1987)));
+        assertThat(loaded.getReleases()).extracting(Release::content).containsExactly(release);
     }
 
     @Test
@@ -133,7 +156,7 @@ class JpaSoftwareRepositoryIT {
         software.edit(
                 new SoftwareTitle("Elite Plus"),
                 new SoftwareDescription("Enhanced"),
-                LocalDate.of(1987, 1, 1),
+                ReleaseDate.ofDay(LocalDate.of(1987, 1, 1)),
                 HardwareSet.restore(BK, Set.of()),
                 CategorySet.EMPTY);
         repository.save(software);

@@ -1,6 +1,5 @@
 package com.archive.backend.software.read;
 
-import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -17,7 +16,7 @@ public record SoftwareRelease(
         String title,
         @Nullable String version,
         String type,
-        @Nullable LocalDate releaseDate,
+        @Nullable String releaseDate,
         @Nullable String description,
         List<SoftwareHardware> hardware,
         List<SoftwareScreenshot> screenshots,
@@ -31,7 +30,7 @@ public record SoftwareRelease(
             String title,
             @Nullable String version,
             String type,
-            @Nullable LocalDate releaseDate,
+            @Nullable String releaseDate,
             @Nullable String description,
             List<SoftwareHardware> hardware) {
         this(id, title, version, type, releaseDate, description, hardware, List.of(), null, null, false);
@@ -42,7 +41,7 @@ public record SoftwareRelease(
             String title,
             @Nullable String version,
             String type,
-            @Nullable LocalDate releaseDate,
+            @Nullable String releaseDate,
             @Nullable String description,
             List<SoftwareHardware> hardware,
             List<SoftwareScreenshot> screenshots,

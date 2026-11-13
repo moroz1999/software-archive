@@ -3,7 +3,7 @@
 Software (a production) is a release of a program: the work itself, as it is known in the archive.
 
 - It is for exactly one platform and has its base hardware — see [hardware.md](hardware.md).
-- It has a title, a description and a release date (a day, without time).
+- It has a title, a description and a release date — see [Release dates](#release-dates).
 - It can be in categories of the archive's tree — see [categories.md](categories.md).
 - It can name any number of publishers: people, groups, or the exact aliases under which they published it.
 - It can name any number of developer companies: groups or the exact group aliases under which they developed it. A person cannot be a developer company.
@@ -15,9 +15,15 @@ Software (a production) is a release of a program: the work itself, as it is kno
 - Languages — of the software and of its alternative titles — are chosen from the archive's fixed list of languages, each known by its code.
 - It carries links to the outside world. A link has one kind from a fixed list: general, homepage, store, video. A link is an absolute web address (http or https).
 
+## Release dates
+The release date of software and of a release is a year, or a day of that year when the day is known: most often only the year is known, and a year is never turned into a made-up day. It may also be unknown.
+- It is written as the year, 1987, or as the day, 1987-05-12.
+- Dates are ordered by year, oldest first; within a year the ones known only by the year come before those with a day; unknown dates come last.
+- A year alone is shown as it is; a day, with its month in words.
+
 ## Releases
 A release (a version) is a version of the software. It never lives apart from its software.
-- It has a title, a version ("1.1"), a release type, a release date (a day) and a description. Everything but the type may be unknown; a release without a title is called by the title of its software.
+- It has a title, a version ("1.1"), a release type, a release date ([Release dates](#release-dates)) and a description. Everything but the type may be unknown; a release without a title is called by the title of its software.
 - Release types are a fixed list: original, rerelease, adaptation, localization, bugfix, mod, crack, mia (missing in action), corrupted, compilation, incomplete, demo version, unknown.
 - A release can be modified or adapted — other memory, another OS, added sound — and states its own hardware for that ([hardware.md](hardware.md#hardware-of-software-and-releases)).
 - Each release has its own page, reached from the releases of its software. Releases are added, edited and deleted in the context of their software; for now anyone can do it. The version is at most 50 characters.

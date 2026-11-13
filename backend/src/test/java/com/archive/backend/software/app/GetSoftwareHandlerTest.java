@@ -13,7 +13,6 @@ import com.archive.backend.software.read.SoftwareDetails;
 import com.archive.backend.software.read.SoftwareHardware;
 import com.archive.backend.software.read.SoftwarePlatform;
 import com.archive.backend.user.domain.Actor;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -31,7 +30,7 @@ class GetSoftwareHandlerTest {
                 ID,
                 "Elite",
                 "Space trading",
-                LocalDate.of(1985, 9, 20),
+                "1985-09-20",
                 new SoftwarePlatform("vector", "Vector"),
                 List.of(new SoftwareHardware("vector06c", "Vector-06C", "computers")),
                 List.of());

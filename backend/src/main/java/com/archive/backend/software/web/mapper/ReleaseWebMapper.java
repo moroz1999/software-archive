@@ -9,6 +9,7 @@ import com.archive.backend.software.app.UpdateReleaseCommand;
 import com.archive.backend.software.domain.ReleaseArchiveRemoval;
 import com.archive.backend.software.domain.ReleaseArchiveUpload;
 import com.archive.backend.software.domain.ReleaseContent;
+import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.ReleaseDescription;
 import com.archive.backend.software.domain.ReleaseId;
 import com.archive.backend.software.domain.ReleaseTitle;
@@ -104,8 +105,12 @@ public interface ReleaseWebMapper {
                 title == null ? null : new ReleaseTitle(title),
                 version == null ? null : new ReleaseVersion(version),
                 toType(request.type()),
-                request.releaseDate(),
+                toReleaseDate(request.releaseDate()),
                 description == null ? null : new ReleaseDescription(description));
+    }
+
+    private static @Nullable ReleaseDate toReleaseDate(@Nullable String date) {
+        return date == null ? null : ReleaseDate.parse(date);
     }
 
     private static Set<HardwareCode> toHardware(@Nullable List<String> hardware) {

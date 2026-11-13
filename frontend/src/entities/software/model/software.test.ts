@@ -31,6 +31,16 @@ describe(toReleaseDate, () => {
     it('rejects a date with time', () => {
         expect(() => toReleaseDate('1985-03-02T10:00:00Z')).toThrow(TypeError);
     });
+
+    it('accepts a year alone', () => {
+        expect(toReleaseDate('1985')).toBe('1985');
+    });
+
+    it('rejects what is neither a year nor a day of it', () => {
+        for (const raw of ['85', '19850', '1985-09', '1985-13-01', '1985-02-30', '1985-3-2', '1987 / 2026']) {
+            expect(() => toReleaseDate(raw)).toThrow(TypeError);
+        }
+    });
 });
 
 describe(requireSoftwareId, () => {

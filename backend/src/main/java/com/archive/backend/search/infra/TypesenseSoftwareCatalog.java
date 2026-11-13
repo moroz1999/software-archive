@@ -9,7 +9,6 @@ import com.archive.backend.search.read.SoftwareCatalogFilter;
 import com.archive.backend.search.read.SoftwareCatalogItem;
 import com.archive.backend.search.read.SoftwareCatalogPage;
 import com.archive.backend.search.read.YearCount;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -172,7 +171,7 @@ public class TypesenseSoftwareCatalog implements SoftwareCatalog {
         return new SoftwareCatalogItem(
                 UUID.fromString(String.valueOf(doc.get("id"))),
                 String.valueOf(doc.get("title")),
-                releaseDate == null ? null : LocalDate.parse((String) releaseDate),
+                releaseDate == null ? null : String.valueOf(releaseDate),
                 doc.get("screenshots") instanceof List<?> screenshots
                         ? screenshots.stream()
                                 .map(id -> UUID.fromString(String.valueOf(id)))

@@ -32,8 +32,11 @@ public class SoftwareEntity {
     @Column(name = "created_at", columnDefinition = "timestamptz", insertable = false, updatable = false)
     private Instant createdAt;
 
-    @Column(name = "release_date")
-    private @Nullable LocalDate releaseDate;
+    @Column(name = "release_year")
+    private @Nullable Integer releaseYear;
+
+    @Column(name = "release_day")
+    private @Nullable LocalDate releaseDay;
 
     @Column(name = "platform_code", nullable = false)
     private String platformCode;

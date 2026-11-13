@@ -34,6 +34,7 @@ import com.archive.backend.software.app.ListSoftwareReleasesHandler;
 import com.archive.backend.software.app.ListSoftwareReleasesQuery;
 import com.archive.backend.software.app.UpdateSoftwareCommand;
 import com.archive.backend.software.app.UpdateSoftwareHandler;
+import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareNotFoundException;
@@ -50,6 +51,7 @@ import com.archive.backend.software.read.SoftwareSummary;
 import com.archive.backend.software.web.mapper.SoftwareWebMapperImpl;
 import com.archive.backend.user.domain.Actor;
 import java.time.LocalDate;
+import java.time.Year;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -160,7 +162,7 @@ class SoftwareControllerTest {
                         ID,
                         "Elite",
                         "Space trading",
-                        LocalDate.of(1985, 9, 20),
+                        "1985-09-20",
                         new SoftwarePlatform("vector", "Vector"),
                         List.of(new SoftwareHardware("vector06c", "Vector-06C", "computers")),
                         List.of()));
@@ -217,7 +219,7 @@ class SoftwareControllerTest {
                         "Elite AY",
                         "1.1",
                         "mod",
-                        LocalDate.of(1990, 3, 1),
+                        "1990-03-01",
                         "With AY music",
                         List.of(new SoftwareHardware("ay8910", "AY-3-8910", "sound")))));
 
@@ -278,7 +280,7 @@ class SoftwareControllerTest {
                         Actor.anonymous(),
                         new SoftwareTitle("Elite"),
                         new SoftwareDescription("Space trading"),
-                        LocalDate.of(1985, 9, 20),
+                        ReleaseDate.ofDay(LocalDate.of(1985, 9, 20)),
                         VECTOR,
                         Set.of(),
                         Set.of())))
@@ -292,6 +294,34 @@ class SoftwareControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", "/api/software/" + ID))
                 .andExpect(jsonPath("$.id").value(ID.toString()));
+    }
+
+    @Test
+    void createsSoftwareOfWhichOnlyTheYearIsKnown() throws Exception {
+        when(createHandler.handle(new CreateSoftwareCommand(
+                        Actor.anonymous(),
+                        new SoftwareTitle("Elite"),
+                        null,
+                        ReleaseDate.ofYear(Year.of(1985)),
+                        VECTOR,
+                        Set.of(),
+                        Set.of())))
+                .thenReturn(new SoftwareId(ID));
+
+        mvc.perform(post("/api/software")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Elite\",\"releaseDate\":\"1985\",\"platform\":\"vector\"}"))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void answers400ForAReleaseDateThatIsNeitherAYearNorADay() throws Exception {
+        mvc.perform(post("/api/software")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Elite\",\"releaseDate\":\"1985-13-01\",\"platform\":\"vector\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("release-date.invalid"));
+        verify(createHandler, never()).handle(any());
     }
 
     @Test
@@ -416,7 +446,7 @@ class SoftwareControllerTest {
                         new SoftwareId(ID),
                         new SoftwareTitle("Elite Plus"),
                         null,
-                        LocalDate.of(1987, 1, 1),
+                        ReleaseDate.ofDay(LocalDate.of(1987, 1, 1)),
                         VECTOR,
                         Set.of(new HardwareCode("vector06c"), new HardwareCode("ay8910")),
                         Set.of()));

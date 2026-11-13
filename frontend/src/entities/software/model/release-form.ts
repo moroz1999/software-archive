@@ -1,6 +1,6 @@
 import {type TitleProblem, titleProblem} from '@/shared/lib/title';
 import {type ReleaseDetails, type ReleaseType, toReleaseType} from './release';
-import {type ReleaseDate, toReleaseDate} from './software';
+import {isReleaseDate, type ReleaseDate, toReleaseDate} from './software';
 
 /** The longest version of a release (docs/domain/software.md). */
 export const RELEASE_VERSION_MAX_LENGTH = 50;
@@ -48,7 +48,7 @@ export function validateReleaseForm(values: ReleaseFormValues): ReleaseFormResul
     const title = values.title.trim() === '' ? null : titleProblem(values.title);
     const versionTooLong = values.version.length > RELEASE_VERSION_MAX_LENGTH;
     const typeMissing = values.type === '';
-    const releaseDateInvalid = values.releaseDate !== '' && !ISO_DATE.test(values.releaseDate);
+    const releaseDateInvalid = values.releaseDate !== '' && !isReleaseDate(values.releaseDate);
     if (title === 'too-long' || versionTooLong || typeMissing || releaseDateInvalid) {
         return {
             ok: false,
@@ -72,8 +72,6 @@ export function validateReleaseForm(values: ReleaseFormValues): ReleaseFormResul
         },
     };
 }
-
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** An empty or blank optional field is unknown. */
 function orNull(value: string): string | null {

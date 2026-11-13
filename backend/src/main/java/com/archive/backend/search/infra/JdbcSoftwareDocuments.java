@@ -5,9 +5,9 @@ import static com.archive.backend.search.infra.SqlArrays.list;
 import com.archive.backend.search.domain.SoftwareDocument;
 import com.archive.backend.search.domain.SoftwareDocuments;
 import com.archive.backend.software.read.CardScreenshotsSql;
+import com.archive.backend.software.read.ReleaseDateSql;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,8 +26,9 @@ import org.springframework.stereotype.Repository;
 public class JdbcSoftwareDocuments implements SoftwareDocuments {
 
     private static final String SELECT = """
-            SELECT s.id, s.title, s.release_date, s.platform_code,
-                   EXTRACT(YEAR FROM s.release_date)::int AS year,
+            SELECT s.id, s.title, s.platform_code, s.release_year AS year,
+            """ + ReleaseDateSql.of("s") + """
+             AS release_date,
                    ARRAY(SELECT t.title FROM software_alternative_titles t
                          WHERE t.software_id = s.id ORDER BY t.title) AS alternative_titles,
                    ARRAY(WITH RECURSIVE branch (id, parent_id) AS (
@@ -74,7 +75,7 @@ public class JdbcSoftwareDocuments implements SoftwareDocuments {
         return new SoftwareDocument(
                 rs.getObject("id", UUID.class),
                 rs.getString("title"),
-                rs.getObject("release_date", LocalDate.class),
+                rs.getString("release_date"),
                 list(rs.getArray("alternative_titles"), String.class),
                 rs.getString("platform_code"),
                 rs.getObject("year", Integer.class),

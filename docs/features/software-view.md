@@ -5,7 +5,7 @@ The page of one software ([domain/software.md](../domain/software.md)) at `/soft
 ## Page
 
 - The software's title is the page heading; "Edit" next to it leads to `/software/{id}/edit`.
-- Under it: the release day in words ("20 September 1984") and the description, line by line. Unknown values are left out.
+- Under it: the release date, a year as it is ("1987") or a day in words ("20 September 1984") and the description, line by line. Unknown values are left out.
 - Platform: the software's platform.
 - Categories: each category of the software with its whole branch from the top of the tree, one line of chips joined by "›" per category (`Games › Action › Shooters`), in the order of the tree; the section is left out without categories.
 - Hardware: the software's base hardware, grouped by hardware group in the fixed order computers, storage, DOS, sound, controls, expansion; the section is left out without hardware.
@@ -32,6 +32,6 @@ Each release shows its effective hardware ([domain/hardware.md](../domain/hardwa
 | Call | Answer | Errors |
 |---|---|---|
 | `GET /api/software/{id}` | the same call as the editing ([software-editing.md](software-editing.md#rest)) | |
-| `GET /api/software/{id}/releases` | `[{id, title, version, type, releaseDate, description, hardware: [{code, name, group}], screenshots: [{id, url}]}]` by release day, unknown days last; `title` falls back to the software's title | `404 software.not-found`; `400` for a malformed id |
+| `GET /api/software/{id}/releases` | `[{id, title, version, type, releaseDate, description, hardware: [{code, name, group}], screenshots: [{id, url}]}]` by release date — a year before the days of that year —, unknown dates last; `title` falls back to the software's title | `404 software.not-found`; `400` for a malformed id |
 
 `type` is one of `original`, `rerelease`, `adaptation`, `localization`, `bugfix`, `mod`, `crack`, `mia`, `corrupted`, `compilation`, `incomplete`, `demoversion`, `unknown`; `group` is one of `computers`, `storage`, `dos`, `sound`, `controls`, `expansion`.

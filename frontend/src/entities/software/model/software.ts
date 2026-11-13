@@ -76,7 +76,7 @@ export interface Hardware {
     readonly group: HardwareGroup;
 }
 
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const RELEASE_DATE = /^(\d{4})(?:-(\d{2})-(\d{2}))?$/;
 const PLATFORM_CODE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
 
 export function toSoftwareId(raw: string): SoftwareId {
@@ -108,8 +108,22 @@ export function toSoftwareTitle(raw: string): SoftwareTitle {
     return raw as SoftwareTitle;
 }
 
+/** Whether it is a release date: a year, `1987`, or a day of the calendar, `1987-05-12` (docs/domain/software.md). */
+export function isReleaseDate(raw: string): boolean {
+    const parts = RELEASE_DATE.exec(raw);
+    if (parts === null) {
+        return false;
+    }
+    const [, year, month, day] = parts;
+    if (month === undefined || day === undefined) {
+        return true;
+    }
+    const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+    return date.getUTCMonth() === Number(month) - 1 && date.getUTCDate() === Number(day);
+}
+
 export function toReleaseDate(raw: string): ReleaseDate {
-    if (!ISO_DATE.test(raw) || Number.isNaN(Date.parse(`${raw}T00:00:00Z`))) {
+    if (!isReleaseDate(raw)) {
         throw new TypeError(`Invalid release date: ${raw}`);
     }
     return raw as ReleaseDate;

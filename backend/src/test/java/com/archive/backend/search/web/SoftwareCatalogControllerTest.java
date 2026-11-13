@@ -24,7 +24,6 @@ import com.archive.backend.search.web.mapper.SoftwareCatalogWebMapperImpl;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
 import com.archive.backend.shared.web.ApiExceptionHandler;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,8 +58,7 @@ class SoftwareCatalogControllerTest {
         when(handler.handle(any(ListSoftwareCatalogQuery.class)))
                 .thenReturn(new SoftwareCatalogPage(
                         new PageImpl<>(
-                                List.of(new SoftwareCatalogItem(
-                                        ELITE, "Elite", LocalDate.of(1987, 5, 1), List.of(TITLE_SCREEN))),
+                                List.of(new SoftwareCatalogItem(ELITE, "Elite", "1987-05-01", List.of(TITLE_SCREEN))),
                                 PageRequest.of(0, 20),
                                 41),
                         new SoftwareCatalogFacets(

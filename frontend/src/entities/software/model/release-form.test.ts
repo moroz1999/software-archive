@@ -16,6 +16,10 @@ describe(validateReleaseForm, () => {
         });
     });
 
+    it('takes a year alone as the release date', () => {
+        expect(validateReleaseForm({...EMPTY, releaseDate: '2026'})).toMatchObject({ok: true, draft: {releaseDate: '2026'}});
+    });
+
     it('leaves empty fields unknown: a release without a title is called by its software', () => {
         expect(validateReleaseForm({...EMPTY, title: '  ', version: ' ', description: ' '})).toStrictEqual({
             ok: true,

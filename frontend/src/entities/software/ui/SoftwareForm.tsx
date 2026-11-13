@@ -12,7 +12,7 @@ import {Stack} from '@/shared/ui/stack';
 import {Textarea} from '@/shared/ui/textarea';
 import {Text} from '@/shared/ui/typography';
 import {useSkeleton} from '@/shared/lib/loading';
-import {PLATFORM_REQUIRED_KEY, RELEASE_DATE_INVALID_KEY, TITLE_PROBLEM_KEYS} from '../config/messages';
+import {PLATFORM_REQUIRED_KEY, RELEASE_DATE_HINT_KEY, RELEASE_DATE_INVALID_KEY, TITLE_PROBLEM_KEYS} from '../config/messages';
 import {fetchSoftwarePeople, fetchSoftwareReferences} from '../api/software-api';
 import {usePlatformHardware} from '../model/platform-hardware-context';
 import {PlatformHardwareProvider} from '../model/PlatformHardwareProvider';
@@ -70,8 +70,12 @@ export function SoftwareForm({submitLabel, actions, categories}: SoftwareFormPro
                 <Field label={t('fields.description')} error={refusals.description}>
                     {(control) => <Textarea {...control} value={values.description} onChange={change('description')} disabled={busy}/>}
                 </Field>
-                <Field label={t('fields.releaseDate')} error={errors.releaseDate === undefined ? refusals.releaseDate : t(RELEASE_DATE_INVALID_KEY)}>
-                    {(control) => <Input {...control} type="date" value={values.releaseDate} onChange={change('releaseDate')} disabled={busy}/>}
+                <Field
+                    label={t('fields.releaseDate')}
+                    hint={t(RELEASE_DATE_HINT_KEY)}
+                    error={errors.releaseDate === undefined ? refusals.releaseDate : t(RELEASE_DATE_INVALID_KEY)}
+                >
+                    {(control) => <Input {...control} value={values.releaseDate} onChange={change('releaseDate')} disabled={busy}/>}
                 </Field>
                 {values.platform !== '' && (
                     <PlatformHardwareProvider platform={toSoftwarePlatformCode(values.platform)}>

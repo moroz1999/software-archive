@@ -7,6 +7,11 @@ describe(releaseDayText, () => {
         expect(releaseDayText(toReleaseDate('1984-09-20'))).toBe('20 September 1984');
     });
 
+    it('names a year alone as it is', () => {
+        expect(releaseDayText(toReleaseDate('1987'))).toBe('1987');
+        expect(releaseDayText(toReleaseDate('1987'), 'ru')).toBe('1987');
+    });
+
     it('keeps the first day of a month, whatever the time zone', () => {
         expect(releaseDayText(toReleaseDate('1985-01-01'))).toBe('1 January 1985');
     });

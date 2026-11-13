@@ -29,6 +29,7 @@ import com.archive.backend.software.app.GetSoftwareReleaseQuery;
 import com.archive.backend.software.app.UpdateReleaseCommand;
 import com.archive.backend.software.app.UpdateReleaseHandler;
 import com.archive.backend.software.domain.ReleaseContent;
+import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.ReleaseDescription;
 import com.archive.backend.software.domain.ReleaseId;
 import com.archive.backend.software.domain.ReleaseNotFoundException;
@@ -46,6 +47,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.Year;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -74,7 +76,7 @@ class SoftwareReleaseControllerTest {
             new ReleaseTitle("Elite AY"),
             new ReleaseVersion("1.1"),
             ReleaseType.MOD,
-            LocalDate.of(1990, 3, 1),
+            ReleaseDate.ofDay(LocalDate.of(1990, 3, 1)),
             new ReleaseDescription("With AY music"));
     private static final Set<HardwareCode> AY_MOD_HARDWARE = Set.of(new HardwareCode("ay8910"));
 
@@ -107,7 +109,7 @@ class SoftwareReleaseControllerTest {
                         null,
                         "1.1",
                         "mod",
-                        LocalDate.of(1990, 3, 1),
+                        "1990-03-01",
                         "With AY music",
                         List.of(new SoftwareHardware("ay8910", "AY-3-8910", "sound"))));
 
@@ -192,6 +194,31 @@ class SoftwareReleaseControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"title\":null,\"version\":null,\"type\":\"original\",\"hardware\":[]}"))
                 .andExpect(status().isCreated());
+    }
+
+    @Test
+    void createsAReleaseOfWhichOnlyTheYearIsKnown() throws Exception {
+        when(createHandler.handle(new CreateReleaseCommand(
+                        Actor.anonymous(),
+                        new SoftwareId(ELITE),
+                        new ReleaseContent(null, null, ReleaseType.ORIGINAL, ReleaseDate.ofYear(Year.of(2026)), null),
+                        Set.of())))
+                .thenReturn(new ReleaseId(AY_MOD));
+
+        mvc.perform(post(RELEASES, ELITE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"type\":\"original\",\"releaseDate\":\"2026\"}"))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void answers400ForAReleaseDateThatIsNeitherAYearNorADay() throws Exception {
+        mvc.perform(post(RELEASES, ELITE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"type\":\"original\",\"releaseDate\":\"1987 / 2026\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("release-date.invalid"));
+        verify(createHandler, never()).handle(any());
     }
 
     @Test

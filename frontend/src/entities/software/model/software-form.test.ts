@@ -17,6 +17,13 @@ describe(validateSoftwareForm, () => {
         });
     });
 
+    it('takes a year alone as the release date', () => {
+        expect(validateSoftwareForm({title: 'Elite', description: '', releaseDate: '1985', platform: 'vector', hardware: [], categories: []})).toMatchObject({
+            ok: true,
+            draft: {releaseDate: '1985'},
+        });
+    });
+
     it('requires a title', () => {
         expect(validateSoftwareForm({title: '   ', description: '', releaseDate: '', platform: 'vector', hardware: [], categories: []})).toStrictEqual({ok: false, errors: {title: 'required'}});
     });
@@ -30,7 +37,7 @@ describe(validateSoftwareForm, () => {
     });
 
     it('names every problem at once', () => {
-        expect(validateSoftwareForm({title: '', description: '', releaseDate: '1985', platform: '', hardware: [], categories: []})).toStrictEqual({
+        expect(validateSoftwareForm({title: '', description: '', releaseDate: '1985-09', platform: '', hardware: [], categories: []})).toStrictEqual({
             ok: false,
             errors: {title: 'required', releaseDate: 'invalid', platform: 'required'},
         });

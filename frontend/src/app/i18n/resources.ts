@@ -23,14 +23,14 @@ export const resources = {
             withCount: '{{label}} ({{count}})',
         },
         fields: {
-            title: 'Title', platform: 'Platform', description: 'Description', releaseDate: 'Release date', version: 'Version',
+            title: 'Title', platform: 'Platform', description: 'Description', releaseDate: 'Release date', releaseDateHint: 'A year, such as 1987, or a day, such as 1987-05-12.', version: 'Version',
             type: 'Type', hardware: 'Hardware', categories: 'Categories', publishers: 'Publishers', developers: 'Developers', credits: 'Credits',
             choosePlatform: 'Choose a platform', chooseType: 'Choose a type',
             platformLocked: 'Remove the hardware to change the platform.',
         },
         validation: {
             titleRequired: 'Enter a title.', titleTooLong: 'Keep the title within 255 characters.',
-            releaseDateInvalid: 'Enter a full date.', platformRequired: 'Choose a platform.',
+            releaseDateInvalid: 'Enter a year or a full date.', platformRequired: 'Choose a platform.',
             versionTooLong: 'Keep the version within 50 characters.', typeRequired: 'Choose a type.',
             authorNameless: 'Enter a real name or add a label.', realNameTooLong: 'Keep the real name within 255 characters.',
             labelNameRequired: 'Enter a name.', labelNameTooLong: 'Keep the name within 255 characters.',
@@ -194,14 +194,14 @@ export const resources = {
             withCount: '{{label}} ({{count}})',
         },
         fields: {
-            title: 'Название', platform: 'Платформа', description: 'Описание', releaseDate: 'Дата выпуска', version: 'Версия',
+            title: 'Название', platform: 'Платформа', description: 'Описание', releaseDate: 'Дата выпуска', releaseDateHint: 'Год, например 1987, или день, например 1987-05-12.', version: 'Версия',
             type: 'Тип', hardware: 'Оборудование', categories: 'Категории', publishers: 'Издатели', developers: 'Разработчики', credits: 'Авторы',
             choosePlatform: 'Выберите платформу', chooseType: 'Выберите тип',
             platformLocked: 'Удалите оборудование, чтобы изменить платформу.',
         },
         validation: {
             titleRequired: 'Введите название.', titleTooLong: 'Название должно содержать не более 255 символов.',
-            releaseDateInvalid: 'Введите полную дату.', platformRequired: 'Выберите платформу.',
+            releaseDateInvalid: 'Введите год или полную дату.', platformRequired: 'Выберите платформу.',
             versionTooLong: 'Версия должна содержать не более 50 символов.', typeRequired: 'Выберите тип.',
             authorNameless: 'Введите настоящее имя или добавьте псевдоним.',
             realNameTooLong: 'Настоящее имя должно содержать не более 255 символов.',

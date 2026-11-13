@@ -21,6 +21,7 @@ import com.archive.backend.category.domain.CategorySet;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.shared.domain.error.RuleViolationException;
+import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.SoftwareCreditSets;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
@@ -50,7 +51,7 @@ class CreateSoftwareHandlerTest {
                 ADMIN,
                 new SoftwareTitle("Elite"),
                 new SoftwareDescription("Space trading"),
-                LocalDate.of(1985, 9, 20),
+                ReleaseDate.ofDay(LocalDate.of(1985, 9, 20)),
                 VECTOR,
                 Set.of(),
                 Set.of()));
@@ -58,7 +59,7 @@ class CreateSoftwareHandlerTest {
         assertThat(repository.findById(id)).hasValueSatisfying(software -> {
             assertThat(software.getTitle()).isEqualTo(new SoftwareTitle("Elite"));
             assertThat(software.getDescription()).isEqualTo(new SoftwareDescription("Space trading"));
-            assertThat(software.getReleaseDate()).isEqualTo(LocalDate.of(1985, 9, 20));
+            assertThat(software.getReleaseDate()).isEqualTo(ReleaseDate.ofDay(LocalDate.of(1985, 9, 20)));
             assertThat(software.getPlatform()).isEqualTo(VECTOR);
         });
     }

@@ -50,7 +50,7 @@ class TypesenseSoftwareCatalogIT {
     private static final SoftwareDocument ELITE = new SoftwareDocument(
             UUID.fromString("00000000-0000-0000-00fd-000000000001"),
             "Elite",
-            LocalDate.of(1987, 5, 1),
+            "1987-05-01",
             List.of("Элита"),
             "vector",
             1987,
@@ -86,7 +86,7 @@ class TypesenseSoftwareCatalogIT {
         return new SoftwareDocument(
                 UUID.fromString("00000000-0000-0000-00fd-00000000000" + n),
                 title,
-                releaseDate,
+                releaseDate == null ? null : releaseDate.toString(),
                 alternativeTitles,
                 platform,
                 releaseDate == null ? null : releaseDate.getYear(),
@@ -139,8 +139,8 @@ class TypesenseSoftwareCatalogIT {
         SoftwareCatalogPage page = find(new SoftwareCatalogFilter("Elite", "vector", null, null, null));
 
         assertThat(page.items().getContent())
-                .containsExactly(new SoftwareCatalogItem(
-                        ELITE.id(), "Elite", LocalDate.of(1987, 5, 1), List.of(TITLE_SCREEN, IN_GAME)));
+                .containsExactly(
+                        new SoftwareCatalogItem(ELITE.id(), "Elite", "1987-05-01", List.of(TITLE_SCREEN, IN_GAME)));
         assertThat(find(new SoftwareCatalogFilter("Demo", "vector", null, null, null))
                         .items()
                         .getContent())

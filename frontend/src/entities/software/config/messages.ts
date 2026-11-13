@@ -8,6 +8,8 @@ export const TITLE_PROBLEM_KEYS: Readonly<Record<TitleProblem, string>> = {
 
 export const RELEASE_DATE_INVALID_KEY = 'validation.releaseDateInvalid';
 
+export const RELEASE_DATE_HINT_KEY = 'fields.releaseDateHint';
+
 export const PLATFORM_REQUIRED_KEY = 'validation.platformRequired';
 
 export const RELEASE_VERSION_TOO_LONG_KEY = 'validation.versionTooLong';

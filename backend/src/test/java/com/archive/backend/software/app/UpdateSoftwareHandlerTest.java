@@ -25,6 +25,7 @@ import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.shared.domain.error.RuleViolationException;
+import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.Software;
 import com.archive.backend.software.domain.SoftwareCreditSets;
 import com.archive.backend.software.domain.SoftwareDescription;
@@ -55,7 +56,7 @@ class UpdateSoftwareHandlerTest {
                 ELITE,
                 new SoftwareTitle("Elite Plus"),
                 new SoftwareDescription("Enhanced"),
-                LocalDate.of(1987, 1, 1),
+                ReleaseDate.ofDay(LocalDate.of(1987, 1, 1)),
                 BK,
                 Set.of(),
                 Set.of()));
@@ -63,7 +64,7 @@ class UpdateSoftwareHandlerTest {
         assertThat(repository.findById(ELITE)).hasValueSatisfying(software -> {
             assertThat(software.getTitle()).isEqualTo(new SoftwareTitle("Elite Plus"));
             assertThat(software.getDescription()).isEqualTo(new SoftwareDescription("Enhanced"));
-            assertThat(software.getReleaseDate()).isEqualTo(LocalDate.of(1987, 1, 1));
+            assertThat(software.getReleaseDate()).isEqualTo(ReleaseDate.ofDay(LocalDate.of(1987, 1, 1)));
             assertThat(software.getPlatform()).isEqualTo(BK);
         });
     }

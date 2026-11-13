@@ -12,6 +12,7 @@ import com.archive.backend.software.domain.Release;
 import com.archive.backend.software.domain.ReleaseArchive;
 import com.archive.backend.software.domain.ReleaseArchiveId;
 import com.archive.backend.software.domain.ReleaseContent;
+import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.ReleaseDescription;
 import com.archive.backend.software.domain.ReleaseId;
 import com.archive.backend.software.domain.ReleaseTitle;
@@ -32,6 +33,8 @@ import com.archive.backend.software.domain.SoftwareReferenceType;
 import com.archive.backend.software.domain.SoftwareReferences;
 import com.archive.backend.software.domain.SoftwareTitle;
 import com.archive.backend.user.infra.AddedByRows;
+import java.time.LocalDate;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -56,7 +59,7 @@ public interface SoftwareMapper {
                 new SoftwareId(entity.getId()),
                 new SoftwareTitle(entity.getTitle()),
                 description == null ? null : new SoftwareDescription(description),
-                entity.getReleaseDate(),
+                toReleaseDate(entity.getReleaseYear(), entity.getReleaseDay()),
                 toHardware(platform, entity.getHardware()),
                 categories,
                 references(entity),
@@ -76,7 +79,9 @@ public interface SoftwareMapper {
         entity.setTitle(software.getTitle().value());
         SoftwareDescription description = software.getDescription();
         entity.setDescription(description == null ? null : description.value());
-        entity.setReleaseDate(software.getReleaseDate());
+        ReleaseDate releaseDate = software.getReleaseDate();
+        entity.setReleaseYear(releaseDate == null ? null : releaseDate.year().getValue());
+        entity.setReleaseDay(releaseDate == null ? null : releaseDate.day());
         entity.setPlatformCode(software.getPlatform().value());
         entity.setHardware(fromHardware(software.getHardware()));
         entity.setCategories(
@@ -147,6 +152,13 @@ public interface SoftwareMapper {
                 .collect(Collectors.toSet());
     }
 
+    private static @Nullable ReleaseDate toReleaseDate(@Nullable Integer year, @Nullable LocalDate day) {
+        if (day != null) {
+            return ReleaseDate.ofDay(day);
+        }
+        return year == null ? null : ReleaseDate.ofYear(Year.of(year));
+    }
+
     private static Release toRelease(PlatformCode platform, SoftwareReleaseEntity entity) {
         String title = entity.getTitle();
         String version = entity.getVersion();
@@ -157,7 +169,7 @@ public interface SoftwareMapper {
                         title == null ? null : new ReleaseTitle(title),
                         version == null ? null : new ReleaseVersion(version),
                         ReleaseType.fromCode(entity.getType()),
-                        entity.getReleaseDate(),
+                        toReleaseDate(entity.getReleaseYear(), entity.getReleaseDay()),
                         description == null ? null : new ReleaseDescription(description)),
                 toHardware(platform, entity.getHardware()),
                 AddedByRows.toAddedBy(entity.getAddedBy()),
@@ -175,7 +187,9 @@ public interface SoftwareMapper {
         entity.setTitle(title == null ? null : title.value());
         entity.setVersion(version == null ? null : version.value());
         entity.setType(content.type().code());
-        entity.setReleaseDate(content.releaseDate());
+        ReleaseDate releaseDate = content.releaseDate();
+        entity.setReleaseYear(releaseDate == null ? null : releaseDate.year().getValue());
+        entity.setReleaseDay(releaseDate == null ? null : releaseDate.day());
         entity.setDescription(description == null ? null : description.value());
         entity.setHardware(fromHardware(release.hardware()));
         entity.setAddedBy(AddedByRows.fromAddedBy(release.addedBy()));

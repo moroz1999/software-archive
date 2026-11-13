@@ -1,5 +1,6 @@
 import {type TitleProblem, titleProblem} from '@/shared/lib/title';
 import {
+    isReleaseDate,
     type ReleaseDate,
     type SoftwareDetails,
     type SoftwarePlatformCode,
@@ -56,15 +57,13 @@ export type SoftwareFormResult =
     | {readonly ok: true; readonly draft: SoftwareDraft}
     | {readonly ok: false; readonly errors: SoftwareFormErrors};
 
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
-
 /**
  * Checks the format rules of the form (docs/domain/software.md); empty optional fields become unknown. Software is
  * always for one platform, so the platform is required.
  */
 export function validateSoftwareForm(values: SoftwareFormValues): SoftwareFormResult {
     const title = titleProblem(values.title);
-    const releaseDateInvalid = values.releaseDate !== '' && !ISO_DATE.test(values.releaseDate);
+    const releaseDateInvalid = values.releaseDate !== '' && !isReleaseDate(values.releaseDate);
     const platformMissing = values.platform === '';
     if (title !== null || releaseDateInvalid || platformMissing) {
         return {

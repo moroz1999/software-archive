@@ -3,6 +3,7 @@ package com.archive.backend.software.infra;
 import com.archive.backend.label.read.MainNameSql;
 import com.archive.backend.software.read.CardScreenshotsSql;
 import com.archive.backend.software.read.ReleaseArchiveDetails;
+import com.archive.backend.software.read.ReleaseDateSql;
 import com.archive.backend.software.read.ReleaseDetails;
 import com.archive.backend.software.read.SoftwareCategory;
 import com.archive.backend.software.read.SoftwareCategoryStep;
@@ -15,10 +16,8 @@ import com.archive.backend.software.read.SoftwareReferenceOption;
 import com.archive.backend.software.read.SoftwareRelease;
 import com.archive.backend.software.read.SoftwareScreenshot;
 import com.archive.backend.software.read.SoftwareSummary;
-import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -68,14 +67,15 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                 .single();
         params.put("limit", pageable.getPageSize());
         params.put("offset", pageable.getOffset());
-        List<SoftwareSummary> content = jdbc.sql("SELECT s.id, s.title, s.release_date, " + CardScreenshotsSql.of("s")
+        List<SoftwareSummary> content = jdbc.sql("SELECT s.id, s.title, " + ReleaseDateSql.of("s")
+                        + " AS release_date, " + CardScreenshotsSql.of("s")
                         + " AS screenshots FROM software s" + where + " ORDER BY " + order
                         + " LIMIT :limit OFFSET :offset")
                 .params(params)
                 .query((rs, row) -> new SoftwareSummary(
                         rs.getObject("id", UUID.class),
                         rs.getString("title"),
-                        day(rs, "release_date"),
+                        rs.getString("release_date"),
                         screenshots(rs)))
                 .list();
         return new PageImpl<>(content, pageable, total);
@@ -84,17 +84,17 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     @Override
     public Optional<SoftwareDetails> findById(UUID id) {
         return jdbc.sql("""
-                        SELECT s.title, s.description, s.release_date, p.code, p.name, s.added_by
+                        SELECT s.title, s.description, %s AS release_date, p.code, p.name, s.added_by
                         FROM software s
                         JOIN platform p ON p.code = s.platform_code
                         WHERE s.id = :id
-                        """)
+                        """.formatted(ReleaseDateSql.of("s")))
                 .param("id", id)
                 .query((rs, row) -> new SoftwareDetails(
                         id,
                         rs.getString("title"),
                         rs.getString("description"),
-                        day(rs, "release_date"),
+                        rs.getString("release_date"),
                         new SoftwarePlatform(rs.getString("code"), rs.getString("name")),
                         hardware("software_hardware", "software_id", id),
                         categories(id),
@@ -191,13 +191,13 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     @Override
     public List<SoftwareRelease> findReleases(UUID softwareId) {
         return jdbc.sql("""
-                        SELECT r.id, COALESCE(r.title, s.title) AS title, r.version, r.type, r.release_date, r.description,
-                               r.archive_id, r.archive_file_name, r.archive_size, r.added_by
+                        SELECT r.id, COALESCE(r.title, s.title) AS title, r.version, r.type, %s AS release_date,
+                               r.description, r.archive_id, r.archive_file_name, r.archive_size, r.added_by
                         FROM software_release r
                         JOIN software s ON s.id = r.software_id
                         WHERE r.software_id = :id
-                        ORDER BY r.release_date NULLS LAST, lower(COALESCE(r.title, s.title)), r.id
-                        """)
+                        ORDER BY %s, lower(COALESCE(r.title, s.title)), r.id
+                        """.formatted(ReleaseDateSql.of("r"), ReleaseDateSql.order("r")))
                 .param("id", softwareId)
                 .query((rs, row) -> {
                     UUID id = rs.getObject("id", UUID.class);
@@ -206,7 +206,7 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                             rs.getString("title"),
                             rs.getString("version"),
                             rs.getString("type"),
-                            day(rs, "release_date"),
+                            rs.getString("release_date"),
                             rs.getString("description"),
                             hardware("software_release_hardware", "release_id", id),
                             findReleaseScreenshots(id),
@@ -220,11 +220,11 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     @Override
     public Optional<ReleaseDetails> findRelease(UUID softwareId, UUID releaseId) {
         return jdbc.sql("""
-                        SELECT id, title, version, type, release_date, description,
-                               archive_id, archive_file_name, archive_size
-                        FROM software_release
-                        WHERE software_id = :softwareId AND id = :releaseId
-                        """)
+                        SELECT r.id, r.title, r.version, r.type, %s AS release_date, r.description,
+                               r.archive_id, r.archive_file_name, r.archive_size
+                        FROM software_release r
+                        WHERE r.software_id = :softwareId AND r.id = :releaseId
+                        """.formatted(ReleaseDateSql.of("r")))
                 .param("softwareId", softwareId)
                 .param("releaseId", releaseId)
                 .query((rs, row) -> new ReleaseDetails(
@@ -232,7 +232,7 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                         rs.getString("title"),
                         rs.getString("version"),
                         rs.getString("type"),
-                        day(rs, "release_date"),
+                        rs.getString("release_date"),
                         rs.getString("description"),
                         hardware("software_release_hardware", "release_id", releaseId),
                         archive(rs)))
@@ -294,11 +294,6 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                 .query((rs, row) -> new SoftwareHardware(
                         rs.getString("code"), rs.getString("name"), rs.getString("hardware_group")))
                 .list();
-    }
-
-    private static @Nullable LocalDate day(ResultSet rs, String column) throws SQLException {
-        Date date = rs.getDate(column);
-        return date == null ? null : date.toLocalDate();
     }
 
     @Override

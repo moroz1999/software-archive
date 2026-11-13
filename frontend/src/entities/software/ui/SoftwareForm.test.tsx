@@ -86,6 +86,19 @@ describe(SoftwareForm, () => {
         });
     });
 
+    it('takes a year alone as the release date and tells how to write one', async () => {
+        const {onSubmit} = renderForm();
+
+        expect(screen.getByText('A year, such as 1987, or a day, such as 1987-05-12.')).toBeInTheDocument();
+
+        await userEvent.type(screen.getByRole('textbox', {name: 'Title'}), 'Elite');
+        await userEvent.type(screen.getByRole('textbox', {name: 'Release date'}), '1985');
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Platform'}), 'BK');
+        await userEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        expect(onSubmit).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({releaseDate: '1985'}));
+    });
+
     it('finds publishers and developers by aliases and submits the chosen references', async () => {
         stubFetchRoutes(new Map([
             ['/api/hardware?platform=agat', json([])],

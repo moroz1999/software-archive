@@ -147,7 +147,7 @@ public class TypesenseSearchIndex implements SearchIndex {
         doc.put("title", d.title());
         doc.put("title_sort", d.title().toLowerCase(Locale.ROOT));
         if (d.releaseDate() != null) {
-            doc.put("release_date", d.releaseDate().toString());
+            doc.put("release_date", d.releaseDate());
         }
         doc.put("alternative_titles", d.alternativeTitles());
         doc.put("platform", d.platform());

@@ -13,7 +13,7 @@ The screenshots of software and of its releases ([domain/software.md](../domain/
 
 ## Card
 
-The card of software shows its own screenshots, or when it has none those of its releases, releases in the order of the release list (by release day, unknown days last, then title), each release's in its order. One SQL expression (`software/read/CardScreenshotsSql`) gives them to the latest list and to the search documents, so the home page, the catalog and the search show the same pictures; the search keeps them in the `screenshots` field of the software document, not indexed. Every change of the screenshots of software or of a release changes its card, so the search document is updated as for any change of the software ([search.md](search.md#synchronization)).
+The card of software shows its own screenshots, or when it has none those of its releases, releases in the order of the release list (by release date — a year before the days of that year —, unknown dates last, then title), each release's in its order. One SQL expression (`software/read/CardScreenshotsSql`) gives them to the latest list and to the search documents, so the home page, the catalog and the search show the same pictures; the search keeps them in the `screenshots` field of the software document, not indexed. Every change of the screenshots of software or of a release changes its card, so the search document is updated as for any change of the software ([search.md](search.md#synchronization)).
 
 ## Pages
 

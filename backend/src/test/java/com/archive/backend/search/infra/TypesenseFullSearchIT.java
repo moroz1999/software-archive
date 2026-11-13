@@ -18,7 +18,6 @@ import com.archive.backend.search.read.FoundSet;
 import com.archive.backend.search.read.FoundType;
 import com.archive.backend.search.read.FullSearchResult;
 import com.archive.backend.search.read.SoftwareCatalogItem;
-import java.time.LocalDate;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -63,7 +62,7 @@ class TypesenseFullSearchIT {
             .mapToObj(n -> new SoftwareDocument(
                     id(n),
                     "Zynaps " + n,
-                    LocalDate.of(1987, 5, 1),
+                    "1987-05-01",
                     List.of(),
                     n == 35 ? "bk" : "vector",
                     1987,
@@ -145,8 +144,8 @@ class TypesenseFullSearchIT {
         assertThat(result.sets())
                 .containsExactly(new FoundSet.Authors(1, List.of(new FoundAuthor(id(11), "Zed", "Zed Smith"))));
         assertThat(software.sets())
-                .containsExactly(new FoundSet.Software(
-                        1, List.of(new SoftwareCatalogItem(id(35), "Zynaps 35", LocalDate.of(1987, 5, 1)))));
+                .containsExactly(
+                        new FoundSet.Software(1, List.of(new SoftwareCatalogItem(id(35), "Zynaps 35", "1987-05-01"))));
     }
 
     @Test
