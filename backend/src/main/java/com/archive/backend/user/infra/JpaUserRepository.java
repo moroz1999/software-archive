@@ -61,7 +61,7 @@ public class JpaUserRepository implements UserRepository {
 
     @Override
     public void save(User user) {
-        springData.save(toEntity(user));
+        springData.saveAndFlush(toEntity(user));
     }
 
     /**

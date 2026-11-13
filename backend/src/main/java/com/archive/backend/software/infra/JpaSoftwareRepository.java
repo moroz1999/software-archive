@@ -41,7 +41,7 @@ public class JpaSoftwareRepository implements SoftwareRepository {
     public void save(Software software) {
         SoftwareEntity entity = mapper.toEntity(software);
         springDataSoftwareRepository.findById(entity.getId()).ifPresent(stored -> keepCreditRows(stored, entity));
-        springDataSoftwareRepository.save(entity);
+        springDataSoftwareRepository.saveAndFlush(entity);
     }
 
     /**
@@ -63,5 +63,6 @@ public class JpaSoftwareRepository implements SoftwareRepository {
     @Override
     public void delete(Software software) {
         springDataSoftwareRepository.deleteById(software.getId().value());
+        springDataSoftwareRepository.flush();
     }
 }

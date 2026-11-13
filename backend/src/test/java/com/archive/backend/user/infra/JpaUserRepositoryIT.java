@@ -22,12 +22,13 @@ import java.time.Instant;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
-import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -37,10 +38,25 @@ class JpaUserRepositoryIT {
     private static final Instant NOW = Instant.parse("2026-01-01T00:00:00Z");
 
     @Autowired
+    private JdbcTemplate jdbc;
+
+    @Autowired
     private JpaUserRepository repository;
 
     @Autowired
     private EntityManager entityManager;
+
+    @Test
+    void writesAtOnceForPlainSqlInTheSameTransaction() {
+        User zed = user(1, "Zed", new ConfirmationToken("token"));
+        repository.save(zed);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM app_user WHERE id = ?", Integer.class, id(1).value()))
+                .isEqualTo(1);
+
+        repository.delete(zed);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM app_user WHERE id = ?", Integer.class, id(1).value()))
+                .isZero();
+    }
 
     @Test
     void keepsAnUnconfirmedAccountWithItsLink() {
@@ -131,18 +147,15 @@ class JpaUserRepositoryIT {
         repository.save(user(1, "Zed", new ConfirmationToken("a")));
         flushAndClear();
 
-        assertThatThrownBy(() -> {
-                    repository.save(User.register(
-                            id(2),
-                            new UserName("ZED"),
-                            new Email("other@example.com"),
-                            new PasswordHash("hash"),
-                            new ConfirmationToken("b"),
-                            NOW,
-                            InterfaceLanguage.EN));
-                    entityManager.flush();
-                })
-                .isInstanceOf(ConstraintViolationException.class);
+        assertThatThrownBy(() -> repository.save(User.register(
+                        id(2),
+                        new UserName("ZED"),
+                        new Email("other@example.com"),
+                        new PasswordHash("hash"),
+                        new ConfirmationToken("b"),
+                        NOW,
+                        InterfaceLanguage.EN)))
+                .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test

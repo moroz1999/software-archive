@@ -21,11 +21,12 @@ public class JpaGroupRepository implements GroupRepository {
 
     @Override
     public void save(Group group) {
-        springDataGroupRepository.save(mapper.toEntity(group));
+        springDataGroupRepository.saveAndFlush(mapper.toEntity(group));
     }
 
     @Override
     public void delete(Group group) {
         springDataGroupRepository.deleteById(group.getId().value());
+        springDataGroupRepository.flush();
     }
 }

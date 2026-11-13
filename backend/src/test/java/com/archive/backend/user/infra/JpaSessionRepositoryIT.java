@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -32,6 +33,9 @@ class JpaSessionRepositoryIT {
     private static final Instant NOW = Instant.parse("2026-01-01T00:00:00Z");
     private static final UserId ZED = new UserId(UUID.fromString("00000000-0000-0000-0000-000000000001"));
     private static final RefreshSecret SECRET = new RefreshSecret("secret");
+
+    @Autowired
+    private JdbcTemplate jdbc;
 
     @Autowired
     private JpaSessionRepository repository;
@@ -53,6 +57,20 @@ class JpaSessionRepositoryIT {
                 NOW,
                 InterfaceLanguage.EN));
         entityManager.flush();
+    }
+
+    @Test
+    void writesAtOnceForPlainSqlInTheSameTransaction() {
+        Session session = Session.open(SECRET, ZED, new RememberMe(false), NOW);
+        repository.save(session);
+        assertThat(jdbc.queryForObject(
+                        "SELECT count(*) FROM user_session WHERE user_id = ?", Integer.class, ZED.value()))
+                .isEqualTo(1);
+
+        repository.delete(session);
+        assertThat(jdbc.queryForObject(
+                        "SELECT count(*) FROM user_session WHERE user_id = ?", Integer.class, ZED.value()))
+                .isZero();
     }
 
     @Test

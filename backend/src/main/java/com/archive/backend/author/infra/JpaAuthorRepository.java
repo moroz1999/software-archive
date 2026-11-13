@@ -28,11 +28,12 @@ public class JpaAuthorRepository implements AuthorRepository {
 
     @Override
     public void save(Author author) {
-        springDataAuthorRepository.save(mapper.toEntity(author));
+        springDataAuthorRepository.saveAndFlush(mapper.toEntity(author));
     }
 
     @Override
     public void delete(Author author) {
         springDataAuthorRepository.deleteById(author.getId().value());
+        springDataAuthorRepository.flush();
     }
 }

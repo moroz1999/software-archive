@@ -33,11 +33,12 @@ public class JpaSessionRepository implements SessionRepository {
         entity.setUserId(session.getUserId().value());
         entity.setExpiresAt(session.getExpiresAt());
         entity.setRemember(session.getRemember().value());
-        springData.save(entity);
+        springData.saveAndFlush(entity);
     }
 
     @Override
     public void delete(Session session) {
         springData.deleteById(session.getDigest().value());
+        springData.flush();
     }
 }

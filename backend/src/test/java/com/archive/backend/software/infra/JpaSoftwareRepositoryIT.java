@@ -105,6 +105,17 @@ class JpaSoftwareRepositoryIT {
     private EntityManager entityManager;
 
     @Test
+    void writesAtOnceForPlainSqlInTheSameTransaction() {
+        repository.save(Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE, CategorySet.EMPTY));
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM software WHERE id = ?", Integer.class, ID.value()))
+                .isEqualTo(1);
+
+        repository.delete(repository.findById(ID).orElseThrow());
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM software WHERE id = ?", Integer.class, ID.value()))
+                .isZero();
+    }
+
+    @Test
     void storesNewSoftwareUnderItsId() {
         repository.save(Software.create(
                 ID,

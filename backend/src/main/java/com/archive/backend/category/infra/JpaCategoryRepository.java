@@ -35,7 +35,6 @@ public class JpaCategoryRepository implements CategoryRepository {
                 .filter(stored -> Objects.equals(stored.getParentId(), parentId))
                 .map(CategoryEntity::getPosition)
                 .orElseGet(() -> springDataCategoryRepository.nextPosition(parentId));
-        // Flushed at once: the tree is read by SQL in the same transaction, as by the software a move recategorizes.
         springDataCategoryRepository.saveAndFlush(mapper.toEntity(category, position));
     }
 
@@ -45,5 +44,6 @@ public class JpaCategoryRepository implements CategoryRepository {
     @Override
     public void delete(Category category) {
         springDataCategoryRepository.deleteById(category.getId().value());
+        springDataCategoryRepository.flush();
     }
 }

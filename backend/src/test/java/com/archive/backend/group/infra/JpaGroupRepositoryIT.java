@@ -100,6 +100,18 @@ class JpaGroupRepositoryIT {
     }
 
     @Test
+    void writesAtOnceForPlainSqlInTheSameTransaction() {
+        repository.save(Group.create(ID, new GroupName("Crew Ltd"), null, DEMOGROUP_AND_LABEL, List.of(), IN_NORWAY));
+        assertThat(count("SELECT count(*) FROM \"group\" WHERE id = ?", ID.value()))
+                .isEqualTo(1);
+
+        entityManager.clear();
+        repository.delete(repository.findById(ID).orElseThrow());
+        assertThat(count("SELECT count(*) FROM \"group\" WHERE id = ?", ID.value()))
+                .isZero();
+    }
+
+    @Test
     void storesANewGroupWithItsTypesLabelsAndLocations() {
         Group group = storeCrew();
 

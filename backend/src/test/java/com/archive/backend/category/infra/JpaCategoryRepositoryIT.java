@@ -58,6 +58,17 @@ class JpaCategoryRepositoryIT {
     }
 
     @Test
+    void writesAtOnceForPlainSqlInTheSameTransaction() {
+        repository.save(Category.create(NEW, new CategoryTitle("Hardware"), null));
+        assertThat(count("SELECT count(*) FROM category WHERE id = ?", NEW.value()))
+                .isEqualTo(1);
+
+        repository.delete(repository.findById(NEW).orElseThrow());
+        assertThat(count("SELECT count(*) FROM category WHERE id = ?", NEW.value()))
+                .isZero();
+    }
+
+    @Test
     void storesANewCategoryLastUnderItsParent() {
         repository.save(Category.create(
                 NEW, new CategoryTitle("64K intro"), CategoryParent.restore(NEW, new CategoryId(INTRO))));

@@ -101,6 +101,18 @@ class JpaAuthorRepositoryIT {
     }
 
     @Test
+    void writesAtOnceForPlainSqlInTheSameTransaction() {
+        repository.save(Author.create(ID, new RealName("John Doe"), null, List.of(), HELSINKI_AND_NORWAY));
+        assertThat(count("SELECT count(*) FROM person WHERE id = ?", ID.value()))
+                .isEqualTo(1);
+
+        entityManager.clear();
+        repository.delete(repository.findById(ID).orElseThrow());
+        assertThat(count("SELECT count(*) FROM person WHERE id = ?", ID.value()))
+                .isZero();
+    }
+
+    @Test
     void storesANewAuthorWithItsLabelsAndLocations() {
         Author author = storeZed();
 
