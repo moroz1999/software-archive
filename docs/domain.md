@@ -42,3 +42,7 @@ Detailed logic and structure: [domain/search.md](domain/search.md)
 ### users
 Accounts, how visitors register, confirm and sign in, and what each user group may do.
 Detailed logic and structure: [domain/users.md](domain/users.md)
+
+### imports
+Where software taken in from other archives comes from, and how an import runs again without duplicates.
+Detailed logic and structure: [domain/imports.md](domain/imports.md)

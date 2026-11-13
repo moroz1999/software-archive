@@ -3,6 +3,7 @@ package com.archive.backend.user.infra;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.importer.domain.Importer;
 import com.archive.backend.user.read.CurrentUser;
 import com.archive.backend.user.read.UserEntry;
 import java.sql.Timestamp;
@@ -37,6 +38,8 @@ class JdbcUserReadRepositoryIT {
 
     @BeforeEach
     void insertUsers() {
+        // The importer's account the schema brings is not one of the accounts these lists are about.
+        jdbc.update("DELETE FROM app_user WHERE id = ?", Importer.ID.value());
         jdbc.update("""
                 INSERT INTO app_user (id, name, email, password_hash, registered_at, status)
                 VALUES (?, 'Zed', 'zed@example.com', 'hash', ?, 'CONFIRMED'),
