@@ -14,4 +14,5 @@ public record SoftwareReleaseDto(
         @Nullable String description,
         List<SoftwareHardwareDto> hardware,
         List<ScreenshotDto> screenshots,
+        @Nullable ReleaseArchiveDto archive,
         boolean canChange) {}

@@ -47,7 +47,6 @@ describe(CreateReleaseProvider, () => {
 
         expect(fetchMock).toHaveBeenCalledExactlyOnceWith(`/api/software/${SOFTWARE.id}/releases`, expect.objectContaining({
             method: 'POST',
-            body: '{"title":null,"version":"1.1","type":"unknown","releaseDate":null,"description":null,"hardware":["ay8910"]}',
         }));
     });
 

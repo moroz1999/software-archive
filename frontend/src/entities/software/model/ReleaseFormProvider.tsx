@@ -3,11 +3,13 @@ import {type BusinessError, type BusinessMessages, splitRefusal, unedited} from 
 import {type ReleaseDraft, type ReleaseFormErrors, type ReleaseFormValues, toReleaseFormValues, validateReleaseForm} from './release-form';
 import {type ReleaseFormField, ReleaseFormContext, type ReleaseFormState} from './release-form-context';
 import type {Hardware} from './software';
+import {type ReleaseArchive, releaseArchiveProblem} from './release-archive';
 
 export interface ReleaseFormProviderProps {
     /** Called only with values that pass the format rules. */
     readonly onSubmit: (draft: ReleaseDraft) => void;
     readonly initial?: ReleaseFormValues;
+    readonly initialArchive?: ReleaseArchive | null;
     /** The hardware to choose from. */
     readonly hardware?: readonly Hardware[];
     readonly busy?: boolean;
@@ -18,12 +20,16 @@ export interface ReleaseFormProviderProps {
     readonly children: ReactNode;
 }
 
-const FIELDS = ['title', 'version', 'type', 'releaseDate', 'description', 'hardware'] as const satisfies readonly ReleaseFormField[];
+const FIELDS = ['title', 'version', 'type', 'releaseDate', 'description', 'hardware', 'archive'] as const satisfies readonly ReleaseFormField[];
 
 /** The values of a release form being filled in, their format rules and why the last submit was refused. */
-export function ReleaseFormProvider({onSubmit, initial, hardware = [], busy = false, error, messages = {}, children}: ReleaseFormProviderProps) {
+export function ReleaseFormProvider({onSubmit, initial, initialArchive = null, hardware = [], busy = false, error, messages = {}, children}: ReleaseFormProviderProps) {
     const [values, setValues] = useState<ReleaseFormValues>(() => initial ?? toReleaseFormValues());
     const [errors, setErrors] = useState<ReleaseFormErrors>({});
+    const [archive, setArchive] = useState<{readonly shown: Pick<ReleaseArchive, 'fileName' | 'size'> | null; readonly file?: File; readonly remove: boolean}>({
+        shown: initialArchive,
+        remove: false,
+    });
     // Fields edited since the refusal arrived: their refusal no longer applies. A new refusal starts afresh.
     const [edited, setEdited] = useState<{readonly error: BusinessError | undefined; readonly fields: ReadonlySet<string>}>({error, fields: new Set()});
     if (edited.error !== error) {
@@ -49,14 +55,37 @@ export function ReleaseFormProvider({onSubmit, initial, hardware = [], busy = fa
             setValues((current) => ({...current, hardware: codes}));
             markEdited('hardware');
         },
+        archive: archive.shown,
+        changeArchive: (file) => {
+            const problem = releaseArchiveProblem(file);
+            markEdited('archive');
+            setErrors((current) => problem === undefined ? withoutArchiveError(current) : {...current, archive: problem});
+            if (problem === undefined) {
+                setArchive({shown: {fileName: file.name, size: file.size}, file, remove: false});
+            }
+        },
+        removeArchive: () => {
+            markEdited('archive');
+            setErrors(withoutArchiveError);
+            setArchive({shown: null, remove: initialArchive !== null});
+        },
         submit: () => {
             const result = validateReleaseForm(values);
-            if (result.ok) {
-                setErrors({});
-                onSubmit(result.draft);
-            } else {
-                setErrors(result.errors);
+            if (!result.ok) {
+                setErrors((current) => current.archive === undefined
+                    ? result.errors
+                    : {...result.errors, archive: current.archive});
+                return;
             }
+            if (errors.archive !== undefined) {
+                return;
+            }
+            setErrors({});
+            onSubmit({
+                ...result.draft,
+                ...(archive.file === undefined ? {} : {archive: archive.file}),
+                ...(archive.remove ? {removeArchive: true as const} : {}),
+            });
         },
         hardware,
         busy,
@@ -64,4 +93,10 @@ export function ReleaseFormProvider({onSubmit, initial, hardware = [], busy = fa
     };
 
     return <ReleaseFormContext value={state}>{children}</ReleaseFormContext>;
+}
+
+function withoutArchiveError(errors: ReleaseFormErrors): ReleaseFormErrors {
+    const rest = {...errors};
+    delete rest.archive;
+    return rest;
 }

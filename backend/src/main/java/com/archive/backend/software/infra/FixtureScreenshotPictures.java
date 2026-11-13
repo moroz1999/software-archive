@@ -14,32 +14,43 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Component;
 
 /**
- * Puts the pictures of the fixture screenshots into the storage, as the fixture data set needs them: a picture there
- * already is left as it is (docs/testing.md#fixtures).
+ * Puts fixture screenshots and release archives into their storage folders; a file already there is left as it is
+ * (docs/testing.md#fixtures).
  */
 @Component
 @Profile("fixtures")
 public class FixtureScreenshotPictures {
 
-    private final Path root;
+    private final Path screenshotRoot;
+    private final Path archiveRoot;
 
-    public FixtureScreenshotPictures(ScreenshotStorageProperties properties) {
-        this.root = properties.folder();
+    public FixtureScreenshotPictures(
+            ScreenshotStorageProperties screenshotProperties, ReleaseArchiveStorageProperties archiveProperties) {
+        this.screenshotRoot = screenshotProperties.folder();
+        this.archiveRoot = archiveProperties.folder();
     }
 
     @EventListener(ApplicationReadyEvent.class)
     public void copy() throws IOException {
-        Files.createDirectories(root);
+        Files.createDirectories(screenshotRoot);
         for (Resource picture :
                 new PathMatchingResourcePatternResolver().getResources("classpath:db/fixtures/screenshots/*.png")) {
             String name = Objects.requireNonNull(picture.getFilename());
-            Path file = root.resolve(name.substring(0, name.lastIndexOf('.')));
-            if (Files.notExists(file)) {
-                try (InputStream in = picture.getInputStream()) {
-                    Files.copy(in, file);
-                } catch (IOException e) {
-                    throw new UncheckedIOException("Could not copy the fixture picture " + name, e);
-                }
+            copy(picture, screenshotRoot.resolve(name.substring(0, name.lastIndexOf('.'))));
+        }
+        Files.createDirectories(archiveRoot);
+        for (Resource archive :
+                new PathMatchingResourcePatternResolver().getResources("classpath:db/fixtures/release-archives/*")) {
+            copy(archive, archiveRoot.resolve(Objects.requireNonNull(archive.getFilename())));
+        }
+    }
+
+    private static void copy(Resource source, Path target) {
+        if (Files.notExists(target)) {
+            try (InputStream in = source.getInputStream()) {
+                Files.copy(in, target);
+            } catch (IOException e) {
+                throw new UncheckedIOException("Could not copy the fixture file " + source.getFilename(), e);
             }
         }
     }

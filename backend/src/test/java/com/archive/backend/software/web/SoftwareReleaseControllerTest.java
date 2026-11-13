@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -22,6 +23,7 @@ import com.archive.backend.software.app.CreateReleaseCommand;
 import com.archive.backend.software.app.CreateReleaseHandler;
 import com.archive.backend.software.app.DeleteReleaseCommand;
 import com.archive.backend.software.app.DeleteReleaseHandler;
+import com.archive.backend.software.app.GetReleaseArchiveFileHandler;
 import com.archive.backend.software.app.GetSoftwareReleaseHandler;
 import com.archive.backend.software.app.GetSoftwareReleaseQuery;
 import com.archive.backend.software.app.UpdateReleaseCommand;
@@ -35,19 +37,25 @@ import com.archive.backend.software.domain.ReleaseType;
 import com.archive.backend.software.domain.ReleaseVersion;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareNotFoundException;
+import com.archive.backend.software.read.ReleaseArchiveFile;
 import com.archive.backend.software.read.ReleaseDetails;
 import com.archive.backend.software.read.SoftwareHardware;
 import com.archive.backend.software.web.mapper.ReleaseWebMapperImpl;
 import com.archive.backend.user.domain.Actor;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -73,6 +81,9 @@ class SoftwareReleaseControllerTest {
     @Autowired
     private MockMvc mvc;
 
+    @TempDir
+    private Path temporary;
+
     @MockitoBean
     private GetSoftwareReleaseHandler getHandler;
 
@@ -84,6 +95,9 @@ class SoftwareReleaseControllerTest {
 
     @MockitoBean
     private DeleteReleaseHandler deleteHandler;
+
+    @MockitoBean
+    private GetReleaseArchiveFileHandler archiveFileHandler;
 
     @Test
     void returnsAReleaseAsItStatesItself() throws Exception {
@@ -119,6 +133,20 @@ class SoftwareReleaseControllerTest {
     }
 
     @Test
+    void downloadsTheReleaseArchiveUnderItsOriginalName() throws Exception {
+        Path archive = temporary.resolve("internal-id");
+        Files.writeString(archive, "archive", StandardCharsets.UTF_8);
+        when(archiveFileHandler.handle(any())).thenReturn(new ReleaseArchiveFile(archive, "Elite AY.zip", 7));
+
+        mvc.perform(get(RELEASE + "/archive", ELITE, AY_MOD))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", MediaType.APPLICATION_OCTET_STREAM_VALUE))
+                .andExpect(header().string("Content-Length", "7"))
+                .andExpect(
+                        header().string("Content-Disposition", org.hamcrest.Matchers.containsString("Elite%20AY.zip")));
+    }
+
+    @Test
     void createsARelease() throws Exception {
         when(createHandler.handle(new CreateReleaseCommand(
                         Actor.anonymous(), new SoftwareId(ELITE), AY_MOD_CONTENT, AY_MOD_HARDWARE)))
@@ -130,6 +158,25 @@ class SoftwareReleaseControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", "/api/software/" + ELITE + "/releases/" + AY_MOD))
                 .andExpect(jsonPath("$.id").value(AY_MOD.toString()));
+    }
+
+    @Test
+    void createsAReleaseWithItsArchive() throws Exception {
+        when(createHandler.handle(any(CreateReleaseCommand.class))).thenReturn(new ReleaseId(AY_MOD));
+
+        mvc.perform(multipart(RELEASES, ELITE)
+                        .file(new MockMultipartFile(
+                                "release",
+                                "",
+                                MediaType.APPLICATION_JSON_VALUE,
+                                AY_MOD_JSON.getBytes(StandardCharsets.UTF_8)))
+                        .file(new MockMultipartFile(
+                                "archive",
+                                "elite-ay.zip",
+                                MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                                "archive".getBytes(StandardCharsets.UTF_8))))
+                .andExpect(status().isCreated())
+                .andExpect(header().string("Location", "/api/software/" + ELITE + "/releases/" + AY_MOD));
     }
 
     @Test
@@ -225,6 +272,46 @@ class SoftwareReleaseControllerTest {
                         new ReleaseId(AY_MOD),
                         AY_MOD_CONTENT,
                         AY_MOD_HARDWARE));
+    }
+
+    @Test
+    void replacesAReleaseArchiveWithTheReleaseChanges() throws Exception {
+        mvc.perform(multipart(RELEASE, ELITE, AY_MOD)
+                        .file(new MockMultipartFile(
+                                "release",
+                                "",
+                                MediaType.APPLICATION_JSON_VALUE,
+                                AY_MOD_JSON.getBytes(StandardCharsets.UTF_8)))
+                        .file(new MockMultipartFile(
+                                "archive",
+                                "elite-ay.zip",
+                                MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                                "archive".getBytes(StandardCharsets.UTF_8)))
+                        .with(request -> {
+                            request.setMethod("PUT");
+                            return request;
+                        }))
+                .andExpect(status().isNoContent());
+
+        verify(updateHandler).handle(any(UpdateReleaseCommand.class));
+    }
+
+    @Test
+    void removesAReleaseArchiveWithoutDeletingTheRelease() throws Exception {
+        mvc.perform(multipart(RELEASE, ELITE, AY_MOD)
+                        .file(new MockMultipartFile(
+                                "release",
+                                "",
+                                MediaType.APPLICATION_JSON_VALUE,
+                                AY_MOD_JSON.getBytes(StandardCharsets.UTF_8)))
+                        .param("removeArchive", "true")
+                        .with(request -> {
+                            request.setMethod("PUT");
+                            return request;
+                        }))
+                .andExpect(status().isNoContent());
+
+        verify(updateHandler).handle(any(UpdateReleaseCommand.class));
     }
 
     @Test

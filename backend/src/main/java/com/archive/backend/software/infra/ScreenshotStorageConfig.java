@@ -4,5 +4,5 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@EnableConfigurationProperties(ScreenshotStorageProperties.class)
+@EnableConfigurationProperties({ScreenshotStorageProperties.class, ReleaseArchiveStorageProperties.class})
 public class ScreenshotStorageConfig {}

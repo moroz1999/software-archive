@@ -7,6 +7,7 @@ import {Input} from '@/shared/ui/input';
 import {Select} from '@/shared/ui/select';
 import {Stack} from '@/shared/ui/stack';
 import {Textarea} from '@/shared/ui/textarea';
+import {FileUpload} from '@/shared/ui/file-upload';
 import {Text} from '@/shared/ui/typography';
 import {
     RELEASE_DATE_INVALID_KEY,
@@ -16,6 +17,7 @@ import {
 } from '../config/messages';
 import {RELEASE_TYPES} from '../model/release';
 import {useReleaseForm} from '../model/release-form-context';
+import {fileSizeText} from '../model/release-archive';
 import {HardwarePicker} from './HardwarePicker';
 
 export interface ReleaseFormProps {
@@ -57,12 +59,46 @@ export function ReleaseForm({submitLabel, actions}: ReleaseFormProps) {
                     {(control) => <Textarea {...control} value={values.description} onChange={change('description')} disabled={busy}/>}
                 </Field>
                 <ReleaseHardware/>
+                <ReleaseArchiveField/>
                 <Inline gap="sm" justify="between" wrap>
                     <Button type="submit" loading={busy}>{submitLabel}</Button>
                     {actions}
                 </Inline>
             </Stack>
         </form>
+    );
+}
+
+function ReleaseArchiveField() {
+    const {t} = useTranslation();
+    const {archive, changeArchive, removeArchive, errors, refusals, busy} = useReleaseForm();
+    const error = errors.archive === 'too-large' ? t('release.archiveErrors.size') : refusals.archive;
+    return (
+        <Stack as="section" gap="xs" ariaLabel={t('release.archive')}>
+            <Text variant="label" tone="muted">{t('release.archive')}</Text>
+            {archive === null ? null : (
+                <Inline gap="sm" align="center" wrap>
+                    <Text>{archive.fileName}</Text>
+                    <Text variant="bodySm" tone="muted">{fileSizeText(archive.size)}</Text>
+                </Inline>
+            )}
+            <Inline gap="sm" align="center" wrap>
+                <FileUpload
+                    label={t(archive === null ? 'release.addArchive' : 'release.replaceArchive')}
+                    disabled={busy}
+                    onFiles={(files) => {
+                        const file = files[0];
+                        if (file !== undefined) {
+                            changeArchive(file);
+                        }
+                    }}
+                />
+                {archive !== null && <Button color="danger" disabled={busy} onClick={removeArchive}>{t('release.removeArchive')}</Button>}
+            </Inline>
+            {error === undefined
+                ? <Text variant="bodySm" tone="muted">{t('release.archiveHint')}</Text>
+                : <Text variant="bodySm" tone="danger" role="alert">{error}</Text>}
+        </Stack>
     );
 }
 

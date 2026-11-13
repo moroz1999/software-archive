@@ -9,6 +9,7 @@ import {type AppRouter, createAppRouter} from './router';
 const SOFTWARE_ID = '00000000-0000-0000-0001-000000000001';
 const RELEASE_ID = '00000000-0000-0000-0007-000000000001';
 const SCREENSHOT_ID = '00000000-0000-0000-0055-000000000001';
+const ARCHIVE_URL = `/api/software/${SOFTWARE_ID}/releases/${RELEASE_ID}/archive`;
 
 const SOFTWARE = {
     id: SOFTWARE_ID,
@@ -36,6 +37,7 @@ const RELEASE = {
         {code: 'ay8910', name: 'AY-3-8910', group: 'sound'},
     ],
     screenshots: [{id: SCREENSHOT_ID, url: `/api/screenshots/${SCREENSHOT_ID}`}],
+    archive: {fileName: 'elite-ay.zip', size: 1536, url: ARCHIVE_URL},
     canChange: true,
 };
 
@@ -99,6 +101,16 @@ describe('release view routes', () => {
 
         expect(within(screenshots).getByRole('button', {name: 'Screenshot 1 of 1'})).toBeInTheDocument();
         expect(screen.getByRole('link', {name: 'Edit'})).toHaveAttribute('href', `/software/${SOFTWARE_ID}/releases/${RELEASE_ID}/edit`);
+    });
+
+    it('offers the release archive by its original name and size', async () => {
+        renderAt(`/software/${SOFTWARE_ID}/releases/${RELEASE_ID}`);
+
+        await screen.findByRole('heading', {level: 1, name: 'Elite AY'});
+
+        expect(screen.getByText('elite-ay.zip')).toBeInTheDocument();
+        expect(screen.getByText('1.5 KB')).toBeInTheDocument();
+        expect(screen.getByRole('link', {name: 'Download archive'})).toHaveAttribute('href', ARCHIVE_URL);
     });
 
     it('does not offer editing when the release may not be changed', async () => {

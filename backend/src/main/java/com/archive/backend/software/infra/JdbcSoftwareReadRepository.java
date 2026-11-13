@@ -2,6 +2,7 @@ package com.archive.backend.software.infra;
 
 import com.archive.backend.label.read.MainNameSql;
 import com.archive.backend.software.read.CardScreenshotsSql;
+import com.archive.backend.software.read.ReleaseArchiveDetails;
 import com.archive.backend.software.read.ReleaseDetails;
 import com.archive.backend.software.read.SoftwareCategory;
 import com.archive.backend.software.read.SoftwareCategoryStep;
@@ -191,7 +192,7 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     public List<SoftwareRelease> findReleases(UUID softwareId) {
         return jdbc.sql("""
                         SELECT r.id, COALESCE(r.title, s.title) AS title, r.version, r.type, r.release_date, r.description,
-                               r.added_by
+                               r.archive_id, r.archive_file_name, r.archive_size, r.added_by
                         FROM software_release r
                         JOIN software s ON s.id = r.software_id
                         WHERE r.software_id = :id
@@ -209,6 +210,7 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                             rs.getString("description"),
                             hardware("software_release_hardware", "release_id", id),
                             findReleaseScreenshots(id),
+                            archive(rs),
                             rs.getObject("added_by", UUID.class),
                             false);
                 })
@@ -218,7 +220,8 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     @Override
     public Optional<ReleaseDetails> findRelease(UUID softwareId, UUID releaseId) {
         return jdbc.sql("""
-                        SELECT id, title, version, type, release_date, description
+                        SELECT id, title, version, type, release_date, description,
+                               archive_id, archive_file_name, archive_size
                         FROM software_release
                         WHERE software_id = :softwareId AND id = :releaseId
                         """)
@@ -231,8 +234,16 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                         rs.getString("type"),
                         day(rs, "release_date"),
                         rs.getString("description"),
-                        hardware("software_release_hardware", "release_id", releaseId)))
+                        hardware("software_release_hardware", "release_id", releaseId),
+                        archive(rs)))
                 .optional();
+    }
+
+    private static @Nullable ReleaseArchiveDetails archive(ResultSet rs) throws SQLException {
+        UUID id = rs.getObject("archive_id", UUID.class);
+        return id == null
+                ? null
+                : new ReleaseArchiveDetails(id, rs.getString("archive_file_name"), rs.getLong("archive_size"));
     }
 
     /**

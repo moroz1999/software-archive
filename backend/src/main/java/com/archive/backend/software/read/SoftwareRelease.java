@@ -21,6 +21,7 @@ public record SoftwareRelease(
         @Nullable String description,
         List<SoftwareHardware> hardware,
         List<SoftwareScreenshot> screenshots,
+        @Nullable ReleaseArchiveDetails archive,
         @Nullable UUID addedBy,
         boolean canChange) {
 
@@ -33,13 +34,27 @@ public record SoftwareRelease(
             @Nullable LocalDate releaseDate,
             @Nullable String description,
             List<SoftwareHardware> hardware) {
-        this(id, title, version, type, releaseDate, description, hardware, List.of(), null, false);
+        this(id, title, version, type, releaseDate, description, hardware, List.of(), null, null, false);
+    }
+
+    public SoftwareRelease(
+            UUID id,
+            String title,
+            @Nullable String version,
+            String type,
+            @Nullable LocalDate releaseDate,
+            @Nullable String description,
+            List<SoftwareHardware> hardware,
+            List<SoftwareScreenshot> screenshots,
+            @Nullable UUID addedBy,
+            boolean canChange) {
+        this(id, title, version, type, releaseDate, description, hardware, screenshots, null, addedBy, canChange);
     }
 
     /** The same release, telling whether the actor may change it. */
     public SoftwareRelease withCanChange(boolean canChange) {
         return new SoftwareRelease(
-                id, title, version, type, releaseDate, description, hardware, screenshots, addedBy, canChange);
+                id, title, version, type, releaseDate, description, hardware, screenshots, archive, addedBy, canChange);
     }
 
     /**
@@ -53,6 +68,6 @@ public record SoftwareRelease(
                 .sorted(Comparator.comparingInt(SoftwareHardware::groupOrder))
                 .toList();
         return new SoftwareRelease(
-                id, title, version, type, releaseDate, description, shown, screenshots, addedBy, canChange);
+                id, title, version, type, releaseDate, description, shown, screenshots, archive, addedBy, canChange);
     }
 }

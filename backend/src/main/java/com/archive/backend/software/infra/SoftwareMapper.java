@@ -9,6 +9,8 @@ import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.HardwareSet;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.software.domain.Release;
+import com.archive.backend.software.domain.ReleaseArchive;
+import com.archive.backend.software.domain.ReleaseArchiveId;
 import com.archive.backend.software.domain.ReleaseContent;
 import com.archive.backend.software.domain.ReleaseDescription;
 import com.archive.backend.software.domain.ReleaseId;
@@ -36,6 +38,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.Nullable;
 import org.mapstruct.Mapper;
 
 /**
@@ -158,7 +161,8 @@ public interface SoftwareMapper {
                         description == null ? null : new ReleaseDescription(description)),
                 toHardware(platform, entity.getHardware()),
                 AddedByRows.toAddedBy(entity.getAddedBy()),
-                toScreenshots(entity.getScreenshots()));
+                toScreenshots(entity.getScreenshots()),
+                toArchive(entity));
     }
 
     private static SoftwareReleaseEntity fromRelease(Release release) {
@@ -176,7 +180,23 @@ public interface SoftwareMapper {
         entity.setHardware(fromHardware(release.hardware()));
         entity.setAddedBy(AddedByRows.fromAddedBy(release.addedBy()));
         entity.setScreenshots(fromScreenshots(release.screenshots()));
+        ReleaseArchive archive = release.archive();
+        if (archive != null) {
+            entity.setArchiveId(archive.id().value());
+            entity.setArchiveFileName(archive.fileName());
+            entity.setArchiveSize(archive.size());
+        }
         return entity;
+    }
+
+    private static @Nullable ReleaseArchive toArchive(SoftwareReleaseEntity entity) {
+        UUID id = entity.getArchiveId();
+        return id == null
+                ? null
+                : new ReleaseArchive(
+                        new ReleaseArchiveId(id),
+                        Objects.requireNonNull(entity.getArchiveFileName()),
+                        Objects.requireNonNull(entity.getArchiveSize()));
     }
 
     private static SoftwareCreditDraft toCredit(SoftwareCreditEntity entity) {

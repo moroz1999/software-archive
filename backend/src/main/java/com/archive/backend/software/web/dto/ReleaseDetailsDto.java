@@ -12,4 +12,5 @@ public record ReleaseDetailsDto(
         String type,
         @Nullable LocalDate releaseDate,
         @Nullable String description,
-        List<SoftwareHardwareDto> hardware) {}
+        List<SoftwareHardwareDto> hardware,
+        @Nullable ReleaseArchiveDto archive) {}

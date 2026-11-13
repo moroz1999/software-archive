@@ -8,6 +8,7 @@ The page of one release ([domain/software.md](../domain/software.md#releases)) a
 - The software is named first and links back to its page.
 - Release day, version and description are left out when unknown. Description lines stay separate.
 - Type is always shown. Hardware is the effective hardware returned for the release, grouped in the archive's fixed hardware-group order.
+- When the release has an archive, its original file name and size are shown with a download action.
 - The release's screenshots appear in their gallery below the facts and are left out when there are none ([screenshots.md](screenshots.md#pages)).
 
 ## Loading and errors
@@ -19,4 +20,4 @@ The page of one release ([domain/software.md](../domain/software.md#releases)) a
 
 ## REST
 
-The page uses the software details and release list calls documented by [software-view.md](software-view.md#rest), so it reads the same effective hardware, display title and change permission as the software page. Its screenshot block uses the release screenshot call documented by [screenshots.md](screenshots.md#rest).
+The page uses the software details and release list calls documented by [software-view.md](software-view.md#rest), so it reads the same effective hardware, display title, archive metadata and change permission as the software page. Its screenshot block uses the release screenshot call documented by [screenshots.md](screenshots.md#rest). Archive downloads are documented by [release-files.md](release-files.md#rest).

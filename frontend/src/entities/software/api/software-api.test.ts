@@ -27,6 +27,7 @@ const VECTOR06C = {code: 'vector06c', name: 'Vector-06C', group: 'computers'};
 const AY = {code: 'ay8910', name: 'AY-3-8910', group: 'sound'};
 const RELEASE = '00000000-0000-0000-0007-000000000001';
 const SHOT = '00000000-0000-0000-0055-000000000001';
+const ARCHIVE = {fileName: 'elite-ay.zip', size: 1536, url: `/api/software/${ID}/releases/${RELEASE}/archive`};
 
 describe(fetchSoftware, () => {
     afterEach(() => {
@@ -100,6 +101,7 @@ describe(fetchSoftwareReleases, () => {
         const release = {
             id: RELEASE, title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: '1990-03-01', description: null, hardware: [AY], canChange: true,
             screenshots: [{id: SHOT, url: `/api/screenshots/${SHOT}`}],
+            archive: ARCHIVE,
         };
         const fetchMock = stubFetch(json([release]));
 

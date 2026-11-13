@@ -246,6 +246,11 @@ public final class Software {
                         screenshots.ids().stream(),
                         releases.stream().flatMap(release -> release.screenshots().ids().stream()))
                 .toList());
+        discardArchives(releases.stream()
+                .map(Release::archive)
+                .filter(Objects::nonNull)
+                .map(ReleaseArchive::id)
+                .toList());
     }
 
     /**
@@ -269,13 +274,45 @@ public final class Software {
 
     /** Anyone signed in adds releases to any software (docs/domain/users.md). */
     public void addRelease(ReleaseId releaseId, ReleaseContent content, HardwareSet hardware, AddedBy addedBy) {
-        releases.add(new Release(releaseId, content, requireOwn(hardware), addedBy));
+        addRelease(releaseId, content, hardware, addedBy, null);
+    }
+
+    /** Anyone signed in adds releases, optionally with their one downloadable archive. */
+    public void addRelease(
+            ReleaseId releaseId,
+            ReleaseContent content,
+            HardwareSet hardware,
+            AddedBy addedBy,
+            @Nullable ReleaseArchive archive) {
+        releases.add(new Release(releaseId, content, requireOwn(hardware), addedBy, Screenshots.EMPTY, archive));
     }
 
     public void editRelease(ReleaseId releaseId, ReleaseContent content, HardwareSet hardware, Actor actor) {
+        editRelease(releaseId, content, hardware, actor, null, false);
+    }
+
+    public void editRelease(
+            ReleaseId releaseId,
+            ReleaseContent content,
+            HardwareSet hardware,
+            Actor actor,
+            @Nullable ReleaseArchive replacement,
+            boolean removeArchive) {
+        if (replacement != null && removeArchive) {
+            throw new ReleaseArchiveChangeInvalidException();
+        }
         Release release = release(releaseId).orElseThrow(ReleaseNotFoundException::new);
         requireReleaseChangeableBy(release, actor);
         release.edit(content, requireOwn(hardware));
+        ReleaseArchive old = release.archive();
+        if (replacement != null) {
+            release.changeArchive(replacement);
+        } else if (removeArchive) {
+            release.changeArchive(null);
+        }
+        if (old != null && (replacement != null || removeArchive)) {
+            discardArchives(List.of(old.id()));
+        }
     }
 
     public void removeRelease(ReleaseId releaseId, Actor actor) {
@@ -284,6 +321,10 @@ public final class Software {
         releases.remove(release);
         markChanged();
         discard(release.screenshots().ids());
+        ReleaseArchive archive = release.archive();
+        if (archive != null) {
+            discardArchives(List.of(archive.id()));
+        }
     }
 
     /** The screenshots of the software itself, or of its release when one is named. */
@@ -333,6 +374,12 @@ public final class Software {
     private void discard(List<ScreenshotId> ids) {
         if (!ids.isEmpty()) {
             events.add(new ScreenshotsDiscarded(ids));
+        }
+    }
+
+    private void discardArchives(List<ReleaseArchiveId> ids) {
+        if (!ids.isEmpty()) {
+            events.add(new ReleaseArchivesDiscarded(ids));
         }
     }
 

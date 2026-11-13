@@ -57,7 +57,6 @@ describe(EditReleaseProvider, () => {
 
         expect(fetchMock).toHaveBeenCalledExactlyOnceWith(`/api/software/${SOFTWARE.id}/releases/${RELEASE.id}`, expect.objectContaining({
             method: 'PUT',
-            body: '{"title":"Elite AY","version":"1.1","type":"mod","releaseDate":null,"description":null,"hardware":["ay8910","beeper"]}',
         }));
     });
 

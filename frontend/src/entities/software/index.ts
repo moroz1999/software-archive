@@ -20,6 +20,7 @@ export {
 export {releaseDayText} from './lib/release-day';
 export {releaseYear} from './lib/release-year';
 export {type ReleaseDetails, type ReleaseId, type ReleaseType, requireReleaseId, type SoftwareRelease, toReleaseId} from './model/release';
+export {fileSizeText, type ReleaseArchive, RELEASE_ARCHIVE_MAX_BYTES, releaseArchiveProblem} from './model/release-archive';
 export {type ReleaseDraft, type ReleaseFormValues, toReleaseFormValues} from './model/release-form';
 export {type ReleaseFormState, useReleaseForm} from './model/release-form-context';
 export {ReleaseFormProvider, type ReleaseFormProviderProps} from './model/ReleaseFormProvider';

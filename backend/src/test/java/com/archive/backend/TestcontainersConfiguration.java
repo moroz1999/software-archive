@@ -21,10 +21,14 @@ public class TestcontainersConfiguration {
         return new PostgreSQLContainer<>("postgres:13");
     }
 
-    /** Pictures of screenshots go to a folder of the test, never to the storage of the developer. */
+    /** Uploaded files go to folders of the test, never to the storage of the developer. */
     @Bean
     DynamicPropertyRegistrar screenshotStorage() throws IOException {
         Path folder = Files.createTempDirectory("screenshots");
-        return registry -> registry.add("screenshots.storage-path", folder::toString);
+        Path releases = Files.createTempDirectory("release-archives");
+        return registry -> {
+            registry.add("screenshots.storage-path", folder::toString);
+            registry.add("release-archives.storage-path", releases::toString);
+        };
     }
 }

@@ -2,6 +2,7 @@ import {NotFoundError} from '@/shared/api';
 import type {Brand} from '@/shared/lib/brand';
 import {isUuid} from '@/shared/lib/uuid';
 import type {Screenshot} from './screenshot';
+import type {ReleaseArchive} from './release-archive';
 import type {Hardware, ReleaseDate} from './software';
 
 export type ReleaseId = Brand<string, 'ReleaseId'>;
@@ -35,6 +36,7 @@ export interface SoftwareRelease {
     readonly description: string | null;
     readonly hardware: readonly Hardware[];
     readonly screenshots: readonly Screenshot[];
+    readonly archive?: ReleaseArchive | null;
     /** Whether whoever reads it may change it, as the archive tells. */
     readonly canChange: boolean;
 }
@@ -48,6 +50,7 @@ export interface ReleaseDetails {
     readonly releaseDate: ReleaseDate | null;
     readonly description: string | null;
     readonly hardware: readonly Hardware[];
+    readonly archive?: ReleaseArchive | null;
 }
 
 export function toReleaseId(raw: string): ReleaseId {

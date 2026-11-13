@@ -69,7 +69,8 @@ public class SoftwareController {
      */
     @GetMapping("/{id}/releases")
     public List<SoftwareReleaseDto> releases(Actor actor, @PathVariable UUID id) {
-        return webMapper.toReleases(releasesHandler.handle(new ListSoftwareReleasesQuery(actor, new SoftwareId(id))));
+        return webMapper.toReleases(
+                id, releasesHandler.handle(new ListSoftwareReleasesQuery(actor, new SoftwareId(id))));
     }
 
     @PostMapping

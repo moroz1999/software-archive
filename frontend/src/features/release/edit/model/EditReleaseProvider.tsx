@@ -38,6 +38,7 @@ export function EditReleaseProvider({software, release, hardware, onSaved, child
     return (
         <ReleaseFormProvider
             initial={toReleaseFormValues(release)}
+            initialArchive={release.archive ?? null}
             hardware={hardware}
             onSubmit={mutate}
             busy={isPending}

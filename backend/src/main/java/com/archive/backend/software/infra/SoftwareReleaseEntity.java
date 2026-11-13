@@ -43,6 +43,15 @@ public class SoftwareReleaseEntity {
 
     private @Nullable String description;
 
+    @Column(name = "archive_id")
+    private @Nullable UUID archiveId;
+
+    @Column(name = "archive_file_name")
+    private @Nullable String archiveFileName;
+
+    @Column(name = "archive_size")
+    private @Nullable Long archiveSize;
+
     /** Who added it; the database forgets them once their account is gone, so it is never written back. */
     @Column(name = "added_by", updatable = false)
     private @Nullable UUID addedBy;

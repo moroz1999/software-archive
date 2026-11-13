@@ -16,6 +16,7 @@ import {
 import type {SoftwareDraft} from '../model/software-form';
 import type {EntityAutocompleteOption} from '@/shared/ui/multi-entity-autocomplete';
 import {parseScreenshots} from './screenshot-api';
+import {parseReleaseArchive} from './release-api';
 
 function softwarePath(id: SoftwareId): string {
     return `/api/software/${id}`;
@@ -138,6 +139,7 @@ export async function fetchSoftwareReleases(id: SoftwareId, signal: AbortSignal)
             description: readNullableString(dto, 'description'),
             hardware: parseHardwareList(dto['hardware']),
             screenshots: parseScreenshots(dto['screenshots']),
+            archive: parseReleaseArchive(dto['archive']),
             canChange: readBoolean(dto, 'canChange'),
         };
     }));

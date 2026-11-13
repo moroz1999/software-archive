@@ -50,4 +50,33 @@ describe('ReleaseNewPage', () => {
 
         await expect(screen.findByText('Software view')).resolves.toBeInTheDocument();
     });
+
+    it('adds one archive together with the release', async () => {
+        const fetchMock = answer();
+        const archive = new File(['archive'], 'elite.zip', {type: 'application/zip'});
+        renderRoute();
+
+        await userEvent.upload(await screen.findByLabelText('Add archive'), archive);
+        await userEvent.click(screen.getByRole('button', {name: 'Add release'}));
+
+        await expect(screen.findByText('Software view')).resolves.toBeInTheDocument();
+
+        const request = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST');
+        const body = request?.[1]?.body;
+
+        expect(body).toBeInstanceOf(FormData);
+        expect(body instanceof FormData ? body.get('archive') : null).toBe(archive);
+    });
+
+    it('refuses an archive larger than 100 MB before adding the release', async () => {
+        const fetchMock = answer();
+        const archive = new File(['archive'], 'huge.zip', {type: 'application/zip'});
+        Object.defineProperty(archive, 'size', {value: 100 * 1024 * 1024 + 1});
+        renderRoute();
+
+        await userEvent.upload(await screen.findByLabelText('Add archive'), archive);
+
+        expect(screen.getByText('A release archive can be at most 100 MB.')).toBeInTheDocument();
+        expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false);
+    });
 });

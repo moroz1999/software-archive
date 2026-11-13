@@ -23,6 +23,8 @@ A release (a version) is a version of the software. It never lives apart from it
 - Each release has its own page, reached from the releases of its software. Releases are added, edited and deleted in the context of their software; for now anyone can do it. The version is at most 50 characters.
 - A release's hardware is chosen from the hardware of its software's platform.
 - On the page of the software its releases can be sorted by title or year and narrowed to one type.
+- A release may have one downloadable archive of any file type, up to 100 MB. Its original file name and size are shown to visitors.
+- The archive can be added or replaced while saving the release, or removed without deleting the release. Deleting the release or its software deletes the archive.
 
 ## Screenshots
 Screenshots are part of what the archive knows, as much as its records: they are kept as uploaded, never recompressed, and are not lost with the services the archive runs on.

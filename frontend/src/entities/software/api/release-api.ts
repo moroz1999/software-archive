@@ -1,5 +1,6 @@
-import {deleteResource, getJson, mapResponse, postJson, putJson, readNullableString, readObject, readString} from '@/shared/api';
+import {deleteResource, getJson, mapResponse, postForm, putForm, readNullableString, readNumber, readObject, readString} from '@/shared/api';
 import {type ReleaseDetails, type ReleaseId, toReleaseId, toReleaseType} from '../model/release';
+import type {ReleaseArchive} from '../model/release-archive';
 import type {ReleaseDraft} from '../model/release-form';
 import {type Hardware, type SoftwareId, type SoftwarePlatformCode, toReleaseDate} from '../model/software';
 import {parseHardwareList} from './software-api';
@@ -23,6 +24,27 @@ function toBody(draft: ReleaseDraft): unknown {
     };
 }
 
+function toForm(draft: ReleaseDraft): FormData {
+    const form = new FormData();
+    form.append('release', new Blob([JSON.stringify(toBody(draft))], {type: 'application/json'}));
+    if (draft.archive !== undefined) {
+        form.append('archive', draft.archive);
+    }
+    if (draft.removeArchive === true) {
+        form.append('removeArchive', 'true');
+    }
+    return form;
+}
+
+/** An archive in a release answer; missing means the release has no downloadable file. */
+export function parseReleaseArchive(raw: unknown): ReleaseArchive | null {
+    if (raw === undefined || raw === null) {
+        return null;
+    }
+    const dto = readObject(raw, 'release archive');
+    return {fileName: readString(dto, 'fileName'), size: readNumber(dto, 'size'), url: readString(dto, 'url')};
+}
+
 /** A release as it states itself: `GET /api/software/{id}/releases/{releaseId}`. */
 export async function fetchSoftwareRelease(softwareId: SoftwareId, releaseId: ReleaseId, signal: AbortSignal): Promise<ReleaseDetails> {
     const json = await getJson(releasePath(softwareId, releaseId), signal);
@@ -37,18 +59,19 @@ export async function fetchSoftwareRelease(softwareId: SoftwareId, releaseId: Re
             releaseDate: releaseDate === null ? null : toReleaseDate(releaseDate),
             description: readNullableString(dto, 'description'),
             hardware: parseHardwareList(dto['hardware']),
+            archive: parseReleaseArchive(dto['archive']),
         };
     });
 }
 
 /** Adds a release to its software and returns its id. */
 export async function createRelease(softwareId: SoftwareId, draft: ReleaseDraft): Promise<ReleaseId> {
-    const json = await postJson(releasesPath(softwareId), toBody(draft));
+    const json = await postForm(releasesPath(softwareId), toForm(draft));
     return mapResponse(() => toReleaseId(readString(readObject(json, 'created release'), 'id')));
 }
 
 export async function updateRelease(softwareId: SoftwareId, releaseId: ReleaseId, draft: ReleaseDraft): Promise<void> {
-    await putJson(releasePath(softwareId, releaseId), toBody(draft));
+    await putForm(releasePath(softwareId, releaseId), toForm(draft));
 }
 
 export async function deleteRelease(softwareId: SoftwareId, releaseId: ReleaseId): Promise<void> {

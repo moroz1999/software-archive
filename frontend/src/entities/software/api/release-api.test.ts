@@ -10,6 +10,7 @@ const RELEASE = toReleaseId('00000000-0000-0000-0007-000000000002');
 const AY = {code: 'ay8910', name: 'AY-3-8910', group: 'sound'};
 const DRAFT = {title: null, version: '1.1', type: 'mod' as const, releaseDate: toReleaseDate('1990-03-01'), description: null, hardware: ['ay8910']};
 const RELEASE_PATH = `/api/software/${SOFTWARE}/releases/${RELEASE}`;
+const ARCHIVE = {fileName: 'elite-ay.zip', size: 1536, url: `${RELEASE_PATH}/archive`};
 
 describe(fetchSoftwareRelease, () => {
     afterEach(() => {
@@ -18,11 +19,11 @@ describe(fetchSoftwareRelease, () => {
 
     it('reads a release as it states itself', async () => {
         const fetchMock = stubFetch(json({
-            id: RELEASE, title: null, version: '1.1', type: 'mod', releaseDate: '1990-03-01', description: 'With AY music', hardware: [AY],
+            id: RELEASE, title: null, version: '1.1', type: 'mod', releaseDate: '1990-03-01', description: 'With AY music', hardware: [AY], archive: ARCHIVE,
         }));
 
         await expect(fetchSoftwareRelease(SOFTWARE, RELEASE, new AbortController().signal)).resolves.toStrictEqual({
-            id: RELEASE, title: null, version: '1.1', type: 'mod', releaseDate: '1990-03-01', description: 'With AY music', hardware: [AY],
+            id: RELEASE, title: null, version: '1.1', type: 'mod', releaseDate: '1990-03-01', description: 'With AY music', hardware: [AY], archive: ARCHIVE,
         });
         expect(fetchMock.mock.calls[0]?.[0]).toBe(RELEASE_PATH);
     });
@@ -49,10 +50,8 @@ describe(createRelease, () => {
         const fetchMock = stubFetch(json({id: RELEASE}, 201));
 
         await expect(createRelease(SOFTWARE, DRAFT)).resolves.toBe(RELEASE);
-        expect(fetchMock).toHaveBeenCalledExactlyOnceWith(`/api/software/${SOFTWARE}/releases`, expect.objectContaining({
-            method: 'POST',
-            body: '{"title":null,"version":"1.1","type":"mod","releaseDate":"1990-03-01","description":null,"hardware":["ay8910"]}',
-        }));
+        expect(fetchMock).toHaveBeenCalledExactlyOnceWith(`/api/software/${SOFTWARE}/releases`, expect.objectContaining({method: 'POST'}));
+        expect(fetchMock.mock.calls[0]?.[1]?.body).toBeInstanceOf(FormData);
     });
 });
 

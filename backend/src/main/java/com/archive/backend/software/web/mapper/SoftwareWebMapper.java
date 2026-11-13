@@ -17,10 +17,12 @@ import com.archive.backend.software.domain.SoftwareReference;
 import com.archive.backend.software.domain.SoftwareReferenceId;
 import com.archive.backend.software.domain.SoftwareReferenceType;
 import com.archive.backend.software.domain.SoftwareTitle;
+import com.archive.backend.software.read.ReleaseArchiveDetails;
 import com.archive.backend.software.read.SoftwareDetails;
 import com.archive.backend.software.read.SoftwareRelease;
 import com.archive.backend.software.read.SoftwareScreenshot;
 import com.archive.backend.software.read.SoftwareSummary;
+import com.archive.backend.software.web.dto.ReleaseArchiveDto;
 import com.archive.backend.software.web.dto.ScreenshotDto;
 import com.archive.backend.software.web.dto.SoftwareCreatedDto;
 import com.archive.backend.software.web.dto.SoftwareDetailsDto;
@@ -47,10 +49,39 @@ public interface SoftwareWebMapper {
 
     SoftwareReferenceDto toReference(com.archive.backend.software.read.SoftwareReferenceOption reference);
 
-    List<SoftwareReleaseDto> toReleases(List<SoftwareRelease> releases);
+    List<com.archive.backend.software.web.dto.SoftwareHardwareDto> toHardwareDtos(
+            List<com.archive.backend.software.read.SoftwareHardware> hardware);
+
+    default List<SoftwareReleaseDto> toReleases(UUID softwareId, List<SoftwareRelease> releases) {
+        return releases.stream().map(release -> toRelease(softwareId, release)).toList();
+    }
+
+    default SoftwareReleaseDto toRelease(UUID softwareId, SoftwareRelease release) {
+        return new SoftwareReleaseDto(
+                release.id(),
+                release.title(),
+                release.version(),
+                release.type(),
+                release.releaseDate(),
+                release.description(),
+                toHardwareDtos(release.hardware()),
+                release.screenshots().stream().map(this::toScreenshot).toList(),
+                toArchive(softwareId, release.id(), release.archive()),
+                release.canChange());
+    }
 
     default ScreenshotDto toScreenshot(SoftwareScreenshot screenshot) {
         return new ScreenshotDto(screenshot.id(), ScreenshotWebMapper.url(screenshot.id()));
+    }
+
+    private static @Nullable ReleaseArchiveDto toArchive(
+            UUID softwareId, UUID releaseId, @Nullable ReleaseArchiveDetails archive) {
+        return archive == null
+                ? null
+                : new ReleaseArchiveDto(
+                        archive.fileName(),
+                        archive.size(),
+                        "/api/software/" + softwareId + "/releases/" + releaseId + "/archive");
     }
 
     default SoftwareCreatedDto toCreated(SoftwareId id) {

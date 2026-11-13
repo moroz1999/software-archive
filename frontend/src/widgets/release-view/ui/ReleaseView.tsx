@@ -2,6 +2,7 @@ import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
     HardwareList,
+    fileSizeText,
     releaseDayText,
     releaseEditPath,
     type ReleaseId,
@@ -76,6 +77,15 @@ function LoadedView({softwareId, releaseId}: ReleaseViewProps) {
                     )}
                     {release.version !== null && <Section label={t('fields.version')}><Text>{release.version}</Text></Section>}
                     <Section label={t('fields.type')}><Text>{t(`release.types.${release.type}`)}</Text></Section>
+                    {release.archive != null && (
+                        <Section label={t('release.archive')}>
+                            <Stack gap="xs" align="start">
+                                <Text>{release.archive.fileName}</Text>
+                                <Text variant="bodySm" tone="muted">{fileSizeText(release.archive.size)}</Text>
+                                <Button href={release.archive.url} target="_self" color="primary">{t('release.downloadArchive')}</Button>
+                            </Stack>
+                        </Section>
+                    )}
                     {release.hardware.length > 0 && (
                         <Stack as="section" gap="xs" ariaLabel={t('fields.hardware')}>
                             <Text variant="label" tone="muted">{t('fields.hardware')}</Text>

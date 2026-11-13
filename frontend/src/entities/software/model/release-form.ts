@@ -25,6 +25,10 @@ export interface ReleaseDraft {
     readonly releaseDate: ReleaseDate | null;
     readonly description: string | null;
     readonly hardware: readonly string[];
+    /** A replacement chosen in the form; absent keeps the current archive. */
+    readonly archive?: File;
+    /** Set only when the current archive is to be removed on save. */
+    readonly removeArchive?: true;
 }
 
 export interface ReleaseFormErrors {
@@ -32,6 +36,7 @@ export interface ReleaseFormErrors {
     readonly version?: 'too-long';
     readonly type?: 'required';
     readonly releaseDate?: 'invalid';
+    readonly archive?: 'too-large';
 }
 
 export type ReleaseFormResult =

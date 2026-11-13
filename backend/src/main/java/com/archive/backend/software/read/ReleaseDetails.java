@@ -15,4 +15,17 @@ public record ReleaseDetails(
         String type,
         @Nullable LocalDate releaseDate,
         @Nullable String description,
-        List<SoftwareHardware> hardware) {}
+        List<SoftwareHardware> hardware,
+        @Nullable ReleaseArchiveDetails archive) {
+
+    public ReleaseDetails(
+            UUID id,
+            @Nullable String title,
+            @Nullable String version,
+            String type,
+            @Nullable LocalDate releaseDate,
+            @Nullable String description,
+            List<SoftwareHardware> hardware) {
+        this(id, title, version, type, releaseDate, description, hardware, null);
+    }
+}

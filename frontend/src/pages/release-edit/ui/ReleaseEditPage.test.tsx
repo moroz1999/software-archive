@@ -11,7 +11,8 @@ const RELEASE = '00000000-0000-0000-0007-000000000002';
 const ELITE = {id: ID, title: 'Elite', description: null, releaseDate: null, platform: {code: 'vector', name: 'Vector'}, hardware: [], categories: [], publishers: [], developers: [], credits: [], canChange: true};
 const AY = {code: 'ay8910', name: 'AY-3-8910', group: 'sound'};
 const SHOT = {id: '00000000-0000-0000-0055-000000000001', url: '/api/screenshots/00000000-0000-0000-0055-000000000001'};
-const AY_MOD = {id: RELEASE, title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: null, description: null, hardware: [AY]};
+const ARCHIVE = {fileName: 'elite-ay.zip', size: 1536, url: `/api/software/${ID}/releases/${RELEASE}/archive`};
+const AY_MOD = {id: RELEASE, title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: null, description: null, hardware: [AY], archive: ARCHIVE};
 
 function renderRoute() {
     const queryClient = createQueryClient();
@@ -55,6 +56,58 @@ describe('ReleaseEditPage', () => {
         const screenshots = await screen.findByRole('list', {name: 'Screenshots'});
 
         expect(within(screenshots).getByRole('img', {name: 'Screenshot 1'})).toHaveAttribute('src', SHOT.url);
+    });
+
+    it('offers the current archive for replacement or removal', async () => {
+        answer();
+
+        renderRoute();
+
+        await expect(screen.findByText('elite-ay.zip')).resolves.toBeInTheDocument();
+        expect(screen.getByText('1.5 KB')).toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Replace archive'})).toBeEnabled();
+        expect(screen.getByRole('button', {name: 'Remove archive'})).toBeEnabled();
+    });
+
+    it('replaces the archive together with the release changes', async () => {
+        const fetchMock = answer();
+        const original = fetchMock.getMockImplementation();
+        fetchMock.mockImplementation((input, init) => (init?.method === 'PUT'
+            ? Promise.resolve(noContent()())
+            : original === undefined ? Promise.reject(new Error('no stub')) : original(input, init)));
+        const archive = new File(['replacement'], 'elite-ay-v2.zip', {type: 'application/zip'});
+        renderRoute();
+
+        await userEvent.upload(await screen.findByLabelText('Replace archive'), archive);
+        await userEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        await expect(screen.findByText('Software view')).resolves.toBeInTheDocument();
+
+        const request = fetchMock.mock.calls.find(([, init]) => init?.method === 'PUT');
+        const body = request?.[1]?.body;
+
+        expect(body).toBeInstanceOf(FormData);
+        expect(body instanceof FormData ? body.get('archive') : null).toBe(archive);
+    });
+
+    it('removes the archive together with the release changes', async () => {
+        const fetchMock = answer();
+        const original = fetchMock.getMockImplementation();
+        fetchMock.mockImplementation((input, init) => (init?.method === 'PUT'
+            ? Promise.resolve(noContent()())
+            : original === undefined ? Promise.reject(new Error('no stub')) : original(input, init)));
+        renderRoute();
+
+        await userEvent.click(await screen.findByRole('button', {name: 'Remove archive'}));
+        await userEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        await expect(screen.findByText('Software view')).resolves.toBeInTheDocument();
+
+        const request = fetchMock.mock.calls.find(([, init]) => init?.method === 'PUT');
+        const body = request?.[1]?.body;
+
+        expect(body).toBeInstanceOf(FormData);
+        expect(body instanceof FormData ? body.get('removeArchive') : null).toBe('true');
     });
 
     it('returns to the software after saving', async () => {

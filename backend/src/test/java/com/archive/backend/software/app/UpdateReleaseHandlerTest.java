@@ -14,17 +14,21 @@ import static com.archive.backend.user.TestActors.ADMIN;
 import static com.archive.backend.user.TestActors.MEMBER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.shared.domain.error.RuleViolationException;
+import com.archive.backend.software.domain.ReleaseArchiveRepository;
 import com.archive.backend.user.domain.ChangeForbiddenException;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationEventPublisher;
 
 class UpdateReleaseHandlerTest {
 
     private final InMemorySoftwareRepository repository = new InMemorySoftwareRepository();
-    private final UpdateReleaseHandler handler = new UpdateReleaseHandler(repository, hardwareSets());
+    private final UpdateReleaseHandler handler = new UpdateReleaseHandler(
+            repository, hardwareSets(), mock(ReleaseArchiveRepository.class), mock(ApplicationEventPublisher.class));
 
     @Test
     void storesTheEditedRelease() {

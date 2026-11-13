@@ -9,10 +9,10 @@ spring:
     show-sql: true
   servlet:
     multipart:
-      # Above the size of one screenshot, so the archive itself says which file is too large.
-      max-file-size: 50MB
-      max-request-size: 200MB
-      # Every uploaded file goes to a temporary file at once: screenshots are streamed from there, never held in memory.
+      # Above the business limit, so the archive itself says which file is too large.
+      max-file-size: 101MB
+      max-request-size: 102MB
+      # Every uploaded file goes to a temporary file at once and is streamed from there, never held in memory.
       file-size-threshold: 0
   mail:
     # Mailpit of docker-compose catches every letter: http://localhost:8025
@@ -27,6 +27,10 @@ spring:
 screenshots:
   # Business data like the database: kept outside the build, backed up with it.
   storage-path: ../upload
+
+release-archives:
+  # Kept beside screenshots but separate from them, under internal UUIDs.
+  storage-path: ../upload/releases
 
 search:
   typesense:

@@ -138,6 +138,12 @@ export const resources = {
             deleteQuestion: 'Delete the release {{name}} from the archive?', cards: 'Cards', allTypes: 'All', year: 'Year',
             versionFact: 'Version {{version}}', editNamed: 'Edit {{title}}', software: 'Software',
             hardwareHint: 'A group checked here replaces that group of the software.',
+            archive: 'Archive', addArchive: 'Add archive', replaceArchive: 'Replace archive', removeArchive: 'Remove archive',
+            downloadArchive: 'Download archive', archiveHint: 'Any file type, up to 100 MB.',
+            archiveErrors: {
+                size: 'A release archive can be at most 100 MB.', name: 'Choose a named file for the release archive.',
+                change: 'Choose either replacement or removal of the release archive.',
+            },
             types: {
                 original: 'Original', rerelease: 'Rerelease', adaptation: 'Adaptation', localization: 'Localization', bugfix: 'Bugfix',
                 mod: 'Mod', crack: 'Crack', mia: 'Missing in action', corrupted: 'Corrupted', compilation: 'Compilation',
@@ -308,6 +314,12 @@ export const resources = {
             deleteQuestion: 'Удалить релиз {{name}} из архива?', year: 'Год', versionFact: 'Версия {{version}}',
             editNamed: 'Редактировать {{title}}', software: 'Программа',
             hardwareHint: 'Выбранная здесь группа заменяет соответствующую группу оборудования программы.',
+            archive: 'Архив', addArchive: 'Добавить архив', replaceArchive: 'Заменить архив', removeArchive: 'Удалить архив',
+            downloadArchive: 'Скачать архив', archiveHint: 'Файл любого типа, до 100 МБ.',
+            archiveErrors: {
+                size: 'Архив релиза может весить не больше 100 МБ.', name: 'Выберите для релиза файл с именем.',
+                change: 'Выберите либо замену, либо удаление архива релиза.',
+            },
             types: {
                 original: 'Оригинал', rerelease: 'Переиздание', adaptation: 'Адаптация', localization: 'Локализация',
                 bugfix: 'Исправление ошибок', mod: 'Модификация', crack: 'Взлом', mia: 'Утрачено', corrupted: 'Повреждено',

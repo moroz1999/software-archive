@@ -18,6 +18,8 @@ import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.HardwareSet;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.software.domain.Release;
+import com.archive.backend.software.domain.ReleaseArchive;
+import com.archive.backend.software.domain.ReleaseArchiveId;
 import com.archive.backend.software.domain.ReleaseContent;
 import com.archive.backend.software.domain.ReleaseDescription;
 import com.archive.backend.software.domain.ReleaseId;
@@ -200,6 +202,25 @@ class JpaSoftwareRepositoryIT {
         assertThat(loaded.screenshots(null).all())
                 .containsExactly(shot(1, ScreenshotFormat.PNG), shot(2, ScreenshotFormat.GIF));
         assertThat(loaded.screenshots(AY_MOD).all()).containsExactly(shot(3, ScreenshotFormat.WEBP));
+    }
+
+    @Test
+    void storesTheOneArchiveOfARelease() {
+        ReleaseArchive archive = new ReleaseArchive(new ReleaseArchiveId(UUID.randomUUID()), "elite.zip", 7);
+        Software software = Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE, CategorySet.EMPTY);
+        software.addRelease(AY_MOD, AY_MOD_CONTENT, NO_HARDWARE, AddedBy.NOBODY, archive);
+
+        repository.save(software);
+        springDataSoftwareRepository.flush();
+        entityManager.clear();
+
+        assertThat(repository
+                        .findById(ID)
+                        .orElseThrow()
+                        .release(AY_MOD)
+                        .orElseThrow()
+                        .archive())
+                .isEqualTo(archive);
     }
 
     @Test
