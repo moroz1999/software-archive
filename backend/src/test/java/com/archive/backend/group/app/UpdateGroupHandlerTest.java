@@ -8,6 +8,8 @@ import static com.archive.backend.group.app.GroupFixtures.NORWAY;
 import static com.archive.backend.group.app.GroupFixtures.crew;
 import static com.archive.backend.group.app.GroupFixtures.groupTypes;
 import static com.archive.backend.group.app.GroupFixtures.places;
+import static com.archive.backend.user.TestActors.ADMIN;
+import static com.archive.backend.user.TestActors.MEMBER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -23,6 +25,7 @@ import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.label.domain.OwnLabel;
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.shared.domain.error.RuleViolationException;
+import com.archive.backend.user.domain.ChangeForbiddenException;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -39,6 +42,7 @@ class UpdateGroupHandlerTest {
         repository.save(crew());
 
         handler.handle(new UpdateGroupCommand(
+                ADMIN,
                 CREW,
                 new GroupName("Crew"),
                 new GroupNotes("Disbanded"),
@@ -63,7 +67,7 @@ class UpdateGroupHandlerTest {
     @Test
     void failsWhenTheGroupDoesNotExist() {
         assertThatThrownBy(() -> handler.handle(new UpdateGroupCommand(
-                        CREW, new GroupName("Crew"), null, Set.of(DEMOGROUP), List.of(), List.of())))
+                        ADMIN, CREW, new GroupName("Crew"), null, Set.of(DEMOGROUP), List.of(), List.of())))
                 .isInstanceOfSatisfying(
                         NotFoundException.class, e -> assertThat(e.code()).isEqualTo("group.not-found"));
     }
@@ -73,6 +77,7 @@ class UpdateGroupHandlerTest {
         repository.save(crew());
 
         assertThatThrownBy(() -> handler.handle(new UpdateGroupCommand(
+                        ADMIN,
                         CREW,
                         new GroupName("Crew"),
                         null,
@@ -89,9 +94,20 @@ class UpdateGroupHandlerTest {
     void refusesToLeaveTheGroupWithoutTypes() {
         repository.save(crew());
 
-        assertThatThrownBy(() -> handler.handle(
-                        new UpdateGroupCommand(CREW, new GroupName("Crew"), null, Set.of(), List.of(), List.of())))
+        assertThatThrownBy(() -> handler.handle(new UpdateGroupCommand(
+                        ADMIN, CREW, new GroupName("Crew"), null, Set.of(), List.of(), List.of())))
                 .isInstanceOfSatisfying(
                         RuleViolationException.class, e -> assertThat(e.code()).isEqualTo("group.types-required"));
+    }
+
+    @Test
+    void refusesSomeoneWhoMayNotChangeTheGroupAndKeepsIt() {
+        repository.save(crew());
+
+        assertThatThrownBy(() -> handler.handle(new UpdateGroupCommand(
+                        MEMBER, CREW, new GroupName("Crew"), null, Set.of(LABEL), List.of(), List.of())))
+                .isInstanceOf(ChangeForbiddenException.class);
+        assertThat(repository.findById(CREW))
+                .hasValueSatisfying(group -> assertThat(group.getName()).isNotEqualTo(new GroupName("Crew")));
     }
 }

@@ -5,6 +5,8 @@ import static com.archive.backend.author.app.AuthorFixtures.ZED;
 import static com.archive.backend.author.app.AuthorFixtures.ZED_LABEL;
 import static com.archive.backend.author.app.AuthorFixtures.places;
 import static com.archive.backend.author.app.AuthorFixtures.zed;
+import static com.archive.backend.user.TestActors.ADMIN;
+import static com.archive.backend.user.TestActors.MEMBER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -20,6 +22,7 @@ import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.label.domain.OwnLabel;
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.shared.domain.error.RuleViolationException;
+import com.archive.backend.user.domain.ChangeForbiddenException;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -34,6 +37,7 @@ class UpdateAuthorHandlerTest {
         repository.save(zed());
 
         handler.handle(new UpdateAuthorCommand(
+                ADMIN,
                 ZED,
                 new RealName("John Doe"),
                 new AuthorNotes("Retired"),
@@ -56,7 +60,7 @@ class UpdateAuthorHandlerTest {
     @Test
     void failsWhenTheAuthorDoesNotExist() {
         assertThatThrownBy(() -> handler.handle(
-                        new UpdateAuthorCommand(ZED, new RealName("John Doe"), null, List.of(), List.of())))
+                        new UpdateAuthorCommand(ADMIN, ZED, new RealName("John Doe"), null, List.of(), List.of())))
                 .isInstanceOfSatisfying(
                         NotFoundException.class, e -> assertThat(e.code()).isEqualTo("author.not-found"));
     }
@@ -66,6 +70,7 @@ class UpdateAuthorHandlerTest {
         repository.save(zed());
 
         assertThatThrownBy(() -> handler.handle(new UpdateAuthorCommand(
+                        ADMIN,
                         ZED,
                         null,
                         null,
@@ -84,6 +89,7 @@ class UpdateAuthorHandlerTest {
         repository.save(zed());
 
         assertThatThrownBy(() -> handler.handle(new UpdateAuthorCommand(
+                        ADMIN,
                         ZED,
                         null,
                         null,
@@ -100,8 +106,19 @@ class UpdateAuthorHandlerTest {
     void refusesToLeaveTheAuthorWithoutAnyName() {
         repository.save(zed());
 
-        assertThatThrownBy(() -> handler.handle(new UpdateAuthorCommand(ZED, null, null, List.of(), List.of())))
+        assertThatThrownBy(() -> handler.handle(new UpdateAuthorCommand(ADMIN, ZED, null, null, List.of(), List.of())))
                 .isInstanceOfSatisfying(
                         RuleViolationException.class, e -> assertThat(e.code()).isEqualTo("author.nameless"));
+    }
+
+    @Test
+    void refusesSomeoneWhoMayNotChangeThePersonAndKeepsThem() {
+        repository.save(zed());
+
+        assertThatThrownBy(() -> handler.handle(
+                        new UpdateAuthorCommand(MEMBER, ZED, new RealName("John Doe"), null, List.of(), List.of())))
+                .isInstanceOf(ChangeForbiddenException.class);
+        assertThat(repository.findById(ZED))
+                .hasValueSatisfying(author -> assertThat(author.getRealName()).isNotEqualTo(new RealName("John Doe")));
     }
 }

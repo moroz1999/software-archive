@@ -107,9 +107,9 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
 
     @Override
     public Optional<AuthorDetails> findById(UUID id) {
-        return jdbc.sql(
-                        "WITH " + MainNameSql.PEOPLE
-                                + "SELECT main_name, real_name, notes FROM named_person WHERE person_id = :id AND main_name IS NOT NULL")
+        return jdbc.sql("WITH " + MainNameSql.PEOPLE
+                        + "SELECT main_name, real_name, notes, (SELECT added_by FROM person WHERE id = :id) AS added_by"
+                        + " FROM named_person WHERE person_id = :id AND main_name IS NOT NULL")
                 .param("id", id)
                 .query((rs, row) -> new AuthorDetails(
                         id,
@@ -118,7 +118,9 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
                         rs.getString("notes"),
                         labels(id),
                         locations(id),
-                        groups(id)))
+                        groups(id),
+                        rs.getObject("added_by", UUID.class),
+                        false))
                 .optional();
     }
 

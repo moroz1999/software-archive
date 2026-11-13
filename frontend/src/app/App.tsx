@@ -1,6 +1,7 @@
 import {type QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {RouterProvider} from 'react-router';
 import {PlatformSelectionProvider} from '@/entities/platforms';
+import {CurrentUserProvider} from '@/entities/users';
 import {SystemErrorDialog} from '@/widgets/system-error-dialog';
 import type {AppRouter} from './router';
 import {I18nProvider} from './i18n/I18nProvider';
@@ -19,9 +20,11 @@ export function App({router, queryClient}: AppProps) {
     return (
         <I18nProvider>
             <QueryClientProvider client={queryClient}>
-                <PlatformSelectionProvider>
-                    <RouterProvider router={router}/>
-                </PlatformSelectionProvider>
+                <CurrentUserProvider>
+                    <PlatformSelectionProvider>
+                        <RouterProvider router={router}/>
+                    </PlatformSelectionProvider>
+                </CurrentUserProvider>
                 <SystemErrorDialog/>
             </QueryClientProvider>
         </I18nProvider>

@@ -47,6 +47,7 @@ import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
 import com.archive.backend.shared.web.ApiExceptionHandler;
+import com.archive.backend.user.domain.Actor;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -170,7 +171,7 @@ class AuthorControllerTest {
 
     @Test
     void returnsOneAuthor() throws Exception {
-        when(getHandler.handle(new GetAuthorQuery(new AuthorId(ID))))
+        when(getHandler.handle(new GetAuthorQuery(Actor.anonymous(), new AuthorId(ID))))
                 .thenReturn(new AuthorDetails(
                         ID,
                         "Zed",
@@ -232,7 +233,11 @@ class AuthorControllerTest {
     @Test
     void createsAnAuthor() throws Exception {
         when(createHandler.handle(new CreateAuthorCommand(
-                        new RealName("John Doe"), new AuthorNotes("Coder since 1984"), ZED_LABELS, ZED_LOCATIONS)))
+                        Actor.anonymous(),
+                        new RealName("John Doe"),
+                        new AuthorNotes("Coder since 1984"),
+                        ZED_LABELS,
+                        ZED_LOCATIONS)))
                 .thenReturn(new AuthorId(ID));
 
         mvc.perform(post("/api/authors").contentType(MediaType.APPLICATION_JSON).content(ZED_JSON))
@@ -243,7 +248,8 @@ class AuthorControllerTest {
 
     @Test
     void createsAnAuthorOfOnlyARealName() throws Exception {
-        when(createHandler.handle(new CreateAuthorCommand(new RealName("John Doe"), null, List.of(), List.of())))
+        when(createHandler.handle(new CreateAuthorCommand(
+                        Actor.anonymous(), new RealName("John Doe"), null, List.of(), List.of())))
                 .thenReturn(new AuthorId(ID));
 
         mvc.perform(post("/api/authors").contentType(MediaType.APPLICATION_JSON).content("{\"realName\":\"John Doe\"}"))
@@ -308,6 +314,7 @@ class AuthorControllerTest {
 
         verify(updateHandler)
                 .handle(new UpdateAuthorCommand(
+                        Actor.anonymous(),
                         new AuthorId(ID),
                         new RealName("John Doe"),
                         new AuthorNotes("Coder since 1984"),
@@ -330,7 +337,7 @@ class AuthorControllerTest {
     void deletesAnAuthor() throws Exception {
         mvc.perform(delete("/api/authors/{id}", ID)).andExpect(status().isNoContent());
 
-        verify(deleteHandler).handle(new DeleteAuthorCommand(new AuthorId(ID)));
+        verify(deleteHandler).handle(new DeleteAuthorCommand(Actor.anonymous(), new AuthorId(ID)));
     }
 
     @Test

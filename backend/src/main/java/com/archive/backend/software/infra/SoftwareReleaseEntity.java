@@ -40,6 +40,10 @@ public class SoftwareReleaseEntity {
 
     private @Nullable String description;
 
+    /** Who added it; the database forgets them once their account is gone, so it is never written back. */
+    @Column(name = "added_by", updatable = false)
+    private @Nullable UUID addedBy;
+
     @ElementCollection
     @CollectionTable(name = "software_release_hardware", joinColumns = @JoinColumn(name = "release_id"))
     @Column(name = "hardware_code")

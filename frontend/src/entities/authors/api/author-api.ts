@@ -49,6 +49,7 @@ export async function fetchAuthor(id: AuthorId, signal: AbortSignal): Promise<Au
             labels: readArray(dto['labels'], 'labels').map(parseLabel),
             locations: readArray(dto['locations'], 'locations').map(parseLocation),
             groups: readArray(dto['groups'], 'groups').map(parseGroup),
+            canChange: readBoolean(dto, 'canChange'),
         };
     });
 }

@@ -4,7 +4,10 @@ import com.archive.backend.category.domain.CategorySet;
 import com.archive.backend.hardware.domain.HardwareSet;
 import com.archive.backend.hardware.domain.HardwareUnknownException;
 import com.archive.backend.hardware.domain.PlatformCode;
+import com.archive.backend.shared.domain.ddd.AggregateRoot;
 import com.archive.backend.shared.domain.ddd.DomainEvent;
+import com.archive.backend.user.domain.Actor;
+import com.archive.backend.user.domain.AddedBy;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +21,7 @@ import org.jspecify.annotations.Nullable;
  * belongs to it (docs/domain/hardware.md).
  */
 @Getter
+@AggregateRoot
 public final class Software {
 
     private final SoftwareId id;
@@ -38,6 +42,9 @@ public final class Software {
 
     private final List<Release> releases;
 
+    /** Whoever added the software may change it and all its releases (docs/domain/users.md). */
+    private final AddedBy addedBy;
+
     @Getter(lombok.AccessLevel.NONE)
     private final List<DomainEvent> events = new ArrayList<>();
 
@@ -50,7 +57,8 @@ public final class Software {
             CategorySet categories,
             SoftwareReferences references,
             SoftwareCredits credits,
-            List<Release> releases) {
+            List<Release> releases,
+            AddedBy addedBy) {
         this.id = Objects.requireNonNull(id, "id");
         this.title = Objects.requireNonNull(title, "title");
         this.description = description;
@@ -61,6 +69,20 @@ public final class Software {
         this.credits = Objects.requireNonNull(credits, "credits");
         releases.forEach(release -> requireOwn(release.hardware()));
         this.releases = new ArrayList<>(releases);
+        this.addedBy = Objects.requireNonNull(addedBy, "addedBy");
+    }
+
+    public Software(
+            SoftwareId id,
+            SoftwareTitle title,
+            @Nullable SoftwareDescription description,
+            @Nullable LocalDate releaseDate,
+            HardwareSet hardware,
+            CategorySet categories,
+            SoftwareReferences references,
+            SoftwareCredits credits,
+            List<Release> releases) {
+        this(id, title, description, releaseDate, hardware, categories, references, credits, releases, AddedBy.NOBODY);
     }
 
     public Software(
@@ -103,11 +125,24 @@ public final class Software {
             HardwareSet hardware,
             CategorySet categories,
             SoftwareReferences references,
-            SoftwareCredits credits) {
-        Software software =
-                new Software(id, title, description, releaseDate, hardware, categories, references, credits, List.of());
+            SoftwareCredits credits,
+            AddedBy addedBy) {
+        Software software = new Software(
+                id, title, description, releaseDate, hardware, categories, references, credits, List.of(), addedBy);
         software.markChanged();
         return software;
+    }
+
+    public static Software create(
+            SoftwareId id,
+            SoftwareTitle title,
+            @Nullable SoftwareDescription description,
+            @Nullable LocalDate releaseDate,
+            HardwareSet hardware,
+            CategorySet categories,
+            SoftwareReferences references,
+            SoftwareCredits credits) {
+        return create(id, title, description, releaseDate, hardware, categories, references, credits, AddedBy.NOBODY);
     }
 
     public static Software create(
@@ -196,17 +231,31 @@ public final class Software {
                 .findFirst();
     }
 
-    public void addRelease(ReleaseId releaseId, ReleaseContent content, HardwareSet hardware) {
-        releases.add(new Release(releaseId, content, requireOwn(hardware)));
+    /** Anyone signed in adds releases to any software (docs/domain/users.md). */
+    public void addRelease(ReleaseId releaseId, ReleaseContent content, HardwareSet hardware, AddedBy addedBy) {
+        releases.add(new Release(releaseId, content, requireOwn(hardware), addedBy));
     }
 
-    public void editRelease(ReleaseId releaseId, ReleaseContent content, HardwareSet hardware) {
+    public void editRelease(ReleaseId releaseId, ReleaseContent content, HardwareSet hardware, Actor actor) {
         Release release = release(releaseId).orElseThrow(ReleaseNotFoundException::new);
+        requireReleaseChangeableBy(release, actor);
         release.edit(content, requireOwn(hardware));
     }
 
-    public void removeRelease(ReleaseId releaseId) {
-        releases.remove(release(releaseId).orElseThrow(ReleaseNotFoundException::new));
+    public void removeRelease(ReleaseId releaseId, Actor actor) {
+        Release release = release(releaseId).orElseThrow(ReleaseNotFoundException::new);
+        requireReleaseChangeableBy(release, actor);
+        releases.remove(release);
+    }
+
+    /** A release is changed by whoever added it, by whoever added its software, and by administrators. */
+    private void requireReleaseChangeableBy(Release release, Actor actor) {
+        actor.requireAllowed(release.addedBy().mayBeChangedBy(actor, addedBy));
+    }
+
+    /** Whoever added the software changes it, and administrators any (docs/domain/users.md). */
+    public void requireChangeableBy(Actor actor) {
+        addedBy.requireChangeableBy(actor);
     }
 
     /**

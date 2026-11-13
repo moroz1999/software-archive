@@ -7,17 +7,20 @@ import type {CategoryNode} from '../model/category';
 import {useCategoryTree} from '../model/category-tree-context';
 import {CategoryTreeSkeleton} from './CategoryTreeSkeleton';
 
-function toItem(node: CategoryNode): TreeItem {
+function toItem(node: CategoryNode, editable: boolean): TreeItem {
     return {
         id: node.id,
         name: node.title,
-        content: <TextLink href={categoryEditPath(node.id)}>{node.title}</TextLink>,
-        children: node.children.map(toItem),
+        content: editable ? <TextLink href={categoryEditPath(node.id)}>{node.title}</TextLink> : <Text>{node.title}</Text>,
+        children: node.children.map((child) => toItem(child, editable)),
     };
 }
 
-/** The tree of categories from the CategoryTreeProvider around, folded to its top; each category leads to its editing. */
-export function CategoryTree() {
+/**
+ * The tree of categories from the CategoryTreeProvider around, folded to its top; for whoever keeps them, each category
+ * leads to its editing.
+ */
+export function CategoryTree({editable}: {readonly editable: boolean}) {
     const {t} = useTranslation();
     const query = useCategoryTree();
     const skeleton = useSkeleton(query);
@@ -34,7 +37,7 @@ export function CategoryTree() {
     }
     return (
         <Tree
-            items={query.data.map(toItem)}
+            items={query.data.map((node) => toItem(node, editable))}
             ariaLabel={t('pages.categories')}
             expandLabel={(name) => t('category.expand', {name})}
             collapseLabel={(name) => t('category.collapse', {name})}

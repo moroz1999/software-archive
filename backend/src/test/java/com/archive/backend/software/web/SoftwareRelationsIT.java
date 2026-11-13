@@ -1,5 +1,6 @@
 package com.archive.backend.software.web;
 
+import static com.archive.backend.user.TestActors.MEMBER;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItems;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -9,6 +10,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.archive.backend.TestcontainersConfiguration;
 import com.archive.backend.TypesenseTestConfiguration;
+import com.archive.backend.user.TestActors;
+import com.archive.backend.user.domain.session.AccessTokens;
 import com.jayway.jsonpath.JsonPath;
 import jakarta.persistence.EntityManager;
 import java.util.UUID;
@@ -48,8 +51,12 @@ class SoftwareRelationsIT {
     @Autowired
     private EntityManager entityManager;
 
+    @Autowired
+    private AccessTokens accessTokens;
+
     @BeforeEach
     void insertPeopleGroupsAndAliases() {
+        TestActors.store(jdbc);
         jdbc.update(
                 "INSERT INTO person (id, real_name) VALUES (?, 'Jane Publisher'), (?, 'John Publisher')",
                 AUTHOR,
@@ -64,8 +71,10 @@ class SoftwareRelationsIT {
 
     @Test
     void storesPublishersAndDeveloperCompaniesUnderTheChosenNames() throws Exception {
-        String created = mvc.perform(
-                        post("/api/software").contentType("application/json").content("""
+        String created = mvc.perform(post("/api/software")
+                        .cookie(TestActors.accessCookie(accessTokens, MEMBER))
+                        .contentType("application/json")
+                        .content("""
                                 {
                                   "title": "Elite",
                                   "platform": "vector",
@@ -79,8 +88,7 @@ class SoftwareRelationsIT {
                                     {"type": "group-label", "id": "%s"}
                                   ]
                                 }
-                                """.formatted(
-                                        AUTHOR, AUTHOR_LABEL, GROUP_LABEL, DEVELOPER_GROUP, GROUP_LABEL)))
+                                """.formatted(AUTHOR, AUTHOR_LABEL, GROUP_LABEL, DEVELOPER_GROUP, GROUP_LABEL)))
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()
@@ -120,7 +128,10 @@ class SoftwareRelationsIT {
 
     @Test
     void refusesAPublisherThatIsNotInTheArchive() throws Exception {
-        mvc.perform(post("/api/software").contentType("application/json").content("""
+        mvc.perform(post("/api/software")
+                        .cookie(TestActors.accessCookie(accessTokens, MEMBER))
+                        .contentType("application/json")
+                        .content("""
                                 {
                                   "title": "Elite",
                                   "platform": "vector",
@@ -134,7 +145,10 @@ class SoftwareRelationsIT {
 
     @Test
     void refusesAnAuthorAsADeveloperCompany() throws Exception {
-        mvc.perform(post("/api/software").contentType("application/json").content("""
+        mvc.perform(post("/api/software")
+                        .cookie(TestActors.accessCookie(accessTokens, MEMBER))
+                        .contentType("application/json")
+                        .content("""
                                 {
                                   "title": "Elite",
                                   "platform": "vector",
@@ -147,7 +161,10 @@ class SoftwareRelationsIT {
 
     @Test
     void refusesADeveloperCompanyThatIsNotInTheArchive() throws Exception {
-        mvc.perform(post("/api/software").contentType("application/json").content("""
+        mvc.perform(post("/api/software")
+                        .cookie(TestActors.accessCookie(accessTokens, MEMBER))
+                        .contentType("application/json")
+                        .content("""
                                 {
                                   "title": "Elite",
                                   "platform": "vector",

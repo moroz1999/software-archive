@@ -7,11 +7,16 @@ export interface AnchoredOverlayProps {
     readonly anchor: RefObject<HTMLElement | null>;
     readonly open: boolean;
     readonly children: ReactNode;
+    /**
+     * `stretch` (default): as wide as the anchor, from its left edge. `end`: as wide as its content, its right edge
+     * under the anchor's right edge.
+     */
+    readonly align?: 'stretch' | 'end';
     readonly className?: string;
 }
 
 /** A portal positioned under an element, kept anchored while the viewport moves. */
-export function AnchoredOverlay({anchor, open, children, className}: AnchoredOverlayProps) {
+export function AnchoredOverlay({anchor, open, children, align = 'stretch', className}: AnchoredOverlayProps) {
     const overlay = useRef<HTMLDivElement>(null);
 
     useLayoutEffect(() => {
@@ -28,6 +33,7 @@ export function AnchoredOverlay({anchor, open, children, className}: AnchoredOve
             overlayElement.style.setProperty('--anchored-overlay-top', `${String(rect.bottom)}px`);
             overlayElement.style.setProperty('--anchored-overlay-left', `${String(rect.left)}px`);
             overlayElement.style.setProperty('--anchored-overlay-width', `${String(rect.width)}px`);
+            overlayElement.style.setProperty('--anchored-overlay-right', `${String(document.documentElement.clientWidth - rect.right)}px`);
         };
         position();
         window.addEventListener('resize', position);
@@ -41,5 +47,5 @@ export function AnchoredOverlay({anchor, open, children, className}: AnchoredOve
     if (!open) {
         return null;
     }
-    return createPortal(<div ref={overlay} className={classNames(styles.overlay, className)}>{children}</div>, document.body);
+    return createPortal(<div ref={overlay} className={classNames(styles.overlay, align === 'end' && styles.end, className)}>{children}</div>, document.body);
 }

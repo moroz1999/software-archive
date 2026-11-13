@@ -20,6 +20,7 @@ const ZED = {
         {countryId: '00000000-0000-0000-0002-000000000001', country: 'Finland', cityId: '00000000-0000-0000-0002-000000000011', city: 'Helsinki', primary: true},
     ],
     groups: [{id: CREW, name: 'Crew', as: 'Axe'}, {id: BAND, name: 'Band', as: null}],
+    canChange: true,
 };
 
 function renderView() {
@@ -115,5 +116,14 @@ describe(AuthorView, () => {
         expect(reports[0]?.error.kind).toBe('server');
         expect(screen.queryByTestId('author-view-skeleton')).not.toBeInTheDocument();
         expect(screen.queryByRole('heading', {level: 1})).not.toBeInTheDocument();
+    });
+
+    it('offers no editing of the author to whoever may not change it', async () => {
+        stubFetch(json({...ZED, canChange: false}));
+        renderView();
+
+        await screen.findByRole('heading', {level: 1, name: 'Zed'});
+
+        expect(screen.queryByRole('link', {name: 'Edit'})).not.toBeInTheDocument();
     });
 });

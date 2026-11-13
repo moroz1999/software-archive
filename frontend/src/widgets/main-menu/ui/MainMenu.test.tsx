@@ -2,12 +2,20 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen, within} from '@testing-library/react';
 import {MemoryRouter} from 'react-router';
 import {PlatformSelectionProvider} from '@/entities/platforms';
-import {json, renderWithQueries, stubFetch} from '@/shared/lib/test';
+import {CurrentUserProvider} from '@/entities/users';
+import {json, noContent, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {MainMenu} from './MainMenu';
 
 function renderAt(path: string) {
-    stubFetch(json([{code: 'vector', name: 'Vector'}]));
-    renderWithQueries(<PlatformSelectionProvider><MemoryRouter initialEntries={[path]}><MainMenu/></MemoryRouter></PlatformSelectionProvider>);
+    stubFetchRoutes(new Map([
+        ['/api/platforms', json([{code: 'vector', name: 'Vector'}])],
+        ['/api/auth/me', noContent()],
+    ]));
+    renderWithQueries((
+        <CurrentUserProvider>
+            <PlatformSelectionProvider><MemoryRouter initialEntries={[path]}><MainMenu/></MemoryRouter></PlatformSelectionProvider>
+        </CurrentUserProvider>
+    ));
 }
 
 describe(MainMenu, () => {
@@ -38,6 +46,12 @@ describe(MainMenu, () => {
         renderAt('/');
 
         expect(screen.getByRole('button', {name: 'Search'})).toBeInTheDocument();
+    });
+
+    it('offers the account menu', () => {
+        renderAt('/');
+
+        expect(screen.getByRole('button', {name: 'Account'})).toBeInTheDocument();
     });
 
     it('marks only the home page on the home page', () => {

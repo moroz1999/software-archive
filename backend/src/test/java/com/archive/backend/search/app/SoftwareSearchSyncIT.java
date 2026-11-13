@@ -1,5 +1,6 @@
 package com.archive.backend.search.app;
 
+import static com.archive.backend.user.TestActors.ADMIN;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.archive.backend.TestcontainersConfiguration;
@@ -42,6 +43,7 @@ import com.archive.backend.software.app.UpdateSoftwareCommand;
 import com.archive.backend.software.app.UpdateSoftwareHandler;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareTitle;
+import com.archive.backend.user.TestActors;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -124,6 +126,7 @@ class SoftwareSearchSyncIT {
     @BeforeEach
     void setUp() {
         probe = new TypesenseProbe(typesense);
+        TestActors.store(jdbc);
         jdbc.update("INSERT INTO country (id, name) VALUES (?, 'Finland'), (?, 'Latvia')", FINLAND, LATVIA);
     }
 
@@ -131,6 +134,7 @@ class SoftwareSearchSyncIT {
     @AfterEach
     void putBack() {
         probe.resume();
+        TestActors.remove(jdbc);
         software.forEach(id -> jdbc.update("DELETE FROM software WHERE id = ?", id));
         jdbc.update("UPDATE category SET parent_id = ? WHERE id = ?", GAMES, ACTION);
         jdbc.update("DELETE FROM entity_location WHERE country_id IN (?, ?)", FINLAND, LATVIA);
@@ -145,6 +149,7 @@ class SoftwareSearchSyncIT {
 
     private SoftwareId create(String title, @Nullable LocalDate releaseDate, Set<UUID> categories) {
         SoftwareId id = createSoftware.handle(new CreateSoftwareCommand(
+                ADMIN,
                 new SoftwareTitle(title),
                 null,
                 releaseDate,
@@ -220,7 +225,14 @@ class SoftwareSearchSyncIT {
         worker.handle();
 
         updateSoftware.handle(new UpdateSoftwareCommand(
-                elite, new SoftwareTitle("Elite Plus"), null, null, new PlatformCode("vector"), Set.of(), Set.of()));
+                ADMIN,
+                elite,
+                new SoftwareTitle("Elite Plus"),
+                null,
+                null,
+                new PlatformCode("vector"),
+                Set.of(),
+                Set.of()));
         worker.handle();
 
         assertThat(document(elite)).containsEntry("title", "Elite Plus");
@@ -232,7 +244,7 @@ class SoftwareSearchSyncIT {
         worker.handle();
         assertThat(probe.software(elite.value())).isPresent();
 
-        deleteSoftware.handle(new DeleteSoftwareCommand(elite));
+        deleteSoftware.handle(new DeleteSoftwareCommand(ADMIN, elite));
         worker.handle();
 
         assertThat(probe.software(elite.value())).isEmpty();
@@ -241,7 +253,7 @@ class SoftwareSearchSyncIT {
     @Test
     void takesSoftwareDeletedBeforeItWasIndexedAsDone() throws Exception {
         SoftwareId elite = create("Elite");
-        deleteSoftware.handle(new DeleteSoftwareCommand(elite));
+        deleteSoftware.handle(new DeleteSoftwareCommand(ADMIN, elite));
         assertThat(jdbc.queryForObject("SELECT count(*) FROM search_outbox", Integer.class))
                 .isOne();
 
@@ -258,7 +270,7 @@ class SoftwareSearchSyncIT {
         worker.handle();
 
         updateCategory.handle(new UpdateCategoryCommand(
-                new CategoryId(ACTION), new CategoryTitle("Action"), new CategoryId(DEMOSCENE)));
+                ADMIN, new CategoryId(ACTION), new CategoryTitle("Action"), new CategoryId(DEMOSCENE)));
         worker.handle();
 
         assertThat(listIn(document(elite), "categories"))
@@ -267,13 +279,14 @@ class SoftwareSearchSyncIT {
 
     @Test
     void deletingACategoryTakesItOutOfTheSoftwareInItsSubtree() throws Exception {
-        CategoryId space =
-                createCategory.handle(new CreateCategoryCommand(new CategoryTitle("Space"), new CategoryId(GAMES)));
-        CategoryId trading = createCategory.handle(new CreateCategoryCommand(new CategoryTitle("Trading"), space));
+        CategoryId space = createCategory.handle(
+                new CreateCategoryCommand(ADMIN, new CategoryTitle("Space"), new CategoryId(GAMES)));
+        CategoryId trading =
+                createCategory.handle(new CreateCategoryCommand(ADMIN, new CategoryTitle("Trading"), space));
         SoftwareId elite = create("Elite", LocalDate.of(1987, 5, 1), Set.of(trading.value()));
         worker.handle();
 
-        deleteCategory.handle(new DeleteCategoryCommand(space));
+        deleteCategory.handle(new DeleteCategoryCommand(ADMIN, space));
         worker.handle();
 
         assertThat(listIn(document(elite), "categories")).isEmpty();
@@ -281,8 +294,8 @@ class SoftwareSearchSyncIT {
 
     @Test
     void theCountriesOfSoftwareAreWhereTheOwnersOfItsCreditedLabelsAre() throws Exception {
-        createAuthor.handle(
-                new CreateAuthorCommand(new RealName("Zed Zedson"), null, List.of(zed(null)), List.of(in(FINLAND))));
+        createAuthor.handle(new CreateAuthorCommand(
+                ADMIN, new RealName("Zed Zedson"), null, List.of(zed(null)), List.of(in(FINLAND))));
         SoftwareId elite = create("Elite");
         credit(elite, labelNamed("Zed"));
 
@@ -293,15 +306,15 @@ class SoftwareSearchSyncIT {
 
     @Test
     void movingAnAuthorChangesTheCountriesOfTheirSoftware() throws Exception {
-        AuthorId author = createAuthor.handle(
-                new CreateAuthorCommand(new RealName("Zed Zedson"), null, List.of(zed(null)), List.of(in(FINLAND))));
+        AuthorId author = createAuthor.handle(new CreateAuthorCommand(
+                ADMIN, new RealName("Zed Zedson"), null, List.of(zed(null)), List.of(in(FINLAND))));
         LabelId label = labelNamed("Zed");
         SoftwareId elite = create("Elite");
         credit(elite, label);
         worker.handle();
 
         updateAuthor.handle(new UpdateAuthorCommand(
-                author, new RealName("Zed Zedson"), null, List.of(zed(label)), List.of(in(LATVIA))));
+                ADMIN, author, new RealName("Zed Zedson"), null, List.of(zed(label)), List.of(in(LATVIA))));
         worker.handle();
 
         assertThat(listIn(document(elite), "countries")).containsExactly(LATVIA.toString());
@@ -309,14 +322,14 @@ class SoftwareSearchSyncIT {
 
     @Test
     void aLabelTakenFromItsOwnerTakesTheOwnersCountriesFromItsSoftware() throws Exception {
-        AuthorId author = createAuthor.handle(
-                new CreateAuthorCommand(new RealName("Zed Zedson"), null, List.of(zed(null)), List.of(in(FINLAND))));
+        AuthorId author = createAuthor.handle(new CreateAuthorCommand(
+                ADMIN, new RealName("Zed Zedson"), null, List.of(zed(null)), List.of(in(FINLAND))));
         SoftwareId elite = create("Elite");
         credit(elite, labelNamed("Zed"));
         worker.handle();
 
-        updateAuthor.handle(
-                new UpdateAuthorCommand(author, new RealName("Zed Zedson"), null, List.of(), List.of(in(FINLAND))));
+        updateAuthor.handle(new UpdateAuthorCommand(
+                ADMIN, author, new RealName("Zed Zedson"), null, List.of(), List.of(in(FINLAND))));
         worker.handle();
 
         assertThat(listIn(document(elite), "countries")).isEmpty();
@@ -324,13 +337,13 @@ class SoftwareSearchSyncIT {
 
     @Test
     void deletingAnAuthorTakesTheirCountriesFromTheirSoftware() throws Exception {
-        AuthorId author = createAuthor.handle(
-                new CreateAuthorCommand(new RealName("Zed Zedson"), null, List.of(zed(null)), List.of(in(FINLAND))));
+        AuthorId author = createAuthor.handle(new CreateAuthorCommand(
+                ADMIN, new RealName("Zed Zedson"), null, List.of(zed(null)), List.of(in(FINLAND))));
         SoftwareId elite = create("Elite");
         credit(elite, labelNamed("Zed"));
         worker.handle();
 
-        deleteAuthor.handle(new DeleteAuthorCommand(author));
+        deleteAuthor.handle(new DeleteAuthorCommand(ADMIN, author));
         worker.handle();
 
         assertThat(listIn(document(elite), "countries")).isEmpty();
@@ -339,6 +352,7 @@ class SoftwareSearchSyncIT {
     @Test
     void movingAGroupChangesTheCountriesOfItsSoftware() throws Exception {
         GroupId group = createGroup.handle(new CreateGroupCommand(
+                ADMIN,
                 new GroupName("Zed Squad"),
                 null,
                 Set.of(new GroupTypeCode("demogroup")),
@@ -350,6 +364,7 @@ class SoftwareSearchSyncIT {
         worker.handle();
 
         updateGroup.handle(new UpdateGroupCommand(
+                ADMIN,
                 group,
                 new GroupName("Zed Squad"),
                 null,
@@ -368,7 +383,14 @@ class SoftwareSearchSyncIT {
 
         probe.freeze();
         updateSoftware.handle(new UpdateSoftwareCommand(
-                elite, new SoftwareTitle("Elite Plus"), null, null, new PlatformCode("vector"), Set.of(), Set.of()));
+                ADMIN,
+                elite,
+                new SoftwareTitle("Elite Plus"),
+                null,
+                null,
+                new PlatformCode("vector"),
+                Set.of(),
+                Set.of()));
         worker.handle();
         probe.resume();
 
@@ -392,7 +414,7 @@ class SoftwareSearchSyncIT {
         assertThat(probe.software(elite.value())).isPresent();
 
         probe.freeze();
-        deleteSoftware.handle(new DeleteSoftwareCommand(elite));
+        deleteSoftware.handle(new DeleteSoftwareCommand(ADMIN, elite));
         worker.handle();
         probe.resume();
         jdbc.update("UPDATE search_outbox SET next_attempt_at = now()");

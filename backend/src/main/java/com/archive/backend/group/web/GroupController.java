@@ -13,6 +13,7 @@ import com.archive.backend.group.web.dto.GroupCreatedDto;
 import com.archive.backend.group.web.dto.GroupDetailsDto;
 import com.archive.backend.group.web.dto.GroupRequestDto;
 import com.archive.backend.group.web.mapper.GroupWebMapper;
+import com.archive.backend.user.domain.Actor;
 import java.net.URI;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -57,20 +58,20 @@ public class GroupController {
     }
 
     @GetMapping("/{id}")
-    public GroupDetailsDto get(@PathVariable UUID id) {
-        return webMapper.toDetails(getHandler.handle(new GetGroupQuery(new GroupId(id))));
+    public GroupDetailsDto get(Actor actor, @PathVariable UUID id) {
+        return webMapper.toDetails(getHandler.handle(new GetGroupQuery(actor, new GroupId(id))));
     }
 
     @PostMapping
-    public ResponseEntity<GroupCreatedDto> create(@RequestBody GroupRequestDto request) {
-        GroupId id = createHandler.handle(webMapper.toCreate(request));
+    public ResponseEntity<GroupCreatedDto> create(Actor actor, @RequestBody GroupRequestDto request) {
+        GroupId id = createHandler.handle(webMapper.toCreate(actor, request));
         return ResponseEntity.created(URI.create("/api/groups/" + id.value())).body(webMapper.toCreated(id));
     }
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void update(@PathVariable UUID id, @RequestBody GroupRequestDto request) {
-        updateHandler.handle(webMapper.toUpdate(id, request));
+    public void update(Actor actor, @PathVariable UUID id, @RequestBody GroupRequestDto request) {
+        updateHandler.handle(webMapper.toUpdate(actor, id, request));
     }
 
     /**
@@ -78,7 +79,7 @@ public class GroupController {
      */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable UUID id) {
-        deleteHandler.handle(new DeleteGroupCommand(new GroupId(id)));
+    public void delete(Actor actor, @PathVariable UUID id) {
+        deleteHandler.handle(new DeleteGroupCommand(actor, new GroupId(id)));
     }
 }

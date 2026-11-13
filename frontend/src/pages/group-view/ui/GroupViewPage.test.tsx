@@ -6,7 +6,7 @@ import {json, renderWithQueries, stubFetch} from '@/shared/lib/test';
 import {loadGroupViewPage, preloadGroupViewPage} from '../index';
 
 const ID = '00000000-0000-0000-0005-000000000001';
-const CREW = {id: ID, name: 'Crew', groupName: 'Crew Ltd', notes: null, types: [], labels: [], locations: [], members: [], memberGroups: [], groups: []};
+const CREW = {id: ID, name: 'Crew', groupName: 'Crew Ltd', notes: null, types: [], labels: [], locations: [], members: [], memberGroups: [], groups: [], canChange: true};
 
 describe('GroupViewPage', () => {
     afterEach(() => {

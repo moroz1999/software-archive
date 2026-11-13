@@ -1,5 +1,6 @@
 package com.archive.backend.author.infra;
 
+import static com.archive.backend.user.TestActors.MEMBER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
@@ -9,6 +10,7 @@ import com.archive.backend.author.read.AuthorDetails;
 import com.archive.backend.author.read.AuthorGroup;
 import com.archive.backend.author.read.AuthorLabel;
 import com.archive.backend.author.read.AuthorLocation;
+import com.archive.backend.user.TestActors;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -281,5 +283,14 @@ class JdbcAuthorReadRepositoryIT {
 
     private static UUID id(int n) {
         return UUID.fromString("00000000-0000-0000-0000-%012d".formatted(n));
+    }
+
+    @Test
+    void readsWhoAddedThePerson() {
+        TestActors.store(jdbc);
+        jdbc.update("UPDATE person SET added_by = ? WHERE id = ?", MEMBER_ID.value(), ZED);
+
+        assertThat(reads.findById(ZED))
+                .hasValueSatisfying(author -> assertThat(author.addedBy()).isEqualTo(MEMBER_ID.value()));
     }
 }

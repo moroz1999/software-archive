@@ -4,6 +4,8 @@ import type {BusinessError, BusinessStatus} from './errors';
 export type BusinessMessages = Readonly<Partial<Record<string, string>>>;
 
 const FALLBACK: Readonly<Record<BusinessStatus, string>> = {
+    401: 'Sign in to change the archive.',
+    403: 'Only whoever added this, or an administrator, may change it.',
     409: 'This item was changed in the meantime. Reload and try again.',
     422: 'The request was refused.',
 };

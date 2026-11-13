@@ -4,6 +4,9 @@ import static com.archive.backend.author.app.AuthorFixtures.FINLAND;
 import static com.archive.backend.author.app.AuthorFixtures.HELSINKI;
 import static com.archive.backend.author.app.AuthorFixtures.NORWAY;
 import static com.archive.backend.author.app.AuthorFixtures.places;
+import static com.archive.backend.user.TestActors.ADMIN;
+import static com.archive.backend.user.TestActors.MEMBER;
+import static com.archive.backend.user.TestActors.MEMBER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -17,6 +20,9 @@ import com.archive.backend.label.domain.LabelDraft;
 import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.label.domain.OwnLabel;
 import com.archive.backend.shared.domain.error.RuleViolationException;
+import com.archive.backend.user.domain.Actor;
+import com.archive.backend.user.domain.AddedBy;
+import com.archive.backend.user.domain.SignInRequiredException;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -28,6 +34,7 @@ class CreateAuthorHandlerTest {
     @Test
     void storesANewAuthorUnderANewId() {
         AuthorId id = handler.handle(new CreateAuthorCommand(
+                ADMIN,
                 new RealName("John Doe"),
                 new AuthorNotes("Coder since 1984"),
                 List.of(new LabelDraft(null, new LabelName("Zed"), true)),
@@ -46,14 +53,15 @@ class CreateAuthorHandlerTest {
 
     @Test
     void givesEveryAuthorItsOwnId() {
-        CreateAuthorCommand command = new CreateAuthorCommand(new RealName("John Doe"), null, List.of(), List.of());
+        CreateAuthorCommand command =
+                new CreateAuthorCommand(ADMIN, new RealName("John Doe"), null, List.of(), List.of());
 
         assertThat(handler.handle(command)).isNotEqualTo(handler.handle(command));
     }
 
     @Test
     void refusesAnAuthorWithoutAnyNameAndStoresNothing() {
-        assertThatThrownBy(() -> handler.handle(new CreateAuthorCommand(null, null, List.of(), List.of())))
+        assertThatThrownBy(() -> handler.handle(new CreateAuthorCommand(ADMIN, null, null, List.of(), List.of())))
                 .isInstanceOfSatisfying(
                         RuleViolationException.class, e -> assertThat(e.code()).isEqualTo("author.nameless"));
         assertThat(repository.count()).isZero();
@@ -62,11 +70,31 @@ class CreateAuthorHandlerTest {
     @Test
     void refusesACityOfAnotherCountryAndStoresNothing() {
         assertThatThrownBy(() -> handler.handle(new CreateAuthorCommand(
-                        new RealName("John Doe"), null, List.of(), List.of(new LocationDraft(NORWAY, HELSINKI, true)))))
+                        ADMIN,
+                        new RealName("John Doe"),
+                        null,
+                        List.of(),
+                        List.of(new LocationDraft(NORWAY, HELSINKI, true)))))
                 .isInstanceOfSatisfying(RuleViolationException.class, e -> {
                     assertThat(e.code()).isEqualTo("location.unknown");
                     assertThat(e.field()).isEqualTo("locations");
                 });
         assertThat(repository.count()).isZero();
+    }
+
+    @Test
+    void remembersWhoAddedThePerson() {
+        AuthorId id =
+                handler.handle(new CreateAuthorCommand(MEMBER, new RealName("John Doe"), null, List.of(), List.of()));
+
+        assertThat(repository.findById(id))
+                .hasValueSatisfying(author -> assertThat(author.getAddedBy()).isEqualTo(new AddedBy(MEMBER_ID)));
+    }
+
+    @Test
+    void refusesAPublicVisitor() {
+        assertThatThrownBy(() -> handler.handle(new CreateAuthorCommand(
+                        Actor.anonymous(), new RealName("John Doe"), null, List.of(), List.of())))
+                .isInstanceOf(SignInRequiredException.class);
     }
 }

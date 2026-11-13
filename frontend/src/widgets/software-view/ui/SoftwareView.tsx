@@ -25,6 +25,7 @@ import {Heading, Text} from '@/shared/ui/typography';
 import {SoftwareViewSkeleton} from './SoftwareViewSkeleton';
 import styles from './SoftwareView.module.css';
 import {useSkeleton} from '@/shared/lib/loading';
+import {useAbility} from '@/entities/users';
 
 export interface SoftwareViewProps {
     readonly id: SoftwareId;
@@ -56,7 +57,7 @@ function LoadedView({id}: SoftwareViewProps) {
         return null;
     }
     return (
-        <PageLayout title={query.data.title} actions={<Button href={softwareEditPath(id)} color="secondary">{t('actions.edit')}</Button>}>
+        <PageLayout title={query.data.title} actions={query.data.canChange && <Button href={softwareEditPath(id)} color="secondary">{t('actions.edit')}</Button>}>
             <Stack gap="xl">
                 <Details software={query.data}/>
                 <Releases id={id}/>
@@ -137,6 +138,7 @@ function Section({label, children}: {readonly label: string; readonly children: 
 /** The releases are lower on the page: they are asked for once the block comes into view (docs/data-loading.md). */
 function Releases({id}: SoftwareViewProps) {
     const {t} = useTranslation();
+    const addsEntries = useAbility('add-entries');
     const [ref, visible] = useInViewport();
     const headingId = useId();
     return (
@@ -144,10 +146,10 @@ function Releases({id}: SoftwareViewProps) {
             <Stack gap="md">
                 <Inline gap="sm" justify="between" wrap>
                     <Heading level={2} variant="title" id={headingId}>{t('release.releases')}</Heading>
-                    <Button href={releaseNewPath(id)} color="secondary">{t('actions.addRelease')}</Button>
+                    {addsEntries && <Button href={releaseNewPath(id)} color="secondary">{t('actions.addRelease')}</Button>}
                 </Inline>
                 <SoftwareReleasesProvider id={id} enabled={visible}>
-                    <SoftwareReleases actions={(release) => (
+                    <SoftwareReleases actions={(release) => release.canChange && (
                         <Button href={releaseEditPath(id, release.id)} color="secondary" ariaLabel={t('release.editNamed', {title: release.title})}>{t('actions.edit')}</Button>
                     )}/>
                 </SoftwareReleasesProvider>

@@ -6,6 +6,7 @@ import com.archive.backend.group.domain.GroupId;
 import com.archive.backend.group.domain.GroupMemberSets;
 import com.archive.backend.group.domain.GroupRepository;
 import com.archive.backend.group.domain.GroupTypes;
+import com.archive.backend.user.domain.AddedBy;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -24,6 +25,7 @@ public class CreateGroupHandler {
 
     @Transactional
     public GroupId handle(CreateGroupCommand c) {
+        AddedBy addedBy = AddedBy.of(c.actor());
         GroupId id = new GroupId(UUID.randomUUID());
         Group group = Group.create(
                 id,
@@ -32,7 +34,8 @@ public class CreateGroupHandler {
                 groupTypes.of(c.types()),
                 c.labels(),
                 places.locations(c.locations()),
-                memberSets.of(c.members()));
+                memberSets.of(c.members()),
+                addedBy);
         repository.save(group);
         group.pullEvents().forEach(events::publishEvent);
         return id;

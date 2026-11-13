@@ -13,6 +13,7 @@ import com.archive.backend.author.web.dto.AuthorCreatedDto;
 import com.archive.backend.author.web.dto.AuthorDetailsDto;
 import com.archive.backend.author.web.dto.AuthorRequestDto;
 import com.archive.backend.author.web.mapper.AuthorWebMapper;
+import com.archive.backend.user.domain.Actor;
 import java.net.URI;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -57,20 +58,20 @@ public class AuthorController {
     }
 
     @GetMapping("/{id}")
-    public AuthorDetailsDto get(@PathVariable UUID id) {
-        return webMapper.toDetails(getHandler.handle(new GetAuthorQuery(new AuthorId(id))));
+    public AuthorDetailsDto get(Actor actor, @PathVariable UUID id) {
+        return webMapper.toDetails(getHandler.handle(new GetAuthorQuery(actor, new AuthorId(id))));
     }
 
     @PostMapping
-    public ResponseEntity<AuthorCreatedDto> create(@RequestBody AuthorRequestDto request) {
-        AuthorId id = createHandler.handle(webMapper.toCreate(request));
+    public ResponseEntity<AuthorCreatedDto> create(Actor actor, @RequestBody AuthorRequestDto request) {
+        AuthorId id = createHandler.handle(webMapper.toCreate(actor, request));
         return ResponseEntity.created(URI.create("/api/authors/" + id.value())).body(webMapper.toCreated(id));
     }
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void update(@PathVariable UUID id, @RequestBody AuthorRequestDto request) {
-        updateHandler.handle(webMapper.toUpdate(id, request));
+    public void update(Actor actor, @PathVariable UUID id, @RequestBody AuthorRequestDto request) {
+        updateHandler.handle(webMapper.toUpdate(actor, id, request));
     }
 
     /**
@@ -78,7 +79,7 @@ public class AuthorController {
      */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable UUID id) {
-        deleteHandler.handle(new DeleteAuthorCommand(new AuthorId(id)));
+    public void delete(Actor actor, @PathVariable UUID id) {
+        deleteHandler.handle(new DeleteAuthorCommand(actor, new AuthorId(id)));
     }
 }

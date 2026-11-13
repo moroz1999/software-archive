@@ -16,6 +16,7 @@ const ZED = {
         {id: '00000000-0000-0000-0005-000000000001', name: 'Crew', as: 'Axe'},
         {id: '00000000-0000-0000-0005-000000000002', name: 'Band', as: null},
     ],
+    canChange: true,
 };
 
 describe(fetchAuthor, () => {

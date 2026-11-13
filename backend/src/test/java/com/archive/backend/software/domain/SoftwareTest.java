@@ -1,5 +1,6 @@
 package com.archive.backend.software.domain;
 
+import static com.archive.backend.user.TestActors.ADMIN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -11,6 +12,7 @@ import com.archive.backend.hardware.domain.HardwareSet;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.shared.domain.error.RuleViolationException;
+import com.archive.backend.user.domain.AddedBy;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
@@ -53,7 +55,7 @@ class SoftwareTest {
 
     private static Software eliteWithAyMod() {
         Software software = elite();
-        software.addRelease(AY_MOD, AY_MOD_CONTENT, VECTOR_AY);
+        software.addRelease(AY_MOD, AY_MOD_CONTENT, VECTOR_AY, AddedBy.NOBODY);
         return software;
     }
 
@@ -111,8 +113,8 @@ class SoftwareTest {
     void addsReleasesWithWhatTheyStateAndTheirHardware() {
         Software software = elite();
 
-        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_VECTOR_HARDWARE);
-        software.addRelease(AY_MOD, AY_MOD_CONTENT, VECTOR_AY);
+        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_VECTOR_HARDWARE, AddedBy.NOBODY);
+        software.addRelease(AY_MOD, AY_MOD_CONTENT, VECTOR_AY, AddedBy.NOBODY);
 
         assertThat(software.getReleases()).extracting(Release::id).containsExactly(ORIGINAL, AY_MOD);
         assertThat(software.release(AY_MOD)).hasValueSatisfying(release -> {
@@ -125,7 +127,7 @@ class SoftwareTest {
     void editsARelease() {
         Software software = eliteWithAyMod();
 
-        software.editRelease(AY_MOD, content(ReleaseType.BUGFIX), NO_VECTOR_HARDWARE);
+        software.editRelease(AY_MOD, content(ReleaseType.BUGFIX), NO_VECTOR_HARDWARE, ADMIN);
 
         assertThat(software.release(AY_MOD)).hasValueSatisfying(release -> {
             assertThat(release.content()).isEqualTo(content(ReleaseType.BUGFIX));
@@ -136,9 +138,9 @@ class SoftwareTest {
     @Test
     void removesARelease() {
         Software software = eliteWithAyMod();
-        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_VECTOR_HARDWARE);
+        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_VECTOR_HARDWARE, AddedBy.NOBODY);
 
-        software.removeRelease(ORIGINAL);
+        software.removeRelease(ORIGINAL, ADMIN);
 
         assertThat(software.getReleases()).extracting(Release::id).containsExactly(AY_MOD);
         assertThat(software.release(ORIGINAL)).isEmpty();
@@ -147,12 +149,12 @@ class SoftwareTest {
     @Test
     void doesNotKnowAnyOtherRelease() {
         Software software = elite();
-        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_VECTOR_HARDWARE);
+        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_VECTOR_HARDWARE, AddedBy.NOBODY);
 
-        assertThatThrownBy(() -> software.editRelease(AY_MOD, AY_MOD_CONTENT, VECTOR_AY))
+        assertThatThrownBy(() -> software.editRelease(AY_MOD, AY_MOD_CONTENT, VECTOR_AY, ADMIN))
                 .isInstanceOfSatisfying(
                         NotFoundException.class, e -> assertThat(e.code()).isEqualTo("release.not-found"));
-        assertThatThrownBy(() -> software.removeRelease(AY_MOD))
+        assertThatThrownBy(() -> software.removeRelease(AY_MOD, ADMIN))
                 .isInstanceOfSatisfying(
                         NotFoundException.class, e -> assertThat(e.code()).isEqualTo("release.not-found"));
         assertThat(software.getReleases()).extracting(Release::id).containsExactly(ORIGINAL);
@@ -162,7 +164,7 @@ class SoftwareTest {
     void refusesAReleaseWithHardwareOfAnotherPlatform() {
         Software software = elite();
 
-        assertThatThrownBy(() -> software.addRelease(AY_MOD, AY_MOD_CONTENT, BK_0011M))
+        assertThatThrownBy(() -> software.addRelease(AY_MOD, AY_MOD_CONTENT, BK_0011M, AddedBy.NOBODY))
                 .isInstanceOfSatisfying(RuleViolationException.class, e -> {
                     assertThat(e.code()).isEqualTo("hardware.unknown");
                     assertThat(e.field()).isEqualTo("hardware");
@@ -174,7 +176,7 @@ class SoftwareTest {
     void refusesToEditAReleaseToHardwareOfAnotherPlatform() {
         Software software = eliteWithAyMod();
 
-        assertThatThrownBy(() -> software.editRelease(AY_MOD, content(ReleaseType.BUGFIX), BK_0011M))
+        assertThatThrownBy(() -> software.editRelease(AY_MOD, content(ReleaseType.BUGFIX), BK_0011M, ADMIN))
                 .isInstanceOfSatisfying(
                         RuleViolationException.class, e -> assertThat(e.code()).isEqualTo("hardware.unknown"));
         assertThat(software.release(AY_MOD)).hasValueSatisfying(release -> {
@@ -187,7 +189,7 @@ class SoftwareTest {
     void takesAReleaseWithoutHardwareWhateverPlatformItsEmptySetNames() {
         Software software = elite();
 
-        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_BK_HARDWARE);
+        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_BK_HARDWARE, AddedBy.NOBODY);
 
         assertThat(software.getReleases()).extracting(Release::id).containsExactly(ORIGINAL);
     }
@@ -209,7 +211,7 @@ class SoftwareTest {
     @Test
     void changesThePlatformWhileNoReleaseHasHardware() {
         Software software = elite();
-        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_VECTOR_HARDWARE);
+        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_VECTOR_HARDWARE, AddedBy.NOBODY);
 
         software.edit(new SoftwareTitle("Elite"), null, null, NO_BK_HARDWARE, CategorySet.EMPTY);
 

@@ -3,6 +3,7 @@ package com.archive.backend.group.app;
 import com.archive.backend.group.domain.GroupNotFoundException;
 import com.archive.backend.group.read.GroupDetails;
 import com.archive.backend.group.read.GroupReadRepository;
+import com.archive.backend.user.domain.AddedBy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ public class GetGroupHandler {
 
     @Transactional(readOnly = true)
     public GroupDetails handle(GetGroupQuery q) {
-        return reads.findById(q.id().value()).orElseThrow(GroupNotFoundException::new);
+        GroupDetails group = reads.findById(q.id().value()).orElseThrow(GroupNotFoundException::new);
+        return group.withCanChange(AddedBy.of(group.addedBy()).mayBeChangedBy(q.actor()));
     }
 }

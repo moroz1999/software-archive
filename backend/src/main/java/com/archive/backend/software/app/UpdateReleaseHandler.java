@@ -18,7 +18,8 @@ public class UpdateReleaseHandler {
     @Transactional
     public void handle(UpdateReleaseCommand c) {
         Software software = repository.findById(c.softwareId()).orElseThrow(SoftwareNotFoundException::new);
-        software.editRelease(c.releaseId(), c.content(), hardwareSets.of(software.getPlatform(), c.hardware()));
+        software.editRelease(
+                c.releaseId(), c.content(), hardwareSets.of(software.getPlatform(), c.hardware()), c.actor());
         repository.save(software);
     }
 }

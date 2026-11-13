@@ -18,6 +18,7 @@ const ZED = {
     labels: [{id: ZED_LABEL, name: 'Zed', display: true}],
     locations: [{countryId: FINLAND, country: 'Finland', cityId: HELSINKI, city: 'Helsinki', primary: true}],
     groups: [],
+    canChange: true,
 };
 
 /** What the locations editor loads besides the author. */

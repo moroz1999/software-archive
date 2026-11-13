@@ -1,5 +1,6 @@
 package com.archive.backend.search.app;
 
+import static com.archive.backend.user.TestActors.ADMIN;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.archive.backend.TestcontainersConfiguration;
@@ -34,6 +35,7 @@ import com.archive.backend.software.app.UpdateSoftwareCommand;
 import com.archive.backend.software.app.UpdateSoftwareHandler;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareTitle;
+import com.archive.backend.user.TestActors;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -102,12 +104,14 @@ class LabelOwnerSearchSyncIT {
     @BeforeEach
     void setUp() {
         probe = new TypesenseProbe(typesense);
+        TestActors.store(jdbc);
     }
 
     /** Puts back what the tests committed. */
     @AfterEach
     void putBack() {
         probe.resume();
+        TestActors.remove(jdbc);
         software.forEach(id -> jdbc.update("DELETE FROM software WHERE id = ?", id));
         jdbc.update("DELETE FROM label WHERE name IN ('Zed', 'Z', 'ZS', 'Squad')");
         jdbc.update("DELETE FROM person WHERE real_name LIKE 'Zed Zedson%'");
@@ -127,6 +131,7 @@ class LabelOwnerSearchSyncIT {
 
     private AuthorId zedZedson() {
         return createAuthor.handle(new CreateAuthorCommand(
+                ADMIN,
                 new RealName("Zed Zedson"),
                 null,
                 List.of(label(null, "Zed", true), label(null, "Z", false)),
@@ -135,6 +140,7 @@ class LabelOwnerSearchSyncIT {
 
     private GroupId zedSquad() {
         return createGroup.handle(new CreateGroupCommand(
+                ADMIN,
                 new GroupName("Zed Squad"),
                 null,
                 DEMOGROUP,
@@ -144,7 +150,7 @@ class LabelOwnerSearchSyncIT {
 
     private SoftwareId elite(String platform) {
         SoftwareId id = createSoftware.handle(new CreateSoftwareCommand(
-                new SoftwareTitle("Elite"), null, null, new PlatformCode(platform), Set.of(), Set.of()));
+                ADMIN, new SoftwareTitle("Elite"), null, null, new PlatformCode(platform), Set.of(), Set.of()));
         software.add(id.value());
         return id;
     }
@@ -159,7 +165,7 @@ class LabelOwnerSearchSyncIT {
 
     private void moveToPlatform(SoftwareId id, String platform) {
         updateSoftware.handle(new UpdateSoftwareCommand(
-                id, new SoftwareTitle("Elite"), null, null, new PlatformCode(platform), Set.of(), Set.of()));
+                ADMIN, id, new SoftwareTitle("Elite"), null, null, new PlatformCode(platform), Set.of(), Set.of()));
     }
 
     private Map<String, Object> authorDocument(AuthorId id) throws Exception {
@@ -189,8 +195,8 @@ class LabelOwnerSearchSyncIT {
 
     @Test
     void indexesAPersonKnownByTheRealNameAloneUnderIt() throws Exception {
-        AuthorId zed =
-                createAuthor.handle(new CreateAuthorCommand(new RealName("Zed Zedson"), null, List.of(), List.of()));
+        AuthorId zed = createAuthor.handle(
+                new CreateAuthorCommand(ADMIN, new RealName("Zed Zedson"), null, List.of(), List.of()));
 
         worker.handle();
 
@@ -203,7 +209,12 @@ class LabelOwnerSearchSyncIT {
         worker.handle();
 
         updateAuthor.handle(new UpdateAuthorCommand(
-                zed, new RealName("Zed Zedson Jr"), null, List.of(label(labelNamed("Zed"), "Zed", true)), List.of()));
+                ADMIN,
+                zed,
+                new RealName("Zed Zedson Jr"),
+                null,
+                List.of(label(labelNamed("Zed"), "Zed", true)),
+                List.of()));
         worker.handle();
 
         Map<String, Object> doc = authorDocument(zed);
@@ -216,7 +227,7 @@ class LabelOwnerSearchSyncIT {
         AuthorId zed = zedZedson();
         worker.handle();
 
-        deleteAuthor.handle(new DeleteAuthorCommand(zed));
+        deleteAuthor.handle(new DeleteAuthorCommand(ADMIN, zed));
         worker.handle();
 
         assertThat(probe.author(zed.value())).isEmpty();
@@ -248,7 +259,7 @@ class LabelOwnerSearchSyncIT {
         worker.handle();
         assertThat(listIn(authorDocument(zed), "platforms")).containsExactly("vector");
 
-        deleteSoftware.handle(new DeleteSoftwareCommand(elite));
+        deleteSoftware.handle(new DeleteSoftwareCommand(ADMIN, elite));
         worker.handle();
 
         assertThat(listIn(authorDocument(zed), "platforms")).isEmpty();
@@ -273,6 +284,7 @@ class LabelOwnerSearchSyncIT {
         worker.handle();
 
         updateGroup.handle(new UpdateGroupCommand(
+                ADMIN,
                 squad,
                 new GroupName("Zed Squad Two"),
                 null,
@@ -291,7 +303,7 @@ class LabelOwnerSearchSyncIT {
         GroupId squad = zedSquad();
         worker.handle();
 
-        deleteGroup.handle(new DeleteGroupCommand(squad));
+        deleteGroup.handle(new DeleteGroupCommand(ADMIN, squad));
         worker.handle();
 
         assertThat(probe.group(squad.value())).isEmpty();

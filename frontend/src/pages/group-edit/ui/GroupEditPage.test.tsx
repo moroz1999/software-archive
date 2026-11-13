@@ -9,6 +9,7 @@ import {loadGroupEditPage, preloadGroupEditPage} from '../index';
 const ID = '00000000-0000-0000-0005-000000000001';
 const CREW = {
     id: ID, name: 'Crew', groupName: 'Crew Ltd', notes: null, types: ['demogroup'], labels: [], locations: [], members: [], memberGroups: [], groups: [],
+    canChange: true,
 };
 
 /** What the page loads besides the group: the reference book of types and the countries of the locations editor. */

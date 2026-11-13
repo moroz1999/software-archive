@@ -2,8 +2,9 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import {createMemoryRouter, RouterProvider} from 'react-router';
 import {PlatformSelectionProvider} from '@/entities/platforms';
+import {CurrentUserProvider} from '@/entities/users';
 import {createQueryClient} from '@/shared/api';
-import {json, pageResponse, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
+import {json, noContent, pageResponse, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {SOFTWARE_CATEGORY_ROUTE} from '@/features/software/catalog';
 import {loadSoftwarePage, preloadSoftwarePage} from '../index';
 
@@ -15,9 +16,12 @@ function catalog() {
     return json({...pageResponse([ALPHA]), facets: FACETS});
 }
 
+const MEMBER = {id: '00000000-0000-0000-0009-000000000001', name: 'Zed', email: 'zed@example.com', groups: ['member'], abilities: ['add-entries']};
+
 const ROUTES = new Map([
     ['/api/categories', json([{id: GAMES, title: 'Games', children: []}])],
     ['/api/countries', json([])],
+    ['/api/auth/me', json(MEMBER)],
 ]);
 
 function renderRoute(path = '/software') {
@@ -26,7 +30,7 @@ function renderRoute(path = '/software') {
         {path: '/software', loader: preloadSoftwarePage(queryClient), lazy: {Component: loadSoftwarePage}, HydrateFallback: () => null},
         {path: SOFTWARE_CATEGORY_ROUTE, loader: preloadSoftwarePage(queryClient), lazy: {Component: loadSoftwarePage}, HydrateFallback: () => null},
     ], {initialEntries: [path]});
-    renderWithQueries(<PlatformSelectionProvider><RouterProvider router={router}/></PlatformSelectionProvider>, queryClient);
+    renderWithQueries(<CurrentUserProvider><PlatformSelectionProvider><RouterProvider router={router}/></PlatformSelectionProvider></CurrentUserProvider>, queryClient);
 }
 
 describe('SoftwarePage', () => {
@@ -99,5 +103,15 @@ describe('SoftwarePage', () => {
         respond(catalog()());
 
         await expect(screen.findByRole('article', {name: 'Fixture Software Alpha'})).resolves.toBeInTheDocument();
+    });
+
+    it('offers a public visitor no adding', async () => {
+        stubFetchRoutes(new Map([...ROUTES, ['/api/auth/me', noContent()], ['/api/software?page=0&size=20', catalog()]]));
+
+        renderRoute();
+
+        await screen.findByRole('article', {name: 'Fixture Software Alpha'});
+
+        expect(screen.queryByRole('link', {name: 'Add software'})).not.toBeInTheDocument();
     });
 });

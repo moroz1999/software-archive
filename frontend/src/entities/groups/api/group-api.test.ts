@@ -26,6 +26,7 @@ const CREW = {
     ],
     memberGroups: [{id: '00000000-0000-0000-0005-000000000002', name: 'Band'}],
     groups: [{id: '00000000-0000-0000-0005-000000000003', name: 'Alpha'}],
+    canChange: true,
 };
 
 describe(fetchGroup, () => {

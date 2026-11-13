@@ -21,6 +21,7 @@ const CREW = {
     members: [],
     memberGroups: [],
     groups: [],
+    canChange: true,
 };
 
 /** What the editor loads besides the group. */

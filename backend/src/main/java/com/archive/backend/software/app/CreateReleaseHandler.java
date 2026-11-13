@@ -5,6 +5,7 @@ import com.archive.backend.software.domain.ReleaseId;
 import com.archive.backend.software.domain.Software;
 import com.archive.backend.software.domain.SoftwareNotFoundException;
 import com.archive.backend.software.domain.SoftwareRepository;
+import com.archive.backend.user.domain.AddedBy;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,9 +20,10 @@ public class CreateReleaseHandler {
 
     @Transactional
     public ReleaseId handle(CreateReleaseCommand c) {
+        AddedBy addedBy = AddedBy.of(c.actor());
         Software software = repository.findById(c.softwareId()).orElseThrow(SoftwareNotFoundException::new);
         ReleaseId id = new ReleaseId(UUID.randomUUID());
-        software.addRelease(id, c.content(), hardwareSets.of(software.getPlatform(), c.hardware()));
+        software.addRelease(id, c.content(), hardwareSets.of(software.getPlatform(), c.hardware()), addedBy);
         repository.save(software);
         return id;
     }

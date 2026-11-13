@@ -8,15 +8,16 @@ import {App} from './App';
 import {type AppRouter, createAppRouter} from './router';
 
 const ALPHA = {id: '00000000-0000-0000-0001-000000000001', title: 'Fixture Software Alpha', releaseDate: '1985-03-02'};
-const ALPHA_DETAILS = {...ALPHA, description: null, platform: {code: 'vector', name: 'Vector'}, hardware: [], categories: []};
+const ALPHA_DETAILS = {...ALPHA, description: null, platform: {code: 'vector', name: 'Vector'}, hardware: [], categories: [], canChange: true};
 const AY_MOD = '00000000-0000-0000-0007-000000000002';
-const AY_MOD_DETAILS = {id: AY_MOD, title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: null, description: null, hardware: []};
+const AY_MOD_DETAILS = {id: AY_MOD, title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: null, description: null, hardware: [], canChange: true};
 const ZED = '00000000-0000-0000-0003-000000000001';
 const CREW = '00000000-0000-0000-0005-000000000001';
-const ZED_DETAILS = {id: ZED, name: 'Zed', realName: null, notes: null, labels: [], locations: [], groups: [{id: CREW, name: 'Crew', as: null}]};
+const ZED_DETAILS = {id: ZED, name: 'Zed', realName: null, notes: null, labels: [], locations: [], groups: [{id: CREW, name: 'Crew', as: null}], canChange: true};
 const CREW_DETAILS = {
     id: CREW, name: 'Crew', groupName: 'Crew Ltd', notes: null, types: [], labels: [], locations: [],
     members: [{name: 'Zed', personId: ZED, personName: null}], memberGroups: [], groups: [],
+    canChange: true,
 };
 
 /** What every page or the software page loads besides its own data: the platforms of the switch, the releases, the hardware to choose. */
@@ -25,6 +26,8 @@ const AROUND = new Map([
     ['/api/categories', json([])],
     [`/api/software/${ALPHA.id}/releases`, json([])],
     ['/api/hardware?platform=vector', json([])],
+    // A visitor: nobody is signed in.
+    ['/api/auth/me', noContent()],
 ]);
 
 /** Answers what every page loads, every other call with the responses in order. */
@@ -125,6 +128,17 @@ describe(App, () => {
         await userEvent.click(within(screen.getByRole('list', {name: 'Groups'})).getByRole('link', {name: 'Crew'}));
 
         await expect(screen.findByRole('heading', {level: 1, name: 'Crew'})).resolves.toBeInTheDocument();
+    });
+
+    it('opens the registration from the account menu', async () => {
+        stubFetch(json(pageResponse([])));
+        render(<App router={appRouter()} queryClient={queryClient}/>);
+
+        await userEvent.click(await screen.findByRole('button', {name: 'Account'}));
+        await userEvent.click(await screen.findByRole('link', {name: 'Register'}));
+
+        await expect(screen.findByRole('heading', {level: 1, name: 'Registration'})).resolves.toBeInTheDocument();
+        expect(screen.queryByRole('dialog', {name: 'Account'})).not.toBeInTheDocument();
     });
 
     it('shows the not found page for a group that does not exist', async () => {

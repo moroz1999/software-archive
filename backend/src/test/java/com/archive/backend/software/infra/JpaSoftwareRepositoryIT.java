@@ -1,5 +1,8 @@
 package com.archive.backend.software.infra;
 
+import static com.archive.backend.user.TestActors.ADMIN;
+import static com.archive.backend.user.TestActors.MEMBER_ID;
+import static com.archive.backend.user.TestActors.OTHER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
@@ -19,9 +22,13 @@ import com.archive.backend.software.domain.ReleaseTitle;
 import com.archive.backend.software.domain.ReleaseType;
 import com.archive.backend.software.domain.ReleaseVersion;
 import com.archive.backend.software.domain.Software;
+import com.archive.backend.software.domain.SoftwareCredits;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
+import com.archive.backend.software.domain.SoftwareReferences;
 import com.archive.backend.software.domain.SoftwareTitle;
+import com.archive.backend.user.TestActors;
+import com.archive.backend.user.domain.AddedBy;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
 import java.util.List;
@@ -171,8 +178,8 @@ class JpaSoftwareRepositoryIT {
     @Test
     void storesReleasesWithTheirHardware() {
         Software software = Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE, CategorySet.EMPTY);
-        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_HARDWARE);
-        software.addRelease(AY_MOD, AY_MOD_CONTENT, AY_AND_JOYSTICK);
+        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_HARDWARE, AddedBy.NOBODY);
+        software.addRelease(AY_MOD, AY_MOD_CONTENT, AY_AND_JOYSTICK, AddedBy.NOBODY);
         repository.save(software);
         springDataSoftwareRepository.flush();
 
@@ -185,14 +192,14 @@ class JpaSoftwareRepositoryIT {
     @Test
     void storesEditedAndRemovedReleases() {
         Software software = Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE, CategorySet.EMPTY);
-        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_HARDWARE);
-        software.addRelease(AY_MOD, AY_MOD_CONTENT, AY_AND_JOYSTICK);
+        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_HARDWARE, AddedBy.NOBODY);
+        software.addRelease(AY_MOD, AY_MOD_CONTENT, AY_AND_JOYSTICK, AddedBy.NOBODY);
         repository.save(software);
         springDataSoftwareRepository.flush();
 
         Software loaded = repository.findById(ID).orElseThrow();
-        loaded.removeRelease(ORIGINAL);
-        loaded.editRelease(AY_MOD, ORIGINAL_CONTENT, NO_HARDWARE);
+        loaded.removeRelease(ORIGINAL, ADMIN);
+        loaded.editRelease(AY_MOD, ORIGINAL_CONTENT, NO_HARDWARE, ADMIN);
         repository.save(loaded);
         springDataSoftwareRepository.flush();
 
@@ -307,5 +314,55 @@ class JpaSoftwareRepositoryIT {
         assertThat(repository.findById(ID))
                 .hasValueSatisfying(
                         software -> assertThat(software.getCategories().ids()).containsExactly(ACTION));
+    }
+
+    @Test
+    void remembersWhoAddedTheSoftwareAndEachRelease() {
+        TestActors.store(jdbc);
+        Software software = Software.create(
+                ID,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                NO_HARDWARE,
+                CategorySet.EMPTY,
+                SoftwareReferences.EMPTY,
+                SoftwareCredits.EMPTY,
+                new AddedBy(MEMBER_ID));
+        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_HARDWARE, new AddedBy(OTHER_ID));
+        software.addRelease(AY_MOD, AY_MOD_CONTENT, NO_HARDWARE, AddedBy.NOBODY);
+        repository.save(software);
+        springDataSoftwareRepository.flush();
+        entityManager.clear();
+
+        Software stored = repository.findById(ID).orElseThrow();
+        assertThat(stored.getAddedBy()).isEqualTo(new AddedBy(MEMBER_ID));
+        assertThat(stored.getReleases())
+                .extracting(Release::id, Release::addedBy)
+                .containsExactlyInAnyOrder(tuple(ORIGINAL, new AddedBy(OTHER_ID)), tuple(AY_MOD, AddedBy.NOBODY));
+    }
+
+    @Test
+    void forgetsWhoAddedTheSoftwareOnceTheirAccountIsGone() {
+        TestActors.store(jdbc);
+        Software software = Software.create(
+                ID,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                NO_HARDWARE,
+                CategorySet.EMPTY,
+                SoftwareReferences.EMPTY,
+                SoftwareCredits.EMPTY,
+                new AddedBy(MEMBER_ID));
+        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_HARDWARE, new AddedBy(MEMBER_ID));
+        repository.save(software);
+        springDataSoftwareRepository.flush();
+        jdbc.update("DELETE FROM app_user WHERE id = ?", MEMBER_ID.value());
+        entityManager.clear();
+
+        Software stored = repository.findById(ID).orElseThrow();
+        assertThat(stored.getAddedBy()).isEqualTo(AddedBy.NOBODY);
+        assertThat(stored.getReleases()).extracting(Release::addedBy).containsExactly(AddedBy.NOBODY);
     }
 }

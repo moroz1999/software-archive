@@ -3,7 +3,7 @@ import {render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {type QueryClient} from '@tanstack/react-query';
 import {createQueryClient} from '@/shared/api';
-import {json, pageResponse, stubFetchRoutes} from '@/shared/lib/test';
+import {json, noContent, pageResponse, stubFetchRoutes} from '@/shared/lib/test';
 import {App} from './App';
 import {type AppRouter, createAppRouter} from './router';
 
@@ -24,6 +24,7 @@ describe('UI localization', () => {
     function stubHome(status = 200) {
         return stubFetchRoutes(new Map([
             ['/api/platforms', json([])],
+            ['/api/auth/me', noContent()],
             ['/api/software/latest?size=12', status === 200 ? json(pageResponse([])) : json({status}, status)],
         ]));
     }
@@ -93,6 +94,7 @@ describe('UI localization', () => {
         window.history.replaceState(null, '', `/software/${SOFTWARE_ID}`);
         stubFetchRoutes(new Map([
             ['/api/platforms', json([])],
+            ['/api/auth/me', noContent()],
             [`/api/software/${SOFTWARE_ID}`, json({
                 id: SOFTWARE_ID,
                 title: 'Elite',
@@ -101,6 +103,7 @@ describe('UI localization', () => {
                 platform: {code: 'vector', name: 'Vector'},
                 hardware: [],
                 categories: [],
+                canChange: true,
             })],
             [`/api/software/${SOFTWARE_ID}/releases`, json([])],
         ]));

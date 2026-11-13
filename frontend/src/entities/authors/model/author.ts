@@ -39,6 +39,8 @@ export interface AuthorDetails {
     /** The primary location first. */
     readonly locations: readonly AuthorLocation[];
     readonly groups: readonly AuthorGroup[];
+    /** Whether whoever reads it may change them, as the archive tells. */
+    readonly canChange: boolean;
 }
 
 export function toAuthorId(raw: string): AuthorId {

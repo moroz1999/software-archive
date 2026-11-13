@@ -19,7 +19,53 @@ public record SoftwareDetails(
         List<SoftwareCategory> categories,
         List<SoftwareReferenceOption> publishers,
         List<SoftwareReferenceOption> developers,
-        List<SoftwareCredit> credits) {
+        List<SoftwareCredit> credits,
+        @Nullable UUID addedBy,
+        boolean canChange) {
+
+    /** As read, before the handler tells whether the actor may change it. */
+    public SoftwareDetails(
+            UUID id,
+            String title,
+            @Nullable String description,
+            @Nullable LocalDate releaseDate,
+            SoftwarePlatform platform,
+            List<SoftwareHardware> hardware,
+            List<SoftwareCategory> categories,
+            List<SoftwareReferenceOption> publishers,
+            List<SoftwareReferenceOption> developers,
+            List<SoftwareCredit> credits) {
+        this(
+                id,
+                title,
+                description,
+                releaseDate,
+                platform,
+                hardware,
+                categories,
+                publishers,
+                developers,
+                credits,
+                null,
+                false);
+    }
+
+    /** The same software, telling whether the actor may change it. */
+    public SoftwareDetails withCanChange(boolean canChange) {
+        return new SoftwareDetails(
+                id,
+                title,
+                description,
+                releaseDate,
+                platform,
+                hardware,
+                categories,
+                publishers,
+                developers,
+                credits,
+                addedBy,
+                canChange);
+    }
 
     public SoftwareDetails(
             UUID id,

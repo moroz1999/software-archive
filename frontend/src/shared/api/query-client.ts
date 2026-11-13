@@ -1,5 +1,5 @@
 import {MutationCache, QueryCache, QueryClient} from '@tanstack/react-query';
-import {BusinessError, NotFoundError, SystemError} from './errors';
+import {AuthenticationRequiredError, BusinessError, NotFoundError, SystemError} from './errors';
 import {reportSystemError} from './system-errors';
 
 function isNotFound(error: Error): boolean {
@@ -9,7 +9,10 @@ function isNotFound(error: Error): boolean {
 /** How long loaded data counts as fresh: a block mounted right after its route preloaded it does not call again. */
 const FRESH_MS = 30_000;
 
-/** A failure the user cannot fix, as the error dialog explains it; null for a business error or a missing entity. */
+/**
+ * A failure the user cannot fix, as the error dialog explains it; null for a business error, a missing entity or a
+ * missing sign-in, which the slice that ran the call shows itself.
+ */
 function systemErrorOf(error: unknown): SystemError | null {
     if (error instanceof BusinessError || error instanceof NotFoundError) {
         return null;
@@ -28,8 +31,9 @@ export function createQueryClient(): QueryClient {
     const client: QueryClient = new QueryClient({
         queryCache: new QueryCache({
             onError: (error, query) => {
-                // Reading shows no business errors inline: one that reaches a read is reported like a breakage.
-                const systemError = error instanceof BusinessError
+                // Reading shows no business errors inline: one that reaches a read is reported like a breakage. A missing
+                // sign-in is no breakage: the page shows the visitor what they may see.
+                const systemError = error instanceof BusinessError && !(error instanceof AuthenticationRequiredError)
                     ? new SystemError('server', `Business error of a read: ${error.code}`, {cause: error})
                     : systemErrorOf(error);
                 if (systemError !== null) {

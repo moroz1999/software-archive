@@ -7,7 +7,9 @@ export interface InputProps {
     readonly value: string;
     /** The new text, not the event. */
     readonly onChange: (value: string) => void;
-    readonly type?: 'text' | 'date' | 'search';
+    readonly type?: 'text' | 'date' | 'search' | 'email' | 'password';
+    /** What the browser may fill in: `username`, `email`, `current-password`, `new-password`. */
+    readonly autoComplete?: string;
     /** A hint shown while the input is empty. */
     readonly placeholder?: string;
     /** Accessible name when no label points to the input. */
@@ -30,12 +32,13 @@ export interface InputProps {
     readonly inputRef?: Ref<HTMLInputElement>;
 }
 
-/** One-line text or date input. */
-export function Input({id, value, onChange, type = 'text', ariaLabel, invalid = false, describedBy, disabled, maxLength, placeholder, className, role, ariaAutocomplete, ariaControls, ariaExpanded, ariaActiveDescendant, onKeyDown, onFocus, onBlur, inputRef}: InputProps) {
+/** One-line input of a text, an email, a password or a date. */
+export function Input({id, value, onChange, type = 'text', autoComplete, ariaLabel, invalid = false, describedBy, disabled, maxLength, placeholder, className, role, ariaAutocomplete, ariaControls, ariaExpanded, ariaActiveDescendant, onKeyDown, onFocus, onBlur, inputRef}: InputProps) {
     return (
         <input
             id={id}
             type={type}
+            autoComplete={autoComplete}
             value={value}
             onChange={(event) => {
                 onChange(event.target.value);

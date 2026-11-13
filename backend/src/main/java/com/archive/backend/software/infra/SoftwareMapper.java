@@ -25,6 +25,7 @@ import com.archive.backend.software.domain.SoftwareReferenceId;
 import com.archive.backend.software.domain.SoftwareReferenceType;
 import com.archive.backend.software.domain.SoftwareReferences;
 import com.archive.backend.software.domain.SoftwareTitle;
+import com.archive.backend.user.infra.AddedByRows;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Set;
@@ -56,7 +57,8 @@ public interface SoftwareMapper {
                         .toList()),
                 entity.getReleases().stream()
                         .map(release -> toRelease(platform, release))
-                        .toList());
+                        .toList(),
+                AddedByRows.toAddedBy(entity.getAddedBy()));
     }
 
     default SoftwareEntity toEntity(Software software) {
@@ -80,6 +82,7 @@ public interface SoftwareMapper {
         entity.setCredits(software.getCredits().all().stream()
                 .map(SoftwareMapper::fromCredit)
                 .collect(Collectors.toCollection(ArrayList::new)));
+        entity.setAddedBy(AddedByRows.fromAddedBy(software.getAddedBy()));
         entity.setReleases(software.getReleases().stream()
                 .map(SoftwareMapper::fromRelease)
                 .collect(Collectors.toCollection(ArrayList::new)));
@@ -133,7 +136,8 @@ public interface SoftwareMapper {
                         ReleaseType.fromCode(entity.getType()),
                         entity.getReleaseDate(),
                         description == null ? null : new ReleaseDescription(description)),
-                toHardware(platform, entity.getHardware()));
+                toHardware(platform, entity.getHardware()),
+                AddedByRows.toAddedBy(entity.getAddedBy()));
     }
 
     private static SoftwareReleaseEntity fromRelease(Release release) {
@@ -149,6 +153,7 @@ public interface SoftwareMapper {
         entity.setReleaseDate(content.releaseDate());
         entity.setDescription(description == null ? null : description.value());
         entity.setHardware(fromHardware(release.hardware()));
+        entity.setAddedBy(AddedByRows.fromAddedBy(release.addedBy()));
         return entity;
     }
 

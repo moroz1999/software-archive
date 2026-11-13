@@ -47,6 +47,7 @@ import com.archive.backend.software.read.SoftwarePlatform;
 import com.archive.backend.software.read.SoftwareRelease;
 import com.archive.backend.software.read.SoftwareSummary;
 import com.archive.backend.software.web.mapper.SoftwareWebMapperImpl;
+import com.archive.backend.user.domain.Actor;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
@@ -116,7 +117,7 @@ class SoftwareControllerTest {
 
     @Test
     void returnsOneSoftware() throws Exception {
-        when(getHandler.handle(new GetSoftwareQuery(new SoftwareId(ID))))
+        when(getHandler.handle(new GetSoftwareQuery(Actor.anonymous(), new SoftwareId(ID))))
                 .thenReturn(new SoftwareDetails(
                         ID,
                         "Elite",
@@ -137,8 +138,21 @@ class SoftwareControllerTest {
     }
 
     @Test
+    void tellsWhetherTheActorMayChangeTheSoftware() throws Exception {
+        when(getHandler.handle(new GetSoftwareQuery(Actor.anonymous(), new SoftwareId(ID))))
+                .thenReturn(new SoftwareDetails(
+                                ID, "Elite", null, null, new SoftwarePlatform("vector", "Vector"), List.of(), List.of())
+                        .withCanChange(true));
+
+        mvc.perform(get("/api/software/{id}", ID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.canChange").value(true))
+                .andExpect(jsonPath("$.addedBy").doesNotExist());
+    }
+
+    @Test
     void returnsThePlatformAndTheHardwareOfOneSoftware() throws Exception {
-        when(getHandler.handle(new GetSoftwareQuery(new SoftwareId(ID))))
+        when(getHandler.handle(new GetSoftwareQuery(Actor.anonymous(), new SoftwareId(ID))))
                 .thenReturn(new SoftwareDetails(
                         ID,
                         "Elite",
@@ -159,7 +173,7 @@ class SoftwareControllerTest {
 
     @Test
     void listsTheReleasesOfOneSoftware() throws Exception {
-        when(releasesHandler.handle(new ListSoftwareReleasesQuery(new SoftwareId(ID))))
+        when(releasesHandler.handle(new ListSoftwareReleasesQuery(Actor.anonymous(), new SoftwareId(ID))))
                 .thenReturn(List.of(new SoftwareRelease(
                         RELEASE,
                         "Elite AY",
@@ -180,7 +194,7 @@ class SoftwareControllerTest {
 
     @Test
     void sendsTheDescriptionAndTheHardwareOfARelease() throws Exception {
-        when(releasesHandler.handle(new ListSoftwareReleasesQuery(new SoftwareId(ID))))
+        when(releasesHandler.handle(new ListSoftwareReleasesQuery(Actor.anonymous(), new SoftwareId(ID))))
                 .thenReturn(List.of(new SoftwareRelease(
                         RELEASE,
                         "Elite AY",
@@ -223,6 +237,7 @@ class SoftwareControllerTest {
     @Test
     void createsSoftware() throws Exception {
         when(createHandler.handle(new CreateSoftwareCommand(
+                        Actor.anonymous(),
                         new SoftwareTitle("Elite"),
                         new SoftwareDescription("Space trading"),
                         LocalDate.of(1985, 9, 20),
@@ -243,8 +258,8 @@ class SoftwareControllerTest {
 
     @Test
     void createsSoftwareWithoutOptionalFields() throws Exception {
-        when(createHandler.handle(
-                        new CreateSoftwareCommand(new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of())))
+        when(createHandler.handle(new CreateSoftwareCommand(
+                        Actor.anonymous(), new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of())))
                 .thenReturn(new SoftwareId(ID));
 
         mvc.perform(
@@ -359,6 +374,7 @@ class SoftwareControllerTest {
 
         verify(updateHandler)
                 .handle(new UpdateSoftwareCommand(
+                        Actor.anonymous(),
                         new SoftwareId(ID),
                         new SoftwareTitle("Elite Plus"),
                         null,
@@ -383,7 +399,7 @@ class SoftwareControllerTest {
     void deletesSoftware() throws Exception {
         mvc.perform(delete("/api/software/{id}", ID)).andExpect(status().isNoContent());
 
-        verify(deleteHandler).handle(new DeleteSoftwareCommand(new SoftwareId(ID)));
+        verify(deleteHandler).handle(new DeleteSoftwareCommand(Actor.anonymous(), new SoftwareId(ID)));
     }
 
     @Test
@@ -431,7 +447,7 @@ class SoftwareControllerTest {
 
     @Test
     void returnsTheCategoriesOfOneSoftware() throws Exception {
-        when(getHandler.handle(new GetSoftwareQuery(new SoftwareId(ID))))
+        when(getHandler.handle(new GetSoftwareQuery(Actor.anonymous(), new SoftwareId(ID))))
                 .thenReturn(new SoftwareDetails(
                         ID,
                         "Elite",
@@ -458,7 +474,13 @@ class SoftwareControllerTest {
     @Test
     void createsSoftwareInCategories() throws Exception {
         when(createHandler.handle(new CreateSoftwareCommand(
-                        new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of(new CategoryId(CATEGORY)))))
+                        Actor.anonymous(),
+                        new SoftwareTitle("Elite"),
+                        null,
+                        null,
+                        VECTOR,
+                        Set.of(),
+                        Set.of(new CategoryId(CATEGORY)))))
                 .thenReturn(new SoftwareId(ID));
 
         mvc.perform(post("/api/software")
@@ -476,6 +498,7 @@ class SoftwareControllerTest {
 
         verify(updateHandler)
                 .handle(new UpdateSoftwareCommand(
+                        Actor.anonymous(),
                         new SoftwareId(ID),
                         new SoftwareTitle("Elite"),
                         null,

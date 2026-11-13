@@ -1,6 +1,7 @@
 package com.archive.backend.software.domain;
 
 import com.archive.backend.hardware.domain.HardwareSet;
+import com.archive.backend.user.domain.AddedBy;
 import java.util.Objects;
 
 /**
@@ -12,11 +13,17 @@ public final class Release {
     private final ReleaseId id;
     private ReleaseContent content;
     private HardwareSet hardware;
+    private final AddedBy addedBy;
 
-    public Release(ReleaseId id, ReleaseContent content, HardwareSet hardware) {
+    public Release(ReleaseId id, ReleaseContent content, HardwareSet hardware, AddedBy addedBy) {
         this.id = Objects.requireNonNull(id, "id");
         this.content = Objects.requireNonNull(content, "content");
         this.hardware = Objects.requireNonNull(hardware, "hardware");
+        this.addedBy = Objects.requireNonNull(addedBy, "addedBy");
+    }
+
+    public Release(ReleaseId id, ReleaseContent content, HardwareSet hardware) {
+        this(id, content, hardware, AddedBy.NOBODY);
     }
 
     public ReleaseId id() {
@@ -29,6 +36,10 @@ public final class Release {
 
     public HardwareSet hardware() {
         return hardware;
+    }
+
+    public AddedBy addedBy() {
+        return addedBy;
     }
 
     void edit(ReleaseContent content, HardwareSet hardware) {

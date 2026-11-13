@@ -11,6 +11,7 @@ import com.archive.backend.category.web.dto.CategoryDetailsDto;
 import com.archive.backend.category.web.dto.CategoryNodeDto;
 import com.archive.backend.category.web.dto.CategoryRequestDto;
 import com.archive.backend.shared.domain.error.InvalidValueException;
+import com.archive.backend.user.domain.Actor;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.mapstruct.Mapper;
@@ -26,12 +27,13 @@ public interface CategoryWebMapper {
         return new CategoryCreatedDto(id.value());
     }
 
-    default CreateCategoryCommand toCreate(CategoryRequestDto request) {
-        return new CreateCategoryCommand(toTitle(request.title()), toParent(request.parentId()));
+    default CreateCategoryCommand toCreate(Actor actor, CategoryRequestDto request) {
+        return new CreateCategoryCommand(actor, toTitle(request.title()), toParent(request.parentId()));
     }
 
-    default UpdateCategoryCommand toUpdate(UUID id, CategoryRequestDto request) {
-        return new UpdateCategoryCommand(new CategoryId(id), toTitle(request.title()), toParent(request.parentId()));
+    default UpdateCategoryCommand toUpdate(Actor actor, UUID id, CategoryRequestDto request) {
+        return new UpdateCategoryCommand(
+                actor, new CategoryId(id), toTitle(request.title()), toParent(request.parentId()));
     }
 
     private static CategoryTitle toTitle(@Nullable String value) {

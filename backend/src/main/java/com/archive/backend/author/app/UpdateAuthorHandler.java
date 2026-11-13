@@ -20,6 +20,7 @@ public class UpdateAuthorHandler {
     @Transactional
     public void handle(UpdateAuthorCommand c) {
         Author author = repository.findById(c.id()).orElseThrow(AuthorNotFoundException::new);
+        author.requireChangeableBy(c.actor());
         author.edit(c.realName(), c.notes(), c.labels(), places.locations(c.locations()));
         repository.save(author);
         author.pullEvents().forEach(events::publishEvent);

@@ -19,7 +19,26 @@ public record SoftwareRelease(
         String type,
         @Nullable LocalDate releaseDate,
         @Nullable String description,
-        List<SoftwareHardware> hardware) {
+        List<SoftwareHardware> hardware,
+        @Nullable UUID addedBy,
+        boolean canChange) {
+
+    /** As read, before the handler tells whether the actor may change it. */
+    public SoftwareRelease(
+            UUID id,
+            String title,
+            @Nullable String version,
+            String type,
+            @Nullable LocalDate releaseDate,
+            @Nullable String description,
+            List<SoftwareHardware> hardware) {
+        this(id, title, version, type, releaseDate, description, hardware, null, false);
+    }
+
+    /** The same release, telling whether the actor may change it. */
+    public SoftwareRelease withCanChange(boolean canChange) {
+        return new SoftwareRelease(id, title, version, type, releaseDate, description, hardware, addedBy, canChange);
+    }
 
     /**
      * The release with the hardware it shows over the base hardware of its software: every group the release has
@@ -31,6 +50,6 @@ public record SoftwareRelease(
                         base.stream().filter(item -> !own.contains(item.group())), hardware.stream())
                 .sorted(Comparator.comparingInt(SoftwareHardware::groupOrder))
                 .toList();
-        return new SoftwareRelease(id, title, version, type, releaseDate, description, shown);
+        return new SoftwareRelease(id, title, version, type, releaseDate, description, shown, addedBy, canChange);
     }
 }

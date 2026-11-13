@@ -4,6 +4,7 @@ import com.archive.backend.software.domain.SoftwareNotFoundException;
 import com.archive.backend.software.read.SoftwareDetails;
 import com.archive.backend.software.read.SoftwareReadRepository;
 import com.archive.backend.software.read.SoftwareRelease;
+import com.archive.backend.user.domain.AddedBy;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,8 +22,10 @@ public class ListSoftwareReleasesHandler {
     @Transactional(readOnly = true)
     public List<SoftwareRelease> handle(ListSoftwareReleasesQuery q) {
         SoftwareDetails software = reads.findById(q.id().value()).orElseThrow(SoftwareNotFoundException::new);
+        AddedBy softwareAddedBy = AddedBy.of(software.addedBy());
         return reads.findReleases(software.id()).stream()
-                .map(release -> release.over(software.hardware()))
+                .map(release -> release.over(software.hardware())
+                        .withCanChange(AddedBy.of(release.addedBy()).mayBeChangedBy(q.actor(), softwareAddedBy)))
                 .toList();
     }
 }

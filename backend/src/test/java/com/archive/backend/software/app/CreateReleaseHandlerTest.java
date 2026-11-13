@@ -7,12 +7,18 @@ import static com.archive.backend.software.app.ReleaseFixtures.ELITE;
 import static com.archive.backend.software.app.ReleaseFixtures.elite;
 import static com.archive.backend.software.app.ReleaseFixtures.hardwareSets;
 import static com.archive.backend.software.app.ReleaseFixtures.vector;
+import static com.archive.backend.user.TestActors.ADMIN;
+import static com.archive.backend.user.TestActors.MEMBER;
+import static com.archive.backend.user.TestActors.MEMBER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.shared.domain.error.RuleViolationException;
 import com.archive.backend.software.domain.ReleaseId;
+import com.archive.backend.user.domain.Actor;
+import com.archive.backend.user.domain.AddedBy;
+import com.archive.backend.user.domain.SignInRequiredException;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +31,7 @@ class CreateReleaseHandlerTest {
     void addsTheReleaseToItsSoftwareUnderANewId() {
         repository.save(elite());
 
-        ReleaseId id = handler.handle(new CreateReleaseCommand(ELITE, AY_MOD_CONTENT, Set.of(AY)));
+        ReleaseId id = handler.handle(new CreateReleaseCommand(ADMIN, ELITE, AY_MOD_CONTENT, Set.of(AY)));
 
         assertThat(repository.findById(ELITE))
                 .hasValueSatisfying(software -> assertThat(software.release(id)).hasValueSatisfying(release -> {
@@ -36,7 +42,7 @@ class CreateReleaseHandlerTest {
 
     @Test
     void failsWhenTheSoftwareDoesNotExist() {
-        assertThatThrownBy(() -> handler.handle(new CreateReleaseCommand(ELITE, AY_MOD_CONTENT, Set.of(AY))))
+        assertThatThrownBy(() -> handler.handle(new CreateReleaseCommand(ADMIN, ELITE, AY_MOD_CONTENT, Set.of(AY))))
                 .isInstanceOfSatisfying(
                         NotFoundException.class, e -> assertThat(e.code()).isEqualTo("software.not-found"));
     }
@@ -45,7 +51,8 @@ class CreateReleaseHandlerTest {
     void refusesHardwareOfAnotherPlatformAndAddsNothing() {
         repository.save(elite());
 
-        assertThatThrownBy(() -> handler.handle(new CreateReleaseCommand(ELITE, AY_MOD_CONTENT, Set.of(BK0011M))))
+        assertThatThrownBy(
+                        () -> handler.handle(new CreateReleaseCommand(ADMIN, ELITE, AY_MOD_CONTENT, Set.of(BK0011M))))
                 .isInstanceOfSatisfying(RuleViolationException.class, e -> {
                     assertThat(e.code()).isEqualTo("hardware.unknown");
                     assertThat(e.field()).isEqualTo("hardware");
@@ -53,5 +60,24 @@ class CreateReleaseHandlerTest {
         assertThat(repository.findById(ELITE))
                 .hasValueSatisfying(
                         software -> assertThat(software.getReleases()).isEmpty());
+    }
+
+    @Test
+    void remembersWhoAddedTheRelease() {
+        repository.save(elite());
+
+        ReleaseId id = handler.handle(new CreateReleaseCommand(MEMBER, ELITE, AY_MOD_CONTENT, Set.of(AY)));
+
+        assertThat(repository.findById(ELITE).flatMap(software -> software.release(id)))
+                .hasValueSatisfying(release -> assertThat(release.addedBy()).isEqualTo(new AddedBy(MEMBER_ID)));
+    }
+
+    @Test
+    void refusesAPublicVisitor() {
+        repository.save(elite());
+
+        assertThatThrownBy(() ->
+                        handler.handle(new CreateReleaseCommand(Actor.anonymous(), ELITE, AY_MOD_CONTENT, Set.of(AY))))
+                .isInstanceOf(SignInRequiredException.class);
     }
 }

@@ -1,5 +1,6 @@
 package com.archive.backend.group.infra;
 
+import static com.archive.backend.user.TestActors.MEMBER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
@@ -10,6 +11,7 @@ import com.archive.backend.group.read.GroupLabel;
 import com.archive.backend.group.read.GroupLocation;
 import com.archive.backend.group.read.GroupMember;
 import com.archive.backend.group.read.RelatedGroup;
+import com.archive.backend.user.TestActors;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -288,5 +290,14 @@ class JdbcGroupReadRepositoryIT {
 
     private static UUID id(int n) {
         return UUID.fromString("00000000-0000-0000-0000-%012d".formatted(n));
+    }
+
+    @Test
+    void readsWhoAddedTheGroup() {
+        TestActors.store(jdbc);
+        jdbc.update("UPDATE \"group\" SET added_by = ? WHERE id = ?", MEMBER_ID.value(), CREW);
+
+        assertThat(reads.findById(CREW))
+                .hasValueSatisfying(group -> assertThat(group.addedBy()).isEqualTo(MEMBER_ID.value()));
     }
 }

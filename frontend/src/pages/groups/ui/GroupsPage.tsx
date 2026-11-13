@@ -5,8 +5,9 @@ import {PageLayout} from '@/shared/ui/page-layout';
 
 export function GroupsPage() {
     const {t} = useTranslation();
+    const addsEntries = useAbility('add-entries');
     return (
-        <PageLayout title={t('pages.groups')} actions={<Button href={GROUP_NEW_PATH}>{t('actions.addGroup')}</Button>}>
+        <PageLayout title={t('pages.groups')} actions={addsEntries && <Button href={GROUP_NEW_PATH}>{t('actions.addGroup')}</Button>}>
             <GroupCatalogProvider>
                 <GroupCatalog/>
             </GroupCatalogProvider>
@@ -14,3 +15,4 @@ export function GroupsPage() {
     );
 }
 import {useTranslation} from 'react-i18next';
+import {useAbility} from '@/entities/users';

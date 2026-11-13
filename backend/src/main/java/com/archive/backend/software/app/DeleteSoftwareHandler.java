@@ -18,6 +18,7 @@ public class DeleteSoftwareHandler {
     @Transactional
     public void handle(DeleteSoftwareCommand c) {
         Software software = repository.findById(c.id()).orElseThrow(SoftwareNotFoundException::new);
+        software.requireChangeableBy(c.actor());
         software.delete();
         // Told before the deletion, while what the answers look up is still there (docs/backend.md).
         software.pullEvents().forEach(events::publishEvent);

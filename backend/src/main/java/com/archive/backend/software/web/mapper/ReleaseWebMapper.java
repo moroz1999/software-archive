@@ -17,6 +17,7 @@ import com.archive.backend.software.read.ReleaseDetails;
 import com.archive.backend.software.web.dto.ReleaseCreatedDto;
 import com.archive.backend.software.web.dto.ReleaseDetailsDto;
 import com.archive.backend.software.web.dto.ReleaseRequestDto;
+import com.archive.backend.user.domain.Actor;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -37,20 +38,22 @@ public interface ReleaseWebMapper {
         return new GetSoftwareReleaseQuery(new SoftwareId(softwareId), new ReleaseId(releaseId));
     }
 
-    default CreateReleaseCommand toCreate(UUID softwareId, ReleaseRequestDto request) {
-        return new CreateReleaseCommand(new SoftwareId(softwareId), toContent(request), toHardware(request.hardware()));
+    default CreateReleaseCommand toCreate(Actor actor, UUID softwareId, ReleaseRequestDto request) {
+        return new CreateReleaseCommand(
+                actor, new SoftwareId(softwareId), toContent(request), toHardware(request.hardware()));
     }
 
-    default UpdateReleaseCommand toUpdate(UUID softwareId, UUID releaseId, ReleaseRequestDto request) {
+    default UpdateReleaseCommand toUpdate(Actor actor, UUID softwareId, UUID releaseId, ReleaseRequestDto request) {
         return new UpdateReleaseCommand(
+                actor,
                 new SoftwareId(softwareId),
                 new ReleaseId(releaseId),
                 toContent(request),
                 toHardware(request.hardware()));
     }
 
-    default DeleteReleaseCommand toDelete(UUID softwareId, UUID releaseId) {
-        return new DeleteReleaseCommand(new SoftwareId(softwareId), new ReleaseId(releaseId));
+    default DeleteReleaseCommand toDelete(Actor actor, UUID softwareId, UUID releaseId) {
+        return new DeleteReleaseCommand(actor, new SoftwareId(softwareId), new ReleaseId(releaseId));
     }
 
     // Request scalars -> value objects.

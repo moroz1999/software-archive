@@ -1,5 +1,6 @@
 package com.archive.backend.software.web;
 
+import static com.archive.backend.user.TestActors.MEMBER;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -7,6 +8,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.archive.backend.TestcontainersConfiguration;
 import com.archive.backend.TypesenseTestConfiguration;
+import com.archive.backend.user.TestActors;
+import com.archive.backend.user.domain.session.AccessTokens;
 import com.jayway.jsonpath.JsonPath;
 import jakarta.persistence.EntityManager;
 import java.util.UUID;
@@ -41,16 +44,22 @@ class PeopleRolesIT {
     @Autowired
     private EntityManager entityManager;
 
+    @Autowired
+    private AccessTokens accessTokens;
+
     @BeforeEach
     void insertPersonAndAlias() {
+        TestActors.store(jdbc);
         jdbc.update("INSERT INTO person (id, real_name) VALUES (?, 'Jane Doe')", PERSON);
         jdbc.update("INSERT INTO label (id, name, person_id) VALUES (?, 'J.D.', ?)", ALIAS, PERSON);
     }
 
     @Test
     void storesGroupMemberRolesAndDatesUnderTheChosenAlias() throws Exception {
-        String created = mvc.perform(
-                        post("/api/groups").contentType("application/json").content("""
+        String created = mvc.perform(post("/api/groups")
+                        .cookie(TestActors.accessCookie(accessTokens, MEMBER))
+                        .contentType("application/json")
+                        .content("""
                                 {
                                   "name": "Crew",
                                   "types": ["demogroup"],
@@ -82,8 +91,10 @@ class PeopleRolesIT {
 
     @Test
     void storesSeveralSoftwareRolesForAPerson() throws Exception {
-        String created = mvc.perform(
-                        post("/api/software").contentType("application/json").content("""
+        String created = mvc.perform(post("/api/software")
+                        .cookie(TestActors.accessCookie(accessTokens, MEMBER))
+                        .contentType("application/json")
+                        .content("""
                                 {
                                   "title": "Elite",
                                   "platform": "vector",

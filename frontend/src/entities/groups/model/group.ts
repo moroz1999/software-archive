@@ -54,6 +54,8 @@ export interface GroupDetails {
     readonly members: readonly GroupMember[];
     readonly memberGroups: readonly RelatedGroup[];
     readonly groups: readonly RelatedGroup[];
+    /** Whether whoever reads it may change it, as the archive tells. */
+    readonly canChange: boolean;
 }
 
 export function toGroupId(raw: string): GroupId {

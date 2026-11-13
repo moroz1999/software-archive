@@ -43,7 +43,7 @@ function LoadedView() {
         return null;
     }
     return (
-        <PageLayout title={query.data.name} actions={<Button href={authorEditPath(query.data.id)} color="secondary">{t('actions.edit')}</Button>}>
+        <PageLayout title={query.data.name} actions={query.data.canChange && <Button href={authorEditPath(query.data.id)} color="secondary">{t('actions.edit')}</Button>}>
             <Details author={query.data}/>
         </PageLayout>
     );

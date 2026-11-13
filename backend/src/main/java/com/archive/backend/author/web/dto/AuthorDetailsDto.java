@@ -11,7 +11,8 @@ public record AuthorDetailsDto(
         @Nullable String notes,
         List<LabelDto> labels,
         List<LocationDto> locations,
-        List<GroupDto> groups) {
+        List<GroupDto> groups,
+        boolean canChange) {
 
     public record LabelDto(UUID id, String name, boolean display) {}
 

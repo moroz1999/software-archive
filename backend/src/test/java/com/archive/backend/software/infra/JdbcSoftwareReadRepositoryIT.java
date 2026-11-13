@@ -1,5 +1,6 @@
 package com.archive.backend.software.infra;
 
+import static com.archive.backend.user.TestActors.MEMBER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.archive.backend.TestcontainersConfiguration;
@@ -11,6 +12,7 @@ import com.archive.backend.software.read.SoftwareHardware;
 import com.archive.backend.software.read.SoftwarePlatform;
 import com.archive.backend.software.read.SoftwareRelease;
 import com.archive.backend.software.read.SoftwareSummary;
+import com.archive.backend.user.TestActors;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -201,5 +203,25 @@ class JdbcSoftwareReadRepositoryIT {
                                                 new SoftwareCategoryStep(demoscene, "Demoscene"),
                                                 new SoftwareCategoryStep(intro, "Intro"),
                                                 new SoftwareCategoryStep(intro4k, "4K intro")))));
+    }
+
+    @Test
+    void readsWhoAddedTheSoftwareAndEachRelease() {
+        TestActors.store(jdbc);
+        jdbc.update("UPDATE software SET added_by = ? WHERE id = ?", MEMBER_ID.value(), ELITE);
+        jdbc.update("UPDATE software_release SET added_by = ? WHERE id = ?", MEMBER_ID.value(), AY_MOD);
+
+        assertThat(reads.findById(ELITE))
+                .hasValueSatisfying(software -> assertThat(software.addedBy()).isEqualTo(MEMBER_ID.value()));
+        assertThat(reads.findById(TETRIS))
+                .hasValueSatisfying(software -> assertThat(software.addedBy()).isNull());
+        assertThat(reads.findReleases(ELITE))
+                .filteredOn(release -> release.id().equals(AY_MOD))
+                .extracting(SoftwareRelease::addedBy)
+                .containsExactly(MEMBER_ID.value());
+        assertThat(reads.findReleases(ELITE))
+                .filteredOn(release -> !release.id().equals(AY_MOD))
+                .extracting(SoftwareRelease::addedBy)
+                .containsOnlyNulls();
     }
 }

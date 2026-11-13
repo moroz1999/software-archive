@@ -6,6 +6,7 @@ import com.archive.backend.author.domain.AuthorNotes;
 import com.archive.backend.author.domain.RealName;
 import com.archive.backend.geo.infra.LocationRows;
 import com.archive.backend.label.infra.LabelRows;
+import com.archive.backend.user.infra.AddedByRows;
 import org.mapstruct.Mapper;
 
 /**
@@ -22,7 +23,8 @@ public interface AuthorMapper {
                 realName == null ? null : new RealName(realName),
                 notes == null ? null : new AuthorNotes(notes),
                 LabelRows.toLabels(entity.getLabels()),
-                LocationRows.toLocations(entity.getLocations()));
+                LocationRows.toLocations(entity.getLocations()),
+                AddedByRows.toAddedBy(entity.getAddedBy()));
     }
 
     default AuthorEntity toEntity(Author author) {
@@ -32,6 +34,7 @@ public interface AuthorMapper {
         entity.setId(author.getId().value());
         entity.setRealName(realName == null ? null : realName.value());
         entity.setNotes(notes == null ? null : notes.value());
+        entity.setAddedBy(AddedByRows.fromAddedBy(author.getAddedBy()));
         entity.setLabels(LabelRows.fromLabels(author.getLabels()));
         entity.setLocations(LocationRows.fromLocations(author.getLocations(), AuthorLocationEntity::new));
         return entity;

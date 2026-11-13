@@ -2,6 +2,7 @@
     --anchored-overlay-top: 0px;
     --anchored-overlay-left: 0px;
     --anchored-overlay-width: 0px;
+    --anchored-overlay-right: 0px;
 
     position: fixed;
     z-index: var(--anchored-overlay-layer);
@@ -9,4 +10,10 @@
     left: var(--anchored-overlay-left);
     width: var(--anchored-overlay-width);
     transform: translateY(var(--anchored-overlay-gap));
+}
+
+.end {
+    right: var(--anchored-overlay-right);
+    left: auto;
+    width: auto;
 }

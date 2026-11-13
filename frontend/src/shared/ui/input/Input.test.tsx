@@ -32,4 +32,19 @@ describe(Input, () => {
         expect(input).toHaveValue('1985-09-20');
         expect(input).toBeDisabled();
     });
+
+    it('takes a password, hidden as it is typed, and tells the browser what it may fill in', () => {
+        render(<Input id="password" ariaLabel="Password" type="password" autoComplete="current-password" value="secret" onChange={vi.fn<(value: string) => void>()}/>);
+
+        const input = screen.getByLabelText('Password');
+
+        expect(input).toHaveAttribute('type', 'password');
+        expect(input).toHaveAttribute('autocomplete', 'current-password');
+    });
+
+    it('takes an email', () => {
+        render(<Input id="email" ariaLabel="Email" type="email" autoComplete="email" value="" onChange={vi.fn<(value: string) => void>()}/>);
+
+        expect(screen.getByRole('textbox', {name: 'Email'})).toHaveAttribute('type', 'email');
+    });
 });

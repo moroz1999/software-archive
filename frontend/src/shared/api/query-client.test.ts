@@ -1,6 +1,6 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {MutationObserver} from '@tanstack/react-query';
-import {BusinessError, NotFoundError, SystemError} from './errors';
+import {AuthenticationRequiredError, BusinessError, NotFoundError, SystemError} from './errors';
 import {createQueryClient} from './query-client';
 import {subscribeSystemErrors, type SystemErrorReport} from './system-errors';
 
@@ -109,6 +109,26 @@ describe(createQueryClient, () => {
         await new MutationObserver(client, {mutationFn: () => Promise.reject(new BusinessError(409, 'thing.changed', []))})
             .mutate()
             .catch(() => undefined);
+
+        expect(reports).toHaveLength(0);
+    });
+
+    it('leaves a missing sign-in of a mutation to the slice that ran it', async () => {
+        const reports = collectReports();
+        const client = createQueryClient();
+
+        await new MutationObserver(client, {mutationFn: () => Promise.reject(new AuthenticationRequiredError('auth.required'))})
+            .mutate()
+            .catch(() => undefined);
+
+        expect(reports).toHaveLength(0);
+    });
+
+    it('leaves a missing sign-in of a query to the slice that reads it', async () => {
+        const reports = collectReports();
+        const client = createQueryClient();
+
+        await client.query({queryKey: KEY, queryFn: () => Promise.reject(new AuthenticationRequiredError('auth.required'))}).catch(() => undefined);
 
         expect(reports).toHaveLength(0);
     });

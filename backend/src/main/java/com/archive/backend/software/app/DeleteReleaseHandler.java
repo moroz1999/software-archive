@@ -16,7 +16,7 @@ public class DeleteReleaseHandler {
     @Transactional
     public void handle(DeleteReleaseCommand c) {
         Software software = repository.findById(c.softwareId()).orElseThrow(SoftwareNotFoundException::new);
-        software.removeRelease(c.releaseId());
+        software.removeRelease(c.releaseId(), c.actor());
         repository.save(software);
     }
 }

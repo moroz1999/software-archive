@@ -18,6 +18,7 @@ A database once seeded with fixtures keeps them and still starts without the pro
 | Backend REST API | http://localhost:8080/api/... |
 | PostgreSQL | `localhost:5432`, database `mydb` |
 | Typesense | http://localhost:8108/health |
+| Mailpit: every letter the backend sends | http://localhost:8025 |
 
 The frontend dev server proxies `/api` to the backend at `API_PROXY_TARGET` (from `.env`, default `http://host.docker.internal:8080`). Docker Desktop's `host.docker.internal` is the Windows host and does not reach a backend running inside WSL; then point the proxy at the WSL address before starting the containers (it changes after a restart):
 

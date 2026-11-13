@@ -38,6 +38,7 @@ import com.archive.backend.software.domain.SoftwareNotFoundException;
 import com.archive.backend.software.read.ReleaseDetails;
 import com.archive.backend.software.read.SoftwareHardware;
 import com.archive.backend.software.web.mapper.ReleaseWebMapperImpl;
+import com.archive.backend.user.domain.Actor;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
@@ -119,7 +120,8 @@ class SoftwareReleaseControllerTest {
 
     @Test
     void createsARelease() throws Exception {
-        when(createHandler.handle(new CreateReleaseCommand(new SoftwareId(ELITE), AY_MOD_CONTENT, AY_MOD_HARDWARE)))
+        when(createHandler.handle(new CreateReleaseCommand(
+                        Actor.anonymous(), new SoftwareId(ELITE), AY_MOD_CONTENT, AY_MOD_HARDWARE)))
                 .thenReturn(new ReleaseId(AY_MOD));
 
         mvc.perform(post(RELEASES, ELITE)
@@ -133,6 +135,7 @@ class SoftwareReleaseControllerTest {
     @Test
     void createsAReleaseOfOnlyAType() throws Exception {
         when(createHandler.handle(new CreateReleaseCommand(
+                        Actor.anonymous(),
                         new SoftwareId(ELITE),
                         new ReleaseContent(null, null, ReleaseType.ORIGINAL, null, null),
                         Set.of())))
@@ -217,7 +220,11 @@ class SoftwareReleaseControllerTest {
 
         verify(updateHandler)
                 .handle(new UpdateReleaseCommand(
-                        new SoftwareId(ELITE), new ReleaseId(AY_MOD), AY_MOD_CONTENT, AY_MOD_HARDWARE));
+                        Actor.anonymous(),
+                        new SoftwareId(ELITE),
+                        new ReleaseId(AY_MOD),
+                        AY_MOD_CONTENT,
+                        AY_MOD_HARDWARE));
     }
 
     @Test
@@ -235,7 +242,8 @@ class SoftwareReleaseControllerTest {
     void deletesARelease() throws Exception {
         mvc.perform(delete(RELEASE, ELITE, AY_MOD)).andExpect(status().isNoContent());
 
-        verify(deleteHandler).handle(new DeleteReleaseCommand(new SoftwareId(ELITE), new ReleaseId(AY_MOD)));
+        verify(deleteHandler)
+                .handle(new DeleteReleaseCommand(Actor.anonymous(), new SoftwareId(ELITE), new ReleaseId(AY_MOD)));
     }
 
     @Test

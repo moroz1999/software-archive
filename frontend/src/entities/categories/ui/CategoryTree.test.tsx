@@ -14,8 +14,8 @@ const TREE = [
     {id: '00000000-0000-0000-0006-000000000004', title: 'Demoscene', children: []},
 ];
 
-function renderTree() {
-    renderWithQueries(<MemoryRouter><CategoryTreeProvider><CategoryTree/></CategoryTreeProvider></MemoryRouter>);
+function renderTree(editable = true) {
+    renderWithQueries(<MemoryRouter><CategoryTreeProvider><CategoryTree editable={editable}/></CategoryTreeProvider></MemoryRouter>);
 }
 
 describe(CategoryTree, () => {
@@ -67,5 +67,13 @@ describe(CategoryTree, () => {
         renderTree();
 
         await expect(screen.findByText('No categories yet.')).resolves.toBeInTheDocument();
+    });
+
+    it('shows the categories without leading to their editing for whoever may not keep them', async () => {
+        stubFetch(json(TREE));
+        renderTree(false);
+
+        await expect(screen.findByText('Games')).resolves.toBeInTheDocument();
+        expect(screen.queryByRole('link', {name: 'Games'})).not.toBeInTheDocument();
     });
 });

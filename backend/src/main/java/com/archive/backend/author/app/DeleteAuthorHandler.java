@@ -18,6 +18,7 @@ public class DeleteAuthorHandler {
     @Transactional
     public void handle(DeleteAuthorCommand c) {
         Author author = repository.findById(c.id()).orElseThrow(AuthorNotFoundException::new);
+        author.requireChangeableBy(c.actor());
         author.delete();
         // Told before the deletion, while what the answers look up is still there (docs/backend.md).
         author.pullEvents().forEach(events::publishEvent);

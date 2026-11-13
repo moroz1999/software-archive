@@ -1,0 +1,14 @@
+.anchor {
+    display: inline-flex;
+}
+
+.window {
+    box-sizing: border-box;
+    width: var(--icon-popover-width);
+    max-width: calc(100vw - var(--icon-popover-viewport-padding) * 2);
+    padding: var(--icon-popover-padding);
+    border-radius: var(--icon-popover-radius);
+    background: var(--icon-popover-bg);
+    color: var(--icon-popover-text);
+    box-shadow: var(--icon-popover-shadow);
+}

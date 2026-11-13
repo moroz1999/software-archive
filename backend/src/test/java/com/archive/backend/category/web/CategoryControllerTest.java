@@ -35,6 +35,7 @@ import com.archive.backend.category.web.mapper.CategoryWebMapperImpl;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
 import com.archive.backend.shared.web.ApiExceptionHandler;
+import com.archive.backend.user.domain.Actor;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -130,7 +131,8 @@ class CategoryControllerTest {
 
     @Test
     void createsACategory() throws Exception {
-        when(createHandler.handle(new CreateCategoryCommand(new CategoryTitle("Action"), new CategoryId(GAMES))))
+        when(createHandler.handle(new CreateCategoryCommand(
+                        Actor.anonymous(), new CategoryTitle("Action"), new CategoryId(GAMES))))
                 .thenReturn(new CategoryId(ID));
 
         mvc.perform(post("/api/categories")
@@ -143,7 +145,7 @@ class CategoryControllerTest {
 
     @Test
     void createsACategoryAtTheTop() throws Exception {
-        when(createHandler.handle(new CreateCategoryCommand(new CategoryTitle("Series"), null)))
+        when(createHandler.handle(new CreateCategoryCommand(Actor.anonymous(), new CategoryTitle("Series"), null)))
                 .thenReturn(new CategoryId(ID));
 
         mvc.perform(post("/api/categories")
@@ -200,7 +202,10 @@ class CategoryControllerTest {
 
         verify(updateHandler)
                 .handle(new UpdateCategoryCommand(
-                        new CategoryId(ID), new CategoryTitle("Action games"), new CategoryId(GAMES)));
+                        Actor.anonymous(),
+                        new CategoryId(ID),
+                        new CategoryTitle("Action games"),
+                        new CategoryId(GAMES)));
     }
 
     @Test
@@ -230,7 +235,7 @@ class CategoryControllerTest {
     void deletesACategory() throws Exception {
         mvc.perform(delete("/api/categories/{id}", ID)).andExpect(status().isNoContent());
 
-        verify(deleteHandler).handle(new DeleteCategoryCommand(new CategoryId(ID)));
+        verify(deleteHandler).handle(new DeleteCategoryCommand(Actor.anonymous(), new CategoryId(ID)));
     }
 
     @Test

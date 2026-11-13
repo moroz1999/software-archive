@@ -17,6 +17,7 @@ public class DeleteCategoryHandler {
 
     @Transactional
     public void handle(DeleteCategoryCommand c) {
+        Category.requireKeptBy(c.actor());
         Category category = repository.findById(c.id()).orElseThrow(CategoryNotFoundException::new);
         category.delete();
         // Told before the deletion, while what the answers look up is still there (docs/backend.md).

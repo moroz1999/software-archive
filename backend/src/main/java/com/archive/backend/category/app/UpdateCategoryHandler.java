@@ -20,6 +20,7 @@ public class UpdateCategoryHandler {
 
     @Transactional
     public void handle(UpdateCategoryCommand c) {
+        Category.requireKeptBy(c.actor());
         Category category = repository.findById(c.id()).orElseThrow(CategoryNotFoundException::new);
         CategoryId parent = c.parent();
         category.edit(c.title(), parent == null ? null : parents.of(c.id(), parent));

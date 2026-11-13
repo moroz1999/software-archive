@@ -13,6 +13,7 @@ import com.archive.backend.group.domain.GroupNotes;
 import com.archive.backend.group.domain.GroupTypeCode;
 import com.archive.backend.group.domain.GroupTypeSet;
 import com.archive.backend.label.infra.LabelRows;
+import com.archive.backend.user.infra.AddedByRows;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Objects;
@@ -37,7 +38,8 @@ public interface GroupMapper {
                 LabelRows.toLabels(entity.getLabels()),
                 LocationRows.toLocations(entity.getLocations()),
                 GroupMembers.restore(
-                        entity.getMembers().stream().map(GroupMapper::toMember).toList()));
+                        entity.getMembers().stream().map(GroupMapper::toMember).toList()),
+                AddedByRows.toAddedBy(entity.getAddedBy()));
     }
 
     default GroupEntity toEntity(Group group) {
@@ -49,6 +51,7 @@ public interface GroupMapper {
         entity.setTypes(group.getTypes().codes().stream()
                 .map(GroupTypeCode::value)
                 .collect(Collectors.toCollection(HashSet::new)));
+        entity.setAddedBy(AddedByRows.fromAddedBy(group.getAddedBy()));
         entity.setLabels(LabelRows.fromLabels(group.getLabels()));
         entity.setLocations(LocationRows.fromLocations(group.getLocations(), GroupLocationEntity::new));
         entity.setMembers(group.getMembers().all().stream()

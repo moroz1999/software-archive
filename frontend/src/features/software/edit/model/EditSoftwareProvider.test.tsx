@@ -14,6 +14,7 @@ const SOFTWARE = {
     platform: {code: toSoftwarePlatformCode('vector'), name: 'Vector'},
     hardware: [],
     categories: [],
+    canChange: true,
 };
 const PLATFORMS = json([{code: 'bk', name: 'BK'}, {code: 'vector', name: 'Vector'}]);
 

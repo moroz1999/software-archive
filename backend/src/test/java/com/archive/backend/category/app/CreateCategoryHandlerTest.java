@@ -3,6 +3,8 @@ package com.archive.backend.category.app;
 import static com.archive.backend.category.app.CategoryFixtures.ACTION;
 import static com.archive.backend.category.app.CategoryFixtures.id;
 import static com.archive.backend.category.app.CategoryFixtures.tree;
+import static com.archive.backend.user.TestActors.ADMIN;
+import static com.archive.backend.user.TestActors.MEMBER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -11,6 +13,7 @@ import com.archive.backend.category.domain.CategoryParent;
 import com.archive.backend.category.domain.CategoryParents;
 import com.archive.backend.category.domain.CategoryTitle;
 import com.archive.backend.shared.domain.error.RuleViolationException;
+import com.archive.backend.user.domain.ChangeForbiddenException;
 import org.junit.jupiter.api.Test;
 
 class CreateCategoryHandlerTest {
@@ -21,7 +24,7 @@ class CreateCategoryHandlerTest {
 
     @Test
     void storesANewCategoryUnderItsParent() {
-        CategoryId id = handler.handle(new CreateCategoryCommand(new CategoryTitle("Platformers"), ACTION));
+        CategoryId id = handler.handle(new CreateCategoryCommand(ADMIN, new CategoryTitle("Platformers"), ACTION));
 
         assertThat(repository.findById(id)).hasValueSatisfying(category -> {
             assertThat(category.getTitle()).isEqualTo(new CategoryTitle("Platformers"));
@@ -31,7 +34,7 @@ class CreateCategoryHandlerTest {
 
     @Test
     void storesANewCategoryAtTheTopWithoutAParent() {
-        CategoryId id = handler.handle(new CreateCategoryCommand(new CategoryTitle("Series"), null));
+        CategoryId id = handler.handle(new CreateCategoryCommand(ADMIN, new CategoryTitle("Series"), null));
 
         assertThat(repository.findById(id))
                 .hasValueSatisfying(category -> assertThat(category.getParent()).isNull());
@@ -39,7 +42,7 @@ class CreateCategoryHandlerTest {
 
     @Test
     void givesEveryCategoryItsOwnId() {
-        CreateCategoryCommand command = new CreateCategoryCommand(new CategoryTitle("Misc"), null);
+        CreateCategoryCommand command = new CreateCategoryCommand(ADMIN, new CategoryTitle("Misc"), null);
 
         assertThat(handler.handle(command)).isNotEqualTo(handler.handle(command));
     }
@@ -48,9 +51,17 @@ class CreateCategoryHandlerTest {
     void refusesAParentOutsideTheArchiveAndStoresNothing() {
         int before = repository.count();
 
-        assertThatThrownBy(() -> handler.handle(new CreateCategoryCommand(new CategoryTitle("Platformers"), id(9))))
+        assertThatThrownBy(
+                        () -> handler.handle(new CreateCategoryCommand(ADMIN, new CategoryTitle("Platformers"), id(9))))
                 .isInstanceOfSatisfying(
                         RuleViolationException.class, e -> assertThat(e.code()).isEqualTo("category.parent-unknown"));
         assertThat(repository.count()).isEqualTo(before);
+    }
+
+    @Test
+    void refusesAMember() {
+        assertThatThrownBy(() ->
+                        handler.handle(new CreateCategoryCommand(MEMBER, new CategoryTitle("Platformers"), ACTION)))
+                .isInstanceOf(ChangeForbiddenException.class);
     }
 }

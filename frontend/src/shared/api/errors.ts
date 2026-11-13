@@ -1,5 +1,5 @@
 /** Statuses that carry a business error when the body has a problem `code` (docs/error-handling.md). */
-export type BusinessStatus = 409 | 422;
+export type BusinessStatus = 401 | 403 | 409 | 422;
 
 export interface FieldError {
     readonly field: string;
@@ -8,7 +8,7 @@ export interface FieldError {
 
 /** The domain refused the request: shown inline by the slice that made it. */
 export class BusinessError extends Error {
-    override readonly name = 'BusinessError';
+    override readonly name: string = 'BusinessError';
     readonly status: BusinessStatus;
     readonly code: string;
     readonly fieldErrors: readonly FieldError[];
@@ -33,6 +33,18 @@ export class NotFoundError extends Error {
     constructor(code: string) {
         super(code);
         this.code = code;
+    }
+}
+
+/**
+ * The action needs a signed-in user and there is none: never signed in, or the session is over and could not be
+ * refreshed (a `401`). The form or dialog that ran it says so like any refusal.
+ */
+export class AuthenticationRequiredError extends BusinessError {
+    override readonly name: string = 'AuthenticationRequiredError';
+
+    constructor(code: string) {
+        super(401, code, []);
     }
 }
 

@@ -13,6 +13,7 @@ const SOFTWARE = {
     platform: {code: toSoftwarePlatformCode('vector'), name: 'Vector'},
     hardware: [],
     categories: [],
+    canChange: true,
 };
 const AY: Hardware = {code: 'ay8910', name: 'AY-3-8910', group: 'sound'};
 const BEEPER: Hardware = {code: 'beeper', name: 'Beeper', group: 'sound'};

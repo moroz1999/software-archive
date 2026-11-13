@@ -1,4 +1,4 @@
-import {deleteResource, getJson, mapResponse, postJson, putJson, readArray, readNullableString, readObject, readString} from '@/shared/api';
+import {deleteResource, getJson, mapResponse, postJson, putJson, readArray, readBoolean, readNullableString, readObject, readString} from '@/shared/api';
 import {type SoftwareRelease, toReleaseId, toReleaseType} from '../model/release';
 import {
     type Hardware,
@@ -82,6 +82,7 @@ export async function fetchSoftware(id: SoftwareId, signal: AbortSignal): Promis
             publishers: parseSoftwareReferences(dto['publishers'], 'publishers'),
             developers: parseSoftwareReferences(dto['developers'], 'developers'),
             credits: parseSoftwareCredits(dto['credits']),
+            canChange: readBoolean(dto, 'canChange'),
         };
     });
 }
@@ -135,6 +136,7 @@ export async function fetchSoftwareReleases(id: SoftwareId, signal: AbortSignal)
             releaseDate: releaseDate === null ? null : toReleaseDate(releaseDate),
             description: readNullableString(dto, 'description'),
             hardware: parseHardwareList(dto['hardware']),
+            canChange: readBoolean(dto, 'canChange'),
         };
     }));
 }

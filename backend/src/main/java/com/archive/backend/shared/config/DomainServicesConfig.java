@@ -15,6 +15,13 @@ import com.archive.backend.hardware.domain.HardwareSets;
 import com.archive.backend.software.domain.SoftwareCreditSets;
 import com.archive.backend.software.domain.SoftwareReferenceCatalog;
 import com.archive.backend.software.domain.SoftwareReferenceSets;
+import com.archive.backend.user.domain.AccountConfirmation;
+import com.archive.backend.user.domain.PasswordHasher;
+import com.archive.backend.user.domain.Registrations;
+import com.archive.backend.user.domain.UserRepository;
+import com.archive.backend.user.domain.session.AccessTokens;
+import com.archive.backend.user.domain.session.SessionRepository;
+import com.archive.backend.user.domain.session.Sessions;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -62,5 +69,20 @@ public class DomainServicesConfig {
     @Bean
     public SoftwareCreditSets softwareCreditSets(PersonReferenceCatalog catalog) {
         return new SoftwareCreditSets(catalog);
+    }
+
+    @Bean
+    public Registrations registrations(UserRepository users, PasswordHasher hasher) {
+        return new Registrations(users, hasher);
+    }
+
+    @Bean
+    public AccountConfirmation accountConfirmation(UserRepository users) {
+        return new AccountConfirmation(users);
+    }
+
+    @Bean
+    public Sessions sessions(SessionRepository sessions, UserRepository users, AccessTokens accessTokens) {
+        return new Sessions(sessions, users, accessTokens);
     }
 }

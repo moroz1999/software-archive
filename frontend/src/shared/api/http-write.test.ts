@@ -1,6 +1,6 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {deleteResource, postJson, putJson} from './http';
-import {BusinessError, SystemError} from './errors';
+import {deleteResource, postJson, postNoContent, putJson} from './http';
+import {AuthenticationRequiredError, BusinessError, SystemError} from './errors';
 
 function respond(status: number, body: unknown = null) {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response(
@@ -85,5 +85,52 @@ describe(deleteResource, () => {
         respond(500, {status: 500});
 
         await expect(deleteResource('/api/x/1')).rejects.toBeInstanceOf(SystemError);
+    });
+});
+
+describe(postNoContent, () => {
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
+    it('posts the body as JSON and expects no answer', async () => {
+        const fetchMock = respond(204);
+
+        await expect(postNoContent('/api/x', {login: 'Zed'})).resolves.toBeUndefined();
+        expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/x', {
+            method: 'POST',
+            headers: {Accept: 'application/json', 'Content-Type': 'application/json'},
+            body: '{"login":"Zed"}',
+        });
+    });
+
+    it('posts nothing when there is no body', async () => {
+        const fetchMock = respond(204);
+
+        await postNoContent('/api/x');
+
+        expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/x', {method: 'POST', headers: {Accept: 'application/json'}});
+    });
+});
+
+describe('a refused write', () => {
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
+    it('turns a 403 with a code into a business error of its status', async () => {
+        respond(403, {status: 403, code: 'access.denied'});
+
+        await expect(postJson('/api/x', {})).rejects.toMatchObject({name: 'BusinessError', status: 403, code: 'access.denied'});
+    });
+
+    it('fails a write that wants a signed-in user with a business error the form shows', async () => {
+        respond(401, {status: 401, code: 'auth.required'});
+
+        const error = await postJson('/api/x', {}).catch((caught: unknown) => caught);
+
+        expect(error).toBeInstanceOf(AuthenticationRequiredError);
+        expect(error).toBeInstanceOf(BusinessError);
+        expect(error).toMatchObject({status: 401, code: 'auth.required'});
     });
 });

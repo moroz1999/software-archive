@@ -115,7 +115,8 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
     @Override
     public Optional<GroupDetails> findById(UUID id) {
         return jdbc.sql("WITH " + MainNameSql.GROUPS
-                        + "SELECT main_name, group_name, notes FROM named_group WHERE group_id = :id")
+                        + "SELECT main_name, group_name, notes, (SELECT added_by FROM \"group\" WHERE id = :id) AS added_by"
+                        + " FROM named_group WHERE group_id = :id")
                 .param("id", id)
                 .query((rs, row) -> new GroupDetails(
                         id,
@@ -127,7 +128,9 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
                         locations(id),
                         members(id),
                         related(id, "member_group_id", "group_id"),
-                        related(id, "group_id", "member_group_id")))
+                        related(id, "group_id", "member_group_id"),
+                        rs.getObject("added_by", UUID.class),
+                        false))
                 .optional();
     }
 

@@ -18,6 +18,7 @@ public class CreateCategoryHandler {
 
     @Transactional
     public CategoryId handle(CreateCategoryCommand c) {
+        Category.requireKeptBy(c.actor());
         CategoryId id = new CategoryId(UUID.randomUUID());
         CategoryId parent = c.parent();
         repository.save(Category.create(id, c.title(), parent == null ? null : parents.of(id, parent)));

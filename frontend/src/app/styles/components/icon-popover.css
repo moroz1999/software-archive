@@ -1,0 +1,18 @@
+:root {
+    /* Width of the window, narrowed to the viewport less this space on each side. */
+    --icon-popover-width: 300px;
+    --icon-popover-viewport-padding: var(--space-16);
+
+    /* Inner padding. */
+    --icon-popover-padding: var(--space-16);
+
+    /* Corner radius. */
+    --icon-popover-radius: var(--radius-lg);
+
+    /* Surface and text color. */
+    --icon-popover-bg: var(--surface);
+    --icon-popover-text: var(--text-color);
+
+    /* Shadow lifting the window off the page. */
+    --icon-popover-shadow: var(--shadow-lg);
+}

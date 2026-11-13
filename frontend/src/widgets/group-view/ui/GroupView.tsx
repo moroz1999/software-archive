@@ -44,7 +44,7 @@ function LoadedView() {
         return null;
     }
     return (
-        <PageLayout title={query.data.name} actions={<Button href={groupEditPath(query.data.id)} color="secondary">{t('actions.edit')}</Button>}>
+        <PageLayout title={query.data.name} actions={query.data.canChange && <Button href={groupEditPath(query.data.id)} color="secondary">{t('actions.edit')}</Button>}>
             <Details group={query.data}/>
         </PageLayout>
     );

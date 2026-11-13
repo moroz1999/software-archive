@@ -38,6 +38,8 @@ export interface SoftwareDetails extends Software {
     readonly publishers?: readonly SoftwareReference[];
     readonly developers?: readonly SoftwareReference[];
     readonly credits?: readonly SoftwareCredit[];
+    /** Whether whoever reads it may change it, as the archive tells. */
+    readonly canChange: boolean;
 }
 
 /** A category software is in, with its branch from the top of the tree down to itself (docs/domain/categories.md). */

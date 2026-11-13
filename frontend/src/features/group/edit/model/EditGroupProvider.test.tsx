@@ -17,6 +17,7 @@ const GROUP = {
     members: [],
     memberGroups: [],
     groups: [],
+    canChange: true,
 };
 
 const AROUND = new Map([['/api/group-types', json(['crack group', 'demogroup'])]]);

@@ -11,6 +11,9 @@ import static com.archive.backend.software.app.ReleaseFixtures.categorySets;
 import static com.archive.backend.software.app.ReleaseFixtures.hardwareSets;
 import static com.archive.backend.software.app.ReleaseFixtures.in;
 import static com.archive.backend.software.app.ReleaseFixtures.vector;
+import static com.archive.backend.user.TestActors.ADMIN;
+import static com.archive.backend.user.TestActors.MEMBER;
+import static com.archive.backend.user.TestActors.MEMBER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -23,6 +26,9 @@ import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareReferenceSets;
 import com.archive.backend.software.domain.SoftwareTitle;
+import com.archive.backend.user.domain.Actor;
+import com.archive.backend.user.domain.AddedBy;
+import com.archive.backend.user.domain.SignInRequiredException;
 import java.time.LocalDate;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -41,6 +47,7 @@ class CreateSoftwareHandlerTest {
     @Test
     void storesNewSoftwareUnderANewId() {
         SoftwareId id = handler.handle(new CreateSoftwareCommand(
+                ADMIN,
                 new SoftwareTitle("Elite"),
                 new SoftwareDescription("Space trading"),
                 LocalDate.of(1985, 9, 20),
@@ -59,9 +66,9 @@ class CreateSoftwareHandlerTest {
     @Test
     void givesEverySoftwareItsOwnId() {
         SoftwareId first = handler.handle(
-                new CreateSoftwareCommand(new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of()));
+                new CreateSoftwareCommand(ADMIN, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of()));
         SoftwareId second = handler.handle(
-                new CreateSoftwareCommand(new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of()));
+                new CreateSoftwareCommand(ADMIN, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of()));
 
         assertThat(first).isNotEqualTo(second);
     }
@@ -69,7 +76,7 @@ class CreateSoftwareHandlerTest {
     @Test
     void refusesAnUnknownPlatformAndStoresNothing() {
         assertThatThrownBy(() -> handler.handle(new CreateSoftwareCommand(
-                        new SoftwareTitle("Elite"), null, null, new PlatformCode("zx"), Set.of(), Set.of())))
+                        ADMIN, new SoftwareTitle("Elite"), null, null, new PlatformCode("zx"), Set.of(), Set.of())))
                 .isInstanceOfSatisfying(
                         InvalidValueException.class, e -> assertThat(e.code()).isEqualTo("software.platform-unknown"));
         assertThat(repository.count()).isZero();
@@ -78,7 +85,7 @@ class CreateSoftwareHandlerTest {
     @Test
     void storesTheHardwareOfTheSoftware() {
         SoftwareId id = handler.handle(
-                new CreateSoftwareCommand(new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(AY), Set.of()));
+                new CreateSoftwareCommand(ADMIN, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(AY), Set.of()));
 
         assertThat(repository.findById(id))
                 .hasValueSatisfying(
@@ -88,7 +95,7 @@ class CreateSoftwareHandlerTest {
     @Test
     void refusesHardwareOfAnotherPlatformAndStoresNothing() {
         assertThatThrownBy(() -> handler.handle(new CreateSoftwareCommand(
-                        new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(BK0011M), Set.of())))
+                        ADMIN, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(BK0011M), Set.of())))
                 .isInstanceOfSatisfying(RuleViolationException.class, e -> {
                     assertThat(e.code()).isEqualTo("hardware.unknown");
                     assertThat(e.field()).isEqualTo("hardware");
@@ -99,7 +106,7 @@ class CreateSoftwareHandlerTest {
     @Test
     void storesTheCategoriesOfTheSoftware() {
         SoftwareId id = handler.handle(new CreateSoftwareCommand(
-                new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of(ARCADE, DEMOSCENE)));
+                ADMIN, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of(ARCADE, DEMOSCENE)));
 
         assertThat(repository.findById(id))
                 .hasValueSatisfying(
@@ -109,7 +116,7 @@ class CreateSoftwareHandlerTest {
     @Test
     void takesTheSoftwareOutOfACategoryAboveAnotherOfIts() {
         SoftwareId id = handler.handle(new CreateSoftwareCommand(
-                new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of(GAMES, ARCADE)));
+                ADMIN, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of(GAMES, ARCADE)));
 
         assertThat(repository.findById(id))
                 .hasValueSatisfying(
@@ -119,7 +126,7 @@ class CreateSoftwareHandlerTest {
     @Test
     void storesSoftwareInNoCategory() {
         SoftwareId id = handler.handle(
-                new CreateSoftwareCommand(new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of()));
+                new CreateSoftwareCommand(ADMIN, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of()));
 
         assertThat(repository.findById(id))
                 .hasValueSatisfying(
@@ -129,11 +136,28 @@ class CreateSoftwareHandlerTest {
     @Test
     void refusesACategoryNotInTheArchiveAndStoresNothing() {
         assertThatThrownBy(() -> handler.handle(new CreateSoftwareCommand(
-                        new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of(GAMES, GONE))))
+                        ADMIN, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of(GAMES, GONE))))
                 .isInstanceOfSatisfying(RuleViolationException.class, e -> {
                     assertThat(e.code()).isEqualTo("category.unknown");
                     assertThat(e.field()).isEqualTo("categories");
                 });
         assertThat(repository.count()).isZero();
+    }
+
+    @Test
+    void remembersWhoAddedTheSoftware() {
+        SoftwareId id = handler.handle(
+                new CreateSoftwareCommand(MEMBER, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of()));
+
+        assertThat(repository.findById(id))
+                .hasValueSatisfying(
+                        software -> assertThat(software.getAddedBy()).isEqualTo(new AddedBy(MEMBER_ID)));
+    }
+
+    @Test
+    void refusesAPublicVisitor() {
+        assertThatThrownBy(() -> handler.handle(new CreateSoftwareCommand(
+                        Actor.anonymous(), new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of())))
+                .isInstanceOf(SignInRequiredException.class);
     }
 }

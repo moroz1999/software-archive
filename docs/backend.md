@@ -26,6 +26,7 @@ Each domain is a package under `com.archive.backend`. A request passes four role
 - Business rules belong to the domain model first. A domain service holds a rule only when it does not belong to a single entity.
 - An invariant of an entity that needs data outside its aggregate (a reference book) is never checked by the use case. A factory domain service checks that data once and builds an **always-valid value object** nothing else can build; the entity accepts only that value object and checks the rest itself, so the type holds the invariant and no use case can forget it. Example: `HardwareSets` builds a `HardwareSet`, and `Software` keeps the hardware of every release on its own platform.
 - Such data comes through a port declared in `domain` and named after what it is (`HardwareCatalog`), implemented in `infra`. A `Repository` is only ever the collection of an aggregate.
+- Aggregate roots are marked explicitly. A command may change domain state only through an aggregate root; repositories save and delete only aggregate roots. Architecture checks enforce both boundaries.
 - The repository adapter restores always-valid value objects read back from storage with their `restore` factory: they were checked when stored. ArchUnit forbids `restore` outside `infra`.
 - Domain services are plain classes; `shared/config/DomainServicesConfig` makes them Spring beans.
 - Pure Java: no Spring web, JPA or other infrastructure dependencies.
@@ -56,10 +57,10 @@ Use cases and the domain signal failures by throwing business exceptions; one `@
 ## Shared building blocks
 
 - `shared/domain` — the shared kernel: concepts of the archive used by several domains, such as `Title`, the abstract value object of every title.
-- `shared/domain/error` — the taxonomy of business errors: `BusinessException` and its kinds (`NotFoundException`, `ConflictException`, `RuleViolationException`, `InvalidValueException`), mapped as a whole by `ApiExceptionHandler`.
+- `shared/domain/error` — the taxonomy of business errors: `BusinessException` and its kinds (`NotFoundException`, `ConflictException`, `RuleViolationException`, `InvalidValueException`, `AuthenticationRequiredException`), mapped as a whole by `ApiExceptionHandler`.
 - `shared/domain/ddd` — DDD building blocks: the `@ValueObject` marker and the `DomainEvent` interface of what an aggregate tells happened.
-- `shared/web` — `ApiExceptionHandler`, the only exception → REST status mapping. A change that lost to another running at the same time (a deadlock, a lock not acquired) answers `409 conflict.concurrent`.
-- `shared/config` — `SecurityConfig`; `DomainServicesConfig` registers the domain services; `WebConfig` fixes the page JSON contract: `{content: [...], page: {size, number, totalElements, totalPages}}`.
+- `shared/web` — `ApiExceptionHandler`, the only exception → REST status mapping. A change that lost to another running at the same time (a deadlock, a lock not acquired) answers `409 conflict.concurrent`. `AccessTokenCookieFilter` signs a request in by its access token and `ActorArgumentResolver` gives controllers its `Actor` ([features/accounts.md](features/accounts.md)).
+- `shared/config` — `SecurityConfig` (every request passes; access is decided by the use cases), `AuthProperties`, `ClockConfig` (use cases take the time from a `Clock`); `DomainServicesConfig` registers the domain services; `WebConfig` fixes the page JSON contract: `{content: [...], page: {size, number, totalElements, totalPages}}`.
 
 ## Mapping
 

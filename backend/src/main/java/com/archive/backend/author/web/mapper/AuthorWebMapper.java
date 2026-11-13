@@ -21,6 +21,7 @@ import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.LabelLetter;
 import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.shared.domain.error.InvalidValueException;
+import com.archive.backend.user.domain.Actor;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -38,16 +39,18 @@ public interface AuthorWebMapper {
         return new AuthorCreatedDto(id.value());
     }
 
-    default CreateAuthorCommand toCreate(AuthorRequestDto request) {
+    default CreateAuthorCommand toCreate(Actor actor, AuthorRequestDto request) {
         return new CreateAuthorCommand(
+                actor,
                 toRealName(request.realName()),
                 toNotes(request.notes()),
                 toLabels(request.labels()),
                 toLocations(request.locations()));
     }
 
-    default UpdateAuthorCommand toUpdate(UUID id, AuthorRequestDto request) {
+    default UpdateAuthorCommand toUpdate(Actor actor, UUID id, AuthorRequestDto request) {
         return new UpdateAuthorCommand(
+                actor,
                 new AuthorId(id),
                 toRealName(request.realName()),
                 toNotes(request.notes()),

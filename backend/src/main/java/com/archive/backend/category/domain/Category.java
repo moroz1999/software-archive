@@ -1,6 +1,8 @@
 package com.archive.backend.category.domain;
 
+import com.archive.backend.shared.domain.ddd.AggregateRoot;
 import com.archive.backend.shared.domain.ddd.DomainEvent;
+import com.archive.backend.user.domain.Actor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -12,6 +14,7 @@ import org.jspecify.annotations.Nullable;
  * top of the tree.
  */
 @Getter
+@AggregateRoot
 public final class Category {
 
     private final CategoryId id;
@@ -29,6 +32,11 @@ public final class Category {
 
     public static Category create(CategoryId id, CategoryTitle title, @Nullable CategoryParent parent) {
         return new Category(id, title, parent);
+    }
+
+    /** Categories are kept by administrators only (docs/domain/users.md). */
+    public static void requireKeptBy(Actor actor) {
+        actor.requireAllowed(actor.mayKeepCategories());
     }
 
     /**

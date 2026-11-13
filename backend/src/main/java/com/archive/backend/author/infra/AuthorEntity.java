@@ -31,6 +31,10 @@ public class AuthorEntity {
 
     private @Nullable String notes;
 
+    /** Who added it; the database forgets them once their account is gone, so it is never written back. */
+    @Column(name = "added_by", updatable = false)
+    private @Nullable UUID addedBy;
+
     /**
      * Set by the database default.
      */

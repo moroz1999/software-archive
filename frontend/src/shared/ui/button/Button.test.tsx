@@ -38,6 +38,17 @@ describe(Button, () => {
         expect(screen.getByRole('button', {name: 'Close'})).toHaveClass('square');
     });
 
+    it('tells whether the window it opens is open', () => {
+        const {rerender} = render(<Button square ariaLabel="Account" ariaHasPopup="dialog" ariaExpanded={false}>A</Button>);
+
+        expect(screen.getByRole('button', {name: 'Account'})).toHaveAttribute('aria-haspopup', 'dialog');
+        expect(screen.getByRole('button', {name: 'Account'})).toHaveAttribute('aria-expanded', 'false');
+
+        rerender(<Button square ariaLabel="Account" ariaHasPopup="dialog" ariaExpanded>A</Button>);
+
+        expect(screen.getByRole('button', {name: 'Account'})).toHaveAttribute('aria-expanded', 'true');
+    });
+
     it('does not react to clicks when disabled', async () => {
         const onClick = vi.fn<() => void>();
         render(<Button disabled onClick={onClick}>Save</Button>);

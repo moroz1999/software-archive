@@ -27,6 +27,7 @@ import com.archive.backend.software.web.dto.SoftwareReferenceDto;
 import com.archive.backend.software.web.dto.SoftwareReferenceRequestDto;
 import com.archive.backend.software.web.dto.SoftwareReleaseDto;
 import com.archive.backend.software.web.dto.SoftwareRequestDto;
+import com.archive.backend.user.domain.Actor;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -54,8 +55,9 @@ public interface SoftwareWebMapper {
         return new ListLatestSoftwareQuery(toPlatformFilter(platform), pageable);
     }
 
-    default CreateSoftwareCommand toCreate(SoftwareRequestDto request) {
+    default CreateSoftwareCommand toCreate(Actor actor, SoftwareRequestDto request) {
         return new CreateSoftwareCommand(
+                actor,
                 toTitle(request.title()),
                 toDescription(request.description()),
                 request.releaseDate(),
@@ -67,8 +69,9 @@ public interface SoftwareWebMapper {
                 toCredits(request.credits()));
     }
 
-    default UpdateSoftwareCommand toUpdate(UUID id, SoftwareRequestDto request) {
+    default UpdateSoftwareCommand toUpdate(Actor actor, UUID id, SoftwareRequestDto request) {
         return new UpdateSoftwareCommand(
+                actor,
                 new SoftwareId(id),
                 toTitle(request.title()),
                 toDescription(request.description()),

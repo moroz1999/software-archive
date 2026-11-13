@@ -1,5 +1,9 @@
 package com.archive.backend.software.app;
 
+import static com.archive.backend.user.TestActors.ADMIN;
+import static com.archive.backend.user.TestActors.MEMBER;
+import static com.archive.backend.user.TestActors.MEMBER_ID;
+import static com.archive.backend.user.TestActors.OTHER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -8,6 +12,7 @@ import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.read.SoftwareDetails;
 import com.archive.backend.software.read.SoftwareHardware;
 import com.archive.backend.software.read.SoftwarePlatform;
+import com.archive.backend.user.domain.Actor;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -32,13 +37,44 @@ class GetSoftwareHandlerTest {
                 List.of());
         reads.add(details);
 
-        assertThat(handler.handle(new GetSoftwareQuery(new SoftwareId(ID)))).isEqualTo(details);
+        assertThat(handler.handle(new GetSoftwareQuery(Actor.anonymous(), new SoftwareId(ID))))
+                .isEqualTo(details);
     }
 
     @Test
     void failsWhenTheSoftwareDoesNotExist() {
-        assertThatThrownBy(() -> handler.handle(new GetSoftwareQuery(new SoftwareId(ID))))
+        assertThatThrownBy(() -> handler.handle(new GetSoftwareQuery(Actor.anonymous(), new SoftwareId(ID))))
                 .isInstanceOfSatisfying(
                         NotFoundException.class, e -> assertThat(e.code()).isEqualTo("software.not-found"));
+    }
+
+    @Test
+    void tellsWhetherTheActorMayChangeTheSoftware() {
+        reads.add(new SoftwareDetails(
+                ID,
+                "Elite",
+                null,
+                null,
+                new SoftwarePlatform("vector", "Vector"),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                MEMBER_ID.value(),
+                false));
+
+        assertThat(handler.handle(new GetSoftwareQuery(MEMBER, new SoftwareId(ID)))
+                        .canChange())
+                .isTrue();
+        assertThat(handler.handle(new GetSoftwareQuery(ADMIN, new SoftwareId(ID)))
+                        .canChange())
+                .isTrue();
+        assertThat(handler.handle(new GetSoftwareQuery(OTHER, new SoftwareId(ID)))
+                        .canChange())
+                .isFalse();
+        assertThat(handler.handle(new GetSoftwareQuery(Actor.anonymous(), new SoftwareId(ID)))
+                        .canChange())
+                .isFalse();
     }
 }

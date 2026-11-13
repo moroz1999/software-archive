@@ -1,5 +1,6 @@
 package com.archive.backend.software.app;
 
+import static com.archive.backend.user.TestActors.ADMIN;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.archive.backend.TestcontainersConfiguration;
@@ -8,6 +9,7 @@ import com.archive.backend.category.app.UpdateCategoryCommand;
 import com.archive.backend.category.app.UpdateCategoryHandler;
 import com.archive.backend.category.domain.CategoryId;
 import com.archive.backend.category.domain.CategoryTitle;
+import com.archive.backend.user.TestActors;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -55,6 +57,7 @@ class CategoryMoveRecategorizesSoftwareIT {
 
     @BeforeEach
     void insert() {
+        TestActors.store(jdbc);
         jdbc.update(
                 "INSERT INTO software (id, title, platform_code) VALUES (?, 'Elite', 'vector'), (?, 'Tetris', 'vector')",
                 ELITE,
@@ -68,6 +71,7 @@ class CategoryMoveRecategorizesSoftwareIT {
     /** Commits for real, so the tree the schema brings is put back. */
     @AfterEach
     void putBack() {
+        TestActors.remove(jdbc);
         jdbc.update("DELETE FROM software WHERE id IN (?, ?)", ELITE, TETRIS);
         jdbc.update("UPDATE category SET parent_id = ? WHERE id = ?", GAMES, ACTION);
     }
@@ -75,7 +79,7 @@ class CategoryMoveRecategorizesSoftwareIT {
     @Test
     void takesTheSoftwareOutOfACategoryTheMovePutAboveAnotherOfItsOwn() {
         handler.handle(new UpdateCategoryCommand(
-                new CategoryId(ACTION), new CategoryTitle("Action"), new CategoryId(DEMOSCENE)));
+                ADMIN, new CategoryId(ACTION), new CategoryTitle("Action"), new CategoryId(DEMOSCENE)));
 
         assertThat(categoriesOf(ELITE)).containsExactly(SHOOTERS);
         assertThat(categoriesOf(TETRIS)).containsExactlyInAnyOrder(STRATEGY, SHOOTERS);

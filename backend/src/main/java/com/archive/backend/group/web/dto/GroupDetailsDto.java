@@ -15,7 +15,8 @@ public record GroupDetailsDto(
         List<LocationDto> locations,
         List<MemberDto> members,
         List<RelatedGroupDto> memberGroups,
-        List<RelatedGroupDto> groups) {
+        List<RelatedGroupDto> groups,
+        boolean canChange) {
 
     public record LabelDto(UUID id, String name, boolean display) {}
 

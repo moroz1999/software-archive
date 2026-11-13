@@ -49,6 +49,7 @@ import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
 import com.archive.backend.shared.web.ApiExceptionHandler;
+import com.archive.backend.user.domain.Actor;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -162,7 +163,7 @@ class GroupControllerTest {
 
     @Test
     void returnsOneGroup() throws Exception {
-        when(getHandler.handle(new GetGroupQuery(new GroupId(ID))))
+        when(getHandler.handle(new GetGroupQuery(Actor.anonymous(), new GroupId(ID))))
                 .thenReturn(new GroupDetails(
                         ID,
                         "Crew",
@@ -237,6 +238,7 @@ class GroupControllerTest {
     @Test
     void createsAGroup() throws Exception {
         when(createHandler.handle(new CreateGroupCommand(
+                        Actor.anonymous(),
                         new GroupName("Crew Ltd"),
                         new GroupNotes("Since 1990"),
                         CREW_TYPES,
@@ -253,7 +255,12 @@ class GroupControllerTest {
     @Test
     void createsAGroupOfOnlyANameAndAType() throws Exception {
         when(createHandler.handle(new CreateGroupCommand(
-                        new GroupName("Crew Ltd"), null, Set.of(new GroupTypeCode("demogroup")), List.of(), List.of())))
+                        Actor.anonymous(),
+                        new GroupName("Crew Ltd"),
+                        null,
+                        Set.of(new GroupTypeCode("demogroup")),
+                        List.of(),
+                        List.of())))
                 .thenReturn(new GroupId(ID));
 
         mvc.perform(post("/api/groups")
@@ -311,6 +318,7 @@ class GroupControllerTest {
 
         verify(updateHandler)
                 .handle(new UpdateGroupCommand(
+                        Actor.anonymous(),
                         new GroupId(ID),
                         new GroupName("Crew Ltd"),
                         new GroupNotes("Since 1990"),
@@ -334,7 +342,7 @@ class GroupControllerTest {
     void deletesAGroup() throws Exception {
         mvc.perform(delete("/api/groups/{id}", ID)).andExpect(status().isNoContent());
 
-        verify(deleteHandler).handle(new DeleteGroupCommand(new GroupId(ID)));
+        verify(deleteHandler).handle(new DeleteGroupCommand(Actor.anonymous(), new GroupId(ID)));
     }
 
     @Test

@@ -1,5 +1,9 @@
 package com.archive.backend.group.app;
 
+import static com.archive.backend.user.TestActors.ADMIN;
+import static com.archive.backend.user.TestActors.MEMBER;
+import static com.archive.backend.user.TestActors.MEMBER_ID;
+import static com.archive.backend.user.TestActors.OTHER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -7,6 +11,7 @@ import com.archive.backend.group.domain.GroupId;
 import com.archive.backend.group.read.GroupDetails;
 import com.archive.backend.group.read.GroupLabel;
 import com.archive.backend.shared.domain.error.NotFoundException;
+import com.archive.backend.user.domain.Actor;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -33,13 +38,41 @@ class GetGroupHandlerTest {
                 List.of());
         reads.add(group);
 
-        assertThat(handler.handle(new GetGroupQuery(new GroupId(ID)))).isEqualTo(group);
+        assertThat(handler.handle(new GetGroupQuery(Actor.anonymous(), new GroupId(ID))))
+                .isEqualTo(group);
     }
 
     @Test
     void failsWhenTheGroupDoesNotExist() {
-        assertThatThrownBy(() -> handler.handle(new GetGroupQuery(new GroupId(ID))))
+        assertThatThrownBy(() -> handler.handle(new GetGroupQuery(Actor.anonymous(), new GroupId(ID))))
                 .isInstanceOfSatisfying(
                         NotFoundException.class, e -> assertThat(e.code()).isEqualTo("group.not-found"));
+    }
+
+    @Test
+    void tellsWhetherTheActorMayChangeTheGroup() {
+        reads.add(new GroupDetails(
+                ID,
+                "Crew",
+                "Crew Ltd",
+                null,
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                MEMBER_ID.value(),
+                false));
+
+        assertThat(handler.handle(new GetGroupQuery(MEMBER, new GroupId(ID))).canChange())
+                .isTrue();
+        assertThat(handler.handle(new GetGroupQuery(ADMIN, new GroupId(ID))).canChange())
+                .isTrue();
+        assertThat(handler.handle(new GetGroupQuery(OTHER, new GroupId(ID))).canChange())
+                .isFalse();
+        assertThat(handler.handle(new GetGroupQuery(Actor.anonymous(), new GroupId(ID)))
+                        .canChange())
+                .isFalse();
     }
 }

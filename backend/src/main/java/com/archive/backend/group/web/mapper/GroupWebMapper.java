@@ -26,6 +26,7 @@ import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.LabelLetter;
 import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.shared.domain.error.InvalidValueException;
+import com.archive.backend.user.domain.Actor;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -46,8 +47,9 @@ public interface GroupWebMapper {
         return new GroupCreatedDto(id.value());
     }
 
-    default CreateGroupCommand toCreate(GroupRequestDto request) {
+    default CreateGroupCommand toCreate(Actor actor, GroupRequestDto request) {
         return new CreateGroupCommand(
+                actor,
                 toName(request.name()),
                 toNotes(request.notes()),
                 toTypes(request.types()),
@@ -56,8 +58,9 @@ public interface GroupWebMapper {
                 toMembers(request.members()));
     }
 
-    default UpdateGroupCommand toUpdate(UUID id, GroupRequestDto request) {
+    default UpdateGroupCommand toUpdate(Actor actor, UUID id, GroupRequestDto request) {
         return new UpdateGroupCommand(
+                actor,
                 new GroupId(id),
                 toName(request.name()),
                 toNotes(request.notes()),

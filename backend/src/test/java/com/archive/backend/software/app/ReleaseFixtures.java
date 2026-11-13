@@ -15,6 +15,7 @@ import com.archive.backend.software.domain.ReleaseType;
 import com.archive.backend.software.domain.Software;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareTitle;
+import com.archive.backend.user.domain.AddedBy;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -59,7 +60,7 @@ final class ReleaseFixtures {
     /** Elite with its AY mod, which has the AY chip. */
     static Software eliteWithAyMod() {
         Software software = elite();
-        software.addRelease(AY_MOD, AY_MOD_CONTENT, vector(AY));
+        software.addRelease(AY_MOD, AY_MOD_CONTENT, vector(AY), AddedBy.NOBODY);
         return software;
     }
 

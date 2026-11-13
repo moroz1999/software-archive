@@ -4,6 +4,7 @@ import {cleanup} from '@testing-library/react';
 import i18n from 'i18next';
 import {initReactI18next} from 'react-i18next';
 import {resources} from './src/app/i18n/resources';
+import {resetSessionForTests} from './src/shared/api/session';
 
 void i18n.use(initReactI18next).init({
     resources,
@@ -16,6 +17,7 @@ void i18n.use(initReactI18next).init({
 
 afterEach(() => {
     cleanup();
+    resetSessionForTests();
     void i18n.changeLanguage('en');
 });
 

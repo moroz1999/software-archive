@@ -10,11 +10,14 @@ import static com.archive.backend.software.app.ReleaseFixtures.UNKNOWN;
 import static com.archive.backend.software.app.ReleaseFixtures.eliteWithAyMod;
 import static com.archive.backend.software.app.ReleaseFixtures.hardwareSets;
 import static com.archive.backend.software.app.ReleaseFixtures.vector;
+import static com.archive.backend.user.TestActors.ADMIN;
+import static com.archive.backend.user.TestActors.MEMBER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.shared.domain.error.RuleViolationException;
+import com.archive.backend.user.domain.ChangeForbiddenException;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +30,7 @@ class UpdateReleaseHandlerTest {
     void storesTheEditedRelease() {
         repository.save(eliteWithAyMod());
 
-        handler.handle(new UpdateReleaseCommand(ELITE, AY_MOD, BUGFIX_CONTENT, Set.of()));
+        handler.handle(new UpdateReleaseCommand(ADMIN, ELITE, AY_MOD, BUGFIX_CONTENT, Set.of()));
 
         assertThat(repository.findById(ELITE).flatMap(software -> software.release(AY_MOD)))
                 .hasValueSatisfying(release -> {
@@ -38,7 +41,8 @@ class UpdateReleaseHandlerTest {
 
     @Test
     void failsWhenTheSoftwareDoesNotExist() {
-        assertThatThrownBy(() -> handler.handle(new UpdateReleaseCommand(ELITE, AY_MOD, AY_MOD_CONTENT, Set.of(AY))))
+        assertThatThrownBy(() ->
+                        handler.handle(new UpdateReleaseCommand(ADMIN, ELITE, AY_MOD, AY_MOD_CONTENT, Set.of(AY))))
                 .isInstanceOfSatisfying(
                         NotFoundException.class, e -> assertThat(e.code()).isEqualTo("software.not-found"));
     }
@@ -47,7 +51,8 @@ class UpdateReleaseHandlerTest {
     void failsWhenTheSoftwareHasNoSuchRelease() {
         repository.save(eliteWithAyMod());
 
-        assertThatThrownBy(() -> handler.handle(new UpdateReleaseCommand(ELITE, UNKNOWN, AY_MOD_CONTENT, Set.of(AY))))
+        assertThatThrownBy(() ->
+                        handler.handle(new UpdateReleaseCommand(ADMIN, ELITE, UNKNOWN, AY_MOD_CONTENT, Set.of(AY))))
                 .isInstanceOfSatisfying(
                         NotFoundException.class, e -> assertThat(e.code()).isEqualTo("release.not-found"));
     }
@@ -56,8 +61,8 @@ class UpdateReleaseHandlerTest {
     void refusesHardwareOfAnotherPlatformAndKeepsTheRelease() {
         repository.save(eliteWithAyMod());
 
-        assertThatThrownBy(() ->
-                        handler.handle(new UpdateReleaseCommand(ELITE, AY_MOD, BUGFIX_CONTENT, Set.of(AY, BK0011M))))
+        assertThatThrownBy(() -> handler.handle(
+                        new UpdateReleaseCommand(ADMIN, ELITE, AY_MOD, BUGFIX_CONTENT, Set.of(AY, BK0011M))))
                 .isInstanceOfSatisfying(
                         RuleViolationException.class, e -> assertThat(e.code()).isEqualTo("hardware.unknown"));
         assertThat(repository.findById(ELITE).flatMap(software -> software.release(AY_MOD)))
@@ -65,5 +70,16 @@ class UpdateReleaseHandlerTest {
                     assertThat(release.content()).isEqualTo(AY_MOD_CONTENT);
                     assertThat(release.hardware()).isEqualTo(vector(AY));
                 });
+    }
+
+    @Test
+    void refusesSomeoneWhoMayNotChangeTheReleaseAndKeepsIt() {
+        repository.save(eliteWithAyMod());
+
+        assertThatThrownBy(
+                        () -> handler.handle(new UpdateReleaseCommand(MEMBER, ELITE, AY_MOD, BUGFIX_CONTENT, Set.of())))
+                .isInstanceOf(ChangeForbiddenException.class);
+        assertThat(repository.findById(ELITE).flatMap(software -> software.release(AY_MOD)))
+                .hasValueSatisfying(release -> assertThat(release.content()).isNotEqualTo(BUGFIX_CONTENT));
     }
 }

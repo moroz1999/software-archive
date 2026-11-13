@@ -14,6 +14,7 @@ const AUTHOR = {
     labels: [],
     locations: [],
     groups: [],
+    canChange: true,
 };
 
 describe(EditAuthorProvider, () => {

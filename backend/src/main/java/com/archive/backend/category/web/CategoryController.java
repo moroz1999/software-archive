@@ -14,6 +14,7 @@ import com.archive.backend.category.web.dto.CategoryDetailsDto;
 import com.archive.backend.category.web.dto.CategoryNodeDto;
 import com.archive.backend.category.web.dto.CategoryRequestDto;
 import com.archive.backend.category.web.mapper.CategoryWebMapper;
+import com.archive.backend.user.domain.Actor;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -58,16 +59,16 @@ public class CategoryController {
     }
 
     @PostMapping
-    public ResponseEntity<CategoryCreatedDto> create(@RequestBody CategoryRequestDto request) {
-        CategoryId id = createHandler.handle(webMapper.toCreate(request));
+    public ResponseEntity<CategoryCreatedDto> create(Actor actor, @RequestBody CategoryRequestDto request) {
+        CategoryId id = createHandler.handle(webMapper.toCreate(actor, request));
         return ResponseEntity.created(URI.create("/api/categories/" + id.value()))
                 .body(webMapper.toCreated(id));
     }
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void update(@PathVariable UUID id, @RequestBody CategoryRequestDto request) {
-        updateHandler.handle(webMapper.toUpdate(id, request));
+    public void update(Actor actor, @PathVariable UUID id, @RequestBody CategoryRequestDto request) {
+        updateHandler.handle(webMapper.toUpdate(actor, id, request));
     }
 
     /**
@@ -75,7 +76,7 @@ public class CategoryController {
      */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable UUID id) {
-        deleteHandler.handle(new DeleteCategoryCommand(new CategoryId(id)));
+    public void delete(Actor actor, @PathVariable UUID id) {
+        deleteHandler.handle(new DeleteCategoryCommand(actor, new CategoryId(id)));
     }
 }

@@ -23,12 +23,13 @@ const CREW = {
         {countryId: '00000000-0000-0000-0002-000000000001', country: 'Finland', cityId: '00000000-0000-0000-0002-000000000011', city: 'Helsinki', primary: true},
     ],
     members: [
-        {name: 'Ghost', personId: null, personName: null},
-        {name: 'Zed', personId: ZED, personName: null},
-        {name: 'хакер федя', personId: FEDYA, personName: 'MASTERSOFT'},
+        {id: null, type: 'author', title: 'Ghost', name: 'Ghost', personId: null, personName: null, roles: [], startDate: null, endDate: null},
+        {id: ZED, type: 'author', title: 'Zed', name: 'Zed', personId: ZED, personName: null, roles: [], startDate: null, endDate: null},
+        {id: FEDYA, type: 'author', title: 'хакер федя', name: 'хакер федя', personId: FEDYA, personName: 'MASTERSOFT', roles: [], startDate: null, endDate: null},
     ],
     memberGroups: [{id: BAND, name: 'Band'}],
     groups: [{id: OLDIES, name: 'Alpha'}],
+    canChange: true,
 };
 
 function renderView() {
@@ -136,5 +137,14 @@ describe(GroupView, () => {
         expect(reports[0]?.error.kind).toBe('server');
         expect(screen.queryByTestId('group-view-skeleton')).not.toBeInTheDocument();
         expect(screen.queryByRole('heading', {level: 1})).not.toBeInTheDocument();
+    });
+
+    it('offers no editing of the group to whoever may not change it', async () => {
+        stubFetch(json({...CREW, canChange: false}));
+        renderView();
+
+        await screen.findByRole('heading', {level: 1, name: 'Crew'});
+
+        expect(screen.queryByRole('link', {name: 'Edit'})).not.toBeInTheDocument();
     });
 });

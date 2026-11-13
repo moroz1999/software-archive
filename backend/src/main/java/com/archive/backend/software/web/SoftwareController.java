@@ -16,6 +16,7 @@ import com.archive.backend.software.web.dto.SoftwareListItemDto;
 import com.archive.backend.software.web.dto.SoftwareReleaseDto;
 import com.archive.backend.software.web.dto.SoftwareRequestDto;
 import com.archive.backend.software.web.mapper.SoftwareWebMapper;
+import com.archive.backend.user.domain.Actor;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -59,33 +60,33 @@ public class SoftwareController {
     }
 
     @GetMapping("/{id}")
-    public SoftwareDetailsDto get(@PathVariable UUID id) {
-        return webMapper.toDetails(getHandler.handle(new GetSoftwareQuery(new SoftwareId(id))));
+    public SoftwareDetailsDto get(Actor actor, @PathVariable UUID id) {
+        return webMapper.toDetails(getHandler.handle(new GetSoftwareQuery(actor, new SoftwareId(id))));
     }
 
     /**
      * The releases of the software, each with the hardware it shows.
      */
     @GetMapping("/{id}/releases")
-    public List<SoftwareReleaseDto> releases(@PathVariable UUID id) {
-        return webMapper.toReleases(releasesHandler.handle(new ListSoftwareReleasesQuery(new SoftwareId(id))));
+    public List<SoftwareReleaseDto> releases(Actor actor, @PathVariable UUID id) {
+        return webMapper.toReleases(releasesHandler.handle(new ListSoftwareReleasesQuery(actor, new SoftwareId(id))));
     }
 
     @PostMapping
-    public ResponseEntity<SoftwareCreatedDto> create(@RequestBody SoftwareRequestDto request) {
-        SoftwareId id = createHandler.handle(webMapper.toCreate(request));
+    public ResponseEntity<SoftwareCreatedDto> create(Actor actor, @RequestBody SoftwareRequestDto request) {
+        SoftwareId id = createHandler.handle(webMapper.toCreate(actor, request));
         return ResponseEntity.created(URI.create("/api/software/" + id.value())).body(webMapper.toCreated(id));
     }
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void update(@PathVariable UUID id, @RequestBody SoftwareRequestDto request) {
-        updateHandler.handle(webMapper.toUpdate(id, request));
+    public void update(Actor actor, @PathVariable UUID id, @RequestBody SoftwareRequestDto request) {
+        updateHandler.handle(webMapper.toUpdate(actor, id, request));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable UUID id) {
-        deleteHandler.handle(new DeleteSoftwareCommand(new SoftwareId(id)));
+    public void delete(Actor actor, @PathVariable UUID id) {
+        deleteHandler.handle(new DeleteSoftwareCommand(actor, new SoftwareId(id)));
     }
 }

@@ -38,3 +38,7 @@ Detailed logic and structure: [domain/localization.md](domain/localization.md)
 ### search
 Quick and full search over software, people and groups, and the filters of the software catalog.
 Detailed logic and structure: [domain/search.md](domain/search.md)
+
+### users
+Accounts, how visitors register, confirm and sign in, and what each user group may do.
+Detailed logic and structure: [domain/users.md](domain/users.md)

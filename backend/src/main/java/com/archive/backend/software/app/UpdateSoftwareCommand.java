@@ -8,12 +8,14 @@ import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareReference;
 import com.archive.backend.software.domain.SoftwareTitle;
+import com.archive.backend.user.domain.Actor;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import org.jspecify.annotations.Nullable;
 
 public record UpdateSoftwareCommand(
+        Actor actor,
         SoftwareId id,
         SoftwareTitle title,
         @Nullable SoftwareDescription description,
@@ -26,6 +28,7 @@ public record UpdateSoftwareCommand(
         List<SoftwareCreditDraft> credits) {
 
     public UpdateSoftwareCommand(
+            Actor actor,
             SoftwareId id,
             SoftwareTitle title,
             @Nullable SoftwareDescription description,
@@ -35,10 +38,22 @@ public record UpdateSoftwareCommand(
             Set<CategoryId> categories,
             Set<SoftwareReference> publishers,
             Set<SoftwareReference> developers) {
-        this(id, title, description, releaseDate, platform, hardware, categories, publishers, developers, List.of());
+        this(
+                actor,
+                id,
+                title,
+                description,
+                releaseDate,
+                platform,
+                hardware,
+                categories,
+                publishers,
+                developers,
+                List.of());
     }
 
     public UpdateSoftwareCommand(
+            Actor actor,
             SoftwareId id,
             SoftwareTitle title,
             @Nullable SoftwareDescription description,
@@ -46,6 +61,6 @@ public record UpdateSoftwareCommand(
             PlatformCode platform,
             Set<HardwareCode> hardware,
             Set<CategoryId> categories) {
-        this(id, title, description, releaseDate, platform, hardware, categories, Set.of(), Set.of(), List.of());
+        this(actor, id, title, description, releaseDate, platform, hardware, categories, Set.of(), Set.of(), List.of());
     }
 }

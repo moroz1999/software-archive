@@ -5,8 +5,9 @@ import {PageLayout} from '@/shared/ui/page-layout';
 
 export function AuthorsPage() {
     const {t} = useTranslation();
+    const addsEntries = useAbility('add-entries');
     return (
-        <PageLayout title={t('pages.authors')} actions={<Button href={AUTHOR_NEW_PATH}>{t('actions.addAuthor')}</Button>}>
+        <PageLayout title={t('pages.authors')} actions={addsEntries && <Button href={AUTHOR_NEW_PATH}>{t('actions.addAuthor')}</Button>}>
             <AuthorCatalogProvider>
                 <AuthorCatalog/>
             </AuthorCatalogProvider>
@@ -14,3 +15,4 @@ export function AuthorsPage() {
     );
 }
 import {useTranslation} from 'react-i18next';
+import {useAbility} from '@/entities/users';

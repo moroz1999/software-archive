@@ -5,7 +5,10 @@ import com.archive.backend.label.domain.LabelDraft;
 import com.archive.backend.label.domain.OwnLabel;
 import com.archive.backend.label.domain.OwnLabels;
 import com.archive.backend.label.domain.OwnerOfLabelsChanged;
+import com.archive.backend.shared.domain.ddd.AggregateRoot;
 import com.archive.backend.shared.domain.ddd.DomainEvent;
+import com.archive.backend.user.domain.Actor;
+import com.archive.backend.user.domain.AddedBy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -17,6 +20,7 @@ import org.jspecify.annotations.Nullable;
  * A person behind the labels, known by a real name, a label or both (docs/domain/authors.md).
  */
 @Getter
+@AggregateRoot
 public final class Author {
 
     private final AuthorId id;
@@ -24,6 +28,8 @@ public final class Author {
     private @Nullable AuthorNotes notes;
     private OwnLabels labels;
     private Locations locations;
+    /** Whoever added the person may change them (docs/domain/users.md). */
+    private final AddedBy addedBy;
 
     @Getter(lombok.AccessLevel.NONE)
     private final List<DomainEvent> events = new ArrayList<>();
@@ -33,12 +39,35 @@ public final class Author {
             @Nullable RealName realName,
             @Nullable AuthorNotes notes,
             OwnLabels labels,
-            Locations locations) {
+            Locations locations,
+            AddedBy addedBy) {
         this.id = Objects.requireNonNull(id, "id");
         this.realName = realName;
         this.notes = notes;
         this.labels = requireNamed(realName, Objects.requireNonNull(labels, "labels"));
         this.locations = Objects.requireNonNull(locations, "locations");
+        this.addedBy = Objects.requireNonNull(addedBy, "addedBy");
+    }
+
+    public Author(
+            AuthorId id,
+            @Nullable RealName realName,
+            @Nullable AuthorNotes notes,
+            OwnLabels labels,
+            Locations locations) {
+        this(id, realName, notes, labels, locations, AddedBy.NOBODY);
+    }
+
+    public static Author create(
+            AuthorId id,
+            @Nullable RealName realName,
+            @Nullable AuthorNotes notes,
+            List<LabelDraft> labels,
+            Locations locations,
+            AddedBy addedBy) {
+        Author author = new Author(id, realName, notes, OwnLabels.of(labels), locations, addedBy);
+        author.events.add(new AuthorChanged(id));
+        return author;
     }
 
     public static Author create(
@@ -47,9 +76,12 @@ public final class Author {
             @Nullable AuthorNotes notes,
             List<LabelDraft> labels,
             Locations locations) {
-        Author author = new Author(id, realName, notes, OwnLabels.of(labels), locations);
-        author.events.add(new AuthorChanged(id));
-        return author;
+        return create(id, realName, notes, labels, locations, AddedBy.NOBODY);
+    }
+
+    /** Whoever added the person changes them, and administrators anyone (docs/domain/users.md). */
+    public void requireChangeableBy(Actor actor) {
+        addedBy.requireChangeableBy(actor);
     }
 
     /**

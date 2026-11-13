@@ -26,6 +26,7 @@ public class UpdateSoftwareHandler {
     @Transactional
     public void handle(UpdateSoftwareCommand c) {
         Software software = repository.findById(c.id()).orElseThrow(SoftwareNotFoundException::new);
+        software.requireChangeableBy(c.actor());
         software.edit(
                 c.title(),
                 c.description(),

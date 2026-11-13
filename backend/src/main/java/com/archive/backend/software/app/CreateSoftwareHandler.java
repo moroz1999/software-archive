@@ -7,6 +7,7 @@ import com.archive.backend.software.domain.SoftwareCreditSets;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareReferenceSets;
 import com.archive.backend.software.domain.SoftwareRepository;
+import com.archive.backend.user.domain.AddedBy;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -26,6 +27,7 @@ public class CreateSoftwareHandler {
 
     @Transactional
     public SoftwareId handle(CreateSoftwareCommand c) {
+        AddedBy addedBy = AddedBy.of(c.actor());
         SoftwareId id = new SoftwareId(UUID.randomUUID());
         Software software = Software.create(
                 id,
@@ -35,7 +37,8 @@ public class CreateSoftwareHandler {
                 hardwareSets.of(c.platform(), c.hardware()),
                 categorySets.of(c.categories()),
                 referenceSets.of(c.publishers(), c.developers()),
-                creditSets.of(c.credits()));
+                creditSets.of(c.credits()),
+                addedBy);
         repository.save(software);
         software.pullEvents().forEach(events::publishEvent);
         return id;

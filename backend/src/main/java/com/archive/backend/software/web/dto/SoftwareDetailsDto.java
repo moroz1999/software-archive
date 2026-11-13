@@ -15,7 +15,8 @@ public record SoftwareDetailsDto(
         List<SoftwareCategoryDto> categories,
         List<SoftwareReferenceDto> publishers,
         List<SoftwareReferenceDto> developers,
-        List<SoftwareCreditDto> credits) {
+        List<SoftwareCreditDto> credits,
+        boolean canChange) {
 
     public record SoftwareCreditDto(UUID id, String type, String title, List<String> roles) {}
 }

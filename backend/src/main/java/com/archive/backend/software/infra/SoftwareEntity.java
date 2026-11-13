@@ -38,6 +38,10 @@ public class SoftwareEntity {
     @Column(name = "platform_code", nullable = false)
     private String platformCode;
 
+    /** Who added it; the database forgets them once their account is gone, so it is never written back. */
+    @Column(name = "added_by", updatable = false)
+    private @Nullable UUID addedBy;
+
     /**
      * The base hardware the software is released for.
      */

@@ -15,6 +15,7 @@ function answer(software: () => Response) {
         ['/api/platforms', PLATFORMS],
         ['/api/hardware?platform=bk', json([{code: 'bk0011m', name: 'BK-0011M', group: 'computers'}])],
         ['/api/software', software],
+        ['/api/auth/refresh', json({status: 401, code: 'auth.session-expired'}, 401)],
     ]));
 }
 
@@ -127,6 +128,16 @@ describe(CreateSoftwareProvider, () => {
         await userEvent.click(screen.getByRole('button', {name: 'Add software'}));
 
         await expect(screen.findByTestId('categories-refusal')).resolves.toHaveTextContent('A category is no longer in the archive: choose again.');
+    });
+
+    it('tells a public visitor to sign in before adding', async () => {
+        answer(json({status: 401, code: 'auth.required'}, 401));
+        renderWithQueries(<PlatformSelectionProvider><CreateSoftwareProvider onCreated={vi.fn<(id: string) => void>()}><SoftwareForm submitLabel="Add software"/></CreateSoftwareProvider></PlatformSelectionProvider>);
+
+        await fill('Elite');
+        await userEvent.click(screen.getByRole('button', {name: 'Add software'}));
+
+        await expect(screen.findByRole('alert')).resolves.toHaveTextContent('Sign in to change the archive.');
     });
 });
 

@@ -9,6 +9,7 @@ import com.archive.backend.software.web.dto.ReleaseCreatedDto;
 import com.archive.backend.software.web.dto.ReleaseDetailsDto;
 import com.archive.backend.software.web.dto.ReleaseRequestDto;
 import com.archive.backend.software.web.mapper.ReleaseWebMapper;
+import com.archive.backend.user.domain.Actor;
 import java.net.URI;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -48,8 +49,8 @@ public class SoftwareReleaseController {
 
     @PostMapping
     public ResponseEntity<ReleaseCreatedDto> create(
-            @PathVariable UUID softwareId, @RequestBody ReleaseRequestDto request) {
-        ReleaseId id = createHandler.handle(webMapper.toCreate(softwareId, request));
+            Actor actor, @PathVariable UUID softwareId, @RequestBody ReleaseRequestDto request) {
+        ReleaseId id = createHandler.handle(webMapper.toCreate(actor, softwareId, request));
         return ResponseEntity.created(URI.create("/api/software/" + softwareId + "/releases/" + id.value()))
                 .body(webMapper.toCreated(id));
     }
@@ -57,13 +58,16 @@ public class SoftwareReleaseController {
     @PutMapping("/{releaseId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void update(
-            @PathVariable UUID softwareId, @PathVariable UUID releaseId, @RequestBody ReleaseRequestDto request) {
-        updateHandler.handle(webMapper.toUpdate(softwareId, releaseId, request));
+            Actor actor,
+            @PathVariable UUID softwareId,
+            @PathVariable UUID releaseId,
+            @RequestBody ReleaseRequestDto request) {
+        updateHandler.handle(webMapper.toUpdate(actor, softwareId, releaseId, request));
     }
 
     @DeleteMapping("/{releaseId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable UUID softwareId, @PathVariable UUID releaseId) {
-        deleteHandler.handle(webMapper.toDelete(softwareId, releaseId));
+    public void delete(Actor actor, @PathVariable UUID softwareId, @PathVariable UUID releaseId) {
+        deleteHandler.handle(webMapper.toDelete(actor, softwareId, releaseId));
     }
 }

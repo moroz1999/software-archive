@@ -8,7 +8,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.archive.backend.shared.domain.error.AuthenticationRequiredException;
 import com.archive.backend.shared.domain.error.ConflictException;
+import com.archive.backend.shared.domain.error.ForbiddenException;
 import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.shared.domain.error.RuleViolationException;
@@ -35,6 +37,20 @@ class ApiExceptionHandlerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.code").value("test.not-found"));
+    }
+
+    @Test
+    void aMissingSignInIs401WithCode() throws Exception {
+        mvc.perform(get("/authentication-required"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("test.sign-in"));
+    }
+
+    @Test
+    void aForbiddenActionIs403WithCode() throws Exception {
+        mvc.perform(get("/forbidden"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("test.forbidden"));
     }
 
     @Test
@@ -99,6 +115,16 @@ class ApiExceptionHandlerTest {
         @GetMapping("/not-found")
         void notFound() {
             throw new NotFoundException("test.not-found", "Nothing here.");
+        }
+
+        @GetMapping("/authentication-required")
+        void authenticationRequired() {
+            throw new AuthenticationRequiredException("test.sign-in", "Sign in first.");
+        }
+
+        @GetMapping("/forbidden")
+        void forbidden() {
+            throw new ForbiddenException("test.forbidden", "Not yours.");
         }
 
         @GetMapping("/conflict")

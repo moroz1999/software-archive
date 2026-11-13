@@ -1,5 +1,6 @@
-export {BusinessError, businessErrorOf, NotFoundError, SystemError, type BusinessStatus, type FieldError, type SystemErrorKind} from './errors';
-export {deleteResource, getJson, postJson, putJson} from './http';
+export {AuthenticationRequiredError, BusinessError, businessErrorOf, NotFoundError, SystemError, type BusinessStatus, type FieldError, type SystemErrorKind} from './errors';
+export {deleteResource, getJson, postJson, postNoContent, putJson} from './http';
+export {endSession, getSession, loadSession, resetSessionForTests, type Session, startSession, subscribeSession} from './session';
 export {businessErrorMessage, type BusinessMessages} from './messages';
 export {type FieldRefusals, type FormRefusal, splitRefusal, unedited} from './form-refusal';
 export {mapResponse, readArray, readBoolean, readNullableString, readNumber, readObject, readString, readStringArray, type JsonObject} from './parse';

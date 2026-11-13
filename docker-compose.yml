@@ -46,6 +46,13 @@ services:
       - typesense-data:/data
     command: '--data-dir /data --api-key=my-secret-key --listen-port=8108'
 
+  # Catches every letter the backend sends; read them at http://localhost:8025
+  mailpit:
+    image: axllent/mailpit:v1.21
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
 volumes:
   pgdata:
   typesense-data:

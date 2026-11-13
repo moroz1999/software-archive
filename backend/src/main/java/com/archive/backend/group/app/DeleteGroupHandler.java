@@ -18,6 +18,7 @@ public class DeleteGroupHandler {
     @Transactional
     public void handle(DeleteGroupCommand c) {
         Group group = repository.findById(c.id()).orElseThrow(GroupNotFoundException::new);
+        group.requireChangeableBy(c.actor());
         group.delete();
         // Told before the deletion, while what the answers look up is still there (docs/backend.md).
         group.pullEvents().forEach(events::publishEvent);

@@ -84,6 +84,7 @@ export async function fetchGroup(id: GroupId, signal: AbortSignal): Promise<Grou
             members: readArray(dto['members'], 'members').map(parseMember),
             memberGroups: readArray(dto['memberGroups'], 'memberGroups').map(parseRelated),
             groups: readArray(dto['groups'], 'groups').map(parseRelated),
+            canChange: readBoolean(dto, 'canChange'),
         };
     });
 }

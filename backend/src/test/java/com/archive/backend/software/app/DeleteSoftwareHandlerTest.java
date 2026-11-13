@@ -1,5 +1,7 @@
 package com.archive.backend.software.app;
 
+import static com.archive.backend.user.TestActors.ADMIN;
+import static com.archive.backend.user.TestActors.MEMBER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -10,6 +12,7 @@ import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.software.domain.Software;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareTitle;
+import com.archive.backend.user.domain.ChangeForbiddenException;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -27,15 +30,25 @@ class DeleteSoftwareHandlerTest {
         repository.save(Software.create(
                 ID, new SoftwareTitle("Elite"), null, null, HardwareSet.restore(VECTOR, Set.of()), CategorySet.EMPTY));
 
-        handler.handle(new DeleteSoftwareCommand(ID));
+        handler.handle(new DeleteSoftwareCommand(ADMIN, ID));
 
         assertThat(repository.findById(ID)).isEmpty();
     }
 
     @Test
     void failsWhenTheSoftwareDoesNotExist() {
-        assertThatThrownBy(() -> handler.handle(new DeleteSoftwareCommand(ID)))
+        assertThatThrownBy(() -> handler.handle(new DeleteSoftwareCommand(ADMIN, ID)))
                 .isInstanceOfSatisfying(
                         NotFoundException.class, e -> assertThat(e.code()).isEqualTo("software.not-found"));
+    }
+
+    @Test
+    void refusesSomeoneWhoMayNotChangeTheSoftwareAndKeepsIt() {
+        repository.save(Software.create(
+                ID, new SoftwareTitle("Elite"), null, null, HardwareSet.restore(VECTOR, Set.of()), CategorySet.EMPTY));
+
+        assertThatThrownBy(() -> handler.handle(new DeleteSoftwareCommand(MEMBER, ID)))
+                .isInstanceOf(ChangeForbiddenException.class);
+        assertThat(repository.findById(ID)).isPresent();
     }
 }

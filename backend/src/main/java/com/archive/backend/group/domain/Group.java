@@ -5,7 +5,10 @@ import com.archive.backend.label.domain.LabelDraft;
 import com.archive.backend.label.domain.OwnLabel;
 import com.archive.backend.label.domain.OwnLabels;
 import com.archive.backend.label.domain.OwnerOfLabelsChanged;
+import com.archive.backend.shared.domain.ddd.AggregateRoot;
 import com.archive.backend.shared.domain.ddd.DomainEvent;
+import com.archive.backend.user.domain.Actor;
+import com.archive.backend.user.domain.AddedBy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -18,6 +21,7 @@ import org.jspecify.annotations.Nullable;
  * (docs/domain/authors.md#groups).
  */
 @Getter
+@AggregateRoot
 public final class Group {
 
     private final GroupId id;
@@ -27,6 +31,8 @@ public final class Group {
     private OwnLabels labels;
     private Locations locations;
     private GroupMembers members;
+    /** Whoever added the group may change it (docs/domain/users.md). */
+    private final AddedBy addedBy;
 
     @Getter(lombok.AccessLevel.NONE)
     private final List<DomainEvent> events = new ArrayList<>();
@@ -38,7 +44,8 @@ public final class Group {
             GroupTypeSet types,
             OwnLabels labels,
             Locations locations,
-            GroupMembers members) {
+            GroupMembers members,
+            AddedBy addedBy) {
         this.id = Objects.requireNonNull(id, "id");
         this.name = Objects.requireNonNull(name, "name");
         this.notes = notes;
@@ -46,6 +53,18 @@ public final class Group {
         this.labels = Objects.requireNonNull(labels, "labels");
         this.locations = Objects.requireNonNull(locations, "locations");
         this.members = Objects.requireNonNull(members, "members");
+        this.addedBy = Objects.requireNonNull(addedBy, "addedBy");
+    }
+
+    public Group(
+            GroupId id,
+            GroupName name,
+            @Nullable GroupNotes notes,
+            GroupTypeSet types,
+            OwnLabels labels,
+            Locations locations,
+            GroupMembers members) {
+        this(id, name, notes, types, labels, locations, members, AddedBy.NOBODY);
     }
 
     public Group(
@@ -65,10 +84,27 @@ public final class Group {
             GroupTypeSet types,
             List<LabelDraft> labels,
             Locations locations,
-            GroupMembers members) {
-        Group group = new Group(id, name, notes, types, OwnLabels.of(labels), locations, members);
+            GroupMembers members,
+            AddedBy addedBy) {
+        Group group = new Group(id, name, notes, types, OwnLabels.of(labels), locations, members, addedBy);
         group.markChanged();
         return group;
+    }
+
+    public static Group create(
+            GroupId id,
+            GroupName name,
+            @Nullable GroupNotes notes,
+            GroupTypeSet types,
+            List<LabelDraft> labels,
+            Locations locations,
+            GroupMembers members) {
+        return create(id, name, notes, types, labels, locations, members, AddedBy.NOBODY);
+    }
+
+    /** Whoever added the group changes it, and administrators any (docs/domain/users.md). */
+    public void requireChangeableBy(Actor actor) {
+        addedBy.requireChangeableBy(actor);
     }
 
     public static Group create(

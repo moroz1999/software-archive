@@ -14,6 +14,8 @@ import static com.archive.backend.software.app.ReleaseFixtures.eliteWithAyMod;
 import static com.archive.backend.software.app.ReleaseFixtures.hardwareSets;
 import static com.archive.backend.software.app.ReleaseFixtures.in;
 import static com.archive.backend.software.app.ReleaseFixtures.vector;
+import static com.archive.backend.user.TestActors.ADMIN;
+import static com.archive.backend.user.TestActors.MEMBER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -28,6 +30,7 @@ import com.archive.backend.software.domain.SoftwareCreditSets;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareReferenceSets;
 import com.archive.backend.software.domain.SoftwareTitle;
+import com.archive.backend.user.domain.ChangeForbiddenException;
 import java.time.LocalDate;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -48,6 +51,7 @@ class UpdateSoftwareHandlerTest {
         repository.save(elite());
 
         handler.handle(new UpdateSoftwareCommand(
+                ADMIN,
                 ELITE,
                 new SoftwareTitle("Elite Plus"),
                 new SoftwareDescription("Enhanced"),
@@ -67,7 +71,7 @@ class UpdateSoftwareHandlerTest {
     @Test
     void failsWhenTheSoftwareDoesNotExist() {
         assertThatThrownBy(() -> handler.handle(new UpdateSoftwareCommand(
-                        ELITE, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of())))
+                        ADMIN, ELITE, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of())))
                 .isInstanceOfSatisfying(
                         NotFoundException.class, e -> assertThat(e.code()).isEqualTo("software.not-found"));
     }
@@ -77,6 +81,7 @@ class UpdateSoftwareHandlerTest {
         repository.save(elite());
 
         assertThatThrownBy(() -> handler.handle(new UpdateSoftwareCommand(
+                        ADMIN,
                         ELITE,
                         new SoftwareTitle("Elite Plus"),
                         null,
@@ -96,7 +101,7 @@ class UpdateSoftwareHandlerTest {
         repository.save(eliteWithAyMod());
 
         assertThatThrownBy(() -> handler.handle(new UpdateSoftwareCommand(
-                        ELITE, new SoftwareTitle("Elite"), null, null, BK, Set.of(), Set.of())))
+                        ADMIN, ELITE, new SoftwareTitle("Elite"), null, null, BK, Set.of(), Set.of())))
                 .isInstanceOfSatisfying(
                         RuleViolationException.class, e -> assertThat(e.code()).isEqualTo("software.platform-locked"));
     }
@@ -106,7 +111,7 @@ class UpdateSoftwareHandlerTest {
         repository.save(Software.create(ELITE, new SoftwareTitle("Elite"), null, null, vector(AY), CategorySet.EMPTY));
 
         handler.handle(new UpdateSoftwareCommand(
-                ELITE, new SoftwareTitle("Elite"), null, null, BK, Set.of(BK0011M), Set.of()));
+                ADMIN, ELITE, new SoftwareTitle("Elite"), null, null, BK, Set.of(BK0011M), Set.of()));
 
         assertThat(repository.findById(ELITE))
                 .hasValueSatisfying(software ->
@@ -117,8 +122,8 @@ class UpdateSoftwareHandlerTest {
     void storesTheHardwareOfTheSoftware() {
         repository.save(elite());
 
-        handler.handle(
-                new UpdateSoftwareCommand(ELITE, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(AY), Set.of()));
+        handler.handle(new UpdateSoftwareCommand(
+                ADMIN, ELITE, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(AY), Set.of()));
 
         assertThat(repository.findById(ELITE))
                 .hasValueSatisfying(
@@ -130,7 +135,7 @@ class UpdateSoftwareHandlerTest {
         repository.save(Software.create(ELITE, new SoftwareTitle("Elite"), null, null, vector(AY), CategorySet.EMPTY));
 
         assertThatThrownBy(() -> handler.handle(new UpdateSoftwareCommand(
-                        ELITE, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(BK0011M), Set.of())))
+                        ADMIN, ELITE, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(BK0011M), Set.of())))
                 .isInstanceOfSatisfying(
                         RuleViolationException.class, e -> assertThat(e.code()).isEqualTo("hardware.unknown"));
         assertThat(repository.findById(ELITE))
@@ -143,7 +148,7 @@ class UpdateSoftwareHandlerTest {
         repository.save(Software.create(ELITE, new SoftwareTitle("Elite"), null, null, vector(), in(GAMES)));
 
         handler.handle(new UpdateSoftwareCommand(
-                ELITE, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of(ARCADE)));
+                ADMIN, ELITE, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of(ARCADE)));
 
         assertThat(repository.findById(ELITE))
                 .hasValueSatisfying(
@@ -155,7 +160,7 @@ class UpdateSoftwareHandlerTest {
         repository.save(Software.create(ELITE, new SoftwareTitle("Elite"), null, null, vector(), in(GAMES)));
 
         handler.handle(new UpdateSoftwareCommand(
-                ELITE, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of(GAMES, ARCADE)));
+                ADMIN, ELITE, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of(GAMES, ARCADE)));
 
         assertThat(repository.findById(ELITE))
                 .hasValueSatisfying(
@@ -166,8 +171,8 @@ class UpdateSoftwareHandlerTest {
     void takesTheSoftwareOutOfEveryCategory() {
         repository.save(Software.create(ELITE, new SoftwareTitle("Elite"), null, null, vector(), in(GAMES)));
 
-        handler.handle(
-                new UpdateSoftwareCommand(ELITE, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of()));
+        handler.handle(new UpdateSoftwareCommand(
+                ADMIN, ELITE, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of()));
 
         assertThat(repository.findById(ELITE))
                 .hasValueSatisfying(
@@ -179,7 +184,7 @@ class UpdateSoftwareHandlerTest {
         repository.save(Software.create(ELITE, new SoftwareTitle("Elite"), null, null, vector(), in(GAMES)));
 
         assertThatThrownBy(() -> handler.handle(new UpdateSoftwareCommand(
-                        ELITE, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of(GONE))))
+                        ADMIN, ELITE, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of(GONE))))
                 .isInstanceOfSatisfying(RuleViolationException.class, e -> {
                     assertThat(e.code()).isEqualTo("category.unknown");
                     assertThat(e.field()).isEqualTo("categories");
@@ -187,5 +192,16 @@ class UpdateSoftwareHandlerTest {
         assertThat(repository.findById(ELITE))
                 .hasValueSatisfying(
                         software -> assertThat(software.getCategories()).isEqualTo(in(GAMES)));
+    }
+
+    @Test
+    void refusesSomeoneWhoMayNotChangeTheSoftwareAndKeepsIt() {
+        repository.save(elite());
+
+        assertThatThrownBy(() -> handler.handle(new UpdateSoftwareCommand(
+                        MEMBER, ELITE, new SoftwareTitle("Elite Plus"), null, null, VECTOR, Set.of(), Set.of())))
+                .isInstanceOf(ChangeForbiddenException.class);
+        assertThat(repository.findById(ELITE))
+                .hasValueSatisfying(software -> assertThat(software.getTitle()).isEqualTo(new SoftwareTitle("Elite")));
     }
 }

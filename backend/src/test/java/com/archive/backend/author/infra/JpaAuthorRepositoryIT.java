@@ -1,5 +1,6 @@
 package com.archive.backend.author.infra;
 
+import static com.archive.backend.user.TestActors.MEMBER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.archive.backend.TestcontainersConfiguration;
@@ -16,6 +17,8 @@ import com.archive.backend.label.domain.LabelDraft;
 import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.label.domain.OwnLabel;
+import com.archive.backend.user.TestActors;
+import com.archive.backend.user.domain.AddedBy;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.UUID;
@@ -224,5 +227,14 @@ class JpaAuthorRepositoryIT {
 
     private static UUID id(int n) {
         return UUID.fromString("00000000-0000-0000-0000-%012d".formatted(n));
+    }
+
+    @Test
+    void remembersWhoAddedThePerson() {
+        TestActors.store(jdbc);
+        repository.save(Author.create(
+                ID, new RealName("John Doe"), null, List.of(), HELSINKI_AND_NORWAY, new AddedBy(MEMBER_ID)));
+
+        assertThat(reload().getAddedBy()).isEqualTo(new AddedBy(MEMBER_ID));
     }
 }

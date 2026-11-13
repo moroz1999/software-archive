@@ -1,7 +1,9 @@
 package com.archive.backend.shared.web;
 
+import com.archive.backend.shared.domain.error.AuthenticationRequiredException;
 import com.archive.backend.shared.domain.error.BusinessException;
 import com.archive.backend.shared.domain.error.ConflictException;
+import com.archive.backend.shared.domain.error.ForbiddenException;
 import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.shared.domain.error.RuleViolationException;
@@ -28,6 +30,16 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(NotFoundException.class)
     ProblemDetail notFound(NotFoundException e) {
         return business(HttpStatus.NOT_FOUND, e);
+    }
+
+    @ExceptionHandler(AuthenticationRequiredException.class)
+    ProblemDetail authenticationRequired(AuthenticationRequiredException e) {
+        return business(HttpStatus.UNAUTHORIZED, e);
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    ProblemDetail forbidden(ForbiddenException e) {
+        return business(HttpStatus.FORBIDDEN, e);
     }
 
     @ExceptionHandler(ConflictException.class)

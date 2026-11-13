@@ -24,6 +24,7 @@ public class UpdateGroupHandler {
     @Transactional
     public void handle(UpdateGroupCommand c) {
         Group group = repository.findById(c.id()).orElseThrow(GroupNotFoundException::new);
+        group.requireChangeableBy(c.actor());
         group.edit(c.name(), c.notes(), groupTypes.of(c.types()), c.labels(), places.locations(c.locations()));
         group.changeMembers(memberSets.of(c.members()));
         repository.save(group);

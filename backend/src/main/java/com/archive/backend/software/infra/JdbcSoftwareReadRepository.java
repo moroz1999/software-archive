@@ -77,7 +77,7 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     @Override
     public Optional<SoftwareDetails> findById(UUID id) {
         return jdbc.sql("""
-                        SELECT s.title, s.description, s.release_date, p.code, p.name
+                        SELECT s.title, s.description, s.release_date, p.code, p.name, s.added_by
                         FROM software s
                         JOIN platform p ON p.code = s.platform_code
                         WHERE s.id = :id
@@ -93,7 +93,9 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                         categories(id),
                         publishers(id),
                         developers(id),
-                        credits(id)))
+                        credits(id),
+                        rs.getObject("added_by", UUID.class),
+                        false))
                 .optional();
     }
 
@@ -182,7 +184,8 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     @Override
     public List<SoftwareRelease> findReleases(UUID softwareId) {
         return jdbc.sql("""
-                        SELECT r.id, COALESCE(r.title, s.title) AS title, r.version, r.type, r.release_date, r.description
+                        SELECT r.id, COALESCE(r.title, s.title) AS title, r.version, r.type, r.release_date, r.description,
+                               r.added_by
                         FROM software_release r
                         JOIN software s ON s.id = r.software_id
                         WHERE r.software_id = :id
@@ -198,7 +201,9 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                             rs.getString("type"),
                             day(rs, "release_date"),
                             rs.getString("description"),
-                            hardware("software_release_hardware", "release_id", id));
+                            hardware("software_release_hardware", "release_id", id),
+                            rs.getObject("added_by", UUID.class),
+                            false);
                 })
                 .list();
     }

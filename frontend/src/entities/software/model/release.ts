@@ -33,6 +33,8 @@ export interface SoftwareRelease {
     readonly releaseDate: ReleaseDate | null;
     readonly description: string | null;
     readonly hardware: readonly Hardware[];
+    /** Whether whoever reads it may change it, as the archive tells. */
+    readonly canChange: boolean;
 }
 
 /** A release as it states itself, to edit it: its own title, if any, and only its own hardware. */

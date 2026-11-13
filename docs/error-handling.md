@@ -6,8 +6,8 @@ Every feature handles all its error paths, not only the happy one, and the user 
 
 | | Business error | Not found | System error |
 |---|---|---|---|
-| Meaning | The request is correct, but the domain refuses its substance: conflict, business rule violated | What the page is about does not exist: deleted, never existed, a malformed id, an unknown address | Something is broken: server failure, network down, an incorrect request, unexpected response |
-| HTTP | `409`, `422` | `404` with a problem `code` | `400`, `5xx`, network failure, any response that is not a valid error body |
+| Meaning | The request is correct, but the domain refuses its substance: a missing sign-in, an action the user may not take, conflict, business rule violated | What the page is about does not exist: deleted, never existed, a malformed id, an unknown address | Something is broken: server failure, network down, an incorrect request, unexpected response |
+| HTTP | `401`, `403`, `409`, `422` | `404` with a problem `code` | `400`, `5xx`, network failure, any response that is not a valid error body |
 | Shown | Inline, next to the component or form that triggered the action | The not found page, in place of the page | Modal dialog |
 | User can | Fix the input or choose another action | Go elsewhere | Retry or come back later |
 
@@ -18,12 +18,14 @@ Not found is not a business error: there is nothing to fix or choose, and every 
 Exceptions are turned into HTTP statuses in one place: `ApiExceptionHandler` in `shared/web`, a `@RestControllerAdvice` extending `ResponseEntityExceptionHandler` (which also maps Spring MVC's own exceptions, e.g. an unreadable body → `400`). Controllers and use cases never build error responses and never catch exceptions to return a status.
 
 ### Exceptions
-- Business errors extend `BusinessException` (`shared/domain/error`) and carry a stable `code`. Kinds: `NotFoundException`, `ConflictException`, `RuleViolationException` (optionally naming a `field`), `InvalidValueException`.
+- Business errors extend `BusinessException` (`shared/domain/error`) and carry a stable `code`. Kinds: `NotFoundException`, `ConflictException`, `RuleViolationException` (optionally naming a `field`), `InvalidValueException`, `AuthenticationRequiredException`, `ForbiddenException`.
 - Use cases and the domain throw them; the advice maps each type to its status:
 
 | Exception | Status |
 |---|---|
 | Entity not found | `404 Not Found` |
+| The action needs a signed-in user and there is none, or the session is over | `401 Unauthorized` |
+| The signed-in user may not take the action | `403 Forbidden` |
 | State conflict (duplicate, concurrent change) | `409 Conflict`; a change that lost to another running at the same time has the code `conflict.concurrent` |
 | Business rule violated: the form is correct, its substance is not | `422 Unprocessable Entity`, with field errors when the rule concerns a field |
 | Incorrect request: malformed JSON, wrong types, a value failing value object or Bean Validation format rules | `400 Bad Request`, with field errors |
@@ -54,7 +56,8 @@ Every error is a `ProblemDetail` (RFC 9457, `application/problem+json`) with ext
 
 ## Frontend
 
-- The API client in `shared/api` (`getJson`) fails only with `NotFoundError` (`code`) — for a `404` whose body has a `code` —, `BusinessError` (`status`, `code`, `fieldErrors`) — for `409`/`422` whose body has a `code` — or `SystemError` with a `kind`: `network`, `server` (any other status, including a `404` without `code`), `response` (a body the client cannot read or map).
+- The API client in `shared/api` (`getJson`) fails only with `NotFoundError` (`code`) — for a `404` whose body has a `code` —, `BusinessError` (`status`, `code`, `fieldErrors`) — for `403`/`409`/`422` whose body has a `code` —, its subclass `AuthenticationRequiredError` — for a `401` the session could not be refreshed for ([features/accounts.md](features/accounts.md#the-session-of-the-browser)) — or `SystemError` with a `kind`: `network`, `server` (any other status, including a `404` without `code`), `response` (a body the client cannot read or map).
+- **A missing sign-in** (`AuthenticationRequiredError`) never reaches the error dialog: a write shows it in its form or dialog like any business error, a read leaves it to the page, and the browser becomes a visitor.
 - **Not found** is never handled by slices. The query client throws a `NotFoundError` of any query or mutation into rendering (`throwOnError`), and the route error boundary (`widgets/route-error`, around every route) shows the not found page. The same page answers an address the app does not know and an id in the URL that cannot be one: the route loader and the page parse it with `require…Id`, which throws `NotFoundError`, so a malformed id is never sent to the backend. Anything else that breaks rendering shows the boundary's "Something went wrong" page.
 - Slices load data with TanStack Query queries and run user actions (save, delete) as mutations, in their providers. The query client (`createQueryClient()`) reports every system error of a query or a mutation through `reportSystemError` with a retry — the retry of a query loads it again, the retry of a mutation repeats it with the same input — so slices never handle them. Business errors are shown only by writes: a mutation keeps its business error for the form or dialog that ran it (`businessErrorOf(error)`), while a business error of a read goes to the dialog like a breakage — a read whose business error must be shown inline (a lock, say) gets its own handling when it appears. Nothing is retried automatically.
 - Form format rules (required, length, pattern) are validated on the frontend before sending and shown under the fields; they are the same rules the backend enforces.

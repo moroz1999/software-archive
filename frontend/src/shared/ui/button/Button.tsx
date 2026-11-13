@@ -31,6 +31,10 @@ interface ActionProps extends CommonProps {
     readonly type?: 'button' | 'submit' | 'reset';
     /** Its action runs: locked and announced as busy. */
     readonly loading?: boolean;
+    /** It opens a window of this kind. */
+    readonly ariaHasPopup?: 'dialog' | 'menu';
+    /** Whether the window it opens is open. */
+    readonly ariaExpanded?: boolean;
 }
 
 interface LinkProps extends CommonProps {
@@ -167,6 +171,8 @@ export function Button(props: ButtonProps) {
             disabled={disabled}
             aria-label={props.ariaLabel}
             aria-busy={loading ? true : undefined}
+            aria-haspopup={props.ariaHasPopup}
+            aria-expanded={props.ariaExpanded}
             onPointerDown={onPointerDown}
             onClick={onClick === undefined ? undefined : () => {
                 onClick();

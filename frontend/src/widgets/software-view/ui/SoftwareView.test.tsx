@@ -2,8 +2,9 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen, within} from '@testing-library/react';
 import {MemoryRouter} from 'react-router';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
-import {json, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
+import {json, noContent, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {toSoftwareId} from '@/entities/software';
+import {CurrentUserProvider} from '@/entities/users';
 import {SoftwareView} from './SoftwareView';
 
 const ID = '00000000-0000-0000-0001-000000000001';
@@ -25,6 +26,10 @@ const ELITE = {
         {id: SHOOTERS, title: 'Shooters', branch: [{id: GAMES, title: 'Games'}, {id: ACTION, title: 'Action'}, {id: SHOOTERS, title: 'Shooters'}]},
         {id: STRATEGY, title: 'Strategy', branch: [{id: GAMES, title: 'Games'}, {id: STRATEGY, title: 'Strategy'}]},
     ],
+    publishers: [],
+    developers: [],
+    credits: [],
+    canChange: true,
 };
 const AY_MOD = {
     id: '00000000-0000-0000-0007-000000000001',
@@ -34,15 +39,18 @@ const AY_MOD = {
     releaseDate: null,
     description: null,
     hardware: [VECTOR06C, {code: 'ay8910', name: 'AY-3-8910', group: 'sound'}],
+    canChange: true,
 };
 
-/** Answers the details and the releases of the software. */
-function stubFetch(details: () => Response, releases: () => Response = json([AY_MOD])) {
-    return stubFetchRoutes(new Map([[`/api/software/${ID}`, details], [`/api/software/${ID}/releases`, releases]]));
+const MEMBER = {id: '00000000-0000-0000-0009-000000000001', name: 'Zed', email: 'zed@example.com', groups: ['member'], abilities: ['add-entries']};
+
+/** Answers the details and the releases of the software, and who reads them. */
+function stubFetch(details: () => Response, releases: () => Response = json([AY_MOD]), me: () => Response = json(MEMBER)) {
+    return stubFetchRoutes(new Map([[`/api/software/${ID}`, details], [`/api/software/${ID}/releases`, releases], ['/api/auth/me', me]]));
 }
 
 function renderView(id: string) {
-    renderWithQueries(<MemoryRouter><SoftwareView id={toSoftwareId(id)}/></MemoryRouter>);
+    renderWithQueries(<CurrentUserProvider><MemoryRouter><SoftwareView id={toSoftwareId(id)}/></MemoryRouter></CurrentUserProvider>);
 }
 
 describe(SoftwareView, () => {
@@ -103,7 +111,7 @@ describe(SoftwareView, () => {
         const releases = await screen.findByRole('region', {name: 'Releases'});
         const release = await within(releases).findByRole('row', {name: /Elite AY/});
 
-        expect(within(releases).getByRole('link', {name: 'Add release'})).toHaveAttribute('href', `/software/${ID}/releases/new`);
+        await expect(within(releases).findByRole('link', {name: 'Add release'})).resolves.toHaveAttribute('href', `/software/${ID}/releases/new`);
         expect(within(release).getByRole('link', {name: 'Edit Elite AY'})).toHaveAttribute('href', expect.stringMatching(new RegExp(`^/software/${ID}/releases/[0-9a-f-]+/edit$`)));
     });
 
@@ -177,5 +185,40 @@ describe(SoftwareView, () => {
         expect(reports[0]?.error.kind).toBe('server');
         expect(screen.queryByTestId('software-view-skeleton')).not.toBeInTheDocument();
         expect(screen.queryByRole('link', {name: 'Edit'})).not.toBeInTheDocument();
+    });
+
+    it('offers no editing of software the reader may not change, nor of its releases they may not change', async () => {
+        stubFetch(json({...ELITE, canChange: false}), json([{...AY_MOD, canChange: false}]));
+        renderView(ID);
+
+        const releases = await screen.findByRole('region', {name: 'Releases'});
+        await within(releases).findByRole('row', {name: /Elite AY/});
+        await within(releases).findByRole('link', {name: 'Add release'});
+
+        expect(screen.queryByRole('link', {name: 'Edit'})).not.toBeInTheDocument();
+        expect(within(releases).queryByRole('link', {name: 'Edit Elite AY'})).not.toBeInTheDocument();
+    });
+
+    it('offers editing of a release the reader may change inside software they may not', async () => {
+        stubFetch(json({...ELITE, canChange: false}));
+        renderView(ID);
+
+        const releases = await screen.findByRole('region', {name: 'Releases'});
+        const release = await within(releases).findByRole('row', {name: /Elite AY/});
+
+        expect(within(release).getByRole('link', {name: 'Edit Elite AY'})).toBeInTheDocument();
+        expect(screen.queryByRole('link', {name: 'Edit'})).not.toBeInTheDocument();
+    });
+
+    it('offers a public visitor no adding of releases', async () => {
+        stubFetch(json({...ELITE, canChange: false}), json([{...AY_MOD, canChange: false}]), noContent());
+        renderView(ID);
+
+        const releases = await screen.findByRole('region', {name: 'Releases'});
+        await within(releases).findByRole('row', {name: /Elite AY/});
+
+        await vi.waitFor(() => {
+            expect(within(releases).queryByRole('link', {name: 'Add release'})).not.toBeInTheDocument();
+        });
     });
 });

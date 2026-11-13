@@ -12,4 +12,5 @@ public record SoftwareReleaseDto(
         String type,
         @Nullable LocalDate releaseDate,
         @Nullable String description,
-        List<SoftwareHardwareDto> hardware) {}
+        List<SoftwareHardwareDto> hardware,
+        boolean canChange) {}

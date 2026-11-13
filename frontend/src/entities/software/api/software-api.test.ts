@@ -39,6 +39,7 @@ describe(fetchSoftware, () => {
             publishers: [{id: PUBLISHER, type: AUTHOR_LABEL, title: 'J.P. — Jane Publisher'}],
             developers: [{id: DEVELOPER, type: GROUP, title: 'Nebula Studio'}],
             credits: [],
+            canChange: true,
         }));
 
         await expect(fetchSoftware(ID, new AbortController().signal)).resolves.toStrictEqual({
@@ -47,6 +48,7 @@ describe(fetchSoftware, () => {
             publishers: [{id: PUBLISHER, type: AUTHOR_LABEL, title: 'J.P. — Jane Publisher'}],
             developers: [{id: DEVELOPER, type: GROUP, title: 'Nebula Studio'}],
             credits: [],
+            canChange: true,
         });
         expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/software/${ID}`);
     });
@@ -95,7 +97,7 @@ describe(fetchSoftwareReleases, () => {
 
     it('reads the releases of one software', async () => {
         const release = {
-            id: RELEASE, title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: '1990-03-01', description: null, hardware: [AY],
+            id: RELEASE, title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: '1990-03-01', description: null, hardware: [AY], canChange: true,
         };
         const fetchMock = stubFetch(json([release]));
 

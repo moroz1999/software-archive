@@ -39,6 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
 class ArchitectureTest {
 
     private static final String BUSINESS_EXCEPTION = "com.archive.backend.shared.domain.error.BusinessException";
+    private static final String AGGREGATE_ROOT = "com.archive.backend.shared.domain.ddd.AggregateRoot";
     private static final String VALUE_OBJECT = "com.archive.backend.shared.domain.ddd.ValueObject";
     private static final String SHARED_KERNEL = "com.archive.backend.shared.domain";
     private static final Set<String> KIND_PACKAGES = Set.of(
@@ -267,6 +268,14 @@ class ArchitectureTest {
 
     private static final DescribedPredicate<JavaClass> QUERY_HANDLERS = handlersOf("Query");
     private static final DescribedPredicate<JavaClass> COMMAND_HANDLERS = handlersOf("Command");
+    private static final DescribedPredicate<JavaClass> DOMAIN_REPOSITORIES =
+            new DescribedPredicate<>("domain repositories") {
+                @Override
+                public boolean test(JavaClass type) {
+                    return type.getPackageName().contains(".domain")
+                            && type.getSimpleName().endsWith("Repository");
+                }
+            };
 
     private static DescribedPredicate<JavaClass> handlersOf(String kind) {
         return new DescribedPredicate<>("handle a " + kind) {
@@ -339,6 +348,56 @@ class ArchitectureTest {
             .allowEmptyShould(true)
             .because("a command changes domain entities through their repository (docs/backend.md)");
 
+    private static final ArchRule repositoriesStoreOnlyAggregateRoots = methods()
+            .that()
+            .areDeclaredInClassesThat(DOMAIN_REPOSITORIES)
+            .and()
+            .haveNameMatching("save|delete")
+            .should(new ArchCondition<JavaMethod>("accept only aggregate roots") {
+                @Override
+                public void check(JavaMethod method, ConditionEvents events) {
+                    method.getRawParameterTypes().stream()
+                            .filter(parameter -> !parameter.isAnnotatedWith(AGGREGATE_ROOT))
+                            .forEach(parameter -> events.add(SimpleConditionEvent.violated(
+                                    method,
+                                    method.getFullName() + " accepts " + parameter.getName()
+                                            + ", which is not an aggregate root")));
+                }
+            })
+            .allowEmptyShould(true)
+            .because("a repository is the collection of one aggregate (docs/backend.md)");
+
+    private static final ArchRule commandsChangeOnlyAggregateRoots = classes()
+            .that(COMMAND_HANDLERS)
+            .should(new ArchCondition<JavaClass>("change domain state only through aggregate roots") {
+                @Override
+                public void check(JavaClass handler, ConditionEvents events) {
+                    handler.getMethodCallsFromSelf().stream()
+                            .filter(call ->
+                                    call.getTargetOwner().getPackageName().contains(".domain"))
+                            .filter(call -> call.getTarget().getRawReturnType().isEquivalentTo(void.class))
+                            .filter(call -> !call.getTargetOwner().isAnnotatedWith(AGGREGATE_ROOT))
+                            .filter(call -> !DOMAIN_REPOSITORIES.test(call.getTargetOwner()))
+                            .forEach(call -> events.add(SimpleConditionEvent.violated(
+                                    call,
+                                    handler.getName() + " changes domain state outside an aggregate root through "
+                                            + call.getDescription())));
+                }
+            })
+            .allowEmptyShould(true)
+            .because("a command changes an aggregate, never its internals through another service (docs/backend.md)");
+
+    private static final ArchRule aggregateRootsAreDomainEntities = classes()
+            .that()
+            .areAnnotatedWith(AGGREGATE_ROOT)
+            .should()
+            .resideInAPackage("..domain..")
+            .andShould()
+            .haveModifier(JavaModifier.FINAL)
+            .andShould()
+            .notBeAnnotatedWith(VALUE_OBJECT)
+            .allowEmptyShould(true);
+
     @Test
     void useCaseInputsAreCommandsOrQueries() {
         useCaseInputsAreCommandsOrQueries.check(CLASSES);
@@ -357,6 +416,21 @@ class ArchitectureTest {
     @Test
     void commandsDoNotUseTheReadSide() {
         commandsDoNotUseTheReadSide.check(CLASSES);
+    }
+
+    @Test
+    void repositoriesStoreOnlyAggregateRoots() {
+        repositoriesStoreOnlyAggregateRoots.check(CLASSES);
+    }
+
+    @Test
+    void commandsChangeOnlyAggregateRoots() {
+        commandsChangeOnlyAggregateRoots.check(CLASSES);
+    }
+
+    @Test
+    void aggregateRootsAreDomainEntities() {
+        aggregateRootsAreDomainEntities.check(CLASSES);
     }
 
     @Test

@@ -1,5 +1,6 @@
 package com.archive.backend.group.infra;
 
+import static com.archive.backend.user.TestActors.MEMBER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.archive.backend.TestcontainersConfiguration;
@@ -9,6 +10,7 @@ import com.archive.backend.geo.domain.Locations;
 import com.archive.backend.geo.domain.Place;
 import com.archive.backend.group.domain.Group;
 import com.archive.backend.group.domain.GroupId;
+import com.archive.backend.group.domain.GroupMembers;
 import com.archive.backend.group.domain.GroupName;
 import com.archive.backend.group.domain.GroupNotes;
 import com.archive.backend.group.domain.GroupTypeCode;
@@ -17,6 +19,8 @@ import com.archive.backend.label.domain.LabelDraft;
 import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.label.domain.OwnLabel;
+import com.archive.backend.user.TestActors;
+import com.archive.backend.user.domain.AddedBy;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Set;
@@ -229,5 +233,21 @@ class JpaGroupRepositoryIT {
 
     private static UUID id(int n) {
         return UUID.fromString("00000000-0000-0000-0000-%012d".formatted(n));
+    }
+
+    @Test
+    void remembersWhoAddedTheGroup() {
+        TestActors.store(jdbc);
+        repository.save(Group.create(
+                ID,
+                new GroupName("Crew Ltd"),
+                null,
+                DEMOGROUP_AND_LABEL,
+                List.of(new LabelDraft(null, new LabelName("Crew"), true)),
+                IN_NORWAY,
+                GroupMembers.EMPTY,
+                new AddedBy(MEMBER_ID)));
+
+        assertThat(reload().getAddedBy()).isEqualTo(new AddedBy(MEMBER_ID));
     }
 }

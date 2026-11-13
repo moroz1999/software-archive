@@ -64,4 +64,24 @@ describe(DeleteSoftwareButton, () => {
 
         unsubscribe();
     });
+
+    it('says who may delete the software when the archive refuses', async () => {
+        stubFetch(json({status: 403, code: 'access.denied'}, 403));
+        renderWithQueries(<DeleteSoftwareButton software={SOFTWARE} onDeleted={vi.fn<() => void>()}/>);
+
+        await userEvent.click(screen.getByRole('button', {name: 'Delete'}));
+        await userEvent.click(screen.getByRole('button', {name: 'Delete for good'}));
+
+        await expect(screen.findByRole('alert')).resolves.toHaveTextContent('Only whoever added this, or an administrator, may change it.');
+    });
+
+    it('tells a public visitor to sign in before deleting', async () => {
+        stubFetch(json({status: 401, code: 'auth.required'}, 401));
+        renderWithQueries(<DeleteSoftwareButton software={SOFTWARE} onDeleted={vi.fn<() => void>()}/>);
+
+        await userEvent.click(screen.getByRole('button', {name: 'Delete'}));
+        await userEvent.click(screen.getByRole('button', {name: 'Delete for good'}));
+
+        await expect(screen.findByRole('alert')).resolves.toHaveTextContent('Sign in to change the archive.');
+    });
 });

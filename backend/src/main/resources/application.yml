@@ -7,6 +7,10 @@ spring:
     hibernate:
       ddl-auto: validate
     show-sql: true
+  mail:
+    # Mailpit of docker-compose catches every letter: http://localhost:8025
+    host: localhost
+    port: 1025
   flyway:
     enabled: true
     # Fixtures are repeatable migrations applied only with the "fixtures" profile;
@@ -20,3 +24,11 @@ search:
     timeout: 2s
   worker:
     delay: 1s
+
+auth:
+  # Local development only; production sets its own secret of at least 32 bytes.
+  jwt-secret: local-development-secret-of-32-bytes-at-least
+  access-lifetime: 15m
+  public-url: http://localhost:5173
+  mail-from: no-reply@localhost
+  secure-cookies: true

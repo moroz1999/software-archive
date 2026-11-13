@@ -5,6 +5,9 @@ import static com.archive.backend.group.app.GroupFixtures.LABEL;
 import static com.archive.backend.group.app.GroupFixtures.NORWAY;
 import static com.archive.backend.group.app.GroupFixtures.groupTypes;
 import static com.archive.backend.group.app.GroupFixtures.places;
+import static com.archive.backend.user.TestActors.ADMIN;
+import static com.archive.backend.user.TestActors.MEMBER;
+import static com.archive.backend.user.TestActors.MEMBER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -20,6 +23,9 @@ import com.archive.backend.label.domain.LabelDraft;
 import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.label.domain.OwnLabel;
 import com.archive.backend.shared.domain.error.RuleViolationException;
+import com.archive.backend.user.domain.Actor;
+import com.archive.backend.user.domain.AddedBy;
+import com.archive.backend.user.domain.SignInRequiredException;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -33,6 +39,7 @@ class CreateGroupHandlerTest {
     @Test
     void storesANewGroupUnderANewId() {
         GroupId id = handler.handle(new CreateGroupCommand(
+                ADMIN,
                 new GroupName("Crew Ltd"),
                 new GroupNotes("Since 1990"),
                 Set.of(DEMOGROUP, LABEL),
@@ -51,7 +58,7 @@ class CreateGroupHandlerTest {
     @Test
     void givesEveryGroupItsOwnId() {
         CreateGroupCommand command =
-                new CreateGroupCommand(new GroupName("Crew Ltd"), null, Set.of(DEMOGROUP), List.of(), List.of());
+                new CreateGroupCommand(ADMIN, new GroupName("Crew Ltd"), null, Set.of(DEMOGROUP), List.of(), List.of());
 
         assertThat(handler.handle(command)).isNotEqualTo(handler.handle(command));
     }
@@ -59,7 +66,12 @@ class CreateGroupHandlerTest {
     @Test
     void refusesATypeOutsideTheReferenceBookAndStoresNothing() {
         assertThatThrownBy(() -> handler.handle(new CreateGroupCommand(
-                        new GroupName("Crew Ltd"), null, Set.of(new GroupTypeCode("orchestra")), List.of(), List.of())))
+                        ADMIN,
+                        new GroupName("Crew Ltd"),
+                        null,
+                        Set.of(new GroupTypeCode("orchestra")),
+                        List.of(),
+                        List.of())))
                 .isInstanceOfSatisfying(
                         RuleViolationException.class, e -> assertThat(e.code()).isEqualTo("group.type-unknown"));
         assertThat(repository.count()).isZero();
@@ -68,9 +80,25 @@ class CreateGroupHandlerTest {
     @Test
     void refusesAGroupWithoutTypesAndStoresNothing() {
         assertThatThrownBy(() -> handler.handle(
-                        new CreateGroupCommand(new GroupName("Crew Ltd"), null, Set.of(), List.of(), List.of())))
+                        new CreateGroupCommand(ADMIN, new GroupName("Crew Ltd"), null, Set.of(), List.of(), List.of())))
                 .isInstanceOfSatisfying(
                         RuleViolationException.class, e -> assertThat(e.code()).isEqualTo("group.types-required"));
         assertThat(repository.count()).isZero();
+    }
+
+    @Test
+    void remembersWhoAddedTheGroup() {
+        GroupId id = handler.handle(new CreateGroupCommand(
+                MEMBER, new GroupName("Crew Ltd"), null, Set.of(DEMOGROUP), List.of(), List.of()));
+
+        assertThat(repository.findById(id))
+                .hasValueSatisfying(group -> assertThat(group.getAddedBy()).isEqualTo(new AddedBy(MEMBER_ID)));
+    }
+
+    @Test
+    void refusesAPublicVisitor() {
+        assertThatThrownBy(() -> handler.handle(new CreateGroupCommand(
+                        Actor.anonymous(), new GroupName("Crew Ltd"), null, Set.of(DEMOGROUP), List.of(), List.of())))
+                .isInstanceOf(SignInRequiredException.class);
     }
 }

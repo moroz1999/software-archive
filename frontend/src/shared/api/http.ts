@@ -1,55 +1,19 @@
-import {BusinessError, type BusinessStatus, type FieldError, NotFoundError, SystemError} from './errors';
-import {isObject, type JsonObject} from './parse';
+import {refreshSession, SESSION_CALLS, sessionSettled} from './session';
+import {fetchOrFail, readJson, toError} from './transport';
 
-const BUSINESS_STATUSES: readonly number[] = [409, 422] satisfies BusinessStatus[];
-
-function isBusinessStatus(status: number): status is BusinessStatus {
-    return BUSINESS_STATUSES.includes(status);
-}
-
-function readFieldErrors(problem: JsonObject): FieldError[] {
-    const errors = problem['errors'];
-    if (!Array.isArray(errors)) {
-        return [];
-    }
-    return errors.flatMap((entry: unknown) => {
-        if (isObject(entry) && typeof entry['field'] === 'string' && typeof entry['code'] === 'string') {
-            return [{field: entry['field'], code: entry['code']}];
-        }
-        return [];
-    });
-}
-
-async function readBody(response: Response): Promise<unknown> {
-    try {
-        return await response.json();
-    } catch {
-        return null;
-    }
-}
-
-async function toError(response: Response): Promise<Error> {
-    const {status} = response;
-    if (status === 404 || isBusinessStatus(status)) {
-        const problem = await readBody(response);
-        if (isObject(problem) && typeof problem['code'] === 'string') {
-            return status === 404
-                ? new NotFoundError(problem['code'])
-                : new BusinessError(status, problem['code'], readFieldErrors(problem));
-        }
-    }
-    return new SystemError('server', `HTTP ${String(status)}`);
-}
-
+/**
+ * Sends a request, once it is known who is signed in. A request refused for want of a signed-in user refreshes the session once and is repeated; when
+ * that does not help, it fails with AuthenticationRequiredError.
+ */
 async function send(path: string, init: RequestInit): Promise<Response> {
-    let response: Response;
-    try {
-        response = await fetch(path, init);
-    } catch (error) {
-        if (error instanceof DOMException && error.name === 'AbortError') {
-            throw error;
+    await sessionSettled();
+    let response = await fetchOrFail(path, init);
+    if (response.status === 401 && !SESSION_CALLS.includes(path)) {
+        const refused = await toError(response);
+        if (!await refreshSession()) {
+            throw refused;
         }
-        throw new SystemError('network', 'Network failure', {cause: error});
+        response = await fetchOrFail(path, init);
     }
     if (!response.ok) {
         throw await toError(response);
@@ -57,21 +21,13 @@ async function send(path: string, init: RequestInit): Promise<Response> {
     return response;
 }
 
-async function readJson(response: Response): Promise<unknown> {
-    try {
-        return await response.json();
-    } catch (error) {
-        throw new SystemError('response', 'Unreadable response body', {cause: error});
-    }
-}
-
 function withJson(method: 'POST' | 'PUT', body: unknown): RequestInit {
     return {method, headers: {Accept: 'application/json', 'Content-Type': 'application/json'}, body: JSON.stringify(body)};
 }
 
 /**
- * GETs JSON from the backend. Like every call here, fails with NotFoundError, BusinessError or SystemError only
- * (docs/error-handling.md); an aborted request rejects with the original AbortError.
+ * GETs JSON from the backend. Like every call here, fails with NotFoundError, BusinessError, AuthenticationRequiredError
+ * or SystemError only (docs/error-handling.md); an aborted request rejects with the original AbortError.
  */
 export async function getJson(path: string, signal?: AbortSignal): Promise<unknown> {
     return readJson(await send(path, {headers: {Accept: 'application/json'}, ...(signal ? {signal} : {})}));
@@ -80,6 +36,11 @@ export async function getJson(path: string, signal?: AbortSignal): Promise<unkno
 /** POSTs a JSON body and returns the JSON answer. */
 export async function postJson(path: string, body: unknown): Promise<unknown> {
     return readJson(await send(path, withJson('POST', body)));
+}
+
+/** POSTs a JSON body, or none; the backend answers with no content. */
+export async function postNoContent(path: string, body?: unknown): Promise<void> {
+    await send(path, body === undefined ? {method: 'POST', headers: {Accept: 'application/json'}} : withJson('POST', body));
 }
 
 /** PUTs a JSON body; the backend answers with no content. */

@@ -31,7 +31,7 @@ Built:
 - Navigation: [NavBar, NavBarLink](design-system/nav-bar.md), [NavChips, NavChip](design-system/nav-chips.md), [Pagination](design-system/pagination.md)
 - Forms: [Input, Textarea](design-system/input.md), [Select](design-system/select.md), [Field](design-system/field.md), [Checkbox](design-system/checkbox.md), [MultiSelectFilter](design-system/multi-select-filter.md), [MultiEntityAutocomplete](design-system/multi-entity-autocomplete.md), [TreeChecklist](design-system/tree-checklist.md)
 - Loading: [Skeleton](design-system/skeletons.md), [Spinner](design-system/spinner.md), [LoadingState](design-system/loading-states.md)
-- Errors and overlays: [ErrorState](design-system/error-state.md), [Dialog, ErrorDialog](design-system/dialog.md), [ConfirmDialog](design-system/confirm-dialog.md)
+- Errors and overlays: [ErrorState](design-system/error-state.md), [Dialog, ErrorDialog](design-system/dialog.md), [ConfirmDialog](design-system/confirm-dialog.md), [IconPopover](design-system/icon-popover.md)
 
 Planned, built when a feature first needs them (each gets its document then):
 
@@ -58,7 +58,6 @@ Planned, built when a feature first needs them (each gets its document then):
 - `CloseButton` — close control
 - `Tabs` — tab navigation with content outlet
 - `PopoverMenuItem` — item of a popover menu
-- `IconPopover` — icon trigger with a popover of contextual actions
 
 ### Forms
 - `Form` — form layout: fields, labels, fieldsets, sections, actions
