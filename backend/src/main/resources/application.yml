@@ -26,10 +26,10 @@ spring:
 
 screenshots:
   # Business data like the database: kept outside the build, backed up with it.
-  storage-path: ../upload
+  storage-path: ../upload/images
 
 release-archives:
-  # Kept beside screenshots but separate from them, under internal UUIDs.
+  # Kept beside the screenshots in upload, in a folder of their own, under internal UUIDs.
   storage-path: ../upload/releases
 
 search:
