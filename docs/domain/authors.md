@@ -45,10 +45,10 @@ People and their labels. The real name of the person stands next to every entry 
 Groups and their labels. The name of the group stands next to every entry of it, unless the entry is that name itself.
 
 ## Author page
-The page of a person: the main name, the real name, notes, all their labels, their locations (the primary one first) and the groups they were members of, each under the group's main name with the label they were a member under, unless it is their main name ("ZHOPAGROUP as хакер федя").
+The page of a person: the main name, the real name, notes, all their labels, their locations (the primary one first) and the groups they were members of, each under the group's main name with the label they were a member under, unless it is their main name ("ZHOPAGROUP as хакер федя"); and the software they are credited on, by themselves or under any of their labels, oldest first, with their roles on each and the label they were credited under, unless it is their main name.
 
 ## Group page
-The page of a group: the main name, the name, the group types, notes, all its labels, its locations (the primary one first), its members under the selected person name or alias with their roles and dates, the groups that are members of it and the groups it is a member of.
+The page of a group: the main name, the name, the group types, notes, all its labels, its locations (the primary one first), its members under the selected person name or alias with their roles and dates, the groups that are members of it and the groups it is a member of; and the software it is credited on, by itself or under any of its labels, as on the author page.
 
 ## Adding, editing and deleting
 People and groups are added, edited and deleted in the archive; for now anyone can do it.

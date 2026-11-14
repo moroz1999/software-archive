@@ -1,5 +1,6 @@
 package com.archive.backend.software.app;
 
+import com.archive.backend.software.read.CreditedSoftware;
 import com.archive.backend.software.read.ReleaseDetails;
 import com.archive.backend.software.read.SoftwareDetails;
 import com.archive.backend.software.read.SoftwareReadRepository;
@@ -77,6 +78,17 @@ class InMemorySoftwareReadRepository implements SoftwareReadRepository {
         return releaseDetails.getOrDefault(softwareId, List.of()).stream()
                 .filter(release -> release.id().equals(releaseId))
                 .findFirst();
+    }
+
+    /** Credits are not kept in memory: no software is credited on anybody. */
+    @Override
+    public List<CreditedSoftware> findCreditedOnPerson(UUID personId) {
+        return List.of();
+    }
+
+    @Override
+    public List<CreditedSoftware> findCreditedOnGroup(UUID groupId) {
+        return List.of();
     }
 
     @Override

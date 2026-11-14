@@ -8,12 +8,16 @@ The page of one group at `/groups/{id}` ([domain/authors.md](../domain/authors.m
 - Under it: Name, then each when known: Types, Labels, Locations ("City, Country", the primary one first), Members, Member groups, Member of, Notes line by line.
 - A member is the label they were a member under, leading to the person when known, with the person's main name muted next to it when it is another one; a label of nobody known is plain text. Their role chips follow; an unknown role is not shown, it tells the reader nothing.
 - Member groups and Member of lead to the pages of those groups.
+- Software, below everything else: the software the group is credited on, as the cards of the software list ([software-list.md](software-list.md#card)), by release date, then title; under who made it and the year, each of its credits on it — "as {label}" muted when it was under another label than the main name, then the role chips, an unknown role not shown. Left out when there is none.
 
 ## Loading and errors
 
+- Software is asked for once its block comes into view, with skeleton cards until it arrives; a system error goes to the error dialog and leaves the block out.
 - The page preloads the group's details ([data-loading.md](../data-loading.md)): within the window it appears filled, otherwise with a skeleton.
 - An unknown group, and an id that cannot be one, show the not found page; a malformed id is never sent. System errors go to the error dialog ([error-handling.md](../error-handling.md)).
 
 ## REST
 
 `GET /api/groups/{id}` — `{id, name, groupName, notes, types: [code], labels: [{id, name}], locations: [{country, city, primary}], members: [{name, personId, personName}], memberGroups: [{id, name}], groups: [{id, name}]}`; `name` and the names of related groups are main names; `personId` is `null` for a label of nobody known, `personName` `null` when it is the member's label; `404 group.not-found`, `400` for a malformed id.
+
+`GET /api/groups/{id}/software` — `[{id, title, releaseDate, screenshots, madeBy, credits: [{as, roles}]}]`, the card fields of the software list; `as` is `null` for a credit by the group itself or under the main name; an unknown group gets `[]`.

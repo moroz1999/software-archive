@@ -2,7 +2,7 @@ export {createRelease, deleteRelease, fetchPlatformHardware, fetchSoftwareReleas
 export {createSoftware, deleteSoftware, fetchSoftware, fetchSoftwareParticipants, fetchSoftwareReleases, updateSoftware} from './api/software-api';
 export {fetchLatestSoftware, parseSoftware} from './api/fetch-software-page';
 export {deleteScreenshot, reorderScreenshots, uploadScreenshots} from './api/screenshot-api';
-export {platformHardwareQuery, querySoftwareWithHardware, screenshotsQuery, SOFTWARE_QUERY_KEY, softwareDetailsQuery, softwareReleaseQuery, softwareReleasesQuery} from './api/software-queries';
+export {creditedSoftwareQuery, platformHardwareQuery, querySoftwareWithHardware, screenshotsQuery, SOFTWARE_QUERY_KEY, softwareDetailsQuery, softwareReleaseQuery, softwareReleasesQuery} from './api/software-queries';
 export {
     RELEASE_EDIT_ROUTE,
     RELEASE_NEW_ROUTE,
@@ -68,6 +68,8 @@ export {SoftwareDetailsProvider, type SoftwareDetailsProviderProps} from './mode
 export {useSoftwareReleases} from './model/software-releases-context';
 export {SoftwareReleasesProvider, type SoftwareReleasesProviderProps} from './model/SoftwareReleasesProvider';
 export {SoftwareFormProvider, type SoftwareFormProviderProps} from './model/SoftwareFormProvider';
+export {type CreditedOwner, type CreditedSoftware, type OwnCredit} from './model/credited-software';
+export {CreditedSoftwareList, type CreditedSoftwareListProps} from './ui/CreditedSoftwareList';
 export {SoftwareCard, type SoftwareCardProps} from './ui/SoftwareCard';
 export {SoftwareCardSkeleton} from './ui/SoftwareCardSkeleton';
 export {HardwareList, type HardwareListProps} from './ui/HardwareList';

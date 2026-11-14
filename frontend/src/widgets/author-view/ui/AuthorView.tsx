@@ -3,6 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {type AuthorDetails, AuthorDetailsProvider, authorEditPath, type AuthorId, useAuthorDetails} from '@/entities/authors';
 import {locationText, primaryFirst} from '@/entities/locations';
 import {groupPath, toGroupId} from '@/entities/groups';
+import {CreditedSoftwareList} from '@/entities/software';
 import {Button} from '@/shared/ui/button';
 import {Inline} from '@/shared/ui/inline';
 import {PageLayout} from '@/shared/ui/page-layout';
@@ -44,7 +45,10 @@ function LoadedView() {
     }
     return (
         <PageLayout title={query.data.name} actions={query.data.canChange && <Button href={authorEditPath(query.data.id)} color="secondary">{t('actions.edit')}</Button>}>
-            <Details author={query.data}/>
+            <Stack gap="xl">
+                <Details author={query.data}/>
+                <CreditedSoftwareList owner={{kind: 'authors', id: query.data.id}}/>
+            </Stack>
         </PageLayout>
     );
 }

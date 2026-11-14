@@ -1,4 +1,4 @@
-import {useId} from 'react';
+import {type ReactNode, useId} from 'react';
 import {useTranslation} from 'react-i18next';
 import {CardScreenshots} from '@/shared/ui/card-screenshots';
 import {ImagePlaceholder} from '@/shared/ui/image-placeholder';
@@ -14,13 +14,15 @@ export interface SoftwareCardProps {
     readonly software: Software;
     /** Where the card leads. */
     readonly href: string;
+    /** More under who made it and the year, such as the roles of the person whose page lists the card. */
+    readonly children?: ReactNode;
 }
 
 /**
  * A piece of software as a card leading to its page as a whole: its picture, its title, who made it and its release
  * year — on one line when both fit, the year moving under the names when not.
  */
-export function SoftwareCard({software, href}: SoftwareCardProps) {
+export function SoftwareCard({software, href, children}: SoftwareCardProps) {
     const titleId = useId();
     const {t} = useTranslation();
     const madeBy = software.madeBy ?? [];
@@ -40,6 +42,7 @@ export function SoftwareCard({software, href}: SoftwareCardProps) {
                             )}
                         </Inline>
                     )}
+                    {children}
                 </Stack>
             </Inset>
         </Panel>

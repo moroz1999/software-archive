@@ -3,6 +3,7 @@ package com.archive.backend.software.infra;
 import com.archive.backend.label.read.MainNameSql;
 import com.archive.backend.software.read.CardMadeBySql;
 import com.archive.backend.software.read.CardScreenshotsSql;
+import com.archive.backend.software.read.CreditedSoftware;
 import com.archive.backend.software.read.ReleaseArchiveDetails;
 import com.archive.backend.software.read.ReleaseDateSql;
 import com.archive.backend.software.read.ReleaseDetails;
@@ -106,6 +107,62 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                         rs.getObject("added_by", UUID.class),
                         false))
                 .optional();
+    }
+
+    @Override
+    public List<CreditedSoftware> findCreditedOnPerson(UUID personId) {
+        return creditedOn("person_id", MainNameSql.PEOPLE, "named_person", personId);
+    }
+
+    @Override
+    public List<CreditedSoftware> findCreditedOnGroup(UUID groupId) {
+        return creditedOn("group_id", MainNameSql.GROUPS, "named_group", groupId);
+    }
+
+    /**
+     * The software an owner is credited on, by the owner column of the credits and of their labels, with the owner's
+     * credits on each: by themselves first, then by label in name order; a label is named unless it is the main name.
+     */
+    private List<CreditedSoftware> creditedOn(String ownerColumn, String mainNames, String named, UUID ownerId) {
+        Map<UUID, List<CreditedSoftware.OwnCredit>> credits = new HashMap<>();
+        jdbc.sql("WITH " + mainNames + """
+                        SELECT sc.software_id,
+                               CASE WHEN sc.label_id IS NULL OR sc.label_id = n.main_label_id THEN NULL ELSE l.name END
+                                   AS as_label,
+                               sc.role_codes
+                        FROM software_contribution sc
+                        LEFT JOIN label l ON l.id = sc.label_id
+                        JOIN %2$s n ON n.%1$s = COALESCE(sc.%1$s, l.%1$s)
+                        WHERE n.%1$s = :owner
+                        ORDER BY sc.label_id IS NOT NULL, lower(l.name), sc.id
+                        """.formatted(ownerColumn, named))
+                .param("owner", ownerId)
+                .query((rs, row) -> {
+                    credits.computeIfAbsent(rs.getObject("software_id", UUID.class), id -> new ArrayList<>())
+                            .add(new CreditedSoftware.OwnCredit(rs.getString("as_label"), Arrays.asList((String[])
+                                    rs.getArray("role_codes").getArray())));
+                    return row;
+                })
+                .list();
+        if (credits.isEmpty()) {
+            return List.of();
+        }
+        return jdbc.sql("SELECT s.id, s.title, " + ReleaseDateSql.of("s") + " AS release_date, "
+                        + CardScreenshotsSql.of("s") + " AS screenshots, " + CardMadeBySql.of("s")
+                        + " AS made_by FROM software s WHERE s.id IN (:ids) ORDER BY " + ReleaseDateSql.order("s")
+                        + ", lower(s.title), s.id")
+                .param("ids", credits.keySet())
+                .query((rs, row) -> {
+                    UUID id = rs.getObject("id", UUID.class);
+                    return new CreditedSoftware(
+                            id,
+                            rs.getString("title"),
+                            rs.getString("release_date"),
+                            screenshots(rs),
+                            Arrays.asList((String[]) rs.getArray("made_by").getArray()),
+                            List.copyOf(credits.getOrDefault(id, List.of())));
+                })
+                .list();
     }
 
     /** The pages of the archives the software was imported from (docs/features/vektor-import.md). */

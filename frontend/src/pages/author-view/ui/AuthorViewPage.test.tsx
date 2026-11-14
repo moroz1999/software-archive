@@ -2,7 +2,7 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import {createMemoryRouter, RouterProvider} from 'react-router';
 import {createQueryClient} from '@/shared/api';
-import {json, renderWithQueries, stubFetch} from '@/shared/lib/test';
+import {json, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
 import {loadAuthorViewPage, preloadAuthorViewPage} from '../index';
 
 const ID = '00000000-0000-0000-0003-000000000001';
@@ -14,7 +14,7 @@ describe('AuthorViewPage', () => {
     });
 
     it('appears with the author when the preload makes it in time', async () => {
-        const fetchMock = stubFetch(json(ZED));
+        const fetchMock = stubFetchAround(new Map([[`/api/authors/${ID}/software`, json([])]]), json(ZED));
         const queryClient = createQueryClient();
         const router = createMemoryRouter([
             {path: '/authors/:id', loader: preloadAuthorViewPage(queryClient), lazy: {Component: loadAuthorViewPage}, HydrateFallback: () => null},

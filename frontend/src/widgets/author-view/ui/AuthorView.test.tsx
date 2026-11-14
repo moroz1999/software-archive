@@ -1,8 +1,8 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {screen, within} from '@testing-library/react';
+import {screen, waitFor, within} from '@testing-library/react';
 import {MemoryRouter} from 'react-router';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
-import {json, renderWithQueries, stubFetch} from '@/shared/lib/test';
+import {json, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
 import {toAuthorId} from '@/entities/authors';
 import {AuthorView} from './AuthorView';
 
@@ -22,6 +22,11 @@ const ZED = {
     groups: [{id: CREW, name: 'Crew', as: 'Axe'}, {id: BAND, name: 'Band', as: null}],
     canChange: true,
 };
+
+const SOFTWARE_URL = `/api/authors/${ID}/software`;
+const NO_SOFTWARE = new Map([[SOFTWARE_URL, json([])]]);
+const ELITE = '00000000-0000-0000-0001-000000000001';
+const TETRIS = '00000000-0000-0000-0001-000000000002';
 
 function renderView() {
     renderWithQueries(<MemoryRouter><AuthorView id={toAuthorId(ID)}/></MemoryRouter>);
@@ -43,7 +48,7 @@ describe(AuthorView, () => {
     });
 
     it('shows a skeleton until the author arrives', async () => {
-        stubFetch(json(ZED));
+        stubFetchAround(NO_SOFTWARE, json(ZED));
         renderView();
 
         expect(screen.getByTestId('author-view-skeleton')).toBeInTheDocument();
@@ -51,15 +56,45 @@ describe(AuthorView, () => {
         expect(screen.queryByTestId('author-view-skeleton')).not.toBeInTheDocument();
     });
 
+    it('lists the software the author is credited on as cards with their roles and the other labels they used', async () => {
+        stubFetchAround(new Map([[SOFTWARE_URL, json([
+            {id: ELITE, title: 'Elite', releaseDate: '1985', screenshots: [], madeBy: ['Zed'], credits: [
+                {as: null, roles: ['code']},
+                {as: 'Axe', roles: ['music', 'unknown']},
+            ]},
+            {id: TETRIS, title: 'Tetris', releaseDate: null, screenshots: [], madeBy: [], credits: [{as: null, roles: ['unknown']}]},
+        ])]]), json(ZED));
+        renderView();
+
+        const software = await screen.findByRole('region', {name: 'Software'});
+        const [elite, tetris] = await within(software).findAllByRole('article');
+
+        expect(within(software).getByRole('link', {name: /Elite/u})).toHaveAttribute('href', `/software/${ELITE}`);
+        expect(elite).toHaveTextContent('Code');
+        expect(elite).toHaveTextContent('as AxeMusic');
+        expect(tetris).not.toHaveTextContent('Unknown');
+    });
+
+    it('leaves the software out for an author credited on none', async () => {
+        stubFetchAround(NO_SOFTWARE, json(ZED));
+        renderView();
+
+        await screen.findByRole('heading', {level: 1, name: 'Zed'});
+
+        await waitFor(() => {
+            expect(screen.queryByRole('region', {name: 'Software'})).not.toBeInTheDocument();
+        });
+    });
+
     it('leads to the editing of the author', async () => {
-        stubFetch(json(ZED));
+        stubFetchAround(NO_SOFTWARE, json(ZED));
         renderView();
 
         await expect(screen.findByRole('link', {name: 'Edit'})).resolves.toHaveAttribute('href', `/authors/${ID}/edit`);
     });
 
     it('shows everything known about the author under the main name', async () => {
-        stubFetch(json(ZED));
+        stubFetchAround(NO_SOFTWARE, json(ZED));
         renderView();
 
         await screen.findByRole('heading', {level: 1, name: 'Zed'});
@@ -71,7 +106,7 @@ describe(AuthorView, () => {
     });
 
     it('leads to every group of the author, naming the label they were a member under unless it is the main name', async () => {
-        stubFetch(json(ZED));
+        stubFetchAround(NO_SOFTWARE, json(ZED));
         renderView();
 
         await screen.findByRole('heading', {level: 1, name: 'Zed'});
@@ -83,7 +118,7 @@ describe(AuthorView, () => {
     });
 
     it('lists the primary location first, a city with its country', async () => {
-        stubFetch(json(ZED));
+        stubFetchAround(NO_SOFTWARE, json(ZED));
         renderView();
 
         await screen.findByRole('heading', {level: 1, name: 'Zed'});
@@ -92,10 +127,13 @@ describe(AuthorView, () => {
     });
 
     it('leaves out what is not known', async () => {
-        stubFetch(json({...ZED, realName: null, notes: null, labels: [], locations: [], groups: []}));
+        stubFetchAround(NO_SOFTWARE, json({...ZED, realName: null, notes: null, labels: [], locations: [], groups: []}));
         renderView();
 
         await screen.findByRole('heading', {level: 1, name: 'Zed'});
+        await waitFor(() => {
+            expect(screen.queryByRole('region', {name: 'Software'})).not.toBeInTheDocument();
+        });
 
         expect(screen.queryByText('Real name')).not.toBeInTheDocument();
         expect(screen.queryByRole('list')).not.toBeInTheDocument();
@@ -106,7 +144,7 @@ describe(AuthorView, () => {
         unsubscribers.push(subscribeSystemErrors((report) => {
             reports.push(report);
         }));
-        stubFetch(json({status: 500}, 500));
+        stubFetchAround(NO_SOFTWARE, json({status: 500}, 500));
         renderView();
 
         await vi.waitFor(() => {
@@ -119,7 +157,7 @@ describe(AuthorView, () => {
     });
 
     it('offers no editing of the author to whoever may not change it', async () => {
-        stubFetch(json({...ZED, canChange: false}));
+        stubFetchAround(NO_SOFTWARE, json({...ZED, canChange: false}));
         renderView();
 
         await screen.findByRole('heading', {level: 1, name: 'Zed'});

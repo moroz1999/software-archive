@@ -29,6 +29,15 @@ public interface SoftwareReadRepository {
      */
     Optional<ReleaseDetails> findRelease(UUID softwareId, UUID releaseId);
 
+    /**
+     * The software the person is credited on, by themselves or by a label, in the order of the release dates and then
+     * of the titles; none for an unknown person.
+     */
+    List<CreditedSoftware> findCreditedOnPerson(UUID personId);
+
+    /** The same for a group. */
+    List<CreditedSoftware> findCreditedOnGroup(UUID groupId);
+
     /** The software's own screenshots in their order; none for unknown software. */
     List<SoftwareScreenshot> findScreenshots(UUID softwareId);
 

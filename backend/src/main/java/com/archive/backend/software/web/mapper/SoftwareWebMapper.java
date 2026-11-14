@@ -15,11 +15,13 @@ import com.archive.backend.software.domain.SoftwareReference;
 import com.archive.backend.software.domain.SoftwareReferenceId;
 import com.archive.backend.software.domain.SoftwareReferenceType;
 import com.archive.backend.software.domain.SoftwareTitle;
+import com.archive.backend.software.read.CreditedSoftware;
 import com.archive.backend.software.read.ReleaseArchiveDetails;
 import com.archive.backend.software.read.SoftwareDetails;
 import com.archive.backend.software.read.SoftwareRelease;
 import com.archive.backend.software.read.SoftwareScreenshot;
 import com.archive.backend.software.read.SoftwareSummary;
+import com.archive.backend.software.web.dto.CreditedSoftwareDto;
 import com.archive.backend.software.web.dto.ReleaseArchiveDto;
 import com.archive.backend.software.web.dto.ScreenshotDto;
 import com.archive.backend.software.web.dto.SoftwareCreatedDto;
@@ -40,6 +42,8 @@ import org.springframework.data.domain.Pageable;
 public interface SoftwareWebMapper {
 
     SoftwareListItemDto toListItem(SoftwareSummary summary);
+
+    List<CreditedSoftwareDto> toCredited(List<CreditedSoftware> software);
 
     SoftwareDetailsDto toDetails(SoftwareDetails details);
 

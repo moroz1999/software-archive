@@ -163,7 +163,7 @@ export const resources = {
             parent: 'Parent', top: 'None, at the top', expand: 'Expand {{name}}', collapse: 'Collapse {{name}}', delete: 'Delete category',
             deleteQuestion: 'Delete “{{title}}” with all its subcategories? Their software stays in the archive and only leaves them.',
         },
-        software: {delete: 'Delete software', deleteQuestion: 'Delete “{{title}}” from the archive?', source: 'Source'},
+        software: {delete: 'Delete software', deleteQuestion: 'Delete “{{title}}” from the archive?', source: 'Source', software: 'Software', creditedAs: 'as {{name}}'},
         screenshots: {
             heading: 'Screenshots', numbered: 'Screenshot {{n}}', nOfCount: 'Screenshot {{n}} of {{count}}',
             previous: 'Previous screenshot', next: 'Next screenshot', none: 'No screenshots yet.', add: 'Add screenshots',
@@ -348,7 +348,7 @@ export const resources = {
             parent: 'Родитель', top: 'Нет, на верхнем уровне', expand: 'Раскрыть {{name}}', collapse: 'Свернуть {{name}}', delete: 'Удалить категорию',
             deleteQuestion: 'Удалить «{{title}}» со всеми подкатегориями? Их программы останутся в архиве и только покинут эти категории.',
         },
-        software: {delete: 'Удалить программу', deleteQuestion: 'Удалить «{{title}}» из архива?', source: 'Источник'},
+        software: {delete: 'Удалить программу', deleteQuestion: 'Удалить «{{title}}» из архива?', source: 'Источник', software: 'Софт', creditedAs: 'как {{name}}'},
         screenshots: {
             heading: 'Скриншоты', numbered: 'Скриншот {{n}}', nOfCount: 'Скриншот {{n}} из {{count}}',
             previous: 'Предыдущий скриншот', next: 'Следующий скриншот', none: 'Скриншотов пока нет.', add: 'Добавить скриншоты',

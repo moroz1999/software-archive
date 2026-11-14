@@ -1,8 +1,8 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {screen, within} from '@testing-library/react';
+import {screen, waitFor, within} from '@testing-library/react';
 import {MemoryRouter} from 'react-router';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
-import {json, renderWithQueries, stubFetch} from '@/shared/lib/test';
+import {json, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
 import {toGroupId} from '@/entities/groups';
 import {GroupView} from './GroupView';
 
@@ -32,6 +32,11 @@ const CREW = {
     canChange: true,
 };
 
+const SOFTWARE_URL = `/api/groups/${ID}/software`;
+const NO_SOFTWARE = new Map([[SOFTWARE_URL, json([])]]);
+const ELITE = '00000000-0000-0000-0001-000000000001';
+const TETRIS = '00000000-0000-0000-0001-000000000002';
+
 function renderView() {
     renderWithQueries(<MemoryRouter><GroupView id={toGroupId(ID)}/></MemoryRouter>);
 }
@@ -52,7 +57,7 @@ describe(GroupView, () => {
     });
 
     it('shows a skeleton until the group arrives', async () => {
-        stubFetch(json(CREW));
+        stubFetchAround(NO_SOFTWARE, json(CREW));
         renderView();
 
         expect(screen.getByTestId('group-view-skeleton')).toBeInTheDocument();
@@ -60,15 +65,29 @@ describe(GroupView, () => {
         expect(screen.queryByTestId('group-view-skeleton')).not.toBeInTheDocument();
     });
 
+    it('lists the software the group is credited on as cards with its roles', async () => {
+        stubFetchAround(new Map([[SOFTWARE_URL, json([
+            {id: ELITE, title: 'Elite', releaseDate: '1985', screenshots: [], madeBy: ['Crew'], credits: [{as: null, roles: ['developer']}]},
+            {id: TETRIS, title: 'Tetris', releaseDate: null, screenshots: [], madeBy: [], credits: [{as: 'CRW', roles: ['publisher']}]},
+        ])]]), json(CREW));
+        renderView();
+
+        const software = await screen.findByRole('region', {name: 'Software'});
+        const [elite, tetris] = await within(software).findAllByRole('article');
+
+        expect(elite).toHaveTextContent('Developer');
+        expect(tetris).toHaveTextContent('as CRWPublisher');
+    });
+
     it('leads to the editing of the group', async () => {
-        stubFetch(json(CREW));
+        stubFetchAround(NO_SOFTWARE, json(CREW));
         renderView();
 
         await expect(screen.findByRole('link', {name: 'Edit'})).resolves.toHaveAttribute('href', `/groups/${ID}/edit`);
     });
 
     it('shows everything known about the group under the main name', async () => {
-        stubFetch(json(CREW));
+        stubFetchAround(NO_SOFTWARE, json(CREW));
         renderView();
 
         await screen.findByRole('heading', {level: 1, name: 'Crew'});
@@ -81,7 +100,7 @@ describe(GroupView, () => {
     });
 
     it('lists the primary location first, a city with its country', async () => {
-        stubFetch(json(CREW));
+        stubFetchAround(NO_SOFTWARE, json(CREW));
         renderView();
 
         await screen.findByRole('heading', {level: 1, name: 'Crew'});
@@ -90,7 +109,7 @@ describe(GroupView, () => {
     });
 
     it('lists the members under the labels they were members under, with the main name of the person when it differs', async () => {
-        stubFetch(json(CREW));
+        stubFetchAround(NO_SOFTWARE, json(CREW));
         renderView();
 
         await screen.findByRole('heading', {level: 1, name: 'Crew'});
@@ -103,7 +122,7 @@ describe(GroupView, () => {
     });
 
     it('shows the known roles of the members and leaves the unknown one out', async () => {
-        stubFetch(json({...CREW, members: [
+        stubFetchAround(NO_SOFTWARE, json({...CREW, members: [
             {id: ZED, type: 'author', title: 'Zed', name: 'Zed', personId: ZED, personName: null, roles: ['coder'], startDate: null, endDate: null},
             {id: FEDYA, type: 'author', title: 'хакер федя', name: 'хакер федя', personId: FEDYA, personName: null, roles: ['unknown'], startDate: null, endDate: null},
         ]}));
@@ -115,7 +134,7 @@ describe(GroupView, () => {
     });
 
     it('leads to the groups inside it and to the groups it is inside', async () => {
-        stubFetch(json(CREW));
+        stubFetchAround(NO_SOFTWARE, json(CREW));
         renderView();
 
         await screen.findByRole('heading', {level: 1, name: 'Crew'});
@@ -125,10 +144,13 @@ describe(GroupView, () => {
     });
 
     it('leaves out what is not known', async () => {
-        stubFetch(json({...CREW, notes: null, types: [], labels: [], locations: [], members: [], memberGroups: [], groups: []}));
+        stubFetchAround(NO_SOFTWARE, json({...CREW, notes: null, types: [], labels: [], locations: [], members: [], memberGroups: [], groups: []}));
         renderView();
 
         await screen.findByRole('heading', {level: 1, name: 'Crew'});
+        await waitFor(() => {
+            expect(screen.queryByRole('region', {name: 'Software'})).not.toBeInTheDocument();
+        });
 
         expect(screen.queryByText('Notes')).not.toBeInTheDocument();
         expect(screen.queryByRole('list')).not.toBeInTheDocument();
@@ -139,7 +161,7 @@ describe(GroupView, () => {
         unsubscribers.push(subscribeSystemErrors((report) => {
             reports.push(report);
         }));
-        stubFetch(json({status: 500}, 500));
+        stubFetchAround(NO_SOFTWARE, json({status: 500}, 500));
         renderView();
 
         await vi.waitFor(() => {
@@ -152,7 +174,7 @@ describe(GroupView, () => {
     });
 
     it('offers no editing of the group to whoever may not change it', async () => {
-        stubFetch(json({...CREW, canChange: false}));
+        stubFetchAround(NO_SOFTWARE, json({...CREW, canChange: false}));
         renderView();
 
         await screen.findByRole('heading', {level: 1, name: 'Crew'});
