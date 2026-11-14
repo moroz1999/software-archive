@@ -1,8 +1,12 @@
 package com.archive.backend.importer.app;
 
 import com.archive.backend.importer.domain.ExternalOrigin;
+import com.archive.backend.importer.domain.ExternalPage;
 import com.archive.backend.importer.domain.ImportSummary;
 import com.archive.backend.importer.domain.ImportedEntryRepository;
+import com.archive.backend.importer.domain.run.FailedProgram;
+import com.archive.backend.importer.domain.run.ImportOutcome;
+import com.archive.backend.importer.domain.run.ImportRunState;
 import com.archive.backend.importer.domain.vektor.VektorListing;
 import com.archive.backend.importer.domain.vektor.VektorProgram;
 import com.archive.backend.importer.domain.vektor.VektorSections;
@@ -25,6 +29,8 @@ public class ImportVektorHandler {
     private final VektorSite site;
     private final ImportedEntryRepository entries;
     private final ImportVektorProgramHandler importProgram;
+    private final RecordImportOutcomeHandler recordOutcome;
+    private final EndImportRunHandler endRun;
 
     public ImportSummary handle(ImportVektorCommand c) {
         int added = 0;
@@ -35,24 +41,41 @@ public class ImportVektorHandler {
             if (entries.findByOrigin(ExternalOrigin.software(VektorSite.ARCHIVE, listing.id()))
                     .isPresent()) {
                 known++;
+                record(c, new ImportOutcome.Known());
                 continue;
             }
             try {
                 VektorProgram program = site.program(listing);
                 if (!VektorSections.placementOf(program.section()).imported()) {
                     skipped++;
+                    record(c, new ImportOutcome.Skipped());
                     continue;
                 }
-                importProgram.handle(new ImportVektorProgramCommand(program));
+                importProgram.handle(new ImportVektorProgramCommand(c.run(), program));
                 added++;
                 log.info("Imported {} {}", listing.id(), program.title());
             } catch (RuntimeException e) {
                 failed++;
                 log.warn("Could not import {} {}", listing.id(), listing.url(), e);
+                record(
+                        c,
+                        new ImportOutcome.Failed(
+                                new FailedProgram(listing.id(), new ExternalPage(listing.url()), reasonOf(e))));
             }
         }
         ImportSummary summary = new ImportSummary(added, known, skipped, failed);
+        endRun.handle(new EndImportRunCommand(c.run(), ImportRunState.DONE));
         log.info("Import of {} done: {}", VektorSite.ARCHIVE, summary);
         return summary;
+    }
+
+    private void record(ImportVektorCommand c, ImportOutcome outcome) {
+        recordOutcome.handle(new RecordImportOutcomeCommand(c.run(), outcome));
+    }
+
+    /** What went wrong, as the failure tells it: its message, or its kind when it has none. */
+    private static String reasonOf(RuntimeException e) {
+        String message = e.getMessage();
+        return message == null || message.isBlank() ? e.getClass().getSimpleName() : message;
     }
 }

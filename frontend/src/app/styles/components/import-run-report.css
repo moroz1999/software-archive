@@ -1,0 +1,4 @@
+:root {
+    /* The bone of the report while it loads: its head lines. */
+    --import-run-report-bone-height: 96px;
+}

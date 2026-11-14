@@ -8,7 +8,8 @@ The archive takes in software from other archives so that it does not have to be
 - An import can run again at any time and adds only what is new there. What the archive already took is left as it is, even when the source has changed it since, so that work done in the archive is never overwritten; what the source has deleted stays in the archive.
 - Software deleted in the archive is forgotten by the imports with it: the next run takes the program again, as new. The labels an import created for author names stay remembered, as the labels themselves stay in the archive.
 - What an import adds is added by one fixed user of the archive, the importer.
-- Only an administrator starts an import, from the management of the archive: a whole source archive or one of its sections. Only one runs at a time, so that two runs never add the same entries; how a run ended is not shown in the archive.
+- Only an administrator starts an import, from the management of the archive: a whole source archive or one of its sections. Only one runs at a time, so that two runs never add the same entries.
+- Every run leaves a report for the administrator: what it imported, whether it went through to the end or was stopped (by a failure of the whole run or a restart of the archive), what it added, what was already there or left out, and what failed and why. The report grows while the run goes on.
 
 ## vektor-06c.ru
 The archive of software for the Vector-06C.

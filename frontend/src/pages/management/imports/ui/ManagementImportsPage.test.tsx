@@ -21,7 +21,7 @@ describe('ManagementImportsPage', () => {
     });
 
     it('appears with the sections to import when the preload makes it in time', async () => {
-        const fetchMock = stubFetchRoutes(new Map([[SECTIONS, json(['zagruzchiki'])]]));
+        const fetchMock = stubFetchRoutes(new Map([[SECTIONS, json(['zagruzchiki'])], ['/api/imports/last-run', json({run: null})]]));
 
         renderRoute();
 
@@ -32,7 +32,7 @@ describe('ManagementImportsPage', () => {
     });
 
     it('shows the imports among the management sections', async () => {
-        stubFetchRoutes(new Map([[SECTIONS, json(['zagruzchiki'])]]));
+        stubFetchRoutes(new Map([[SECTIONS, json(['zagruzchiki'])], ['/api/imports/last-run', json({run: null})]]));
 
         renderRoute();
 

@@ -24,6 +24,7 @@ describe('management routes', () => {
             ['/api/platforms', json([])],
             ['/api/categories', json([])],
             ['/api/imports/vektor/sections', json(['zagruzchiki'])],
+            ['/api/imports/last-run', json({run: null})],
             ['/api/users?page=0&size=50', json({content: [], page: {size: 50, number: 0, totalElements: 0, totalPages: 0}})],
         ]));
         window.history.replaceState(null, '', path);

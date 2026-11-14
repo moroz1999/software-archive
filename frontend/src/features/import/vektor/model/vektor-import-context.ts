@@ -1,8 +1,11 @@
 import type {UseQueryResult} from '@tanstack/react-query';
 import {createRequiredContext} from '@/shared/lib/context';
+import type {ImportRun} from './import-run';
 
 export interface VektorImportState {
     readonly sections: UseQueryResult<readonly string[]>;
+    /** The report of the import started last; null before the first one. */
+    readonly lastRun: UseQueryResult<ImportRun | null>;
     /** The code of the chosen section; empty for the whole site. */
     readonly section: string;
     readonly choose: (section: string) => void;

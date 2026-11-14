@@ -12,6 +12,8 @@ import com.archive.backend.importer.domain.ImportedEntry;
 import com.archive.backend.importer.domain.ImportedEntryId;
 import com.archive.backend.importer.domain.ImportedEntryRepository;
 import com.archive.backend.importer.domain.Importer;
+import com.archive.backend.importer.domain.run.AddedProgram;
+import com.archive.backend.importer.domain.run.ImportOutcome;
 import com.archive.backend.importer.domain.vektor.VektorAuthors;
 import com.archive.backend.importer.domain.vektor.VektorProgram;
 import com.archive.backend.importer.domain.vektor.VektorSections;
@@ -65,6 +67,7 @@ public class ImportVektorProgramHandler {
     private final CreateSoftwareHandler createSoftware;
     private final CreateReleaseHandler createRelease;
     private final AddScreenshotsHandler addScreenshots;
+    private final RecordImportOutcomeHandler recordOutcome;
 
     @Transactional
     public void handle(ImportVektorProgramCommand c) {
@@ -111,6 +114,10 @@ public class ImportVektorProgramHandler {
                 ExternalOrigin.software(VektorSite.ARCHIVE, program.id()),
                 new ImportedEntryId(software.value()),
                 new ExternalPage(program.url())));
+        recordOutcome.handle(new RecordImportOutcomeCommand(
+                c.run(),
+                new ImportOutcome.Added(
+                        new AddedProgram(program.id(), new ImportedEntryId(software.value()), program.title()))));
     }
 
     /**

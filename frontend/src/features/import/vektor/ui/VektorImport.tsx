@@ -2,14 +2,19 @@ import {useTranslation} from 'react-i18next';
 import {Button} from '@/shared/ui/button';
 import {Form, FormActions, FormField, FormMessage, FormSection} from '@/shared/ui/form';
 import {Select} from '@/shared/ui/select';
+import {Stack} from '@/shared/ui/stack';
 import {useVektorImport} from '../model/vektor-import-context';
 import {VektorImportProvider} from '../model/VektorImportProvider';
+import {ImportRunReport} from './ImportRunReport';
 
-/** Starts the import of vektor-06c.ru, whole or one section of it; how it ended is told by the backend log. */
+/** Starts the import of vektor-06c.ru, whole or one section of it, and reports what the import started last did. */
 export function VektorImport() {
     return (
         <VektorImportProvider>
-            <VektorImportForm/>
+            <Stack gap="xl">
+                <VektorImportForm/>
+                <ImportRunReport/>
+            </Stack>
         </VektorImportProvider>
     );
 }

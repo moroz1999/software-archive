@@ -8,15 +8,23 @@ import com.archive.backend.TestcontainersConfiguration;
 import com.archive.backend.TypesenseTestConfiguration;
 import com.archive.backend.importer.domain.ImportSummary;
 import com.archive.backend.importer.domain.Importer;
+import com.archive.backend.importer.domain.run.ImportRun;
+import com.archive.backend.importer.domain.run.ImportRunId;
+import com.archive.backend.importer.domain.run.ImportRunRepository;
+import com.archive.backend.importer.domain.run.ImportScope;
 import com.archive.backend.importer.domain.vektor.VektorSection;
 import com.archive.backend.importer.infra.FakeVektorHttp;
+import com.archive.backend.importer.read.ImportRunReadRepository;
+import com.archive.backend.importer.read.ImportRunReport;
 import com.archive.backend.software.app.DeleteSoftwareCommand;
 import com.archive.backend.software.app.DeleteSoftwareHandler;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.user.TestActors;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,6 +75,12 @@ class ImportVektorIT {
     private DeleteSoftwareHandler deleteSoftware;
 
     @Autowired
+    private ImportRunRepository runs;
+
+    @Autowired
+    private ImportRunReadRepository reports;
+
+    @Autowired
     private JdbcTemplate jdbc;
 
     @AfterEach
@@ -74,6 +88,7 @@ class ImportVektorIT {
         jdbc.update("DELETE FROM software WHERE added_by = ?", Importer.ID.value());
         jdbc.update("DELETE FROM label WHERE id IN (SELECT entity_id FROM external_origin WHERE kind = 'LABEL')");
         jdbc.update("DELETE FROM external_origin");
+        jdbc.update("DELETE FROM import_run");
         http.clear();
     }
 
@@ -82,7 +97,7 @@ class ImportVektorIT {
         servePrograms();
         http.serve(WHOLE, list("892", JOE_BLADE));
 
-        assertThat(handler.handle(new ImportVektorCommand(null))).isEqualTo(new ImportSummary(1, 0, 0, 0));
+        assertThat(run(null)).isEqualTo(new ImportSummary(1, 0, 0, 0));
 
         Map<String, Object> software = jdbc.queryForMap(
                 "SELECT id, description, release_year, platform_code, added_by FROM software WHERE title = 'Joe Blade'");
@@ -124,7 +139,7 @@ class ImportVektorIT {
         servePrograms();
         http.serve(WHOLE, list("754", MICRODOS, "892", JOE_BLADE));
 
-        handler.handle(new ImportVektorCommand(null));
+        run(null);
 
         assertThat(credits("МикроДОС 3.1 (BIOS 3.11.F.11)")).containsExactly("Филиппов Е.В.:{unknown}");
         assertThat(credits("Joe Blade")).containsExactly("Colin Swinbourne / Никита Зимин:{unknown}");
@@ -140,7 +155,7 @@ class ImportVektorIT {
         servePrograms();
         http.serve(OS, list("753", CPM, "763", BOLDBIOS));
 
-        handler.handle(new ImportVektorCommand(new VektorSection("operatsionnye-sistemy")));
+        run(new VektorSection("operatsionnye-sistemy"));
 
         assertThat(releaseHardware("CPM-59")).containsExactly("tape");
         assertThat(releaseHardware("BoldBIOS")).isEmpty();
@@ -151,7 +166,7 @@ class ImportVektorIT {
         servePrograms();
         http.serve(OS, list("763", BOLDBIOS));
 
-        handler.handle(new ImportVektorCommand(new VektorSection("operatsionnye-sistemy")));
+        run(new VektorSection("operatsionnye-sistemy"));
 
         assertThat(jdbc.queryForObject(
                         "SELECT count(*) FROM software_screenshot sc JOIN software s ON s.id = sc.software_id"
@@ -165,10 +180,10 @@ class ImportVektorIT {
     void takesEachProgramOnceHoweverOftenItRuns() {
         servePrograms();
         http.serve(OS, list("754", MICRODOS, "753", CPM));
-        ImportVektorCommand command = new ImportVektorCommand(new VektorSection("operatsionnye-sistemy"));
+        VektorSection command = new VektorSection("operatsionnye-sistemy");
 
-        assertThat(handler.handle(command)).isEqualTo(new ImportSummary(2, 0, 0, 0));
-        assertThat(handler.handle(command)).isEqualTo(new ImportSummary(0, 2, 0, 0));
+        assertThat(run(command)).isEqualTo(new ImportSummary(2, 0, 0, 0));
+        assertThat(run(command)).isEqualTo(new ImportSummary(0, 2, 0, 0));
 
         assertThat(importedSoftware()).isEqualTo(2);
         assertThat(jdbc.queryForObject(
@@ -182,22 +197,22 @@ class ImportVektorIT {
     @Test
     void addsWhatIsNewAndKeepsWhatTheSiteDeleted() {
         servePrograms();
-        ImportVektorCommand command = new ImportVektorCommand(new VektorSection("operatsionnye-sistemy"));
+        VektorSection command = new VektorSection("operatsionnye-sistemy");
         http.serve(OS, list("754", MICRODOS));
-        handler.handle(command);
+        run(command);
 
         http.serve(OS, list("753", CPM));
 
-        assertThat(handler.handle(command)).isEqualTo(new ImportSummary(1, 0, 0, 0));
+        assertThat(run(command)).isEqualTo(new ImportSummary(1, 0, 0, 0));
         assertThat(importedSoftware()).isEqualTo(2);
     }
 
     @Test
     void takesAgainAProgramWhoseSoftwareWasDeleted() {
         servePrograms();
-        ImportVektorCommand command = new ImportVektorCommand(new VektorSection("operatsionnye-sistemy"));
+        VektorSection command = new VektorSection("operatsionnye-sistemy");
         http.serve(OS, list("753", CPM));
-        handler.handle(command);
+        run(command);
         UUID deleted = jdbc.queryForObject(
                 "SELECT entity_id FROM external_origin WHERE kind = 'SOFTWARE' AND external_id = '753'", UUID.class);
 
@@ -205,7 +220,7 @@ class ImportVektorIT {
 
         assertThat(jdbc.queryForObject("SELECT count(*) FROM external_origin WHERE kind = 'SOFTWARE'", Integer.class))
                 .isZero();
-        assertThat(handler.handle(command)).isEqualTo(new ImportSummary(1, 0, 0, 0));
+        assertThat(run(command)).isEqualTo(new ImportSummary(1, 0, 0, 0));
         assertThat(importedSoftware()).isEqualTo(1);
     }
 
@@ -217,7 +232,7 @@ class ImportVektorIT {
                 page("program-753.html"));
         http.serve(OS, list("753", CPM, "9753", "/programmnoe-obespechenie/operatsionnye-sistemy/cpm-59-copy/"));
 
-        handler.handle(new ImportVektorCommand(new VektorSection("operatsionnye-sistemy")));
+        run(new VektorSection("operatsionnye-sistemy"));
 
         assertThat(jdbc.queryForObject("SELECT count(*) FROM label WHERE name = 'Графов А.'", Integer.class))
                 .isEqualTo(1);
@@ -229,12 +244,54 @@ class ImportVektorIT {
     }
 
     @Test
+    void reportsWhatEachProgramCameToOnceTheRunIsDone() {
+        servePrograms();
+        http.fail("https://vektor-06c.ru/upload/iblock/archive-of-cpm.zip");
+        http.serve(
+                CPM_ARCHIVE_PAGE,
+                page("program-753.html")
+                        .replaceAll("href=\"(/upload/[^\"]+\\.zip)\"", "href=\"/upload/iblock/archive-of-cpm.zip\""));
+        http.serve(OS, list("754", MICRODOS));
+        run(new VektorSection("operatsionnye-sistemy"));
+        http.serve(OS, list("754", MICRODOS, "753", CPM));
+
+        run(new VektorSection("operatsionnye-sistemy"));
+
+        ImportRunReport report = reports.findLatest().orElseThrow();
+        assertThat(report.state()).isEqualTo("DONE");
+        assertThat(report.endedAt()).isNotNull();
+        assertThat(List.of(report.added(), report.known(), report.skipped(), report.failed()))
+                .containsExactly(0, 1, 0, 1);
+        assertThat(report.failedPrograms()).singleElement().satisfies(failed -> {
+            assertThat(failed.externalId()).isEqualTo("753");
+            assertThat(failed.url()).isEqualTo(CPM_ARCHIVE_PAGE);
+            assertThat(failed.reason()).isNotBlank();
+        });
+    }
+
+    @Test
+    void reportsTheProgramsAddedWithTheirSoftware() {
+        servePrograms();
+        http.serve(OS, list("754", MICRODOS));
+
+        run(new VektorSection("operatsionnye-sistemy"));
+
+        assertThat(reports.findLatest().orElseThrow().addedPrograms())
+                .singleElement()
+                .satisfies(added -> {
+                    assertThat(added.externalId()).isEqualTo("754");
+                    assertThat(added.title()).isEqualTo("МикроДОС 3.1 (BIOS 3.11.F.11)");
+                    assertThat(added.exists()).isTrue();
+                });
+    }
+
+    @Test
     void leavesOutTheUtilitiesForThePc() {
         String utility = "/programmnoe-obespechenie/utility-dlya-pc/512-demo/";
         http.serve("https://vektor-06c.ru" + utility, page("program-524.html"));
         http.serve(WHOLE, list("524", utility));
 
-        assertThat(handler.handle(new ImportVektorCommand(null))).isEqualTo(new ImportSummary(0, 0, 1, 0));
+        assertThat(run(null)).isEqualTo(new ImportSummary(0, 0, 1, 0));
         assertThat(importedSoftware()).isZero();
     }
 
@@ -248,8 +305,7 @@ class ImportVektorIT {
                         .replaceAll("href=\"(/upload/[^\"]+\\.zip)\"", "href=\"/upload/iblock/archive-of-cpm.zip\""));
         http.serve(OS, list("753", CPM, "754", MICRODOS));
 
-        assertThat(handler.handle(new ImportVektorCommand(new VektorSection("operatsionnye-sistemy"))))
-                .isEqualTo(new ImportSummary(1, 0, 0, 1));
+        assertThat(run(new VektorSection("operatsionnye-sistemy"))).isEqualTo(new ImportSummary(1, 0, 0, 1));
 
         assertThat(jdbc.queryForList(
                         "SELECT title FROM software WHERE added_by = ?", String.class, Importer.ID.value()))
@@ -261,6 +317,13 @@ class ImportVektorIT {
                         "SELECT count(*) FROM external_origin WHERE external_id IN ('753', 'Графов А.')",
                         Integer.class))
                 .isZero();
+    }
+
+    /** Runs the import as a start does: in a run of its own, whose report it writes. */
+    private ImportSummary run(@Nullable VektorSection section) {
+        ImportRunId id = new ImportRunId(UUID.randomUUID());
+        runs.save(ImportRun.start(id, new ImportScope("vektor-06c.ru", section), Instant.now()));
+        return handler.handle(new ImportVektorCommand(id, section));
     }
 
     private void servePrograms() {

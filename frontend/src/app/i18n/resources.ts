@@ -14,8 +14,13 @@ export const resources = {
         pages: {recentlyAdded: 'Recently added', software: 'Software', authors: 'Authors', groups: 'Groups', categories: 'Categories', search: 'Search', users: 'Users', imports: 'Imports'},
         imports: {
             vektor: 'vektor-06c.ru', section: 'Section', wholeSite: 'Whole site', start: 'Start',
-            started: 'The import has started; the backend log tells how it ended.',
+            started: 'The import has started.',
             errors: {running: 'An import is already running.', forbidden: 'Only an administrator starts an import.'},
+            lastRun: 'Last import', noRun: 'Nothing has been imported yet.',
+            states: {running: 'Running', done: 'Done', stopped: 'Stopped'},
+            startedAt: 'Started {{time}}', ranFromTo: '{{from}} – {{to}}',
+            counts: 'Added {{added}} · already there {{known}} · left out {{skipped}} · failed {{failed}}',
+            addedPrograms: 'Added', failedPrograms: 'Failed', deleted: '{{title}} (deleted since)',
         },
         empty: {
             software: 'No software in the archive yet.', authors: 'No authors found.', groups: 'No groups found.', categories: 'No categories yet.',
@@ -191,8 +196,13 @@ export const resources = {
         pages: {recentlyAdded: 'Недавно добавленное', software: 'Программы', authors: 'Авторы', groups: 'Группы', categories: 'Категории', search: 'Поиск', users: 'Пользователи', imports: 'Импорт'},
         imports: {
             vektor: 'vektor-06c.ru', section: 'Раздел', wholeSite: 'Весь сайт', start: 'Запустить',
-            started: 'Импорт запущен; чем он закончился, скажет лог бэкенда.',
+            started: 'Импорт запущен.',
             errors: {running: 'Импорт уже идёт.', forbidden: 'Импорт запускает только администратор.'},
+            lastRun: 'Последний импорт', noRun: 'Импортов ещё не было.',
+            states: {running: 'Идёт', done: 'Закончен', stopped: 'Прерван'},
+            startedAt: 'Начат {{time}}', ranFromTo: '{{from}} – {{to}}',
+            counts: 'Добавлено {{added}} · уже были {{known}} · пропущено {{skipped}} · не удалось {{failed}}',
+            addedPrograms: 'Добавлены', failedPrograms: 'Не удалось', deleted: '{{title}} (с тех пор удалена)',
         },
         empty: {
             software: 'В архиве пока нет программ.', authors: 'Авторы не найдены.', groups: 'Группы не найдены.', categories: 'Категорий пока нет.',
