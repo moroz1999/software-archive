@@ -10,4 +10,7 @@ public interface ImportedEntryRepository {
     Optional<ImportedEntry> findByOrigin(ExternalOrigin origin);
 
     void save(ImportedEntry entry);
+
+    /** Forgets where the entry of this kind came from, so an import may take it again. */
+    void forget(ExternalKind kind, ImportedEntryId entry);
 }

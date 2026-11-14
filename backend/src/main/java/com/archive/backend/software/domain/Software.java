@@ -241,6 +241,7 @@ public final class Software {
     /** Tells the software is going: its repository deletes it. */
     public void delete() {
         events.add(new SoftwareChanged(id));
+        events.add(new SoftwareDeleted(id));
         discard(Stream.concat(
                         screenshots.ids().stream(),
                         releases.stream().flatMap(release -> release.screenshots().ids().stream()))

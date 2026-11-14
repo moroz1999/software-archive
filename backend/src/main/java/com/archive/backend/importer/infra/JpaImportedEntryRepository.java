@@ -39,6 +39,11 @@ public class JpaImportedEntryRepository implements ImportedEntryRepository {
         springDataExternalOriginRepository.saveAndFlush(row);
     }
 
+    @Override
+    public void forget(ExternalKind kind, ImportedEntryId entry) {
+        springDataExternalOriginRepository.deleteByKeyKindAndEntityId(kind.name(), entry.value());
+    }
+
     private static ExternalOriginKey keyOf(ExternalOrigin origin) {
         ExternalOriginKey key = new ExternalOriginKey();
         key.setOrigin(origin.archive());

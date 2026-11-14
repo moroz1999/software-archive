@@ -10,6 +10,10 @@ import com.archive.backend.importer.domain.ImportSummary;
 import com.archive.backend.importer.domain.Importer;
 import com.archive.backend.importer.domain.vektor.VektorSection;
 import com.archive.backend.importer.infra.FakeVektorHttp;
+import com.archive.backend.software.app.DeleteSoftwareCommand;
+import com.archive.backend.software.app.DeleteSoftwareHandler;
+import com.archive.backend.software.domain.SoftwareId;
+import com.archive.backend.user.TestActors;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -58,6 +62,9 @@ class ImportVektorIT {
 
     @Autowired
     private FakeVektorHttp http;
+
+    @Autowired
+    private DeleteSoftwareHandler deleteSoftware;
 
     @Autowired
     private JdbcTemplate jdbc;
@@ -183,6 +190,23 @@ class ImportVektorIT {
 
         assertThat(handler.handle(command)).isEqualTo(new ImportSummary(1, 0, 0, 0));
         assertThat(importedSoftware()).isEqualTo(2);
+    }
+
+    @Test
+    void takesAgainAProgramWhoseSoftwareWasDeleted() {
+        servePrograms();
+        ImportVektorCommand command = new ImportVektorCommand(new VektorSection("operatsionnye-sistemy"));
+        http.serve(OS, list("753", CPM));
+        handler.handle(command);
+        UUID deleted = jdbc.queryForObject(
+                "SELECT entity_id FROM external_origin WHERE kind = 'SOFTWARE' AND external_id = '753'", UUID.class);
+
+        deleteSoftware.handle(new DeleteSoftwareCommand(TestActors.ADMIN, new SoftwareId(deleted)));
+
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM external_origin WHERE kind = 'SOFTWARE'", Integer.class))
+                .isZero();
+        assertThat(handler.handle(command)).isEqualTo(new ImportSummary(1, 0, 0, 0));
+        assertThat(importedSoftware()).isEqualTo(1);
     }
 
     @Test

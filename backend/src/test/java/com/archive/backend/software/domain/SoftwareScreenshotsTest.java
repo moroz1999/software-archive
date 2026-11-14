@@ -192,6 +192,7 @@ class SoftwareScreenshotsTest {
         assertThat(software.pullEvents())
                 .containsExactlyInAnyOrder(
                         new SoftwareChanged(ID),
+                        new SoftwareDeleted(ID),
                         new ScreenshotsDiscarded(List.of(shot(1).id(), shot(2).id(), shot(3).id(), shot(4).id())));
     }
 }

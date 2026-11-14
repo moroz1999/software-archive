@@ -77,6 +77,8 @@ class SoftwareReleaseArchivesTest {
 
         assertThat(software.pullEvents())
                 .containsExactlyInAnyOrder(
-                        new SoftwareChanged(SOFTWARE), new ReleaseArchivesDiscarded(List.of(ORIGINAL.id())));
+                        new SoftwareChanged(SOFTWARE),
+                        new SoftwareDeleted(SOFTWARE),
+                        new ReleaseArchivesDiscarded(List.of(ORIGINAL.id())));
     }
 }
