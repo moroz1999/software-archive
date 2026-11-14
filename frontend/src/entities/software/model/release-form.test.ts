@@ -9,7 +9,7 @@ const AY = {code: 'ay8910', name: 'AY-3-8910', group: 'sound' as const};
 describe(validateReleaseForm, () => {
     it('turns the filled form into a draft', () => {
         expect(validateReleaseForm({
-            title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: '1990-03-01', description: 'With AY music', hardware: ['ay8910'],
+            title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: '01.03.1990', description: 'With AY music', hardware: ['ay8910'],
         })).toStrictEqual({
             ok: true,
             draft: {title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: '1990-03-01', description: 'With AY music', hardware: ['ay8910']},
@@ -57,6 +57,6 @@ describe(toReleaseFormValues, () => {
             releaseDate: toReleaseDate('1990-03-01'),
             description: null,
             hardware: [AY],
-        })).toStrictEqual({title: '', version: '1.1', type: 'mod', releaseDate: '1990-03-01', description: '', hardware: ['ay8910']});
+        })).toStrictEqual({title: '', version: '1.1', type: 'mod', releaseDate: '01.03.1990', description: '', hardware: ['ay8910']});
     });
 });

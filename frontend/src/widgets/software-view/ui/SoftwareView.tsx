@@ -2,7 +2,7 @@ import {Fragment, type ReactNode, useId} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
     HardwareList,
-    releaseDayText,
+    releaseDateText,
     releaseEditPath,
     releaseYear,
     releaseNewPath,
@@ -73,16 +73,16 @@ function LoadedView({id}: SoftwareViewProps) {
 }
 
 function Details({software}: {readonly software: SoftwareDetails}) {
-    const {t, i18n} = useTranslation();
+    const {t} = useTranslation();
     const lines = software.description?.split('\n').filter((line) => line.trim() !== '') ?? [];
     return (
         <Stack gap="lg">
             <Section label={t('fields.platform')}><Text>{software.platform.name}</Text></Section>
             {software.releaseDate !== null && (
-                <Section label={t('software.released')}>
+                <Section label={t('fields.releaseDate')}>
                     <Text>
                         <TextLink href={catalogHrefOf({year: releaseYear(software.releaseDate)})}>
-                            {releaseDayText(software.releaseDate, i18n.resolvedLanguage ?? 'en')}
+                            {releaseDateText(software.releaseDate)}
                         </TextLink>
                     </Text>
                 </Section>

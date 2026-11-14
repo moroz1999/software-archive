@@ -4,7 +4,7 @@
 }
 
 /* Fixed column widths: the title takes the rest. */
-.yearColumn { width: var(--software-releases-year-column-width); }
+.dateColumn { width: var(--software-releases-date-column-width); }
 .versionColumn { width: var(--software-releases-version-column-width); }
 .typeColumn { width: var(--software-releases-type-column-width); }
 .hardwareColumn { width: var(--software-releases-hardware-column-width); }
@@ -31,8 +31,8 @@
     height: var(--software-releases-body-line);
 }
 
-.yearBone {
-    width: var(--software-releases-year-bone-width);
+.dateBone {
+    width: var(--software-releases-date-bone-width);
     height: var(--software-releases-cell-line);
 }
 

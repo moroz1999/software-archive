@@ -3,7 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {
     HardwareList,
     fileSizeText,
-    releaseDayText,
+    releaseDateText,
     releaseEditPath,
     type ReleaseId,
     ScreenshotsProvider,
@@ -42,7 +42,7 @@ export function ReleaseView({softwareId, releaseId}: ReleaseViewProps) {
 }
 
 function LoadedView({softwareId, releaseId}: ReleaseViewProps) {
-    const {t, i18n} = useTranslation();
+    const {t} = useTranslation();
     const software = useSoftwareDetails();
     const releases = useSoftwareReleases();
     const softwareSkeleton = useSkeleton(software);
@@ -71,8 +71,8 @@ function LoadedView({softwareId, releaseId}: ReleaseViewProps) {
                         <Text><TextLink href={softwarePath(softwareId)}>{software.data.title}</TextLink></Text>
                     </Section>
                     {release.releaseDate !== null && (
-                        <Section label={t('software.released')}>
-                            <Text>{releaseDayText(release.releaseDate, i18n.resolvedLanguage ?? 'en')}</Text>
+                        <Section label={t('fields.releaseDate')}>
+                            <Text>{releaseDateText(release.releaseDate)}</Text>
                         </Section>
                     )}
                     {release.version !== null && <Section label={t('fields.version')}><Text>{release.version}</Text></Section>}

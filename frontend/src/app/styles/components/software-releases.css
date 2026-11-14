@@ -1,6 +1,6 @@
 :root {
     /* Fixed widths of the supporting fact columns; the title and actions follow their content. */
-    --software-releases-year-column-width: 64px;
+    --software-releases-date-column-width: 112px;
     --software-releases-version-column-width: 88px;
     --software-releases-type-column-width: 120px;
     --software-releases-hardware-column-width: 30%;
@@ -23,9 +23,9 @@
     --software-releases-card-title-line: calc(var(--font-size-lg) * var(--line-height-heading));
     --software-releases-facts-line: calc(var(--font-size-sm) * var(--line-height-compact));
 
-    /* Bone widths: like a typical title, year, version, hardware name and the facts of a card. */
+    /* Bone widths: like a typical title, release date, version, hardware name and the facts of a card. */
     --software-releases-title-bone-width: 60%;
-    --software-releases-year-bone-width: var(--space-32);
+    --software-releases-date-bone-width: var(--space-64);
     --software-releases-version-bone-width: var(--space-24);
     --software-releases-hardware-bone-width: 72px;
     --software-releases-card-title-bone-width: 60%;

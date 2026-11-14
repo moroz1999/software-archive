@@ -74,7 +74,7 @@ describe('release view routes', () => {
 
         await expect(screen.findByRole('heading', {level: 1, name: 'Elite AY'})).resolves.toBeInTheDocument();
         expect(screen.getByRole('link', {name: 'Elite'})).toHaveAttribute('href', `/software/${SOFTWARE_ID}`);
-        expect(screen.getByText('5 October 1985')).toBeInTheDocument();
+        expect(screen.getByText('05.10.1985')).toBeInTheDocument();
         expect(screen.getByText('1.1')).toBeInTheDocument();
         expect(screen.getByText('Mod')).toBeInTheDocument();
     });

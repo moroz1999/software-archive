@@ -60,6 +60,11 @@ function stubFetch(details: () => Response, releases: () => Response = json([AY_
     ]));
 }
 
+/** The labels of the details of the software: the releases table below has headers of its own. */
+function detailLabels(text: string) {
+    return screen.queryAllByText(text).filter((element) => element.closest('table') === null);
+}
+
 function renderView(id: string) {
     renderWithQueries(<CurrentUserProvider><MemoryRouter><SoftwareView id={toSoftwareId(id)}/></MemoryRouter></CurrentUserProvider>);
 }
@@ -89,7 +94,8 @@ describe(SoftwareView, () => {
         renderView(ID);
 
         await expect(screen.findByRole('heading', {level: 1, name: 'Elite'})).resolves.toBeInTheDocument();
-        expect(screen.getByText('20 September 1984')).toBeInTheDocument();
+        expect(detailLabels('Release date')).toHaveLength(1);
+        expect(screen.getByText('20.09.1984')).toBeInTheDocument();
         expect(screen.getByText('Space trading')).toBeInTheDocument();
         expect(screen.getByText('and combat')).toBeInTheDocument();
     });
@@ -173,7 +179,7 @@ describe(SoftwareView, () => {
         stubFetch(json(ELITE));
         renderView(ID);
 
-        await expect(screen.findByRole('link', {name: '20 September 1984'})).resolves.toHaveAttribute('href', '/software?year=1984');
+        await expect(screen.findByRole('link', {name: '20.09.1984'})).resolves.toHaveAttribute('href', '/software?year=1984');
     });
 
     it('leads from every category of a branch to the catalog of that category', async () => {
@@ -225,7 +231,7 @@ describe(SoftwareView, () => {
 
         await screen.findByRole('heading', {level: 1, name: 'Elite'});
 
-        expect(screen.queryByText('Released')).not.toBeInTheDocument();
+        expect(detailLabels('Release date')).toHaveLength(0);
     });
 
     it('hands a business error to the error dialog and shows nothing of its own', async () => {

@@ -17,7 +17,7 @@ export {
     softwareEditPath,
     softwarePath,
 } from './config/paths';
-export {releaseDayText} from './lib/release-day';
+export {releaseDateText} from './lib/release-date';
 export {releaseYear} from './lib/release-year';
 export {type ReleaseDetails, type ReleaseId, type ReleaseType, requireReleaseId, type SoftwareRelease, toReleaseId} from './model/release';
 export {fileSizeText, type ReleaseArchive, RELEASE_ARCHIVE_MAX_BYTES, releaseArchiveProblem} from './model/release-archive';

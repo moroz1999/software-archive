@@ -6,7 +6,7 @@ The page of one release ([domain/software.md](../domain/software.md#releases)) a
 
 - The release title is the page heading. "Edit" leads to its editing page when the visitor may change the release.
 - The software is named first and links back to its page.
-- Release date (a year as it is, a day in words), version and description are left out when unknown. Description lines stay separate.
+- Release date (a year, or a day as dd.mm.yyyy), version and description are left out when unknown. Description lines stay separate.
 - Type is always shown. Hardware is the effective hardware returned for the release, grouped in the archive's fixed hardware-group order.
 - When the release has an archive, its original file name and size are shown with a download action.
 - The release's screenshots appear in their gallery below the facts and are left out when there are none ([screenshots.md](screenshots.md#pages)).

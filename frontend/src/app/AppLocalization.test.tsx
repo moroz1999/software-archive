@@ -89,7 +89,7 @@ describe('UI localization', () => {
         expect(screen.getByRole('button', {name: 'Повторить'})).toBeInTheDocument();
     });
 
-    it('formats archive dates in the UI language', async () => {
+    it('labels the release date in the UI language and writes it as dd.mm.yyyy in any', async () => {
         localStorage.setItem('archive.language', 'ru');
         window.history.replaceState(null, '', `/software/${SOFTWARE_ID}`);
         stubFetchRoutes(new Map([
@@ -117,7 +117,7 @@ describe('UI localization', () => {
 
         await screen.findByRole('heading', {level: 1, name: 'Elite'});
 
-        expect(screen.getByText('Выпущено')).toBeInTheDocument();
-        expect(screen.getByText('2 марта 1985 г.')).toBeInTheDocument();
+        expect(screen.getAllByText('Дата выпуска').length).toBeGreaterThan(0);
+        expect(screen.getByText('02.03.1985')).toBeInTheDocument();
     });
 });

@@ -36,7 +36,7 @@ describe('SoftwareViewPage', () => {
 
         await screen.findByRole('heading', {level: 1, name: 'Elite'});
 
-        expect(screen.getByText('20 September 1984')).toBeInTheDocument();
+        expect(screen.getByText('20.09.1984')).toBeInTheDocument();
         expect(screen.queryByTestId('software-view-skeleton')).not.toBeInTheDocument();
     });
 

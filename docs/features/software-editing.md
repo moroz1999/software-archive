@@ -12,7 +12,7 @@ Adding, editing and deleting software ([domain/software.md](../domain/software.m
 
 ## Form
 
-- Fields: Title (required, at most 255 characters), Platform (required, chosen from the archive's platforms; a new form starts with the platform of the switch, [platform-switch.md](platform-switch.md)), Description (multi-line), Release date (a year or a day, one text field with a hint: `1987` or `1987-05-12`).
+- Fields: Title (required, at most 255 characters), Platform (required, chosen from the archive's platforms; a new form starts with the platform of the switch, [platform-switch.md](platform-switch.md)), Description (multi-line), Release date (a year or a day, one text field with a hint: `1987` or `12.05.1987`; the API keeps the ISO day).
 - Hardware: once a platform is chosen, its hardware by group, picked with the same picker as a release's ([design-system/multi-select-filter.md](../design-system/multi-select-filter.md)); a skeleton while it loads.
 - Categories: under the hardware, the whole tree of categories ([domain/categories.md](../domain/categories.md)) to check any number in, none included ([design-system/tree-checklist.md](../design-system/tree-checklist.md)); a skeleton while it loads.
 - Publishers and developer companies are remote multi-selects: typing searches the current people, groups and aliases, and each choice stays as a removable chip. Publishers offer people and groups; developer companies offer groups only. Choosing an alias preserves that exact alias rather than changing it to its owner's display name.

@@ -15,7 +15,7 @@ Every page returns to the software's page once done. The editing page has the re
 
 ## Form
 
-- Title (empty: the release is called by its software's title, at most 255 characters), Version (at most 50), Type (required, the fixed list), Release date (a year or a day, one text field with a hint: `1987` or `1987-05-12`), Description.
+- Title (empty: the release is called by its software's title, at most 255 characters), Version (at most 50), Type (required, the fixed list), Release date (a year or a day, one text field with a hint: `1987` or `12.05.1987`; the API keeps the ISO day), Description.
 - Hardware: the hardware of the software's platform, by group, in the picker the software form uses too ([design-system/multi-select-filter.md](../design-system/multi-select-filter.md)). The form holds only the release's own hardware, not what it shows merged with the software's; a group checked here replaces that group of the software.
 - Archive: one optional file of any type, up to 100 MB. The editing form shows its current original name and size and offers replacement or removal. The chosen archive change is saved atomically with the other fields ([release-files.md](release-files.md)).
 - Format errors, refusals under their fields, locking while saving: as in the software form ([software-editing.md](software-editing.md#form)).

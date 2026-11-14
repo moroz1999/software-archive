@@ -17,9 +17,9 @@ Software (a production) is a release of a program: the work itself, as it is kno
 
 ## Release dates
 The release date of software and of a release is a year, or a day of that year when the day is known: most often only the year is known, and a year is never turned into a made-up day. It may also be unknown.
-- It is written as the year, 1987, or as the day, 1987-05-12.
+- It is written as the year, 1987, or as the day, 12.05.1987 (day.month.year), the same in every language.
 - Dates are ordered by year, oldest first; within a year the ones known only by the year come before those with a day; unknown dates come last.
-- A year alone is shown as it is; a day, with its month in words.
+- It is labelled "Release date" wherever it is shown, and shown whole: the year, or the day. Only the card of software in a list shows the year alone ([Card](#card)).
 
 ## Releases
 A release (a version) is a version of the software. It never lives apart from its software.

@@ -4,7 +4,7 @@ import {toSoftwareFormValues, validateSoftwareForm} from './software-form';
 
 describe(validateSoftwareForm, () => {
     it('turns filled values into a draft', () => {
-        expect(validateSoftwareForm({title: 'Elite', description: 'Space trading', releaseDate: '1985-09-20', platform: 'vector', hardware: [], categories: []})).toStrictEqual({
+        expect(validateSoftwareForm({title: 'Elite', description: 'Space trading', releaseDate: '20.09.1985', platform: 'vector', hardware: [], categories: []})).toStrictEqual({
             ok: true,
             draft: {title: 'Elite', description: 'Space trading', releaseDate: '1985-09-20', platform: 'vector', hardware: [], categories: [], publishers: [], developers: [], credits: []},
         });
@@ -34,6 +34,15 @@ describe(validateSoftwareForm, () => {
 
     it('requires a platform', () => {
         expect(validateSoftwareForm({title: 'Elite', description: '', releaseDate: '', platform: '', hardware: [], categories: []})).toStrictEqual({ok: false, errors: {platform: 'required'}});
+    });
+
+    it('takes a day only as dd.mm.yyyy, and only a day of the calendar', () => {
+        for (const releaseDate of ['1985-09-20', '31.02.1985', '1.9.1985']) {
+            expect(validateSoftwareForm({title: 'Elite', description: '', releaseDate, platform: 'vector', hardware: [], categories: []})).toStrictEqual({
+                ok: false,
+                errors: {releaseDate: 'invalid'},
+            });
+        }
     });
 
     it('names every problem at once', () => {
@@ -68,7 +77,7 @@ describe(toSoftwareFormValues, () => {
             platform: {code: toSoftwarePlatformCode('bk'), name: 'BK'},
             hardware: [],
             categories: [],
-        })).toStrictEqual({title: 'Elite', description: '', releaseDate: '1985-09-20', platform: 'bk', hardware: [], categories: [], publishers: [], developers: [], credits: []});
+        })).toStrictEqual({title: 'Elite', description: '', releaseDate: '20.09.1985', platform: 'bk', hardware: [], categories: [], publishers: [], developers: [], credits: []});
     });
 
     it('holds the codes of the hardware of the software', () => {

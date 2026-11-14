@@ -15,7 +15,7 @@ import {Heading, Text, TextLink} from '@/shared/ui/typography';
 import {CardGrid} from '@/shared/ui/card-grid';
 import {CardScreenshots} from '@/shared/ui/card-screenshots';
 import {releasePath} from '../config/paths';
-import {releaseYear} from '../lib/release-year';
+import {releaseDateText} from '../lib/release-date';
 import type {ReleaseType, SoftwareRelease} from '../model/release';
 import {fileSizeText, type ReleaseArchive} from '../model/release-archive';
 import type {SoftwareId} from '../model/software';
@@ -30,7 +30,7 @@ export interface SoftwareReleasesProps {
 }
 
 type View = 'table' | 'cards';
-type SortField = 'title' | 'year';
+type SortField = 'title' | 'date';
 
 interface Sort {
     readonly field: SortField;
@@ -78,7 +78,7 @@ function ReleaseList({softwareId, releases, actions}: ReleaseListProps) {
             if (current?.field === field) {
                 return {field, direction: current.direction === 'ascending' ? 'descending' : 'ascending'};
             }
-            // Titles read from A, years from the newest.
+            // Titles read from A, dates from the newest.
             return {field, direction: field === 'title' ? 'ascending' : 'descending'};
         });
     }
@@ -113,7 +113,7 @@ function ReleaseList({softwareId, releases, actions}: ReleaseListProps) {
     );
 }
 
-/** The releases in the order asked for; a release of unknown year comes last either way. */
+/** The releases in the order asked for; a release of unknown date comes last either way. */
 function sorted(releases: readonly SoftwareRelease[], sort: Sort | null): readonly SoftwareRelease[] {
     if (sort === null) {
         return releases;
@@ -148,7 +148,7 @@ function ReleaseHeader({withActions, sort = null, onSort}: ReleaseHeaderProps) {
         <TableHead>
             <TableRow>
                 <TableHeaderCell {...sortProps(sort, 'title', onSort)}>{t('fields.title')}</TableHeaderCell>
-                <TableHeaderCell align="center" className={styles.yearColumn} {...sortProps(sort, 'year', onSort)}>{t('release.year')}</TableHeaderCell>
+                <TableHeaderCell align="center" className={styles.dateColumn} {...sortProps(sort, 'date', onSort)}>{t('fields.releaseDate')}</TableHeaderCell>
                 <TableHeaderCell align="center" className={styles.versionColumn}>{t('fields.version')}</TableHeaderCell>
                 <TableHeaderCell className={styles.typeColumn}>{t('fields.type')}</TableHeaderCell>
                 <TableHeaderCell className={styles.hardwareColumn}>{t('fields.hardware')}</TableHeaderCell>
@@ -195,7 +195,7 @@ function ReleaseTable({softwareId, releases, actions, sort, onSort}: ReleaseTabl
                                 </Stack>
                             </Inline>
                         </TableCell>
-                        <TableCell align="center">{release.releaseDate === null ? null : releaseYear(release.releaseDate)}</TableCell>
+                        <TableCell align="center">{release.releaseDate === null ? null : releaseDateText(release.releaseDate)}</TableCell>
                         <TableCell align="center">{release.version}</TableCell>
                         <TableCell><TypeBadge type={release.type}/></TableCell>
                         <TableCell>
@@ -241,7 +241,7 @@ function ReleaseCard({softwareId, release, actions}: ReleaseCardProps) {
     const {t} = useTranslation();
     const titleId = useId();
     const facts = [
-        release.releaseDate === null ? null : String(releaseYear(release.releaseDate)),
+        release.releaseDate === null ? null : releaseDateText(release.releaseDate),
         release.version === null ? null : t('release.versionFact', {version: release.version}),
     ].filter((fact) => fact !== null);
     return (
@@ -303,7 +303,7 @@ function SoftwareReleasesSkeleton({withActions}: {readonly withActions: boolean}
                                 {SKELETON_ROWS.map((row) => (
                                     <TableRow key={row}>
                                         <TableCell><Skeleton className={styles.titleBone}/></TableCell>
-                                        <TableCell align="center"><Skeleton inline className={styles.yearBone}/></TableCell>
+                                        <TableCell align="center"><Skeleton inline className={styles.dateBone}/></TableCell>
                                         <TableCell align="center"><Skeleton inline className={styles.versionBone}/></TableCell>
                                         <TableCell><Skeleton inline className={styles.badgeBone}/></TableCell>
                                         <TableCell>

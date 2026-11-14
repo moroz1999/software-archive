@@ -23,7 +23,7 @@ export const resources = {
             withCount: '{{label}} ({{count}})',
         },
         fields: {
-            title: 'Title', platform: 'Platform', description: 'Description', releaseDate: 'Release date', releaseDateHint: 'A year, such as 1987, or a day, such as 1987-05-12.', version: 'Version',
+            title: 'Title', platform: 'Platform', description: 'Description', releaseDate: 'Release date', releaseDateHint: 'A year, such as 1987, or a day, such as 12.05.1987.', version: 'Version',
             type: 'Type', hardware: 'Hardware', categories: 'Categories', publishers: 'Publishers', developers: 'Developers', credits: 'Credits',
             choosePlatform: 'Choose a platform', chooseType: 'Choose a type',
             platformLocked: 'Remove the hardware to change the platform.',
@@ -135,7 +135,7 @@ export const resources = {
         release: {
             add: 'Add release', addTo: 'Add release to {{title}}', edit: 'Edit release', editOf: 'Edit release of {{title}}',
             delete: 'Delete release', releases: 'Releases', noReleases: 'No releases known yet.', view: 'View', table: 'Table',
-            deleteQuestion: 'Delete the release {{name}} from the archive?', cards: 'Cards', allTypes: 'All', year: 'Year',
+            deleteQuestion: 'Delete the release {{name}} from the archive?', cards: 'Cards', allTypes: 'All',
             versionFact: 'Version {{version}}', editNamed: 'Edit {{title}}', software: 'Software',
             hardwareHint: 'A group checked here replaces that group of the software.',
             archive: 'Archive', addArchive: 'Add archive', replaceArchive: 'Replace archive', removeArchive: 'Remove archive',
@@ -154,7 +154,7 @@ export const resources = {
             parent: 'Parent', top: 'None, at the top', expand: 'Expand {{name}}', collapse: 'Collapse {{name}}', delete: 'Delete category',
             deleteQuestion: 'Delete “{{title}}” with all its subcategories? Their software stays in the archive and only leaves them.',
         },
-        software: {delete: 'Delete software', deleteQuestion: 'Delete “{{title}}” from the archive?', released: 'Released', source: 'Source'},
+        software: {delete: 'Delete software', deleteQuestion: 'Delete “{{title}}” from the archive?', source: 'Source'},
         screenshots: {
             heading: 'Screenshots', numbered: 'Screenshot {{n}}', nOfCount: 'Screenshot {{n}} of {{count}}',
             previous: 'Previous screenshot', next: 'Next screenshot', none: 'No screenshots yet.', add: 'Add screenshots',
@@ -194,7 +194,7 @@ export const resources = {
             withCount: '{{label}} ({{count}})',
         },
         fields: {
-            title: 'Название', platform: 'Платформа', description: 'Описание', releaseDate: 'Дата выпуска', releaseDateHint: 'Год, например 1987, или день, например 1987-05-12.', version: 'Версия',
+            title: 'Название', platform: 'Платформа', description: 'Описание', releaseDate: 'Дата выпуска', releaseDateHint: 'Год, например 1987, или день, например 12.05.1987.', version: 'Версия',
             type: 'Тип', hardware: 'Оборудование', categories: 'Категории', publishers: 'Издатели', developers: 'Разработчики', credits: 'Авторы',
             choosePlatform: 'Выберите платформу', chooseType: 'Выберите тип',
             platformLocked: 'Удалите оборудование, чтобы изменить платформу.',
@@ -311,7 +311,7 @@ export const resources = {
             add: 'Добавить релиз', addTo: 'Добавить релиз для {{title}}', edit: 'Редактировать релиз',
             editOf: 'Редактировать релиз {{title}}', delete: 'Удалить релиз', releases: 'Релизы',
             noReleases: 'Сведения о релизах пока отсутствуют.', view: 'Вид', table: 'Таблица', cards: 'Карточки', allTypes: 'Все',
-            deleteQuestion: 'Удалить релиз {{name}} из архива?', year: 'Год', versionFact: 'Версия {{version}}',
+            deleteQuestion: 'Удалить релиз {{name}} из архива?', versionFact: 'Версия {{version}}',
             editNamed: 'Редактировать {{title}}', software: 'Программа',
             hardwareHint: 'Выбранная здесь группа заменяет соответствующую группу оборудования программы.',
             archive: 'Архив', addArchive: 'Добавить архив', replaceArchive: 'Заменить архив', removeArchive: 'Удалить архив',
@@ -330,7 +330,7 @@ export const resources = {
             parent: 'Родитель', top: 'Нет, на верхнем уровне', expand: 'Раскрыть {{name}}', collapse: 'Свернуть {{name}}', delete: 'Удалить категорию',
             deleteQuestion: 'Удалить «{{title}}» со всеми подкатегориями? Их программы останутся в архиве и только покинут эти категории.',
         },
-        software: {delete: 'Удалить программу', deleteQuestion: 'Удалить «{{title}}» из архива?', released: 'Выпущено', source: 'Источник'},
+        software: {delete: 'Удалить программу', deleteQuestion: 'Удалить «{{title}}» из архива?', source: 'Источник'},
         screenshots: {
             heading: 'Скриншоты', numbered: 'Скриншот {{n}}', nOfCount: 'Скриншот {{n}} из {{count}}',
             previous: 'Предыдущий скриншот', next: 'Следующий скриншот', none: 'Скриншотов пока нет.', add: 'Добавить скриншоты',

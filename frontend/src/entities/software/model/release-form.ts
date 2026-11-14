@@ -1,6 +1,7 @@
 import {type TitleProblem, titleProblem} from '@/shared/lib/title';
 import {type ReleaseDetails, type ReleaseType, toReleaseType} from './release';
-import {isReleaseDate, type ReleaseDate, toReleaseDate} from './software';
+import {parseReleaseDateText, releaseDateField} from '../lib/release-date';
+import type {ReleaseDate} from './software';
 
 /** The longest version of a release (docs/domain/software.md). */
 export const RELEASE_VERSION_MAX_LENGTH = 50;
@@ -48,7 +49,8 @@ export function validateReleaseForm(values: ReleaseFormValues): ReleaseFormResul
     const title = values.title.trim() === '' ? null : titleProblem(values.title);
     const versionTooLong = values.version.length > RELEASE_VERSION_MAX_LENGTH;
     const typeMissing = values.type === '';
-    const releaseDateInvalid = values.releaseDate !== '' && !isReleaseDate(values.releaseDate);
+    const releaseDate = values.releaseDate === '' ? null : parseReleaseDateText(values.releaseDate);
+    const releaseDateInvalid = values.releaseDate !== '' && releaseDate === null;
     if (title === 'too-long' || versionTooLong || typeMissing || releaseDateInvalid) {
         return {
             ok: false,
@@ -66,7 +68,7 @@ export function validateReleaseForm(values: ReleaseFormValues): ReleaseFormResul
             title: orNull(values.title),
             version: orNull(values.version),
             type: toReleaseType(values.type),
-            releaseDate: values.releaseDate === '' ? null : toReleaseDate(values.releaseDate),
+            releaseDate,
             description: orNull(values.description),
             hardware: values.hardware,
         },
@@ -84,7 +86,7 @@ export function toReleaseFormValues(release?: ReleaseDetails): ReleaseFormValues
         title: release?.title ?? '',
         version: release?.version ?? '',
         type: release?.type ?? 'unknown',
-        releaseDate: release?.releaseDate ?? '',
+        releaseDate: releaseDateField(release?.releaseDate),
         description: release?.description ?? '',
         hardware: release?.hardware.map((item) => item.code) ?? [],
     };

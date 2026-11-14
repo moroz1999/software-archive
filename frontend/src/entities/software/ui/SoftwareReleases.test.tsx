@@ -62,8 +62,8 @@ describe(SoftwareReleases, () => {
 
         const table = await screen.findByRole('table', {name: 'Releases'});
 
-        expect(within(table).getAllByRole('columnheader').map((header) => header.textContent).slice(0, 6)).toStrictEqual(['Title', 'Year', 'Version', 'Type', 'Hardware', 'Archive']);
-        expect(within(table).getAllByRole('row')[1]).toHaveTextContent(/Elite AY.*With AY music.*1990.*1\.1.*Mod.*Vector-06C.*AY-3-8910.*Edit Elite AY/);
+        expect(within(table).getAllByRole('columnheader').map((header) => header.textContent).slice(0, 6)).toStrictEqual(['Title', 'Release date', 'Version', 'Type', 'Hardware', 'Archive']);
+        expect(within(table).getAllByRole('row')[1]).toHaveTextContent(/Elite AY.*With AY music.*01\.03\.1990.*1\.1.*Mod.*Vector-06C.*AY-3-8910.*Edit Elite AY/);
     });
 
     it('keeps the order the releases come in until asked to sort', async () => {
@@ -101,10 +101,10 @@ describe(SoftwareReleases, () => {
         stubFetch(json([ORIGINAL, FIX, AY_MOD]));
         renderReleases();
 
-        await userEvent.click(await screen.findByRole('button', {name: 'Year'}));
+        await userEvent.click(await screen.findByRole('button', {name: 'Release date'}));
 
         expect(rowTitles()).toStrictEqual(['Elite AY', 'Elite Fix', 'Elite']);
-        expect(screen.getByRole('columnheader', {name: 'Year'})).toHaveAttribute('aria-sort', 'descending');
+        expect(screen.getByRole('columnheader', {name: 'Release date'})).toHaveAttribute('aria-sort', 'descending');
     });
 
     it('shows the releases of one type', async () => {
@@ -138,7 +138,7 @@ describe(SoftwareReleases, () => {
         const card = screen.getByRole('article', {name: 'Elite AY'}).textContent;
 
         expect(screen.queryByRole('table')).not.toBeInTheDocument();
-        expect(['Mod', '1990', '1.1', 'With AY music', 'Vector-06C', 'AY-3-8910', 'Edit Elite AY'].filter((fact) => !card.includes(fact))).toStrictEqual([]);
+        expect(['Mod', '01.03.1990', '1.1', 'With AY music', 'Vector-06C', 'AY-3-8910', 'Edit Elite AY'].filter((fact) => !card.includes(fact))).toStrictEqual([]);
         expect(screen.getByRole('article', {name: 'Elite'})).toBeInTheDocument();
     });
 
@@ -200,7 +200,7 @@ describe(SoftwareReleases, () => {
 
         const skeleton = screen.getByTestId('software-releases-skeleton');
 
-        expect(within(skeleton).getAllByRole('columnheader', {hidden: true}).map((header) => header.textContent)).toStrictEqual(['Title', 'Year', 'Version', 'Type', 'Hardware', 'Archive', '']);
+        expect(within(skeleton).getAllByRole('columnheader', {hidden: true}).map((header) => header.textContent)).toStrictEqual(['Title', 'Release date', 'Version', 'Type', 'Hardware', 'Archive', '']);
         expect(within(skeleton).getAllByRole('row', {hidden: true})).toHaveLength(4);
     });
 

@@ -33,7 +33,7 @@ describe(ReleaseForm, () => {
         await userEvent.type(screen.getByRole('textbox', {name: 'Title'}), 'Elite AY');
         await userEvent.type(screen.getByRole('textbox', {name: 'Version'}), '1.1');
         await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Type'}), 'Mod');
-        await userEvent.type(screen.getByLabelText('Release date'), '1990-03-01');
+        await userEvent.type(screen.getByLabelText('Release date'), '01.03.1990');
         await userEvent.type(screen.getByRole('textbox', {name: 'Description'}), 'With AY music');
         await userEvent.click(screen.getByRole('checkbox', {name: 'AY-3-8910'}));
         await userEvent.click(screen.getByRole('button', {name: 'Save'}));
@@ -46,7 +46,7 @@ describe(ReleaseForm, () => {
     it('takes a year alone as the release date and tells how to write one', async () => {
         const {onSubmit} = renderForm();
 
-        expect(screen.getByText('A year, such as 1987, or a day, such as 1987-05-12.')).toBeInTheDocument();
+        expect(screen.getByText('A year, such as 1987, or a day, such as 12.05.1987.')).toBeInTheDocument();
 
         await userEvent.type(screen.getByRole('textbox', {name: 'Release date'}), '2026');
         await userEvent.click(screen.getByRole('button', {name: 'Save'}));

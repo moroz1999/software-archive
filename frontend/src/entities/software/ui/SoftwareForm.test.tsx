@@ -69,7 +69,7 @@ describe(SoftwareForm, () => {
 
         await userEvent.type(screen.getByRole('textbox', {name: 'Title'}), 'Elite');
         await userEvent.type(screen.getByRole('textbox', {name: 'Description'}), 'Space trading');
-        await userEvent.type(screen.getByLabelText('Release date'), '1985-09-20');
+        await userEvent.type(screen.getByLabelText('Release date'), '20.09.1985');
         await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Platform'}), 'BK');
         await userEvent.click(screen.getByRole('button', {name: 'Save'}));
 
@@ -89,7 +89,7 @@ describe(SoftwareForm, () => {
     it('takes a year alone as the release date and tells how to write one', async () => {
         const {onSubmit} = renderForm();
 
-        expect(screen.getByText('A year, such as 1987, or a day, such as 1987-05-12.')).toBeInTheDocument();
+        expect(screen.getByText('A year, such as 1987, or a day, such as 12.05.1987.')).toBeInTheDocument();
 
         await userEvent.type(screen.getByRole('textbox', {name: 'Title'}), 'Elite');
         await userEvent.type(screen.getByRole('textbox', {name: 'Release date'}), '1985');
@@ -166,10 +166,10 @@ describe(SoftwareForm, () => {
     });
 
     it('starts from the given values', () => {
-        renderForm({initial: {title: 'Elite', description: '', releaseDate: '1985-09-20', platform: 'bk', hardware: [], categories: []}});
+        renderForm({initial: {title: 'Elite', description: '', releaseDate: '20.09.1985', platform: 'bk', hardware: [], categories: []}});
 
         expect(screen.getByRole('textbox', {name: 'Title'})).toHaveValue('Elite');
-        expect(screen.getByLabelText('Release date')).toHaveValue('1985-09-20');
+        expect(screen.getByLabelText('Release date')).toHaveValue('20.09.1985');
         expect(screen.getByRole('combobox', {name: 'Platform'})).toHaveValue('bk');
     });
 

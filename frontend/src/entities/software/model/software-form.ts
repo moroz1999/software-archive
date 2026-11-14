@@ -1,12 +1,11 @@
 import {type TitleProblem, titleProblem} from '@/shared/lib/title';
+import {parseReleaseDateText, releaseDateField} from '../lib/release-date';
 import {
-    isReleaseDate,
     type ReleaseDate,
     type SoftwareDetails,
     type SoftwarePlatformCode,
     type SoftwareReference,
     type SoftwareTitle,
-    toReleaseDate,
     toSoftwarePlatformCode,
     toSoftwareTitle,
 } from './software';
@@ -63,7 +62,8 @@ export type SoftwareFormResult =
  */
 export function validateSoftwareForm(values: SoftwareFormValues): SoftwareFormResult {
     const title = titleProblem(values.title);
-    const releaseDateInvalid = values.releaseDate !== '' && !isReleaseDate(values.releaseDate);
+    const releaseDate = values.releaseDate === '' ? null : parseReleaseDateText(values.releaseDate);
+    const releaseDateInvalid = values.releaseDate !== '' && releaseDate === null;
     const platformMissing = values.platform === '';
     if (title !== null || releaseDateInvalid || platformMissing) {
         return {
@@ -81,7 +81,7 @@ export function validateSoftwareForm(values: SoftwareFormValues): SoftwareFormRe
         draft: {
             title: toSoftwareTitle(values.title),
             description: description === '' ? null : values.description,
-            releaseDate: values.releaseDate === '' ? null : toReleaseDate(values.releaseDate),
+            releaseDate,
             platform: toSoftwarePlatformCode(values.platform),
             hardware: values.hardware,
             categories: values.categories,
@@ -97,7 +97,7 @@ export function toSoftwareFormValues(software?: SoftwareDetails): SoftwareFormVa
     return {
         title: software?.title ?? '',
         description: software?.description ?? '',
-        releaseDate: software?.releaseDate ?? '',
+        releaseDate: releaseDateField(software?.releaseDate),
         platform: software?.platform.code ?? '',
         hardware: software?.hardware.map((item) => item.code) ?? [],
         categories: software?.categories.map((category) => category.id) ?? [],
