@@ -70,7 +70,8 @@ describe('ManagementUsersPage', () => {
 
         expect(management.getByRole('link', {name: 'Users'})).toHaveAttribute('aria-current', 'page');
         expect(management.getByRole('link', {name: 'Categories'})).toHaveAttribute('href', '/management/categories');
-        expect(management.getAllByRole('link')).toHaveLength(2);
+        expect(management.getByRole('link', {name: 'Imports'})).toHaveAttribute('href', '/management/imports');
+        expect(management.getAllByRole('link')).toHaveLength(3);
     });
 
     it('offers to change the groups of every confirmed user', async () => {

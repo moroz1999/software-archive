@@ -4,8 +4,8 @@ A backend command that takes the software of vektor-06c.ru into the archive ([do
 
 ## Running
 
-- An administrator starts it on the running backend; with a section code it imports that section only. Production runs it once on an empty archive, whole; locally a small section is enough to try it:
-  `curl -X POST -b "access_token=<cookie of a signed-in administrator>" "http://localhost:8080/api/imports/vektor?section=zagruzchiki"`
+- An administrator starts it on the Imports tab of management (`/management/imports`, `features/import/vektor`): the whole site, or one section chosen by the code in its address. The sections offered are those the import places in categories, so the list is kept in one place, `VektorSections`. Production runs it once on an empty archive, whole; locally a small section is enough to try it.
+- The tab says the import has started, or why it could not: another run is going on, or the user is not an administrator. How the run ended is told by the backend log only.
 - A run takes far longer than a request waits, so it goes to the application's pool of background threads (`applicationTaskExecutor`, not the scheduler of the search worker) and the request is answered at once. Only one run goes at a time; restarting the backend stops a run, and the next run takes up what is left.
 - The run ends with a summary in the log: added, already added, left out (PC utilities), failed. A failed program is logged with its id, address and cause. What it added reaches the search through the outbox like any other change.
 
@@ -13,6 +13,7 @@ A backend command that takes the software of vektor-06c.ru into the archive ([do
 
 | Call | Answer | Errors |
 |---|---|---|
+| `GET /api/imports/vektor/sections` | `["3d-programmy", …]`: the codes of the sections to choose from, in alphabetical order | `401 auth.required`; `403 access.denied` for anybody but an administrator |
 | `POST /api/imports/vektor[?section=<code>]` | `202` once the run is started | `401 auth.required`; `403 access.denied` for anybody but an administrator; `409 import.running` while a run goes on |
 
 ## Rerunning

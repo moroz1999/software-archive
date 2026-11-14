@@ -3,10 +3,14 @@ package com.archive.backend.importer.web;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.archive.backend.importer.app.ListVektorSectionsHandler;
+import com.archive.backend.importer.app.ListVektorSectionsQuery;
 import com.archive.backend.importer.app.StartVektorImportCommand;
 import com.archive.backend.importer.app.StartVektorImportHandler;
 import com.archive.backend.importer.domain.ImportRunningException;
@@ -17,6 +21,7 @@ import com.archive.backend.shared.web.ApiExceptionHandler;
 import com.archive.backend.user.domain.Actor;
 import com.archive.backend.user.domain.ChangeForbiddenException;
 import com.archive.backend.user.domain.SignInRequiredException;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -33,6 +38,27 @@ class ImportControllerTest {
 
     @MockitoBean
     private StartVektorImportHandler startHandler;
+
+    @MockitoBean
+    private ListVektorSectionsHandler sectionsHandler;
+
+    @Test
+    void listsTheSectionsToImportByTheirCodes() throws Exception {
+        when(sectionsHandler.handle(new ListVektorSectionsQuery(Actor.anonymous())))
+                .thenReturn(List.of("arkadnye-igry", "zagruzchiki"));
+
+        mvc.perform(get("/api/imports/vektor/sections"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0]").value("arkadnye-igry"))
+                .andExpect(jsonPath("$[1]").value("zagruzchiki"));
+    }
+
+    @Test
+    void forbidsTheSectionsToAMemberWhoIsNotAnAdministrator() throws Exception {
+        doThrow(new ChangeForbiddenException()).when(sectionsHandler).handle(any());
+
+        mvc.perform(get("/api/imports/vektor/sections")).andExpect(status().isForbidden());
+    }
 
     @Test
     void startsTheImportOfASectionAndAnswersAccepted() throws Exception {

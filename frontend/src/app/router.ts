@@ -12,6 +12,7 @@ import {loadAuthorsPage, preloadAuthorsPage, shouldPreloadAuthorsPage} from '@/p
 import {loadCategoriesPage, preloadCategoriesPage} from '@/pages/categories';
 import {loadCategoryEditPage, preloadCategoryEditPage} from '@/pages/category-edit';
 import {loadCategoryNewPage, preloadCategoryNewPage} from '@/pages/category-new';
+import {loadManagementImportsPage, preloadManagementImportsPage} from '@/pages/management/imports';
 import {loadManagementUsersPage, preloadManagementUsersPage, shouldPreloadManagementUsersPage} from '@/pages/management/users';
 import {loadGroupEditPage, preloadGroupEditPage} from '@/pages/group-edit';
 import {loadGroupNewPage, preloadGroupNewPage} from '@/pages/group-new';
@@ -32,7 +33,7 @@ import {loadSoftwareNewPage} from '@/pages/software-new';
 import {loadSoftwareViewPage, preloadSoftwareViewPage} from '@/pages/software-view';
 import {loadVerifyEmailPage} from '@/pages/account/verify-email';
 import {NotFoundError} from '@/shared/api';
-import {HOME_PATH} from '@/shared/config';
+import {HOME_PATH, MANAGEMENT_IMPORTS_PATH} from '@/shared/config';
 import {RouteErrorBoundary} from '@/widgets/route-error';
 import {AppLayout} from './AppLayout';
 
@@ -97,6 +98,7 @@ const routes = (queryClient: QueryClient): RouteObject[] => [{Component: AppLayo
                 lazy: {Component: loadManagementUsersPage},
                 HydrateFallback: nothing,
             },
+            {path: MANAGEMENT_IMPORTS_PATH, loader: preloadManagementImportsPage(queryClient), lazy: {Component: loadManagementImportsPage}, HydrateFallback: nothing},
         ]},
         {
             path: SEARCH_PATH,

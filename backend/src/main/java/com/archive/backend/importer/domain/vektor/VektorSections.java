@@ -1,6 +1,7 @@
 package com.archive.backend.importer.domain.vektor;
 
 import com.archive.backend.category.domain.CategoryId;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -52,6 +53,11 @@ public final class VektorSections {
             Map.entry("zagruzchiki", "087f5590-b140-5dda-9bd7-05d1d85b7723")); // System Software > Boot
 
     private VektorSections() {}
+
+    /** The sections whose programs the archive takes, by their codes in alphabetical order. */
+    public static List<VektorSection> taken() {
+        return CATEGORIES.keySet().stream().sorted().map(VektorSection::new).toList();
+    }
 
     public static VektorPlacement placementOf(String section) {
         if (section.equals(PC_UTILITIES)) {

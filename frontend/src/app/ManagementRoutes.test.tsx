@@ -23,6 +23,7 @@ describe('management routes', () => {
             ['/api/auth/me', user === null ? noContent() : json(user)],
             ['/api/platforms', json([])],
             ['/api/categories', json([])],
+            ['/api/imports/vektor/sections', json(['zagruzchiki'])],
             ['/api/users?page=0&size=50', json({content: [], page: {size: 50, number: 0, totalElements: 0, totalPages: 0}})],
         ]));
         window.history.replaceState(null, '', path);
@@ -59,6 +60,19 @@ describe('management routes', () => {
 
     it('hides user management from a member', async () => {
         renderAt('/management/users', MEMBER);
+
+        await expect(screen.findByRole('heading', {level: 1, name: 'Not found'})).resolves.toBeInTheDocument();
+    });
+
+    it('opens the imports for an administrator', async () => {
+        renderAt('/management/imports', ADMIN);
+
+        await expect(screen.findByRole('heading', {level: 1, name: 'Imports'})).resolves.toBeInTheDocument();
+        await expect(screen.findByRole('option', {name: 'zagruzchiki'})).resolves.toBeInTheDocument();
+    });
+
+    it('hides the imports from a member', async () => {
+        renderAt('/management/imports', MEMBER);
 
         await expect(screen.findByRole('heading', {level: 1, name: 'Not found'})).resolves.toBeInTheDocument();
     });

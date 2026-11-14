@@ -3,7 +3,7 @@ export const resources = {
         language: {label: 'Language'},
         navigation: {
             mainMenu: 'Main menu', home: 'Home', software: 'Software', authors: 'Authors', groups: 'Groups',
-            management: 'Management', categories: 'Categories', users: 'Users',
+            management: 'Management', categories: 'Categories', users: 'Users', imports: 'Imports',
         },
         actions: {
             addSoftware: 'Add software', editSoftware: 'Edit software', save: 'Save', edit: 'Edit', delete: 'Delete',
@@ -11,7 +11,12 @@ export const resources = {
             addAuthor: 'Add author', editAuthor: 'Edit author', remove: 'Remove', addGroup: 'Add group', editGroup: 'Edit group',
             addCategory: 'Add category', editCategory: 'Edit category',
         },
-        pages: {recentlyAdded: 'Recently added', software: 'Software', authors: 'Authors', groups: 'Groups', categories: 'Categories', search: 'Search', users: 'Users'},
+        pages: {recentlyAdded: 'Recently added', software: 'Software', authors: 'Authors', groups: 'Groups', categories: 'Categories', search: 'Search', users: 'Users', imports: 'Imports'},
+        imports: {
+            vektor: 'vektor-06c.ru', section: 'Section', wholeSite: 'Whole site', start: 'Start',
+            started: 'The import has started; the backend log tells how it ended.',
+            errors: {running: 'An import is already running.', forbidden: 'Only an administrator starts an import.'},
+        },
         empty: {
             software: 'No software in the archive yet.', authors: 'No authors found.', groups: 'No groups found.', categories: 'No categories yet.',
             releases: 'No releases known yet.', nothingFound: 'Nothing found.', noScreenshot: 'No screenshot yet', users: 'No users found.',
@@ -175,7 +180,7 @@ export const resources = {
         language: {label: 'Язык'},
         navigation: {
             mainMenu: 'Главное меню', home: 'Главная', software: 'Программы', authors: 'Авторы', groups: 'Группы',
-            management: 'Управление', categories: 'Категории', users: 'Пользователи',
+            management: 'Управление', categories: 'Категории', users: 'Пользователи', imports: 'Импорт',
         },
         actions: {
             addSoftware: 'Добавить программу', editSoftware: 'Редактировать программу', save: 'Сохранить', edit: 'Редактировать',
@@ -183,7 +188,12 @@ export const resources = {
             addRelease: 'Добавить релиз', addAuthor: 'Добавить автора', editAuthor: 'Редактировать автора', remove: 'Убрать', addGroup: 'Добавить группу', editGroup: 'Редактировать группу',
             addCategory: 'Добавить категорию', editCategory: 'Редактировать категорию',
         },
-        pages: {recentlyAdded: 'Недавно добавленное', software: 'Программы', authors: 'Авторы', groups: 'Группы', categories: 'Категории', search: 'Поиск', users: 'Пользователи'},
+        pages: {recentlyAdded: 'Недавно добавленное', software: 'Программы', authors: 'Авторы', groups: 'Группы', categories: 'Категории', search: 'Поиск', users: 'Пользователи', imports: 'Импорт'},
+        imports: {
+            vektor: 'vektor-06c.ru', section: 'Раздел', wholeSite: 'Весь сайт', start: 'Запустить',
+            started: 'Импорт запущен; чем он закончился, скажет лог бэкенда.',
+            errors: {running: 'Импорт уже идёт.', forbidden: 'Импорт запускает только администратор.'},
+        },
         empty: {
             software: 'В архиве пока нет программ.', authors: 'Авторы не найдены.', groups: 'Группы не найдены.', categories: 'Категорий пока нет.',
             releases: 'Сведения о релизах пока отсутствуют.', nothingFound: 'Ничего не найдено.', noScreenshot: 'Скриншота пока нет', users: 'Пользователи не найдены.',

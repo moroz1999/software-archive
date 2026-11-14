@@ -3,6 +3,7 @@ package com.archive.backend.importer.domain.vektor;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.archive.backend.category.domain.CategoryId;
+import java.util.Comparator;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -16,6 +17,14 @@ class VektorSectionsTest {
                 .isEqualTo(imported("087f5590-b140-5dda-9bd7-05d1d85b7723"));
         assertThat(VektorSections.placementOf("demo-programmy"))
                 .isEqualTo(imported("c35b7f9b-44a8-5570-9406-9e6dcb30b607"));
+    }
+
+    @Test
+    void listsTheSectionsItTakesByTheirCodes() {
+        assertThat(VektorSections.taken())
+                .contains(new VektorSection("zagruzchiki"), new VektorSection("arkadnye-igry"))
+                .doesNotContain(new VektorSection("utility-dlya-pc"))
+                .isSortedAccordingTo(Comparator.comparing(VektorSection::code));
     }
 
     @Test
