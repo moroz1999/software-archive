@@ -14,9 +14,6 @@ Each domain is a package under `com.archive.backend`. A request passes four role
 - No business logic, no transactions, no repository access, no JPA entities.
 - DTOs are records in `web/dto`; domain → DTO mapping is a MapStruct mapper in `web/mapper`.
 
-### Commands of the backend (`cli`)
-- A task run from the command line rather than over HTTP (an import) starts in a `cli` package: like a controller, it reads its arguments, calls exactly one use case and reports the result. It runs on start under a profile of its own.
-
 ### Use cases (`app`)
 - One use case per user action: an input record and its handler with a `handle` method. The input is either
   - a **command** (`CreateSoftwareCommand` + `CreateSoftwareHandler`) — changes state: loads domain entities through their repository, lets them apply the rules, saves them; it never touches the read side. A command returns nothing, except the id of the entity it creates;
@@ -88,7 +85,7 @@ All run on every build; nothing is suppressed to get a change through.
 
 | Rule | Check |
 |---|---|
-| Layers: `web`/`cli → app → domain`, `infra → domain`; `read` is used by `web`, `app` and `infra`; nothing depends on `web` or `infra` | `layers` |
+| Layers: `web → app → domain`, `infra → domain`; `read` is used by `web`, `app` and `infra`; nothing depends on `web` or `infra` | `layers` |
 | `read` does not depend on any domain package | `readSideIsFreeOfDomain` |
 | Records in `app` end with `Command` or `Query` | `useCaseInputsAreCommandsOrQueries` |
 | A query handler uses of the domain only value objects and business exceptions | `queriesUseOnlyTheReadSide` |

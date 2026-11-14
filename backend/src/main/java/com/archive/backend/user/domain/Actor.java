@@ -33,6 +33,14 @@ public record Actor(@Nullable UserId id, Set<UserGroup> groups) {
     }
 
     /**
+     * The signed-in administrator; a public visitor is told to sign in first, anybody else is refused.
+     */
+    public UserId administrator() {
+        requireAllowed(isAdministrator());
+        return signedIn();
+    }
+
+    /**
      * Whether they may add software, releases, people and groups: every signed-in user.
      */
     public boolean mayAddEntries() {

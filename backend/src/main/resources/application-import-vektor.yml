@@ -1,8 +1,0 @@
-# A run of the import of vektor-06c.ru (docs/features/vektor-import.md): no web server and no search worker, so the
-# application stops when the import is done. The archive indexes what was added once it runs again.
-spring:
-  main:
-    web-application-type: none
-search:
-  worker:
-    enabled: false

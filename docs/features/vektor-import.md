@@ -4,9 +4,16 @@ A backend command that takes the software of vektor-06c.ru into the archive ([do
 
 ## Running
 
-- `make import-vektor` imports the whole site; `make import-vektor CATEGORY=zagruzchiki` imports one section, by the code in its address. Production runs it once on an empty archive, whole; locally a small section is enough to try it.
-- The `import-vektor` profile starts no web server and no search worker: the application stops when the run is done. What it added sits in the search outbox and reaches the search once the archive runs again.
-- The run ends with a summary in the log: added, already added, left out (PC utilities), failed. A failed program is logged with its id, address and cause.
+- An administrator starts it on the running backend; with a section code it imports that section only. Production runs it once on an empty archive, whole; locally a small section is enough to try it:
+  `curl -X POST -b "access_token=<cookie of a signed-in administrator>" "http://localhost:8080/api/imports/vektor?section=zagruzchiki"`
+- A run takes far longer than a request waits, so it goes to the application's pool of background threads (`applicationTaskExecutor`, not the scheduler of the search worker) and the request is answered at once. Only one run goes at a time; restarting the backend stops a run, and the next run takes up what is left.
+- The run ends with a summary in the log: added, already added, left out (PC utilities), failed. A failed program is logged with its id, address and cause. What it added reaches the search through the outbox like any other change.
+
+## REST
+
+| Call | Answer | Errors |
+|---|---|---|
+| `POST /api/imports/vektor[?section=<code>]` | `202` once the run is started | `401 auth.required`; `403 access.denied` for anybody but an administrator; `409 import.running` while a run goes on |
 
 ## Rerunning
 

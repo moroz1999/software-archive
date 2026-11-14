@@ -107,4 +107,14 @@ class PermissionsTest {
         assertThat(Actor.anonymous().mayAddEntries()).isFalse();
         assertThat(Actor.anonymous().mayKeepCategories()).isFalse();
     }
+
+    @Test
+    void onlyAnAdministratorPassesAsOne() {
+        Actor admin =
+                new Actor(new UserId(UUID.fromString("00000000-0000-0000-0000-0000000000ad")), Set.of(UserGroup.ADMIN));
+
+        assertThat(admin.administrator()).isEqualTo(admin.id());
+        assertThatThrownBy(MEMBER_ZED::administrator).isInstanceOf(ChangeForbiddenException.class);
+        assertThatThrownBy(() -> Actor.anonymous().administrator()).isInstanceOf(SignInRequiredException.class);
+    }
 }

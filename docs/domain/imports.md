@@ -6,6 +6,7 @@ The archive takes in software from other archives so that it does not have to be
 - Whatever an import adds remembers where it came from: the source archive and the id the entry has there (vektor-06c.ru, 524). A name that has no id there, such as an author, is known by the name itself.
 - An import can run again at any time and adds only what is new there. What the archive already took is left as it is, even when the source has changed it since, so that work done in the archive is never overwritten; what the source has deleted stays in the archive.
 - What an import adds is added by one fixed user of the archive, the importer.
+- Only an administrator starts an import, and only one runs at a time, so that two runs never add the same entries.
 
 ## vektor-06c.ru
 The archive of software for the Vector-06C.
