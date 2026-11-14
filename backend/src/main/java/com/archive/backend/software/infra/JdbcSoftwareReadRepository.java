@@ -126,6 +126,7 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     private List<SoftwareCredit> credits(UUID softwareId) {
         return jdbc.sql("WITH " + MainNameSql.PEOPLE + """
                         SELECT COALESCE(c.person_id, c.label_id) AS id,
+                               COALESCE(c.person_id, l.person_id) AS owner_id,
                                CASE WHEN c.person_id IS NULL THEN 'author-label' ELSE 'author' END AS type,
                                CASE WHEN c.person_id IS NOT NULL THEN p.main_name ELSE l.name ||
                                    CASE WHEN p.main_name IS NULL OR p.main_name = l.name THEN '' ELSE ' — ' || p.main_name END END AS title,
@@ -139,6 +140,7 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                 .param("id", softwareId)
                 .query((rs, row) -> new SoftwareCredit(
                         rs.getObject("id", UUID.class),
+                        rs.getObject("owner_id", UUID.class),
                         rs.getString("type"),
                         rs.getString("title"),
                         Arrays.asList((String[]) rs.getArray("role_codes").getArray())))
@@ -148,31 +150,31 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     private List<SoftwareReferenceOption> publishers(UUID softwareId) {
         return jdbc.sql("WITH " + MainNameSql.PEOPLE + ", " + MainNameSql.GROUPS + """
                         , refs AS (
-                            SELECT p.person_id AS id, 'author' AS type, p.main_name AS title
+                            SELECT p.person_id AS id, p.person_id AS owner_id, 'author' AS type, p.main_name AS title
                             FROM software_publisher_author r
                             JOIN named_person p ON p.person_id = r.author_id
                             WHERE r.software_id = :id
                             UNION ALL
-                            SELECT g.group_id, 'group', g.main_name
+                            SELECT g.group_id, g.group_id, 'group', g.main_name
                             FROM software_publisher_group r
                             JOIN named_group g ON g.group_id = r.group_id
                             WHERE r.software_id = :id
                             UNION ALL
-                            SELECT l.id, 'author-label', l.name || CASE
+                            SELECT l.id, l.person_id, 'author-label', l.name || CASE
                                 WHEN p.real_name IS NULL OR p.real_name = l.name THEN '' ELSE ' — ' || p.real_name END
                             FROM software_publisher_author_label r
                             JOIN label l ON l.id = r.label_id
                             LEFT JOIN named_person p ON p.person_id = l.person_id
                             WHERE r.software_id = :id
                             UNION ALL
-                            SELECT l.id, 'group-label', l.name || CASE
+                            SELECT l.id, l.group_id, 'group-label', l.name || CASE
                                 WHEN g.group_name IS NULL OR g.group_name = l.name THEN '' ELSE ' — ' || g.group_name END
                             FROM software_publisher_group_label r
                             JOIN label l ON l.id = r.label_id
                             LEFT JOIN named_group g ON g.group_id = l.group_id
                             WHERE r.software_id = :id
                         )
-                        SELECT id, type, title FROM refs ORDER BY lower(title), type, id
+                        SELECT id, owner_id, type, title FROM refs ORDER BY lower(title), type, id
                         """)
                 .param("id", softwareId)
                 .query(JdbcSoftwareReadRepository::reference)
@@ -182,19 +184,19 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     private List<SoftwareReferenceOption> developers(UUID softwareId) {
         return jdbc.sql("WITH " + MainNameSql.GROUPS + """
                         , refs AS (
-                            SELECT g.group_id AS id, 'group' AS type, g.main_name AS title
+                            SELECT g.group_id AS id, g.group_id AS owner_id, 'group' AS type, g.main_name AS title
                             FROM software_developer_group r
                             JOIN named_group g ON g.group_id = r.group_id
                             WHERE r.software_id = :id
                             UNION ALL
-                            SELECT l.id, 'group-label', l.name || CASE
+                            SELECT l.id, l.group_id, 'group-label', l.name || CASE
                                 WHEN g.group_name IS NULL OR g.group_name = l.name THEN '' ELSE ' — ' || g.group_name END
                             FROM software_developer_label r
                             JOIN label l ON l.id = r.label_id
                             LEFT JOIN named_group g ON g.group_id = l.group_id
                             WHERE r.software_id = :id
                         )
-                        SELECT id, type, title FROM refs ORDER BY lower(title), type, id
+                        SELECT id, owner_id, type, title FROM refs ORDER BY lower(title), type, id
                         """)
                 .param("id", softwareId)
                 .query(JdbcSoftwareReadRepository::reference)
@@ -202,7 +204,11 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     }
 
     private static SoftwareReferenceOption reference(ResultSet rs, int row) throws SQLException {
-        return new SoftwareReferenceOption(rs.getObject("id", UUID.class), rs.getString("type"), rs.getString("title"));
+        return new SoftwareReferenceOption(
+                rs.getObject("id", UUID.class),
+                rs.getObject("owner_id", UUID.class),
+                rs.getString("type"),
+                rs.getString("title"));
     }
 
     @Override

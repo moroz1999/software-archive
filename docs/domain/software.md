@@ -7,6 +7,7 @@ Software (a production) is a release of a program: the work itself, as it is kno
 - It can be in categories of the archive's tree — see [categories.md](categories.md).
 - It can name any number of publishers: people, groups, or the exact aliases under which they published it.
 - It can name any number of developer companies: groups or the exact group aliases under which they developed it. A person cannot be a developer company.
+- Publishers, developer companies and credited names lead from software to their person or group when that owner is known. A label of nobody remains named without a link.
 - The title follows the common title rules (see the domain index). The description and the release date may be unknown.
 - Software can be added, edited and deleted, its base hardware with it, chosen from the hardware of its platform. For now anyone can do it; access rules come later.
 - Deleting software deletes what belongs only to it: its releases, screenshots, alternative titles, languages, links and credits.

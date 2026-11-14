@@ -14,6 +14,10 @@ const GAMES = '00000000-0000-0000-0006-000000000001';
 const ACTION = '00000000-0000-0000-0006-000000000002';
 const SHOOTERS = '00000000-0000-0000-0006-000000000003';
 const STRATEGY = '00000000-0000-0000-0006-000000000004';
+const AUTHOR = '00000000-0000-0000-0009-000000000002';
+const AUTHOR_LABEL = '00000000-0000-0000-0004-000000000001';
+const GROUP = '00000000-0000-0000-0010-000000000002';
+const GROUP_LABEL = '00000000-0000-0000-0004-000000000002';
 const ELITE = {
     id: ID,
     title: 'Elite',
@@ -195,6 +199,50 @@ describe(SoftwareView, () => {
             ['Games', `/software/category/${GAMES}`],
             ['Strategy', `/software/category/${STRATEGY}`],
         ]);
+    });
+
+    it('leads from a credited label to the page of its author', async () => {
+        stubFetch(json({
+            ...ELITE,
+            credits: [{id: AUTHOR_LABEL, type: 'author-label', title: 'J.D. — Jane Doe', roles: ['code'], ownerId: AUTHOR}],
+        }));
+        renderView(ID);
+
+        const credits = await screen.findByRole('list', {name: 'Credits'});
+
+        expect(within(credits).getByRole('link', {name: 'J.D. — Jane Doe'})).toHaveAttribute('href', `/authors/${AUTHOR}`);
+    });
+
+    it('shows publishers and developers and leads from their labels to the owner pages', async () => {
+        stubFetch(json({
+            ...ELITE,
+            publishers: [
+                {id: AUTHOR_LABEL, type: 'author-label', title: 'J.P. — Jane Publisher', ownerId: AUTHOR},
+                {id: GROUP_LABEL, type: 'group-label', title: 'Solar — Solar Studio', ownerId: GROUP},
+            ],
+            developers: [{id: GROUP_LABEL, type: 'group-label', title: 'Solar — Solar Studio', ownerId: GROUP}],
+        }));
+        renderView(ID);
+
+        const publishers = await screen.findByRole('list', {name: 'Publishers'});
+        const developers = screen.getByRole('list', {name: 'Developers'});
+
+        expect(within(publishers).getByRole('link', {name: 'J.P. — Jane Publisher'})).toHaveAttribute('href', `/authors/${AUTHOR}`);
+        expect(within(publishers).getByRole('link', {name: 'Solar — Solar Studio'})).toHaveAttribute('href', `/groups/${GROUP}`);
+        expect(within(developers).getByRole('link', {name: 'Solar — Solar Studio'})).toHaveAttribute('href', `/groups/${GROUP}`);
+    });
+
+    it('shows a label without an owner without a broken link', async () => {
+        stubFetch(json({
+            ...ELITE,
+            publishers: [{id: AUTHOR_LABEL, type: 'author-label', title: 'Ghost', ownerId: null}],
+        }));
+        renderView(ID);
+
+        const publishers = await screen.findByRole('list', {name: 'Publishers'});
+
+        expect(within(publishers).getByText('Ghost')).toBeInTheDocument();
+        expect(within(publishers).queryByRole('link', {name: 'Ghost'})).not.toBeInTheDocument();
     });
 
     it('shows no categories for software in none', async () => {

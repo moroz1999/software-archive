@@ -120,6 +120,36 @@ class PeopleRolesIT {
                 .andExpect(jsonPath("$.credits[0].roles[1]").value("gamedesign"));
     }
 
+    @Test
+    void softwareCreditUnderAnAliasNamesItsAuthor() throws Exception {
+        String created = mvc.perform(post("/api/software")
+                        .cookie(TestActors.accessCookie(accessTokens, MEMBER))
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "title": "Elite",
+                                  "platform": "vector",
+                                  "credits": [{
+                                    "id": "%s",
+                                    "type": "author-label",
+                                    "roles": ["code"]
+                                  }]
+                                }
+                                """.formatted(ALIAS)))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        String softwareId = JsonPath.read(created, "$.id");
+        entityManager.flush();
+
+        mvc.perform(get("/api/software/{id}", softwareId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.credits[0].id").value(ALIAS.toString()))
+                .andExpect(jsonPath("$.credits[0].type").value("author-label"))
+                .andExpect(jsonPath("$.credits[0].ownerId").value(PERSON.toString()));
+    }
+
     private static UUID id(int number) {
         return UUID.fromString("00000000-0000-0000-00bb-%012d".formatted(number));
     }

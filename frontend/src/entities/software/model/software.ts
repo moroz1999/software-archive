@@ -20,9 +20,14 @@ export interface SoftwareReference {
     readonly id: string;
     readonly type: SoftwareReferenceType;
     readonly title: string;
+    /** The person or group page this exact name belongs to; absent in values not loaded as software details. */
+    readonly ownerId?: string | null;
 }
 
-export type SoftwareCredit = MemberRoleValue;
+export interface SoftwareCredit extends MemberRoleValue {
+    readonly type: 'author' | 'author-label';
+    readonly ownerId?: string | null;
+}
 
 /** The page of software in an archive it was imported from. */
 export interface SoftwareSource {

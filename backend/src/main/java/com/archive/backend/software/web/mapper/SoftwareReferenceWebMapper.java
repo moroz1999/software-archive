@@ -26,7 +26,7 @@ public interface SoftwareReferenceWebMapper {
 
     default SoftwareReferenceLookupDto toDto(List<SoftwareReferenceOption> options) {
         return new SoftwareReferenceLookupDto(options.stream()
-                .map(option -> new SoftwareReferenceDto(option.id(), option.type(), option.title()))
+                .map(option -> new SoftwareReferenceDto(option.id(), option.ownerId(), option.type(), option.title()))
                 .toList());
     }
 }

@@ -18,5 +18,5 @@ public record SoftwareDetailsDto(
         List<SoftwareSourceDto> sources,
         boolean canChange) {
 
-    public record SoftwareCreditDto(UUID id, String type, String title, List<String> roles) {}
+    public record SoftwareCreditDto(UUID id, @Nullable UUID ownerId, String type, String title, List<String> roles) {}
 }

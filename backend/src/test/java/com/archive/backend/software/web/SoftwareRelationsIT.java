@@ -1,6 +1,7 @@
 package com.archive.backend.software.web;
 
 import static com.archive.backend.user.TestActors.MEMBER;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItems;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -106,7 +107,13 @@ class SoftwareRelationsIT {
                         .value(containsInAnyOrder(DEVELOPER_GROUP.toString(), GROUP_LABEL.toString())))
                 .andExpect(jsonPath("$.developers[*].type").value(containsInAnyOrder("group", "group-label")))
                 .andExpect(jsonPath("$.publishers[*].title").isNotEmpty())
-                .andExpect(jsonPath("$.developers[*].title").isNotEmpty());
+                .andExpect(jsonPath("$.developers[*].title").isNotEmpty())
+                .andExpect(jsonPath("$.publishers[?(@.id == '%s')].ownerId".formatted(AUTHOR_LABEL))
+                        .value(contains(ALIASED_AUTHOR.toString())))
+                .andExpect(jsonPath("$.publishers[?(@.id == '%s')].ownerId".formatted(GROUP_LABEL))
+                        .value(contains(ALIASED_GROUP.toString())))
+                .andExpect(jsonPath("$.developers[?(@.id == '%s')].ownerId".formatted(GROUP_LABEL))
+                        .value(contains(ALIASED_GROUP.toString())));
     }
 
     @Test

@@ -44,6 +44,7 @@ function parseSoftwareReferences(raw: unknown, name: string): readonly SoftwareR
             id: readString(reference, 'id'),
             type: toSoftwareReferenceType(readString(reference, 'type')),
             title: readString(reference, 'title'),
+            ...(reference['ownerId'] === undefined ? {} : {ownerId: readNullableString(reference, 'ownerId')}),
         };
     });
 }
@@ -96,10 +97,15 @@ export async function fetchSoftware(id: SoftwareId, signal: AbortSignal): Promis
 function parseSoftwareCredits(raw: unknown): NonNullable<SoftwareDetails['credits']> {
     return readArray(raw, 'credits').map((item) => {
         const credit = readObject(item, 'credit');
+        const type = toSoftwareReferenceType(readString(credit, 'type'));
+        if (type !== 'author' && type !== 'author-label') {
+            throw new TypeError('A software credit must name a person or their label.');
+        }
         return {
             id: readString(credit, 'id'),
-            type: readString(credit, 'type'),
+            type,
             title: readString(credit, 'title'),
+            ...(credit['ownerId'] === undefined ? {} : {ownerId: readNullableString(credit, 'ownerId')}),
             roles: readArray(credit['roles'], 'credit roles').map((role) => {
                 if (typeof role !== 'string') {
                     throw new TypeError('A credit role must be a string.');

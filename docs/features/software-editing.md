@@ -37,11 +37,11 @@ Adding, editing and deleting software ([domain/software.md](../domain/software.m
 
 | Call | Answer | Errors |
 |---|---|---|
-| `GET /api/software/{id}` | `200` software details, including publisher/developer choices credits as `{id, type, title, roles}` and `sources: [{archive, url}]`, the pages of the archives it was imported from | `404 software.not-found`; `400` for a malformed id |
+| `GET /api/software/{id}` | `200` software details, including publisher/developer choices and credits with the nullable owner id used by the view, and the pages of the archives it was imported from | `404 software.not-found`; `400` for a malformed id |
 | `POST /api/software` with the form values; credits are `{id, type, roles}` | `201`, `Location: /api/software/{id}`, `{id}` | Format errors; `422` for an unknown hardware, category, publisher, developer company or credited person under its field |
 | `PUT /api/software/{id}` (same body) | `204` | `404 software.not-found`; `422 software.platform-locked` (field `platform`) when the platform changes while a release has hardware; the errors of `POST` |
 | `DELETE /api/software/{id}` | `204` | `404 software.not-found` |
-| `GET /api/entity-lookup?types=…&query=…` | `200` `{items: [{id, type, title}]}` ordered by the closest names first, empty for a blank query | `400 software.reference-type-invalid` for an unknown type |
+| `GET /api/entity-lookup?types=…&query=…` | `200` `{items: [{id, ownerId, type, title}]}` ordered by the closest names first, empty for a blank query | `400 software.reference-type-invalid` for an unknown type |
 
 `platform` is a platform code; `description` and `releaseDate` are `null` when unknown; `releaseDate` is a year (`1987`) or an ISO day (`1987-05-12`), anything else is `400 release-date.invalid`; `hardware` is the software's whole base hardware, every code of its platform (missing means none); `categories`, `publishers`, `developers` and `credits` are whole sets (missing means none). Credit types are `author` and `author-label`. A category sent together with one under it is dropped, so the software keeps only the deepest category of each branch. Publisher types are `author`, `author-label`, `group` and `group-label`; developer types are `group` and `group-label`.
 
