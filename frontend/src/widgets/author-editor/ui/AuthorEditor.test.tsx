@@ -1,5 +1,5 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {screen} from '@testing-library/react';
+import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
 import {json, noContent, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
@@ -55,6 +55,17 @@ describe(AuthorEditor, () => {
 
         expect(screen.getByRole('heading', {level: 1, name: 'Edit author'})).toBeInTheDocument();
         expect(screen.getByRole('link', {name: 'Cancel'})).toHaveAttribute('href', `/authors/${ID}`);
+    });
+
+    it('groups its fields in sections', async () => {
+        stubFetchAround(AROUND, json(ZED));
+        renderEditor();
+
+        await screen.findByRole('textbox', {name: 'Real name'});
+
+        expect(within(screen.getByRole('region', {name: 'Main'})).getByRole('textbox', {name: 'Real name'})).toBeInTheDocument();
+        expect(within(screen.getByRole('region', {name: 'Names'})).getByRole('textbox', {name: 'Label 1'})).toBeInTheDocument();
+        expect(within(screen.getByRole('region', {name: 'Geography'})).getByRole('group', {name: 'Locations'})).toBeInTheDocument();
     });
 
     it('saves the whole author with their labels and locations', async () => {

@@ -1,7 +1,7 @@
 import {useId} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Button} from '@/shared/ui/button';
-import {FieldGroup} from '@/shared/ui/field-group';
+import {FormFieldset} from '@/shared/ui/form';
 import {Inline} from '@/shared/ui/inline';
 import {ItemRow} from '@/shared/ui/item-row';
 import {Radio} from '@/shared/ui/radio';
@@ -54,7 +54,7 @@ function Locations({value, onChange, rowErrors = [], error, disabled = false}: L
     }
 
     return (
-        <FieldGroup legend={t('location.locations')} error={error}>
+        <FormFieldset legend={t('location.locations')} error={error}>
             {value.map((location, index) => (
                 <CitiesProvider key={index} country={parseCountryId(location.country)}>
                     <LocationRow
@@ -87,7 +87,7 @@ function Locations({value, onChange, rowErrors = [], error, disabled = false}: L
                     {t('location.add')}
                 </Button>
             </Inline>
-        </FieldGroup>
+        </FormFieldset>
     );
 }
 

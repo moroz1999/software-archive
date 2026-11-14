@@ -1,15 +1,11 @@
-import type {ReactNode, SyntheticEvent} from 'react';
+import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Button} from '@/shared/ui/button';
-import {Field} from '@/shared/ui/field';
-import {Inline} from '@/shared/ui/inline';
+import {Form, FormActions, FormField, FormMessage, FormSection} from '@/shared/ui/form';
 import {Input} from '@/shared/ui/input';
-import {Stack} from '@/shared/ui/stack';
 import {Textarea} from '@/shared/ui/textarea';
-import {Text} from '@/shared/ui/typography';
 import {REAL_NAME_PROBLEM_KEYS} from '../config/messages';
 import {useAuthorForm} from '../model/author-form-context';
-import styles from './AuthorForm.module.css';
 
 export interface AuthorFormProps {
     readonly submitLabel: string;
@@ -26,28 +22,23 @@ export function AuthorForm({submitLabel, labels, locations, actions}: AuthorForm
     const {t} = useTranslation();
     const {values, errors, refusals, change, submit, busy, error} = useAuthorForm();
 
-    function onSubmit(event: SyntheticEvent) {
-        event.preventDefault();
-        submit();
-    }
-
     return (
-        <form noValidate onSubmit={onSubmit} className={styles.form}>
-            <Stack gap="lg">
-                {error !== undefined && <Text role="alert" tone="danger">{error}</Text>}
-                <Field label={t('author.realName')} error={errors.realName === undefined ? refusals.realName : t(REAL_NAME_PROBLEM_KEYS[errors.realName])}>
+        <Form onSubmit={submit}>
+            {error !== undefined && <FormMessage>{error}</FormMessage>}
+            <FormSection title={t('formSections.main')}>
+                <FormField label={t('author.realName')} error={errors.realName === undefined ? refusals.realName : t(REAL_NAME_PROBLEM_KEYS[errors.realName])}>
                     {(control) => <Input {...control} value={values.realName} onChange={change('realName')} disabled={busy}/>}
-                </Field>
-                {labels}
-                {locations}
-                <Field label={t('author.notes')} error={refusals.notes}>
+                </FormField>
+                <FormField label={t('author.notes')} error={refusals.notes}>
                     {(control) => <Textarea {...control} value={values.notes} onChange={change('notes')} disabled={busy}/>}
-                </Field>
-                <Inline gap="sm" justify="end" wrap>
-                    {actions}
-                    <Button type="submit" loading={busy}>{submitLabel}</Button>
-                </Inline>
-            </Stack>
-        </form>
+                </FormField>
+            </FormSection>
+            {labels !== undefined && <FormSection title={t('formSections.names')}>{labels}</FormSection>}
+            {locations !== undefined && <FormSection title={t('formSections.geography')}>{locations}</FormSection>}
+            <FormActions>
+                {actions}
+                <Button type="submit" loading={busy}>{submitLabel}</Button>
+            </FormActions>
+        </Form>
     );
 }

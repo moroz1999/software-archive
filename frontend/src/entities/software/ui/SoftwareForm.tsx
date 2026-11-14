@@ -1,16 +1,13 @@
-import type {ReactNode, SyntheticEvent} from 'react';
+import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Button} from '@/shared/ui/button';
-import {Field} from '@/shared/ui/field';
-import {Inline} from '@/shared/ui/inline';
+import {Form, FormActions, FormField, FormMessage, FormSection} from '@/shared/ui/form';
 import {Input} from '@/shared/ui/input';
 import {MultiEntityAutocomplete} from '@/shared/ui/multi-entity-autocomplete';
 import {MemberRoleEditor} from '@/shared/ui/member-role-editor';
 import {Select} from '@/shared/ui/select';
 import {Skeleton} from '@/shared/ui/skeleton';
-import {Stack} from '@/shared/ui/stack';
 import {Textarea} from '@/shared/ui/textarea';
-import {Text} from '@/shared/ui/typography';
 import {useSkeleton} from '@/shared/lib/loading';
 import {PLATFORM_REQUIRED_KEY, RELEASE_DATE_HINT_KEY, RELEASE_DATE_INVALID_KEY, TITLE_PROBLEM_KEYS} from '../config/messages';
 import {fetchSoftwarePeople, fetchSoftwareReferences} from '../api/software-api';
@@ -26,7 +23,7 @@ const DEVELOPER_TYPES = ['group', 'group-label'] as const satisfies readonly Sof
 
 export interface SoftwareFormProps {
     readonly submitLabel: string;
-    /** More buttons next to the submit button. */
+    /** More buttons before the submit button, such as Cancel. */
     readonly actions?: ReactNode;
     /** The field of the categories of the software, under its hardware: the tree of categories is not of this slice. */
     readonly categories?: ReactNode;
@@ -39,20 +36,16 @@ export function SoftwareForm({submitLabel, actions, categories}: SoftwareFormPro
     // Hardware belongs to its platform: the platform stays while hardware is chosen (docs/domain/hardware.md).
     const platformLocked = values.hardware.length > 0;
 
-    function onSubmit(event: SyntheticEvent) {
-        event.preventDefault();
-        submit();
-    }
-
     return (
-        <form noValidate onSubmit={onSubmit}>
-            <Stack gap="lg">
-                {error !== undefined && <Text role="alert" tone="danger">{error}</Text>}
-                <Field label={t('fields.title')} error={errors.title === undefined ? refusals.title : t(TITLE_PROBLEM_KEYS[errors.title])}>
+        <Form onSubmit={submit} columns={2}>
+            {error !== undefined && <FormMessage>{error}</FormMessage>}
+            <FormSection title={t('formSections.main')}>
+                <FormField label={t('fields.title')} required fullWidth error={errors.title === undefined ? refusals.title : t(TITLE_PROBLEM_KEYS[errors.title])}>
                     {(control) => <Input {...control} value={values.title} onChange={change('title')} disabled={busy}/>}
-                </Field>
-                <Field
+                </FormField>
+                <FormField
                     label={t('fields.platform')}
+                    required
                     error={errors.platform === undefined ? refusals.platform : t(PLATFORM_REQUIRED_KEY)}
                     hint={platformLocked ? t('fields.platformLocked') : undefined}
                 >
@@ -66,24 +59,28 @@ export function SoftwareForm({submitLabel, actions, categories}: SoftwareFormPro
                             disabled={busy || platformLocked}
                         />
                     )}
-                </Field>
-                <Field label={t('fields.description')} error={refusals.description}>
-                    {(control) => <Textarea {...control} value={values.description} onChange={change('description')} disabled={busy}/>}
-                </Field>
-                <Field
+                </FormField>
+                <FormField
                     label={t('fields.releaseDate')}
                     hint={t(RELEASE_DATE_HINT_KEY)}
                     error={errors.releaseDate === undefined ? refusals.releaseDate : t(RELEASE_DATE_INVALID_KEY)}
                 >
                     {(control) => <Input {...control} value={values.releaseDate} onChange={change('releaseDate')} disabled={busy}/>}
-                </Field>
+                </FormField>
+                <FormField label={t('fields.description')} fullWidth error={refusals.description}>
+                    {(control) => <Textarea {...control} value={values.description} onChange={change('description')} disabled={busy}/>}
+                </FormField>
+            </FormSection>
+            <FormSection title={t('formSections.classification')} columns={1}>
                 {values.platform !== '' && (
                     <PlatformHardwareProvider platform={toSoftwarePlatformCode(values.platform)}>
                         <SoftwareHardware/>
                     </PlatformHardwareProvider>
                 )}
                 {categories}
-                <Field label={t('fields.publishers')} error={refusals.publishers}>
+            </FormSection>
+            <FormSection title={t('formSections.relations')}>
+                <FormField label={t('fields.publishers')} error={refusals.publishers}>
                     {(control) => (
                         <MultiEntityAutocomplete
                             {...control}
@@ -94,8 +91,8 @@ export function SoftwareForm({submitLabel, actions, categories}: SoftwareFormPro
                             disabled={busy}
                         />
                     )}
-                </Field>
-                <Field label={t('fields.developers')} error={refusals.developers}>
+                </FormField>
+                <FormField label={t('fields.developers')} error={refusals.developers}>
                     {(control) => (
                         <MultiEntityAutocomplete
                             {...control}
@@ -106,7 +103,9 @@ export function SoftwareForm({submitLabel, actions, categories}: SoftwareFormPro
                             disabled={busy}
                         />
                     )}
-                </Field>
+                </FormField>
+            </FormSection>
+            <FormSection title={t('formSections.authors')} columns={1}>
                 <MemberRoleEditor
                     label={t('fields.credits')}
                     value={values.credits ?? []}
@@ -116,12 +115,12 @@ export function SoftwareForm({submitLabel, actions, categories}: SoftwareFormPro
                     disabled={busy}
                     error={refusals.credits}
                 />
-                <Inline gap="sm" justify="between" wrap>
-                    <Button type="submit" loading={busy}>{submitLabel}</Button>
-                    {actions}
-                </Inline>
-            </Stack>
-        </form>
+            </FormSection>
+            <FormActions>
+                {actions}
+                <Button type="submit" loading={busy}>{submitLabel}</Button>
+            </FormActions>
+        </Form>
     );
 }
 

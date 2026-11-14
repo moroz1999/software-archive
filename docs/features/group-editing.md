@@ -12,7 +12,7 @@ Adding, editing and deleting groups: teams with a name of their own, at least on
 
 ## Form
 
-- Name (required, at most 255 characters), Types, Labels, Locations, Notes (multi-line), in one narrow column; Cancel and the submit button at its bottom right — the same layout as the author form ([author-editing.md](author-editing.md)).
+- In one narrow column, in sections: Main (Name, required, at most 255 characters; Types, required; Notes, multi-line), Names (Labels), Geography (Locations), Members; Cancel and the submit button at its bottom right — the same layout as the author form ([author-editing.md](author-editing.md)).
 - Types: a checkbox for every type of the reference book, under its code; at least one is needed, "Choose at least one type." under Types on submit.
 - Labels and Locations: the same editors and rules as for authors — exactly one display name among the labels and exactly one primary location, a label taken away stays in the archive as a label of nobody. A group may have no labels: it is then shown under its name.
 - Members: people and their aliases are found remotely by name; every selected member has removable role chips and optional start and end days. The form replaces the complete roster.

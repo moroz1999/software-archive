@@ -1,4 +1,3 @@
-@import url("./author-form.css");
 @import url("./author-form-skeleton.css");
 @import url("./author-view.css");
 @import url("./anchored-overlay.css");
@@ -6,16 +5,14 @@
 @import url("./button.css");
 @import url("./card-grid.css");
 @import url("./categories-field.css");
-@import url("./category-form.css");
 @import url("./category-form-skeleton.css");
 @import url("./category-tree-skeleton.css");
 @import url("./checkbox.css");
 @import url("./chip.css");
 @import url("./dialog.css");
-@import url("./field-group.css");
+@import url("./form.css");
 @import url("./full-search.css");
 @import url("./grid.css");
-@import url("./group-form.css");
 @import url("./group-form-skeleton.css");
 @import url("./group-types-field.css");
 @import url("./group-view.css");

@@ -7,6 +7,7 @@ import type {ReleaseDraft} from '../model/release-form';
 import {ReleaseFormProvider, type ReleaseFormProviderProps} from '../model/ReleaseFormProvider';
 import type {Hardware} from '../model/software';
 import {ReleaseForm} from './ReleaseForm';
+import {Button} from '@/shared/ui/button';
 
 type FormProps = Omit<ReleaseFormProviderProps, 'onSubmit' | 'children'> & {readonly actions?: ReactNode};
 
@@ -27,6 +28,30 @@ function renderForm({actions, ...props}: FormProps = {}) {
 }
 
 describe(ReleaseForm, () => {
+    it('groups its fields in sections, the required type starred', () => {
+        renderForm();
+
+        const main = screen.getByRole('region', {name: 'Main'});
+
+        for (const name of ['Title', 'Version', 'Release date', 'Description']) {
+            expect(within(main).getByRole('textbox', {name})).toBeInTheDocument();
+        }
+
+        expect(within(main).getByRole('combobox', {name: 'Type'})).toBeInTheDocument();
+        expect(within(main).getAllByText('*')).toHaveLength(1);
+
+        const technical = screen.getByRole('region', {name: 'Hardware and archive'});
+
+        expect(within(technical).getByRole('checkbox', {name: 'AY-3-8910'})).toBeInTheDocument();
+        expect(within(technical).getByRole('group', {name: 'Archive'})).toBeInTheDocument();
+    });
+
+    it('ends with its buttons, the submit last', () => {
+        renderForm({actions: <Button color="secondary">Cancel</Button>});
+
+        expect(screen.getAllByRole('button').slice(-2).map((button) => button.textContent)).toStrictEqual(['Cancel', 'Save']);
+    });
+
     it('submits the filled form as a draft', async () => {
         const {onSubmit} = renderForm();
 

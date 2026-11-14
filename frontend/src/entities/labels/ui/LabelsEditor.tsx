@@ -1,7 +1,7 @@
 import {useId} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Button} from '@/shared/ui/button';
-import {FieldGroup} from '@/shared/ui/field-group';
+import {FormFieldset} from '@/shared/ui/form';
 import {Inline} from '@/shared/ui/inline';
 import {Input} from '@/shared/ui/input';
 import {ItemRow} from '@/shared/ui/item-row';
@@ -42,7 +42,7 @@ export function LabelsEditor({value, onChange, rowErrors = [], error, disabled =
     }
 
     return (
-        <FieldGroup legend={t('label.labels')} error={error}>
+        <FormFieldset legend={t('label.labels')} error={error}>
             {value.map((label, index) => {
                 const n = index + 1;
                 const rowError = rowErrors[index];
@@ -104,6 +104,6 @@ export function LabelsEditor({value, onChange, rowErrors = [], error, disabled =
                     {t('label.add')}
                 </Button>
             </Inline>
-        </FieldGroup>
+        </FormFieldset>
     );
 }

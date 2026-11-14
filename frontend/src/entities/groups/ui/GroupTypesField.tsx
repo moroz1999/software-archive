@@ -1,6 +1,6 @@
 import {useTranslation} from 'react-i18next';
 import {Checkbox} from '@/shared/ui/checkbox';
-import {FieldGroup} from '@/shared/ui/field-group';
+import {FormFieldset} from '@/shared/ui/form';
 import {Inline} from '@/shared/ui/inline';
 import {Skeleton} from '@/shared/ui/skeleton';
 import {TYPES_REQUIRED_KEY} from '../config/messages';
@@ -28,7 +28,7 @@ function TypeChoices() {
     }
 
     return (
-        <FieldGroup legend={t('group.types')} error={errors.types === undefined ? refusals.types : t(TYPES_REQUIRED_KEY)}>
+        <FormFieldset legend={t('group.types')} required error={errors.types === undefined ? refusals.types : t(TYPES_REQUIRED_KEY)}>
             {types.data === undefined
                 ? <Skeleton className={styles.loading}/>
                 : (
@@ -46,6 +46,6 @@ function TypeChoices() {
                         ))}
                     </Inline>
                 )}
-        </FieldGroup>
+        </FormFieldset>
     );
 }

@@ -2,7 +2,7 @@ import {useId, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Button} from '../button';
 import {Chip} from '../chip';
-import {Field} from '../field';
+import {FormField} from '../form';
 import {Inline} from '../inline';
 import {Input} from '../input';
 import {MultiEntityAutocomplete, type EntityAutocompleteOption} from '../multi-entity-autocomplete';
@@ -47,7 +47,7 @@ export function MemberRoleEditor({label, value, roles, search, onChange, showDat
 
     return (
         <Stack gap="md">
-            <Field label={label} error={error}>
+            <FormField label={label} error={error}>
                 {(control) => (
                     <MultiEntityAutocomplete
                         {...control}
@@ -58,7 +58,7 @@ export function MemberRoleEditor({label, value, roles, search, onChange, showDat
                         disabled={disabled}
                     />
                 )}
-            </Field>
+            </FormField>
             {value.map((member, index) => (
                 <MemberCard
                     key={`${member.type}:${member.id}`}

@@ -8,6 +8,7 @@ import type {SoftwareDraft} from '../model/software-form';
 import {useSoftwareForm} from '../model/software-form-context';
 import {SoftwareFormProvider, type SoftwareFormProviderProps} from '../model/SoftwareFormProvider';
 import {SoftwareForm} from './SoftwareForm';
+import {Button} from '@/shared/ui/button';
 
 type FormProps = Omit<SoftwareFormProviderProps, 'onSubmit' | 'children'> & {readonly actions?: ReactNode; readonly categories?: ReactNode};
 
@@ -62,6 +63,36 @@ describe(SoftwareForm, () => {
 
     afterEach(() => {
         vi.unstubAllGlobals();
+    });
+
+    it('starts with its main section, the required fields starred', () => {
+        renderForm();
+
+        const main = screen.getByRole('region', {name: 'Main'});
+
+        expect(within(main).getByRole('textbox', {name: 'Title'})).toBeInTheDocument();
+        expect(within(main).getByRole('combobox', {name: 'Platform'})).toBeInTheDocument();
+        expect(within(main).getByRole('textbox', {name: 'Description'})).toBeInTheDocument();
+        expect(within(main).getByRole('textbox', {name: 'Release date'})).toBeInTheDocument();
+        expect(within(main).getAllByText('*')).toHaveLength(2);
+    });
+
+    it('puts what the software is, what it is tied to and who made it in sections of their own', () => {
+        renderForm({categories: <GamesOnly/>});
+
+        expect(within(screen.getByRole('region', {name: 'Classification'})).getByRole('checkbox', {name: 'Games'})).toBeInTheDocument();
+
+        const relations = screen.getByRole('region', {name: 'Relations'});
+
+        expect(within(relations).getByLabelText('Publishers')).toBeInTheDocument();
+        expect(within(relations).getByLabelText('Developers')).toBeInTheDocument();
+        expect(within(screen.getByRole('region', {name: 'Authors'})).getByLabelText('Credits')).toBeInTheDocument();
+    });
+
+    it('ends with its buttons, the submit last', () => {
+        renderForm({actions: <Button color="secondary">Cancel</Button>});
+
+        expect(screen.getAllByRole('button').slice(-2).map((button) => button.textContent)).toStrictEqual(['Cancel', 'Save']);
     });
 
     it('submits the filled form as a draft', async () => {

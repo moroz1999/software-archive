@@ -22,6 +22,7 @@ export const resources = {
             search: 'Search', year: 'Year', anyYear: 'Any year', allCategories: 'All categories',
             withCount: '{{label}} ({{count}})',
         },
+        formSections: {main: 'Main', classification: 'Classification', relations: 'Relations', authors: 'Authors', hardwareAndArchive: 'Hardware and archive', names: 'Names', geography: 'Geography', members: 'Members'},
         fields: {
             title: 'Title', platform: 'Platform', description: 'Description', releaseDate: 'Release date', releaseDateHint: 'A year, such as 1987, or a day, such as 12.05.1987.', version: 'Version',
             type: 'Type', hardware: 'Hardware', categories: 'Categories', publishers: 'Publishers', developers: 'Developers', credits: 'Credits',
@@ -193,6 +194,7 @@ export const resources = {
             search: 'Поиск', year: 'Год', anyYear: 'Любой год', allCategories: 'Все категории',
             withCount: '{{label}} ({{count}})',
         },
+        formSections: {main: 'Основное', classification: 'Классификация', relations: 'Связи', authors: 'Авторы', hardwareAndArchive: 'Оборудование и архив', names: 'Имена', geography: 'География', members: 'Участники'},
         fields: {
             title: 'Название', platform: 'Платформа', description: 'Описание', releaseDate: 'Дата выпуска', releaseDateHint: 'Год, например 1987, или день, например 12.05.1987.', version: 'Версия',
             type: 'Тип', hardware: 'Оборудование', categories: 'Категории', publishers: 'Издатели', developers: 'Разработчики', credits: 'Авторы',

@@ -1,17 +1,13 @@
-import type {ReactNode, SyntheticEvent} from 'react';
+import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Button} from '@/shared/ui/button';
-import {Field} from '@/shared/ui/field';
-import {Inline} from '@/shared/ui/inline';
+import {Form, FormActions, FormField, FormMessage} from '@/shared/ui/form';
 import {Input} from '@/shared/ui/input';
 import {Select} from '@/shared/ui/select';
-import {Stack} from '@/shared/ui/stack';
-import {Text} from '@/shared/ui/typography';
 import {TITLE_PROBLEM_KEYS} from '../config/messages';
 import {useCategoryForm} from '../model/category-form-context';
 import {parentOptions} from '../model/category-tree';
 import {useCategoryTree} from '../model/category-tree-context';
-import styles from './CategoryForm.module.css';
 
 /** Each level of the tree stands in by this in the list of parents: an option holds text only. */
 const INDENT = '    ';
@@ -35,35 +31,28 @@ export function CategoryForm({submitLabel, actions}: CategoryFormProps) {
         label: INDENT.repeat(option.depth) + option.title,
     }));
 
-    function onSubmit(event: SyntheticEvent) {
-        event.preventDefault();
-        submit();
-    }
-
     return (
-        <form noValidate onSubmit={onSubmit} className={styles.form}>
-            <Stack gap="lg">
-                {error !== undefined && <Text role="alert" tone="danger">{error}</Text>}
-                <Field label={t('fields.title')} error={errors.title === undefined ? refusals.title : t(TITLE_PROBLEM_KEYS[errors.title])}>
-                    {(control) => <Input {...control} value={values.title} onChange={change('title')} disabled={busy}/>}
-                </Field>
-                <Field label={t('category.parent')} error={refusals.parent}>
-                    {(control) => (
-                        <Select
-                            {...control}
-                            value={values.parent}
-                            onChange={change('parent')}
-                            options={options}
-                            placeholder={t('category.top')}
-                            disabled={busy || tree.data === undefined}
-                        />
-                    )}
-                </Field>
-                <Inline gap="sm" justify="end" wrap>
-                    {actions}
-                    <Button type="submit" loading={busy}>{submitLabel}</Button>
-                </Inline>
-            </Stack>
-        </form>
+        <Form onSubmit={submit}>
+            {error !== undefined && <FormMessage>{error}</FormMessage>}
+            <FormField label={t('fields.title')} required error={errors.title === undefined ? refusals.title : t(TITLE_PROBLEM_KEYS[errors.title])}>
+                {(control) => <Input {...control} value={values.title} onChange={change('title')} disabled={busy}/>}
+            </FormField>
+            <FormField label={t('category.parent')} error={refusals.parent}>
+                {(control) => (
+                    <Select
+                        {...control}
+                        value={values.parent}
+                        onChange={change('parent')}
+                        options={options}
+                        placeholder={t('category.top')}
+                        disabled={busy || tree.data === undefined}
+                    />
+                )}
+            </FormField>
+            <FormActions>
+                {actions}
+                <Button type="submit" loading={busy}>{submitLabel}</Button>
+            </FormActions>
+        </Form>
     );
 }

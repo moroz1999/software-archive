@@ -1,0 +1,105 @@
+/* The form family shares one module: a form lays out its sections, a section its fields. */
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--form-gap);
+    max-width: var(--form-max-width);
+}
+
+.columns2 {
+    gap: var(--form-sections-gap);
+    max-width: var(--form-columns-max-width);
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--form-gap);
+    min-width: 0;
+}
+
+.sectionTitle {
+    padding-bottom: var(--form-section-title-padding);
+    border-bottom: var(--form-section-title-border);
+}
+
+.fields {
+    display: flex;
+    flex-direction: column;
+    gap: var(--form-gap);
+    min-width: 0;
+}
+
+/* Two columns of fields: asked by the form or by the section itself. */
+.columns2 .fields:not(.fieldsColumns1),
+.fieldsColumns2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--form-columns-row-gap) var(--form-columns-column-gap);
+}
+
+.field,
+.fieldset {
+    display: flex;
+    flex-direction: column;
+    gap: var(--form-field-gap);
+    min-width: 0;
+}
+
+.fieldset {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.fullWidth {
+    grid-column: 1 / -1;
+}
+
+.label,
+.legend {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--form-label-required-gap);
+    margin: 0;
+    padding: 0;
+}
+
+.control {
+    display: flex;
+    flex-direction: column;
+    gap: var(--form-control-gap);
+    min-width: 0;
+}
+
+.row {
+    display: grid;
+    grid-column: 1 / -1;
+    gap: var(--form-columns-row-gap) var(--form-columns-column-gap);
+}
+
+.rowColumns2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.rowColumns3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--form-actions-gap);
+    padding-top: var(--form-actions-offset);
+}
+
+.actionsStart { justify-content: flex-start; }
+.actionsEnd { justify-content: flex-end; }
+.actionsBetween { justify-content: space-between; }
+
+/* Mobile: narrower than 576px; every field takes the whole width. */
+@media (width < 576px) {
+    .columns2 .fields:not(.fieldsColumns1),
+    .fieldsColumns2,
+    .rowColumns2,
+    .rowColumns3 {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

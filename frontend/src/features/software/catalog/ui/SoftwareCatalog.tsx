@@ -5,7 +5,7 @@ import {toCountryId} from '@/entities/locations';
 import {SoftwareCard, SoftwareCardSkeleton, softwarePath} from '@/entities/software';
 import {useSkeleton} from '@/shared/lib/loading';
 import {CardGrid} from '@/shared/ui/card-grid';
-import {Field} from '@/shared/ui/field';
+import {FormField} from '@/shared/ui/form';
 import {Inline} from '@/shared/ui/inline';
 import {Input} from '@/shared/ui/input';
 import {LoadingState} from '@/shared/ui/loading-state';
@@ -73,9 +73,9 @@ function KeywordFilter() {
     }, [text, filter, show]);
 
     return (
-        <Field label={t('filters.search')} className={styles.filter}>
+        <FormField label={t('filters.search')} className={styles.filter}>
             {(control) => <Input id={control.id} type="search" value={text} onChange={setText}/>}
-        </Field>
+        </FormField>
     );
 }
 
@@ -97,7 +97,7 @@ function Filters() {
     return (
         <Inline gap="md" wrap>
             <KeywordFilter/>
-            <Field label={t('filters.year')} className={styles.filter}>
+            <FormField label={t('filters.year')} className={styles.filter}>
                 {(control) => (
                     <Select
                         id={control.id}
@@ -110,8 +110,8 @@ function Filters() {
                         disabled={changing || facets === undefined}
                     />
                 )}
-            </Field>
-            <Field label={t('filters.country')} className={styles.filter}>
+            </FormField>
+            <FormField label={t('filters.country')} className={styles.filter}>
                 {(control) => (
                     <Select
                         id={control.id}
@@ -124,7 +124,7 @@ function Filters() {
                         disabled={changing || facets === undefined || countries.data === undefined}
                     />
                 )}
-            </Field>
+            </FormField>
         </Inline>
     );
 }

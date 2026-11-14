@@ -1,4 +1,4 @@
-import {Field} from '@/shared/ui/field';
+import {FormField} from '@/shared/ui/form';
 import {Inline} from '@/shared/ui/inline';
 import {Select} from '@/shared/ui/select';
 import {type City, type CityId, type Country, type CountryId, toCityId, toCountryId} from '../model/geo';
@@ -23,7 +23,7 @@ export function PlaceFilters({country, city, countries, cities, disabled, onChan
     const cityOptions = (cities ?? []).map((item) => ({value: item.id, label: item.name}));
     return (
         <Inline gap="md" wrap>
-            <Field label={t('filters.country')} className={styles.filter}>
+            <FormField label={t('filters.country')} className={styles.filter}>
                 {(control) => (
                     <Select
                         id={control.id}
@@ -36,8 +36,8 @@ export function PlaceFilters({country, city, countries, cities, disabled, onChan
                         disabled={disabled || countries === undefined}
                     />
                 )}
-            </Field>
-            <Field label={t('filters.city')} className={styles.filter}>
+            </FormField>
+            <FormField label={t('filters.city')} className={styles.filter}>
                 {(control) => (
                     <Select
                         id={control.id}
@@ -50,7 +50,7 @@ export function PlaceFilters({country, city, countries, cities, disabled, onChan
                         disabled={disabled || cities === undefined}
                     />
                 )}
-            </Field>
+            </FormField>
         </Inline>
     );
 }

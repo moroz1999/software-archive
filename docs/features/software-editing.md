@@ -7,11 +7,12 @@ Adding, editing and deleting software ([domain/software.md](../domain/software.m
 | Page | Path | Content |
 |---|---|---|
 | Software list | `/software` | "Add software" next to the page title; a card leads to the software's page ([software-view.md](software-view.md)), whose "Edit" leads to the editing |
-| Add software | `/software/new` | Empty form, "Add software" submits; back to the list after adding |
-| Edit software | `/software/{id}/edit` | Form with the software's values, "Save" and "Delete"; back to the software's page after saving, to the list after deleting; the software's screenshots below the form ([screenshots.md](screenshots.md#pages)) |
+| Add software | `/software/new` | Empty form; Cancel returns to the list, "Add software" submits and returns to it |
+| Edit software | `/software/{id}/edit` | "Delete" next to the page title; the form with the software's values, Cancel and "Save" back to the software's page; back to the software's page after saving, to the list after deleting; the software's screenshots below the form ([screenshots.md](screenshots.md#pages)) |
 
 ## Form
 
+- Layout: a two-column form ([design-system/form.md](../design-system/form.md)) in sections — Main (Title, Platform, Release date, Description), Classification (Hardware, Categories), Relations (Publishers, Developers), Authors (Credits); Cancel and the submit button at its bottom right.
 - Fields: Title (required, at most 255 characters), Platform (required, chosen from the archive's platforms; a new form starts with the platform of the switch, [platform-switch.md](platform-switch.md)), Description (multi-line), Release date (a year or a day, one text field with a hint: `1987` or `12.05.1987`; the API keeps the ISO day).
 - Hardware: once a platform is chosen, its hardware by group, picked with the same picker as a release's ([design-system/multi-select-filter.md](../design-system/multi-select-filter.md)); a skeleton while it loads.
 - Categories: under the hardware, the whole tree of categories ([domain/categories.md](../domain/categories.md)) to check any number in, none included ([design-system/tree-checklist.md](../design-system/tree-checklist.md)); a skeleton while it loads.

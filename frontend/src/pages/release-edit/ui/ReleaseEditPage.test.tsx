@@ -48,6 +48,20 @@ describe('ReleaseEditPage', () => {
         expect(screen.queryByTestId('release-editor-skeleton')).not.toBeInTheDocument();
     });
 
+    it('offers deleting next to the page title and leads back to the release from the form', async () => {
+        answer();
+
+        renderRoute();
+
+        const heading = await screen.findByRole('heading', {level: 1, name: 'Edit release of Elite'});
+        await screen.findByRole('textbox', {name: 'Version'});
+
+        // The title's line comes before the form: its Delete is the page's first button.
+        expect(screen.getAllByRole('button').at(0)).toHaveAccessibleName('Delete');
+        expect(heading).toBeInTheDocument();
+        expect(screen.getByRole('link', {name: 'Cancel'})).toHaveAttribute('href', `/software/${ID}/releases/${RELEASE}`);
+    });
+
     it('offers the screenshots of the release to change below its form', async () => {
         answer();
 

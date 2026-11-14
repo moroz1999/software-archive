@@ -3,6 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {SOFTWARE_LIST_PATH, SoftwareForm} from '@/entities/software';
 import {CreateSoftwareProvider} from '@/features/software/create';
 import {SoftwareCategoriesField} from '@/widgets/software-editor';
+import {Button} from '@/shared/ui/button';
 import {PageLayout} from '@/shared/ui/page-layout';
 
 export function SoftwareNewPage() {
@@ -13,7 +14,11 @@ export function SoftwareNewPage() {
             <CreateSoftwareProvider onCreated={() => {
                 void navigate(SOFTWARE_LIST_PATH);
             }}>
-                <SoftwareForm submitLabel={t('actions.addSoftware')} categories={<SoftwareCategoriesField/>}/>
+                <SoftwareForm
+                    submitLabel={t('actions.addSoftware')}
+                    actions={<Button href={SOFTWARE_LIST_PATH} color="secondary">{t('actions.cancel')}</Button>}
+                    categories={<SoftwareCategoriesField/>}
+                />
             </CreateSoftwareProvider>
         </PageLayout>
     );

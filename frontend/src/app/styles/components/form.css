@@ -1,0 +1,34 @@
+:root {
+    /* Between the sections of a form, the fields of a section and its message and actions. */
+    --form-gap: var(--space-16);
+
+    /* Width of a one-column form. */
+    --form-max-width: 640px;
+
+    /* A two-column form: wider, with more room between its sections. */
+    --form-columns-max-width: 920px;
+    --form-sections-gap: var(--space-32);
+
+    /* Gaps of the field grid of a two-column section and of a row. */
+    --form-columns-row-gap: var(--space-16);
+    --form-columns-column-gap: var(--space-20);
+
+    /* Between the title of a section and its rule. */
+    --form-section-title-padding: var(--space-4);
+
+    /* Rule under the title of a section. */
+    --form-section-title-border: var(--border-light);
+
+    /* Between the label of a field and its control. */
+    --form-field-gap: var(--space-4);
+
+    /* Between a label and its required star. */
+    --form-label-required-gap: var(--space-4);
+
+    /* Between a control and its hint and error. */
+    --form-control-gap: var(--space-4);
+
+    /* Between the buttons of the actions, and above them. */
+    --form-actions-gap: var(--space-8);
+    --form-actions-offset: var(--space-8);
+}

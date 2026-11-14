@@ -4,7 +4,7 @@ import type {UserEntry, UserGroup} from '@/entities/users';
 import {useSkeleton} from '@/shared/lib/loading';
 import {Badge} from '@/shared/ui/badge';
 import {Button} from '@/shared/ui/button';
-import {Field} from '@/shared/ui/field';
+import {FormField} from '@/shared/ui/form';
 import {Inline} from '@/shared/ui/inline';
 import {Input} from '@/shared/ui/input';
 import {LoadingState} from '@/shared/ui/loading-state';
@@ -56,11 +56,11 @@ function Search() {
     return (
         <form noValidate onSubmit={onSubmit} role="search">
             <Inline gap="sm" align="end">
-                <Field label={t('users.search')}>
+                <FormField label={t('users.search')}>
                     {(control) => (
                         <Input id={control.id} type="search" value={typed} onChange={setTyped} placeholder={t('users.searchPlaceholder')}/>
                     )}
-                </Field>
+                </FormField>
                 <Button type="submit" disabled={changing}>{t('users.find')}</Button>
             </Inline>
         </form>

@@ -1,18 +1,14 @@
-import type {ReactNode, SyntheticEvent} from 'react';
+import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Button} from '@/shared/ui/button';
-import {Field} from '@/shared/ui/field';
-import {Inline} from '@/shared/ui/inline';
+import {Form, FormActions, FormField, FormMessage, FormSection} from '@/shared/ui/form';
 import {Input} from '@/shared/ui/input';
 import {MemberRoleEditor} from '@/shared/ui/member-role-editor';
-import {Stack} from '@/shared/ui/stack';
 import {Textarea} from '@/shared/ui/textarea';
-import {Text} from '@/shared/ui/typography';
 import {NAME_PROBLEM_KEYS} from '../config/messages';
 import {fetchGroupPeople} from '../api/group-api';
 import {useGroupForm} from '../model/group-form-context';
 import {GroupTypesField} from './GroupTypesField';
-import styles from './GroupForm.module.css';
 
 export interface GroupFormProps {
     readonly submitLabel: string;
@@ -29,21 +25,21 @@ export function GroupForm({submitLabel, labels, locations, actions}: GroupFormPr
     const {t} = useTranslation();
     const {values, errors, refusals, change, changeMembers, submit, busy, error} = useGroupForm();
 
-    function onSubmit(event: SyntheticEvent) {
-        event.preventDefault();
-        submit();
-    }
-
     return (
-        <form noValidate onSubmit={onSubmit} className={styles.form}>
-            <Stack gap="lg">
-                {error !== undefined && <Text role="alert" tone="danger">{error}</Text>}
-                <Field label={t('group.name')} error={errors.name === undefined ? refusals.name : t(NAME_PROBLEM_KEYS[errors.name])}>
+        <Form onSubmit={submit}>
+            {error !== undefined && <FormMessage>{error}</FormMessage>}
+            <FormSection title={t('formSections.main')}>
+                <FormField label={t('group.name')} required error={errors.name === undefined ? refusals.name : t(NAME_PROBLEM_KEYS[errors.name])}>
                     {(control) => <Input {...control} value={values.name} onChange={change('name')} disabled={busy}/>}
-                </Field>
+                </FormField>
                 <GroupTypesField/>
-                {labels}
-                {locations}
+                <FormField label={t('group.notes')} error={refusals.notes}>
+                    {(control) => <Textarea {...control} value={values.notes} onChange={change('notes')} disabled={busy}/>}
+                </FormField>
+            </FormSection>
+            {labels !== undefined && <FormSection title={t('formSections.names')}>{labels}</FormSection>}
+            {locations !== undefined && <FormSection title={t('formSections.geography')}>{locations}</FormSection>}
+            <FormSection title={t('formSections.members')}>
                 <MemberRoleEditor
                     label={t('group.members')}
                     value={values.members ?? []}
@@ -54,15 +50,12 @@ export function GroupForm({submitLabel, labels, locations, actions}: GroupFormPr
                     disabled={busy}
                     error={refusals.members}
                 />
-                <Field label={t('group.notes')} error={refusals.notes}>
-                    {(control) => <Textarea {...control} value={values.notes} onChange={change('notes')} disabled={busy}/>}
-                </Field>
-                <Inline gap="sm" justify="end" wrap>
-                    {actions}
-                    <Button type="submit" loading={busy}>{submitLabel}</Button>
-                </Inline>
-            </Stack>
-        </form>
+            </FormSection>
+            <FormActions>
+                {actions}
+                <Button type="submit" loading={busy}>{submitLabel}</Button>
+            </FormActions>
+        </Form>
     );
 }
 

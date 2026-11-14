@@ -1,11 +1,10 @@
-import type {ReactNode, SyntheticEvent} from 'react';
+import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Button} from '@/shared/ui/button';
-import {Field} from '@/shared/ui/field';
+import {Form, FormActions, FormField, FormFieldset, FormMessage, FormRow, FormSection} from '@/shared/ui/form';
 import {Inline} from '@/shared/ui/inline';
 import {Input} from '@/shared/ui/input';
 import {Select} from '@/shared/ui/select';
-import {Stack} from '@/shared/ui/stack';
 import {Textarea} from '@/shared/ui/textarea';
 import {FileUpload} from '@/shared/ui/file-upload';
 import {Text} from '@/shared/ui/typography';
@@ -23,7 +22,7 @@ import {HardwarePicker} from './HardwarePicker';
 
 export interface ReleaseFormProps {
     readonly submitLabel: string;
-    /** More buttons next to the submit button. */
+    /** More buttons before the submit button, such as Cancel. */
     readonly actions?: ReactNode;
 }
 
@@ -33,44 +32,43 @@ export function ReleaseForm({submitLabel, actions}: ReleaseFormProps) {
     const {values, errors, refusals, change, submit, busy, error} = useReleaseForm();
     const typeOptions = RELEASE_TYPES.map((type) => ({value: type, label: t(`release.types.${type}`)}));
 
-    function onSubmit(event: SyntheticEvent) {
-        event.preventDefault();
-        submit();
-    }
-
     return (
-        <form noValidate onSubmit={onSubmit}>
-            <Stack gap="lg">
-                {error !== undefined && <Text role="alert" tone="danger">{error}</Text>}
-                <Field label={t('fields.title')} error={errors.title === undefined ? refusals.title : t(TITLE_PROBLEM_KEYS[errors.title])}>
+        <Form onSubmit={submit} columns={2}>
+            {error !== undefined && <FormMessage>{error}</FormMessage>}
+            <FormSection title={t('formSections.main')}>
+                <FormField label={t('fields.title')} fullWidth error={errors.title === undefined ? refusals.title : t(TITLE_PROBLEM_KEYS[errors.title])}>
                     {(control) => <Input {...control} value={values.title} onChange={change('title')} disabled={busy}/>}
-                </Field>
-                <Field label={t('fields.version')} error={errors.version === undefined ? refusals.version : t(RELEASE_VERSION_TOO_LONG_KEY)}>
-                    {(control) => <Input {...control} value={values.version} onChange={change('version')} disabled={busy}/>}
-                </Field>
-                <Field label={t('fields.type')} error={errors.type === undefined ? refusals.type : t(RELEASE_TYPE_REQUIRED_KEY)}>
-                    {(control) => (
-                        <Select {...control} value={values.type} onChange={change('type')} options={typeOptions} placeholder={t('fields.chooseType')} disabled={busy}/>
-                    )}
-                </Field>
-                <Field
-                    label={t('fields.releaseDate')}
-                    hint={t(RELEASE_DATE_HINT_KEY)}
-                    error={errors.releaseDate === undefined ? refusals.releaseDate : t(RELEASE_DATE_INVALID_KEY)}
-                >
-                    {(control) => <Input {...control} value={values.releaseDate} onChange={change('releaseDate')} disabled={busy}/>}
-                </Field>
-                <Field label={t('fields.description')} error={refusals.description}>
+                </FormField>
+                <FormRow columns={3}>
+                    <FormField label={t('fields.version')} error={errors.version === undefined ? refusals.version : t(RELEASE_VERSION_TOO_LONG_KEY)}>
+                        {(control) => <Input {...control} value={values.version} onChange={change('version')} disabled={busy}/>}
+                    </FormField>
+                    <FormField label={t('fields.type')} required error={errors.type === undefined ? refusals.type : t(RELEASE_TYPE_REQUIRED_KEY)}>
+                        {(control) => (
+                            <Select {...control} value={values.type} onChange={change('type')} options={typeOptions} placeholder={t('fields.chooseType')} disabled={busy}/>
+                        )}
+                    </FormField>
+                    <FormField
+                        label={t('fields.releaseDate')}
+                        hint={t(RELEASE_DATE_HINT_KEY)}
+                        error={errors.releaseDate === undefined ? refusals.releaseDate : t(RELEASE_DATE_INVALID_KEY)}
+                    >
+                        {(control) => <Input {...control} value={values.releaseDate} onChange={change('releaseDate')} disabled={busy}/>}
+                    </FormField>
+                </FormRow>
+                <FormField label={t('fields.description')} fullWidth error={refusals.description}>
                     {(control) => <Textarea {...control} value={values.description} onChange={change('description')} disabled={busy}/>}
-                </Field>
+                </FormField>
+            </FormSection>
+            <FormSection title={t('formSections.hardwareAndArchive')} columns={1}>
                 <ReleaseHardware/>
                 <ReleaseArchiveField/>
-                <Inline gap="sm" justify="between" wrap>
-                    <Button type="submit" loading={busy}>{submitLabel}</Button>
-                    {actions}
-                </Inline>
-            </Stack>
-        </form>
+            </FormSection>
+            <FormActions>
+                {actions}
+                <Button type="submit" loading={busy}>{submitLabel}</Button>
+            </FormActions>
+        </Form>
     );
 }
 
@@ -79,8 +77,7 @@ function ReleaseArchiveField() {
     const {archive, changeArchive, removeArchive, errors, refusals, busy} = useReleaseForm();
     const error = errors.archive === 'too-large' ? t('release.archiveErrors.size') : refusals.archive;
     return (
-        <Stack as="section" gap="xs" ariaLabel={t('release.archive')}>
-            <Text variant="label" tone="muted">{t('release.archive')}</Text>
+        <FormFieldset legend={t('release.archive')} error={error}>
             {archive === null ? null : (
                 <Inline gap="sm" align="center" wrap>
                     <Text>{archive.fileName}</Text>
@@ -100,10 +97,8 @@ function ReleaseArchiveField() {
                 />
                 {archive !== null && <Button color="danger" disabled={busy} onClick={removeArchive}>{t('release.removeArchive')}</Button>}
             </Inline>
-            {error === undefined
-                ? <Text variant="bodySm" tone="muted">{t('release.archiveHint')}</Text>
-                : <Text variant="bodySm" tone="danger" role="alert">{error}</Text>}
-        </Stack>
+            {error === undefined && <Text as="span" variant="caption" tone="muted">{t('release.archiveHint')}</Text>}
+        </FormFieldset>
     );
 }
 

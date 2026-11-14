@@ -8,13 +8,14 @@ Adding, editing and deleting the releases of software ([domain/software.md](../d
 |---|---|---|
 | Software page | `/software/{id}` | "Add release" next to the Releases heading, "Edit" with every release ([software-view.md](software-view.md)) |
 | Release page | `/software/{id}/releases/{releaseId}` | "Edit" next to the release title ([release-view.md](release-view.md)) |
-| Add release | `/software/{id}/releases/new` | "Add release to {title}": an empty form of unknown type, "Add release" submits |
-| Edit release | `/software/{id}/releases/{releaseId}/edit` | "Edit release of {title}": the release as it states itself, "Save" and "Delete" |
+| Add release | `/software/{id}/releases/new` | "Add release to {title}": an empty form of unknown type; Cancel returns to the software, "Add release" submits |
+| Edit release | `/software/{id}/releases/{releaseId}/edit` | "Edit release of {title}": "Delete" next to the page title; the release as it states itself, Cancel back to the release's page and "Save" |
 
 Every page returns to the software's page once done. The editing page has the release's screenshots below the form ([screenshots.md](screenshots.md#pages)).
 
 ## Form
 
+- Layout: sections Main (Title; Version, Type and Release date in one row; Description) and Hardware and archive ([design-system/form.md](../design-system/form.md)); Cancel and the submit button at its bottom right.
 - Title (empty: the release is called by its software's title, at most 255 characters), Version (at most 50), Type (required, the fixed list), Release date (a year or a day, one text field with a hint: `1987` or `12.05.1987`; the API keeps the ISO day), Description.
 - Hardware: the hardware of the software's platform, by group, in the picker the software form uses too ([design-system/multi-select-filter.md](../design-system/multi-select-filter.md)). The form holds only the release's own hardware, not what it shows merged with the software's; a group checked here replaces that group of the software.
 - Archive: one optional file of any type, up to 100 MB. The editing form shows its current original name and size and offers replacement or removal. The chosen archive change is saved atomically with the other fields ([release-files.md](release-files.md)).

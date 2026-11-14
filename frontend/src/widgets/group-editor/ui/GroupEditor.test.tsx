@@ -1,5 +1,5 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {screen} from '@testing-library/react';
+import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
 import {json, noContent, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
@@ -68,6 +68,30 @@ describe(GroupEditor, () => {
         expect(screen.getByRole('heading', {level: 1, name: 'Edit group'})).toBeInTheDocument();
         expect(screen.getByRole('button', {name: 'Delete'})).toBeInTheDocument();
         expect(screen.getByRole('link', {name: 'Cancel'})).toHaveAttribute('href', `/groups/${ID}`);
+    });
+
+    it('starts with its main section, the required fields starred', async () => {
+        stubFetchAround(AROUND, json(CREW));
+        renderEditor();
+
+        await screen.findByRole('textbox', {name: 'Name'});
+
+        const main = screen.getByRole('region', {name: 'Main'});
+
+        expect(within(main).getByRole('textbox', {name: 'Name'})).toBeInTheDocument();
+        expect(within(main).getByRole('group', {name: 'Types'})).toBeInTheDocument();
+        expect(within(main).getAllByText('*')).toHaveLength(2);
+    });
+
+    it('puts the names, the places and the members of the group in sections of their own', async () => {
+        stubFetchAround(AROUND, json(CREW));
+        renderEditor();
+
+        await screen.findByRole('textbox', {name: 'Name'});
+
+        expect(within(screen.getByRole('region', {name: 'Names'})).getByRole('textbox', {name: 'Label 1'})).toBeInTheDocument();
+        expect(within(screen.getByRole('region', {name: 'Geography'})).getByRole('group', {name: 'Locations'})).toBeInTheDocument();
+        expect(screen.getByRole('region', {name: 'Members'})).toBeInTheDocument();
     });
 
     it('saves the whole group with its types, labels and locations', async () => {

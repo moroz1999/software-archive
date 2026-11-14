@@ -8,10 +8,12 @@ import {
     ReleaseDetailsProvider,
     ReleaseForm,
     type ReleaseId,
+    releasePath,
     type SoftwareDetails,
     SoftwareDetailsProvider,
     SoftwareFormSkeleton,
     type SoftwareId,
+    softwarePath,
     usePlatformHardware,
     useReleaseDetails,
     useSoftwareDetails,
@@ -21,6 +23,7 @@ import {DeleteReleaseButton} from '@/features/release/delete';
 import {EditReleaseProvider} from '@/features/release/edit';
 import {ScreenshotsEditorSection} from '@/features/software/screenshots';
 import {useSkeleton} from '@/shared/lib/loading';
+import {Button} from '@/shared/ui/button';
 import {PageLayout} from '@/shared/ui/page-layout';
 import {Stack} from '@/shared/ui/stack';
 
@@ -37,7 +40,10 @@ export function ReleaseCreator({softwareId, onDone}: ReleaseCreatorProps) {
         <WithSoftwareAndHardware id={softwareId} title={t('release.add')} titleOf={(software) => t('release.addTo', {title: software.title})}>
             {(software, hardware) => (
                 <CreateReleaseProvider software={software} hardware={hardware} onCreated={onDone}>
-                    <ReleaseForm submitLabel={t('release.add')}/>
+                    <ReleaseForm
+                        submitLabel={t('release.add')}
+                        actions={<Button href={softwarePath(softwareId)} color="secondary">{t('actions.cancel')}</Button>}
+                    />
                 </CreateReleaseProvider>
             )}
         </WithSoftwareAndHardware>
@@ -51,27 +57,41 @@ export interface ReleaseEditorProps {
     readonly onDone: () => void;
 }
 
-/** The page of editing one release: its form, saving and deleting, and its screenshots below. */
+/** The page of editing one release: deleting next to its title, its form, and its screenshots below. */
 export function ReleaseEditor({softwareId, releaseId, onDone}: ReleaseEditorProps) {
     const {t} = useTranslation();
     return (
-        <WithSoftwareAndHardware id={softwareId} title={t('release.edit')} titleOf={(software) => t('release.editOf', {title: software.title})}>
-            {(software, hardware) => (
-                <ReleaseDetailsProvider softwareId={softwareId} releaseId={releaseId}>
+        <ReleaseDetailsProvider softwareId={softwareId} releaseId={releaseId}>
+            <WithSoftwareAndHardware
+                id={softwareId}
+                title={t('release.edit')}
+                titleOf={(software) => t('release.editOf', {title: software.title})}
+                actions={(software) => <DeleteAction software={software} onDone={onDone}/>}
+            >
+                {(software, hardware) => (
                     <ReleaseGate>
                         {(release) => (
                             <Stack gap="xl">
                                 <EditReleaseProvider software={software} release={release} hardware={hardware} onSaved={onDone}>
-                                    <ReleaseForm submitLabel={t('actions.save')} actions={<DeleteReleaseButton software={software} release={release} onDeleted={onDone}/>}/>
+                                    <ReleaseForm
+                                        submitLabel={t('actions.save')}
+                                        actions={<Button href={releasePath(softwareId, releaseId)} color="secondary">{t('actions.cancel')}</Button>}
+                                    />
                                 </EditReleaseProvider>
                                 <ScreenshotsEditorSection softwareId={softwareId} releaseId={releaseId}/>
                             </Stack>
                         )}
                     </ReleaseGate>
-                </ReleaseDetailsProvider>
-            )}
-        </WithSoftwareAndHardware>
+                )}
+            </WithSoftwareAndHardware>
+        </ReleaseDetailsProvider>
     );
+}
+
+/** Deleting the release, offered next to the page title once the release is there. */
+function DeleteAction({software, onDone}: {readonly software: SoftwareDetails; readonly onDone: () => void}) {
+    const query = useReleaseDetails();
+    return query.data === undefined ? null : <DeleteReleaseButton software={software} release={query.data} onDeleted={onDone}/>;
 }
 
 interface WithSoftwareAndHardwareProps {
@@ -79,16 +99,18 @@ interface WithSoftwareAndHardwareProps {
     /** The page title until the software arrives. */
     readonly title: string;
     readonly titleOf: (software: SoftwareDetails) => string;
+    /** What is offered next to the page title. */
+    readonly actions?: (software: SoftwareDetails) => ReactNode;
     readonly children: (software: SoftwareDetails, hardware: readonly Hardware[]) => ReactNode;
 }
 
 /** The software and the hardware of its platform, which every form of a release needs; the page is titled by the software. */
-function WithSoftwareAndHardware({id, title, titleOf, children}: WithSoftwareAndHardwareProps) {
+function WithSoftwareAndHardware({id, title, titleOf, actions, children}: WithSoftwareAndHardwareProps) {
     return (
         <SoftwareDetailsProvider key={id} id={id}>
             <SoftwareGate title={title}>
                 {(software) => (
-                    <PageLayout title={titleOf(software)}>
+                    <PageLayout title={titleOf(software)} actions={actions?.(software)}>
                         <PlatformHardwareProvider platform={software.platform.code}>
                             <HardwareGate>{(hardware) => children(software, hardware)}</HardwareGate>
                         </PlatformHardwareProvider>

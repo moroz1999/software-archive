@@ -12,7 +12,7 @@ Adding, editing and deleting authors: people known by a real name, their labels 
 
 ## Form
 
-- Real name (at most 255 characters), Labels, Locations, Notes (multi-line), in one narrow column; Cancel and the submit button at its bottom right.
+- In one narrow column, in sections ([design-system/form.md](../design-system/form.md)): Main (Real name, at most 255 characters; Notes, multi-line), Names (Labels), Geography (Locations); Cancel and the submit button at its bottom right.
 - An author needs a real name or at least one label: without either, "Enter a real name or add a label." shows under Real name on submit.
 - Labels: one line per label: its name, the "Display name" radio and × to take it away; "Add label" adds an empty line. A name is required, at most 255 characters, its error under its row. Exactly one label is the display name: the first label added becomes it, taking it away passes it to the first label left. Renaming keeps the label with its credits and memberships.
 - A label removed from the form is not deleted: it stays in the archive as a label of nobody, with its credits and memberships. Deleting a label is a separate action.

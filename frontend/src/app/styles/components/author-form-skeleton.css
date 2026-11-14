@@ -1,6 +1,6 @@
 :root {
     /* As wide as the form it stands for. */
-    --author-form-skeleton-max-width: 720px;
+    --author-form-skeleton-max-width: 640px;
 
     /* Label bone: a short word of a label line. */
     --author-form-skeleton-label-width: var(--space-64);
