@@ -4,6 +4,7 @@ import {
     HardwareList,
     releaseDayText,
     releaseEditPath,
+    releaseYear,
     releaseNewPath,
     type SoftwareCategory,
     type SoftwareDetails,
@@ -16,6 +17,8 @@ import {
     ScreenshotsProvider,
     useSoftwareDetails,
 } from '@/entities/software';
+import {toCategoryId} from '@/entities/categories';
+import {catalogHrefOf} from '@/features/software/catalog';
 import {useInViewport} from '@/shared/lib/screen';
 import {Button} from '@/shared/ui/button';
 import {Chip} from '@/shared/ui/chip';
@@ -76,7 +79,13 @@ function Details({software}: {readonly software: SoftwareDetails}) {
         <Stack gap="lg">
             <Section label={t('fields.platform')}><Text>{software.platform.name}</Text></Section>
             {software.releaseDate !== null && (
-                <Section label={t('software.released')}><Text>{releaseDayText(software.releaseDate, i18n.resolvedLanguage ?? 'en')}</Text></Section>
+                <Section label={t('software.released')}>
+                    <Text>
+                        <TextLink href={catalogHrefOf({year: releaseYear(software.releaseDate)})}>
+                            {releaseDayText(software.releaseDate, i18n.resolvedLanguage ?? 'en')}
+                        </TextLink>
+                    </Text>
+                </Section>
             )}
             {software.hardware.length > 0 && (
                 <Stack as="section" gap="xs" ariaLabel={t('fields.hardware')}>
@@ -123,14 +132,14 @@ function Details({software}: {readonly software: SoftwareDetails}) {
     );
 }
 
-/** A category of the software with its branch from the top of the tree down to it. */
+/** A category of the software with its branch from the top of the tree down to it, each step leading to its catalog. */
 function Branch({category}: {readonly category: SoftwareCategory}) {
     return (
         <Inline as="ul" gap="xs" align="center" wrap ariaLabel={category.branch.map((step) => step.title).join(' › ')}>
             {category.branch.map((step, index) => (
                 <Fragment key={step.id}>
                     {index > 0 && <li aria-hidden="true"><Text as="span" tone="muted">›</Text></li>}
-                    <li><Chip>{step.title}</Chip></li>
+                    <li><Chip href={catalogHrefOf({category: toCategoryId(step.id)})}>{step.title}</Chip></li>
                 </Fragment>
             ))}
         </Inline>

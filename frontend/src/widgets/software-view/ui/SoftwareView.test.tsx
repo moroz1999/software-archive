@@ -169,6 +169,28 @@ describe(SoftwareView, () => {
         ]);
     });
 
+    it('leads from the release date to the catalog of its year', async () => {
+        stubFetch(json(ELITE));
+        renderView(ID);
+
+        await expect(screen.findByRole('link', {name: '20 September 1984'})).resolves.toHaveAttribute('href', '/software?year=1984');
+    });
+
+    it('leads from every category of a branch to the catalog of that category', async () => {
+        stubFetch(json(ELITE));
+        renderView(ID);
+
+        const categories = await screen.findByRole('region', {name: 'Categories'});
+
+        expect(within(categories).getAllByRole('link').map((link) => [link.textContent, link.getAttribute('href')])).toStrictEqual([
+            ['Games', `/software/category/${GAMES}`],
+            ['Action', `/software/category/${ACTION}`],
+            ['Shooters', `/software/category/${SHOOTERS}`],
+            ['Games', `/software/category/${GAMES}`],
+            ['Strategy', `/software/category/${STRATEGY}`],
+        ]);
+    });
+
     it('shows no categories for software in none', async () => {
         stubFetch(json({...ELITE, categories: []}));
         renderView(ID);

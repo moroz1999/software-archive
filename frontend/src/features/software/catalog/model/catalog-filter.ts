@@ -48,3 +48,8 @@ export function catalogHref(filter: SoftwareCatalogFilter): string {
     const query = search.toString();
     return query === '' ? path : `${path}?${query}`;
 }
+
+/** The address of the whole catalog narrowed only by the values given: where a fact of software leads. */
+export function catalogHrefOf(only: Partial<Pick<SoftwareCatalogFilter, 'year' | 'category'>>): string {
+    return catalogHref({keyword: null, year: null, category: null, country: null, page: 0, ...only});
+}
