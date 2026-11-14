@@ -210,6 +210,16 @@ class JdbcGroupReadRepositoryIT {
     }
 
     @Test
+    void keepsAGroupCreditedByItselfOnSoftwareOfThePlatform() {
+        credit();
+        jdbc.update("INSERT INTO software_contribution (software_id, group_id) VALUES (?, ?)", id(403), OLDIES);
+
+        assertThat(reads.findCatalogPage(null, null, null, "msx", FIRST_PAGE).getContent())
+                .extracting(GroupCatalogEntry::name)
+                .containsExactly("Alpha", "Zeta");
+    }
+
+    @Test
     void combinesThePlatformWithTheOtherFilters() {
         credit();
 

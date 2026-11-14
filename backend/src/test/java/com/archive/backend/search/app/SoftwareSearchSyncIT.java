@@ -367,6 +367,22 @@ class SoftwareSearchSyncIT {
     }
 
     @Test
+    void theCountriesOfSoftwareLeaveOutWhoOnlyCrackedAdaptedTranslatedOrHelpedWithIt() throws Exception {
+        createAuthor.handle(new CreateAuthorCommand(
+                ADMIN, new RealName("Zed Zedson"), null, List.of(zed(null)), List.of(in(FINLAND))));
+        SoftwareId elite = create("Elite");
+        jdbc.update("""
+                INSERT INTO software_contribution (software_id, label_id, role_codes) VALUES (?, ?, ARRAY['release',
+                    'intro_code', 'intro_graphics', 'intro_music', 'adaptation', 'restoring', 'localization',
+                    'translation', 'guest', 'support', 'testing'])
+                """, elite.value(), labelNamed("Zed").value());
+
+        worker.handle();
+
+        assertThat(listIn(document(elite), "countries")).isEmpty();
+    }
+
+    @Test
     void movingAnAuthorChangesTheCountriesOfTheirSoftware() throws Exception {
         AuthorId author = createAuthor.handle(new CreateAuthorCommand(
                 ADMIN, new RealName("Zed Zedson"), null, List.of(zed(null)), List.of(in(FINLAND))));
@@ -445,11 +461,11 @@ class SoftwareSearchSyncIT {
     }
 
     @Test
-    void renamingADeveloperCompanyRenamesItOnTheCardsOfItsSoftware() throws Exception {
+    void renamingADeveloperRenamesItOnTheCardsOfItsSoftware() throws Exception {
         GroupId group = zedSquad();
         SoftwareId elite = create("Elite");
         jdbc.update(
-                "INSERT INTO software_developer_group (software_id, group_id) VALUES (?, ?)",
+                "INSERT INTO software_contribution (software_id, group_id, role_codes) VALUES (?, ?, ARRAY['developer'])",
                 elite.value(),
                 group.value());
         worker.handle();
@@ -462,12 +478,12 @@ class SoftwareSearchSyncIT {
     }
 
     @Test
-    void renamingTheLabelADeveloperCompanyMadeSoftwareUnderRenamesItOnTheCard() throws Exception {
+    void renamingTheLabelADeveloperMadeSoftwareUnderRenamesItOnTheCard() throws Exception {
         GroupId group = zedSquad();
         LabelId label = labelNamed("ZS");
         SoftwareId elite = create("Elite");
         jdbc.update(
-                "INSERT INTO software_developer_label (software_id, label_id) VALUES (?, ?)",
+                "INSERT INTO software_contribution (software_id, label_id, role_codes) VALUES (?, ?, ARRAY['developer'])",
                 elite.value(),
                 label.value());
         worker.handle();
@@ -495,6 +511,37 @@ class SoftwareSearchSyncIT {
         worker.handle();
 
         assertThat(listIn(document(elite), "made_by")).containsExactly("Zed Zedson Two");
+    }
+
+    @Test
+    void movingAGroupCreditedByItselfChangesTheCountriesOfItsSoftware() throws Exception {
+        GroupId group = createGroup.handle(new CreateGroupCommand(
+                ADMIN,
+                new GroupName("Zed Squad"),
+                null,
+                Set.of(new GroupTypeCode("demogroup")),
+                List.of(new LabelDraft(null, new LabelName("ZS"), true)),
+                List.of(in(FINLAND))));
+        LabelId label = labelNamed("ZS");
+        SoftwareId elite = create("Elite");
+        jdbc.update(
+                "INSERT INTO software_contribution (software_id, group_id, role_codes) VALUES (?, ?, ARRAY['developer'])",
+                elite.value(),
+                group.value());
+        worker.handle();
+        assertThat(listIn(document(elite), "countries")).containsExactly(FINLAND.toString());
+
+        updateGroup.handle(new UpdateGroupCommand(
+                ADMIN,
+                group,
+                new GroupName("Zed Squad"),
+                null,
+                Set.of(new GroupTypeCode("demogroup")),
+                List.of(new LabelDraft(label, new LabelName("ZS"), true)),
+                List.of(in(LATVIA))));
+        worker.handle();
+
+        assertThat(listIn(document(elite), "countries")).containsExactly(LATVIA.toString());
     }
 
     @Test

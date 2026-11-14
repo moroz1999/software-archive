@@ -103,8 +103,6 @@ describe('UI localization', () => {
                 platform: {code: 'vector', name: 'Vector'},
                 hardware: [],
                 categories: [],
-                publishers: [],
-                developers: [],
                 credits: [],
                 sources: [],
                 canChange: true,

@@ -22,7 +22,7 @@ One document per entity, with the entity's id as the document id. Facet values a
 | `authors` | every label of the person, real name | platforms |
 | `groups` | every label of the group, name | platforms |
 
-Platforms of people and groups are those of the software their labels are credited on. People and groups are stored under the main name, with every label beside it; a person without any name has no document.
+Platforms of people and groups are those of the software they are credited on, by themselves or by a label. People and groups are stored under the main name, with every label beside it; a person without any name has no document.
 
 ## Reads
 
@@ -39,8 +39,8 @@ Platforms of people and groups are those of the software their labels are credit
 1. **Outbox.** In the same transaction as a change, the type and id of every entity whose document changed go to `search_outbox`, written by in-transaction listeners of the domain events ([backend.md](../backend.md)). One row per entity: a new change of a waiting entity renews its row instead of adding one, and the worker removes a row only if it was not renewed while being processed, so no change is lost. Changes reach other documents:
    - software saved or deleted → the software, and the people and groups of its credits before and after (platforms);
    - a label attached to or taken from an owner, deleted → its old and new owner, and the software it is credited on (countries);
-   - locations of a person or a group changed → the software their labels are credited on;
-   - a person or a group edited or deleted → the software whose card names them: credited on by themselves or by a label, a developer company by itself or by a label;
+   - locations of a person or a group changed → the software they are credited on, by themselves or by their labels;
+   - a person or a group edited or deleted → the software whose card names them: credited on by themselves or by a label.
    - a category moved or deleted → the software in it and in its subtree.
 2. **Worker.** One background worker takes the due tasks after commit. For each it reads the current state from PostgreSQL and upserts the full document under its stable id. A missing entity deletes its document; a document already missing counts as deleted.
 3. **Acknowledgement.** A task is removed only after Typesense confirmed it. A failed task stays and is retried with a growing delay.
@@ -50,7 +50,7 @@ Platforms of people and groups are those of the software their labels are credit
 - The changes are told by domain events, published by the use cases: `SoftwareChanged`, `AuthorChanged` and `GroupChanged` (added, edited, deleted), `CategoryMoved`, `CategoryDeleted`, and `OwnerOfLabelsChanged` from a person or a group edited or deleted, with the labels it had before (new labels have no credits yet). A deletion tells before it deletes, while the subtree and the credits can still be found. `search/app/EnqueueSearchDocumentsHandler` answers them all.
 - A row of `search_outbox` carries a renewal number from a sequence: a new change renews it, and the worker removes the row only with the number it took.
 - The worker (`ProcessSearchOutboxHandler`) runs every `search.worker.delay`; the retry delay doubles from 1 s to at most 10 minutes. A call to Typesense that timed out may still be applied once Typesense answers again: a retry then only upserts the same document once more.
-- Credits are not edited in the archive yet, so a change of credits enqueues nothing.
+- A software document leaves the roles of work on a copy out of its countries; the list of those roles is in `JdbcSoftwareDocuments`.
 
 ## Initial load and rebuild
 

@@ -1,5 +1,4 @@
 import {createRequiredContext} from '@/shared/lib/context';
-import type {SoftwareReference} from './software';
 import type {MemberRoleValue} from '@/shared/ui/member-role-editor';
 import type {PlatformChoice, SoftwareFormErrors, SoftwareFormValues} from './software-form';
 
@@ -18,10 +17,7 @@ export interface SoftwareFormState {
     readonly changeHardware: (codes: readonly string[]) => void;
     /** Replaces the chosen categories. */
     readonly changeCategories: (ids: readonly string[]) => void;
-    /** Replaces the chosen publishers. */
-    readonly changePublishers: (references: readonly SoftwareReference[]) => void;
-    /** Replaces the chosen developer companies. */
-    readonly changeDevelopers: (references: readonly SoftwareReference[]) => void;
+    /** Replaces everyone credited. */
     readonly changeCredits: (credits: readonly MemberRoleValue[]) => void;
     /** Checks the format rules and hands the draft on only when they pass. */
     readonly submit: () => void;

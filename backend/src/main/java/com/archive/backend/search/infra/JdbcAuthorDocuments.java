@@ -17,7 +17,7 @@ import org.springframework.stereotype.Repository;
 
 /**
  * Builds the documents of people with plain SQL: under the main name, with every label, and with the platforms of the
- * software their labels are credited on. A person without any name is not an author and has none.
+ * software they are credited on, by themselves or by a label. A person without any name is not an author and has none.
  */
 @Repository
 @RequiredArgsConstructor
@@ -27,10 +27,10 @@ public class JdbcAuthorDocuments implements AuthorDocuments {
             SELECT n.person_id AS id, n.main_name, n.real_name,
                    ARRAY(SELECT l.name FROM label l
                          WHERE l.person_id = n.person_id ORDER BY lower(l.name), l.id) AS labels,
-                   ARRAY(SELECT DISTINCT s.platform_code FROM label l
-                         JOIN software_contribution sc ON sc.label_id = l.id
+                   ARRAY(SELECT DISTINCT s.platform_code FROM software_contribution sc
+                         LEFT JOIN label l ON l.id = sc.label_id
                          JOIN software s ON s.id = sc.software_id
-                         WHERE l.person_id = n.person_id ORDER BY s.platform_code) AS platforms
+                         WHERE COALESCE(sc.person_id, l.person_id) = n.person_id ORDER BY s.platform_code) AS platforms
             FROM named_person n
             WHERE n.main_name IS NOT NULL
             """;

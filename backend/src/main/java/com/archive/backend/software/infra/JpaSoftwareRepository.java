@@ -45,8 +45,8 @@ public class JpaSoftwareRepository implements SoftwareRepository {
     }
 
     /**
-     * A credit of the same person or label stays its row: written anew, it would be inserted before the old row is
-     * deleted, and one person or label is credited once per software.
+     * A credit of the same person, group or label stays its row: written anew, it would be inserted before the old row
+     * is deleted, and each of them is credited once per software.
      */
     private static void keepCreditRows(SoftwareEntity stored, SoftwareEntity entity) {
         Map<UUID, UUID> rows = stored.getCredits().stream()
@@ -57,7 +57,11 @@ public class JpaSoftwareRepository implements SoftwareRepository {
 
     private static UUID creditedId(SoftwareCreditEntity credit) {
         UUID person = credit.getPersonId();
-        return person == null ? Objects.requireNonNull(credit.getLabelId()) : person;
+        if (person != null) {
+            return person;
+        }
+        UUID group = credit.getGroupId();
+        return group == null ? Objects.requireNonNull(credit.getLabelId()) : group;
     }
 
     @Override

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.Data;
+import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
@@ -25,8 +26,15 @@ public class SoftwareCreditEntity {
     @Column(name = "person_id")
     private @Nullable UUID personId;
 
+    @Column(name = "group_id")
+    private @Nullable UUID groupId;
+
     @Column(name = "label_id")
     private @Nullable UUID labelId;
+
+    /** Whether the credited label is of a group: a label is credited the same way whoever owns it. */
+    @Formula("(SELECT l.group_id IS NOT NULL FROM label l WHERE l.id = label_id)")
+    private @Nullable Boolean labelOfGroup;
 
     @JdbcTypeCode(SqlTypes.ARRAY)
     @Column(name = "role_codes", columnDefinition = "text[]", nullable = false)

@@ -219,12 +219,12 @@ class FixturesIT {
     }
 
     @Test
-    void aFixtureSoftwareHasPublishersAndDeveloperCompaniesUnderOwnersAndAliases() throws Exception {
+    void aFixtureSoftwareCreditsPeopleGroupsAndTheirLabelsAsPublishersAndDevelopers() throws Exception {
         mvc.perform(get("/api/software/{id}", ELITE))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.publishers[*].type")
-                        .value(containsInAnyOrder("author", "author-label", "group", "group-label")))
-                .andExpect(jsonPath("$.developers[*].type").value(containsInAnyOrder("group", "group-label")));
+                .andExpect(
+                        jsonPath("$.credits[*].type").value(hasItems("author", "author-label", "group", "group-label")))
+                .andExpect(jsonPath("$.credits[*].roles[*]").value(hasItems("publisher", "developer")));
     }
 
     @Test

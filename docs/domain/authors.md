@@ -9,7 +9,7 @@ A real person. The real name is optional; a person may be known only through lab
 A team or a company that releases works. Has a name, notes and at least one group type. Group types are a reference book kept in the archive: demogroup, crack group, game studio, label.
 
 ## Label
-A name works are released under ("VASYANSOFT"). Works are credited to labels, not to people or groups — see [software.md](software.md).
+A name works are released under ("VASYANSOFT"). Works are credited to labels, or to people and groups themselves when the name does not matter — see [software.md](software.md#credits).
 A label is taken as it is first met: often nobody knows yet whose it is, so a label can belong to nobody. Once it is found out, the label is attached to its owner — a person (a nickname) or a group (an alternative name of the group) — never to both.
 An owner can have several labels; exactly one of them is the display name. Labels can be tied to cities.
 A label taken away from its owner is not deleted: it becomes a label of nobody and keeps its credits and memberships. A label is deleted only on purpose.

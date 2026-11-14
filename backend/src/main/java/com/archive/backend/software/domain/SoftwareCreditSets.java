@@ -1,19 +1,18 @@
 package com.archive.backend.software.domain;
 
-import com.archive.backend.author.domain.PersonReferenceCatalog;
 import java.util.List;
 
-/** Builds credits only from people and aliases that still exist in the archive. */
+/** Builds credits only from people, groups and labels that are in the archive. */
 public class SoftwareCreditSets {
 
-    private final PersonReferenceCatalog catalog;
+    private final SoftwareReferenceCatalog catalog;
 
-    public SoftwareCreditSets(PersonReferenceCatalog catalog) {
+    public SoftwareCreditSets(SoftwareReferenceCatalog catalog) {
         this.catalog = catalog;
     }
 
     public SoftwareCredits of(List<SoftwareCreditDraft> credits) {
-        if (credits.stream().anyMatch(credit -> !catalog.contains(credit.person()))) {
+        if (credits.stream().anyMatch(credit -> !catalog.contains(credit.participant()))) {
             throw new SoftwareCreditUnknownException();
         }
         return SoftwareCredits.of(credits);

@@ -210,6 +210,16 @@ class JdbcAuthorReadRepositoryIT {
     }
 
     @Test
+    void keepsAPersonCreditedByThemselvesOnSoftwareOfThePlatform() {
+        credit();
+        jdbc.update("INSERT INTO software_contribution (software_id, person_id) VALUES (?, ?)", id(403), CARL);
+
+        assertThat(reads.findCatalogPage(null, null, null, "msx", FIRST_PAGE).getContent())
+                .extracting(AuthorCatalogEntry::name)
+                .containsExactly("Carl Real");
+    }
+
+    @Test
     void combinesThePlatformWithTheOtherFilters() {
         credit();
 

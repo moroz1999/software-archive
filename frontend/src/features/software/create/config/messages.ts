@@ -10,8 +10,6 @@ export function createSoftwareMessages(t: TFunction): BusinessMessages {
         '422': t('errors.business.refused'),
         'hardware.unknown': t('errors.hardwareUnknown'),
         'category.unknown': t('errors.categoryUnknown'),
-        'software.publisher-unknown': t('errors.publisherUnknown'),
-        'software.developer-unknown': t('errors.developerUnknown'),
         'software.credit-unknown': t('errors.softwareCreditUnknown'),
     };
 }

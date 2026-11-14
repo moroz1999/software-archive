@@ -38,7 +38,7 @@ public final class Software {
      */
     private CategorySet categories;
 
-    private SoftwareReferences references;
+    /** Who made it, published it and worked on it (docs/domain/software.md#credits). */
     private SoftwareCredits credits;
 
     private final List<Release> releases;
@@ -59,7 +59,6 @@ public final class Software {
             @Nullable ReleaseDate releaseDate,
             HardwareSet hardware,
             CategorySet categories,
-            SoftwareReferences references,
             SoftwareCredits credits,
             List<Release> releases,
             AddedBy addedBy,
@@ -70,7 +69,6 @@ public final class Software {
         this.releaseDate = releaseDate;
         this.hardware = Objects.requireNonNull(hardware, "hardware");
         this.categories = Objects.requireNonNull(categories, "categories");
-        this.references = Objects.requireNonNull(references, "references");
         this.credits = Objects.requireNonNull(credits, "credits");
         releases.forEach(release -> requireOwn(release.hardware()));
         this.releases = new ArrayList<>(releases);
@@ -85,22 +83,10 @@ public final class Software {
             @Nullable ReleaseDate releaseDate,
             HardwareSet hardware,
             CategorySet categories,
-            SoftwareReferences references,
             SoftwareCredits credits,
             List<Release> releases,
             AddedBy addedBy) {
-        this(
-                id,
-                title,
-                description,
-                releaseDate,
-                hardware,
-                categories,
-                references,
-                credits,
-                releases,
-                addedBy,
-                Screenshots.EMPTY);
+        this(id, title, description, releaseDate, hardware, categories, credits, releases, addedBy, Screenshots.EMPTY);
     }
 
     public Software(
@@ -110,22 +96,9 @@ public final class Software {
             @Nullable ReleaseDate releaseDate,
             HardwareSet hardware,
             CategorySet categories,
-            SoftwareReferences references,
             SoftwareCredits credits,
             List<Release> releases) {
-        this(id, title, description, releaseDate, hardware, categories, references, credits, releases, AddedBy.NOBODY);
-    }
-
-    public Software(
-            SoftwareId id,
-            SoftwareTitle title,
-            @Nullable SoftwareDescription description,
-            @Nullable ReleaseDate releaseDate,
-            HardwareSet hardware,
-            CategorySet categories,
-            SoftwareReferences references,
-            List<Release> releases) {
-        this(id, title, description, releaseDate, hardware, categories, references, SoftwareCredits.EMPTY, releases);
+        this(id, title, description, releaseDate, hardware, categories, credits, releases, AddedBy.NOBODY);
     }
 
     public Software(
@@ -136,16 +109,7 @@ public final class Software {
             HardwareSet hardware,
             CategorySet categories,
             List<Release> releases) {
-        this(
-                id,
-                title,
-                description,
-                releaseDate,
-                hardware,
-                categories,
-                SoftwareReferences.EMPTY,
-                SoftwareCredits.EMPTY,
-                releases);
+        this(id, title, description, releaseDate, hardware, categories, SoftwareCredits.EMPTY, releases);
     }
 
     public static Software create(
@@ -155,11 +119,10 @@ public final class Software {
             @Nullable ReleaseDate releaseDate,
             HardwareSet hardware,
             CategorySet categories,
-            SoftwareReferences references,
             SoftwareCredits credits,
             AddedBy addedBy) {
-        Software software = new Software(
-                id, title, description, releaseDate, hardware, categories, references, credits, List.of(), addedBy);
+        Software software =
+                new Software(id, title, description, releaseDate, hardware, categories, credits, List.of(), addedBy);
         software.markChanged();
         return software;
     }
@@ -171,20 +134,8 @@ public final class Software {
             @Nullable ReleaseDate releaseDate,
             HardwareSet hardware,
             CategorySet categories,
-            SoftwareReferences references,
             SoftwareCredits credits) {
-        return create(id, title, description, releaseDate, hardware, categories, references, credits, AddedBy.NOBODY);
-    }
-
-    public static Software create(
-            SoftwareId id,
-            SoftwareTitle title,
-            @Nullable SoftwareDescription description,
-            @Nullable ReleaseDate releaseDate,
-            HardwareSet hardware,
-            CategorySet categories,
-            SoftwareReferences references) {
-        return create(id, title, description, releaseDate, hardware, categories, references, SoftwareCredits.EMPTY);
+        return create(id, title, description, releaseDate, hardware, categories, credits, AddedBy.NOBODY);
     }
 
     public static Software create(
@@ -194,7 +145,7 @@ public final class Software {
             @Nullable ReleaseDate releaseDate,
             HardwareSet hardware,
             CategorySet categories) {
-        return create(id, title, description, releaseDate, hardware, categories, SoftwareReferences.EMPTY);
+        return create(id, title, description, releaseDate, hardware, categories, SoftwareCredits.EMPTY);
     }
 
     public PlatformCode getPlatform() {
@@ -209,8 +160,7 @@ public final class Software {
             @Nullable SoftwareDescription description,
             @Nullable ReleaseDate releaseDate,
             HardwareSet hardware,
-            CategorySet categories,
-            SoftwareReferences references) {
+            CategorySet categories) {
         if (!hardware.platform().equals(getPlatform()) && releasesHaveHardware()) {
             throw new SoftwarePlatformLockedException();
         }
@@ -219,20 +169,10 @@ public final class Software {
         this.releaseDate = releaseDate;
         this.hardware = hardware;
         this.categories = categories;
-        this.references = references;
         markChanged();
     }
 
-    public void edit(
-            SoftwareTitle title,
-            @Nullable SoftwareDescription description,
-            @Nullable ReleaseDate releaseDate,
-            HardwareSet hardware,
-            CategorySet categories) {
-        edit(title, description, releaseDate, hardware, categories, references);
-    }
-
-    /** Replaces all people credited by this software item. */
+    /** Replaces everyone credited on the software. */
     public void changeCredits(SoftwareCredits credits) {
         this.credits = Objects.requireNonNull(credits, "credits");
         markChanged();

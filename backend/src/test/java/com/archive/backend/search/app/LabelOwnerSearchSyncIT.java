@@ -12,9 +12,6 @@ import com.archive.backend.author.app.DeleteAuthorHandler;
 import com.archive.backend.author.app.UpdateAuthorCommand;
 import com.archive.backend.author.app.UpdateAuthorHandler;
 import com.archive.backend.author.domain.AuthorId;
-import com.archive.backend.author.domain.PersonReference;
-import com.archive.backend.author.domain.PersonReferenceId;
-import com.archive.backend.author.domain.PersonReferenceType;
 import com.archive.backend.author.domain.RealName;
 import com.archive.backend.group.app.CreateGroupCommand;
 import com.archive.backend.group.app.CreateGroupHandler;
@@ -38,6 +35,9 @@ import com.archive.backend.software.app.UpdateSoftwareCommand;
 import com.archive.backend.software.app.UpdateSoftwareHandler;
 import com.archive.backend.software.domain.SoftwareCreditDraft;
 import com.archive.backend.software.domain.SoftwareId;
+import com.archive.backend.software.domain.SoftwareReference;
+import com.archive.backend.software.domain.SoftwareReferenceId;
+import com.archive.backend.software.domain.SoftwareReferenceType;
 import com.archive.backend.software.domain.SoftwareTitle;
 import com.archive.backend.user.TestActors;
 import java.util.ArrayList;
@@ -134,6 +134,11 @@ class LabelOwnerSearchSyncIT {
         return new LabelId(jdbc.queryForObject("SELECT id FROM label WHERE name = ?", UUID.class, name));
     }
 
+    private boolean labelOfGroup(String name) {
+        return Boolean.TRUE.equals(
+                jdbc.queryForObject("SELECT group_id IS NOT NULL FROM label WHERE name = ?", Boolean.class, name));
+    }
+
     private AuthorId zedZedson() {
         return createAuthor.handle(new CreateAuthorCommand(
                 ADMIN,
@@ -164,9 +169,11 @@ class LabelOwnerSearchSyncIT {
     private void moveToPlatform(SoftwareId id, String platform, String... credited) {
         List<SoftwareCreditDraft> credits = Arrays.stream(credited)
                 .map(label -> new SoftwareCreditDraft(
-                        new PersonReference(
-                                PersonReferenceType.AUTHOR_LABEL,
-                                new PersonReferenceId(labelNamed(label).value())),
+                        new SoftwareReference(
+                                labelOfGroup(label)
+                                        ? SoftwareReferenceType.GROUP_LABEL
+                                        : SoftwareReferenceType.AUTHOR_LABEL,
+                                new SoftwareReferenceId(labelNamed(label).value())),
                         List.of()))
                 .toList();
         updateSoftware.handle(new UpdateSoftwareCommand(
@@ -176,8 +183,6 @@ class LabelOwnerSearchSyncIT {
                 null,
                 null,
                 new PlatformCode(platform),
-                Set.of(),
-                Set.of(),
                 Set.of(),
                 Set.of(),
                 credits));
@@ -269,6 +274,31 @@ class LabelOwnerSearchSyncIT {
         moveToPlatform(elite, "vector", "Zed", "ZS");
         worker.handle();
         assertThat(listIn(authorDocument(zed), "platforms")).containsExactly("vector");
+
+        deleteSoftware.handle(new DeleteSoftwareCommand(ADMIN, elite));
+        worker.handle();
+
+        assertThat(listIn(authorDocument(zed), "platforms")).isEmpty();
+        assertThat(listIn(groupDocument(squad), "platforms")).isEmpty();
+    }
+
+    /** The documents of the person and the group are built by the worker after the credits are stored. */
+    @Test
+    void peopleAndGroupsCreditedByThemselvesHaveThePlatformsOfTheirSoftwareUntilItIsDeleted() throws Exception {
+        AuthorId zed = zedZedson();
+        GroupId squad = zedSquad();
+        SoftwareId elite = elite("vector");
+        jdbc.update(
+                "INSERT INTO software_contribution (software_id, person_id, role_codes) VALUES (?, ?, ARRAY['code'])",
+                elite.value(),
+                zed.value());
+        jdbc.update(
+                "INSERT INTO software_contribution (software_id, group_id, role_codes) VALUES (?, ?, ARRAY['developer'])",
+                elite.value(),
+                squad.value());
+        worker.handle();
+        assertThat(listIn(authorDocument(zed), "platforms")).containsExactly("vector");
+        assertThat(listIn(groupDocument(squad), "platforms")).containsExactly("vector");
 
         deleteSoftware.handle(new DeleteSoftwareCommand(ADMIN, elite));
         worker.handle();

@@ -1,8 +1,5 @@
 package com.archive.backend.importer.app;
 
-import com.archive.backend.author.domain.PersonReference;
-import com.archive.backend.author.domain.PersonReferenceId;
-import com.archive.backend.author.domain.PersonReferenceType;
 import com.archive.backend.category.domain.CategoryId;
 import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.PlatformCode;
@@ -37,6 +34,9 @@ import com.archive.backend.software.domain.ScreenshotImage;
 import com.archive.backend.software.domain.SoftwareCreditDraft;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
+import com.archive.backend.software.domain.SoftwareReference;
+import com.archive.backend.software.domain.SoftwareReferenceId;
+import com.archive.backend.software.domain.SoftwareReferenceType;
 import com.archive.backend.software.domain.SoftwareTitle;
 import com.archive.backend.user.domain.Actor;
 import java.io.ByteArrayInputStream;
@@ -77,7 +77,8 @@ public class ImportVektorProgramHandler {
         CategoryId category = VektorSections.placementOf(program.section()).category();
         List<SoftwareCreditDraft> credits = VektorAuthors.labels(program.authors()).stream()
                 .map(name -> new SoftwareCreditDraft(
-                        new PersonReference(PersonReferenceType.AUTHOR_LABEL, new PersonReferenceId(labelOf(name))),
+                        new SoftwareReference(
+                                SoftwareReferenceType.AUTHOR_LABEL, new SoftwareReferenceId(labelOf(name))),
                         List.of()))
                 .toList();
         String description = program.description();
@@ -89,8 +90,6 @@ public class ImportVektorProgramHandler {
                 VECTOR,
                 Set.of(VECTOR_06C),
                 category == null ? Set.of() : Set.of(category),
-                Set.of(),
-                Set.of(),
                 credits));
         createRelease.handle(new CreateReleaseCommand(
                 actor,

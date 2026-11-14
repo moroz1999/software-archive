@@ -7,7 +7,7 @@ import {json, noContent, renderWithQueries, stubFetchAround} from '@/shared/lib/
 import {loadSoftwareEditPage, preloadSoftwareEditPage} from '../index';
 
 const ID = '00000000-0000-0000-0001-000000000001';
-const ELITE = {id: ID, title: 'Elite', description: null, releaseDate: null, platform: {code: 'vector', name: 'Vector'}, hardware: [], categories: [], publishers: [], developers: [], credits: [], sources: [], canChange: true};
+const ELITE = {id: ID, title: 'Elite', description: null, releaseDate: null, platform: {code: 'vector', name: 'Vector'}, hardware: [], categories: [], credits: [], sources: [], canChange: true};
 
 /** What the page loads besides the software: its screenshots, the platforms and the hardware of the software's platform. */
 const AROUND = new Map([

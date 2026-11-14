@@ -5,6 +5,7 @@ import {
     type SoftwareDetails,
     type SoftwareId,
     type SoftwareReference,
+    SOFTWARE_REFERENCE_TYPES,
     type SoftwareReferenceType,
     toHardwareGroup,
     toReleaseDate,
@@ -23,7 +24,6 @@ function softwarePath(id: SoftwareId): string {
 }
 
 function toBody(draft: SoftwareDraft): unknown {
-    const reference = ({id, type}: SoftwareReference) => ({id, type});
     return {
         title: draft.title,
         description: draft.description,
@@ -31,9 +31,7 @@ function toBody(draft: SoftwareDraft): unknown {
         platform: draft.platform,
         hardware: draft.hardware,
         categories: draft.categories,
-        publishers: draft.publishers.map(reference),
-        developers: draft.developers.map(reference),
-        credits: (draft.credits ?? []).map(({id, type, roles}) => ({id, type, roles})),
+        credits: draft.credits.map(({id, type, roles}) => ({id, type, roles})),
     };
 }
 
@@ -82,8 +80,6 @@ export async function fetchSoftware(id: SoftwareId, signal: AbortSignal): Promis
                     }),
                 };
             }),
-            publishers: parseSoftwareReferences(dto['publishers'], 'publishers'),
-            developers: parseSoftwareReferences(dto['developers'], 'developers'),
             credits: parseSoftwareCredits(dto['credits']),
             sources: readArray(dto['sources'], 'sources').map((item) => {
                 const source = readObject(item, 'source');
@@ -97,13 +93,9 @@ export async function fetchSoftware(id: SoftwareId, signal: AbortSignal): Promis
 function parseSoftwareCredits(raw: unknown): NonNullable<SoftwareDetails['credits']> {
     return readArray(raw, 'credits').map((item) => {
         const credit = readObject(item, 'credit');
-        const type = toSoftwareReferenceType(readString(credit, 'type'));
-        if (type !== 'author' && type !== 'author-label') {
-            throw new TypeError('A software credit must name a person or their label.');
-        }
         return {
             id: readString(credit, 'id'),
-            type,
+            type: toSoftwareReferenceType(readString(credit, 'type')),
             title: readString(credit, 'title'),
             ...(credit['ownerId'] === undefined ? {} : {ownerId: readNullableString(credit, 'ownerId')}),
             roles: readArray(credit['roles'], 'credit roles').map((role) => {
@@ -129,9 +121,9 @@ export async function fetchSoftwareReferences(
     return mapResponse(() => parseSoftwareReferences(readObject(json, 'software reference lookup')['items'], 'items'));
 }
 
-/** Finds people and their aliases for software credits. */
-export async function fetchSoftwarePeople(query: string, signal: AbortSignal): Promise<readonly EntityAutocompleteOption[]> {
-    return fetchSoftwareReferences(['author', 'author-label'], query, signal);
+/** Finds people, groups and the labels of either for the credits of software. */
+export async function fetchSoftwareParticipants(query: string, signal: AbortSignal): Promise<readonly EntityAutocompleteOption[]> {
+    return fetchSoftwareReferences(SOFTWARE_REFERENCE_TYPES, query, signal);
 }
 
 /** The releases of one software, each with the hardware it shows: `GET /api/software/{id}/releases`. */

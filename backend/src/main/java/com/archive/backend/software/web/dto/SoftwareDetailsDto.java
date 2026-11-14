@@ -12,8 +12,6 @@ public record SoftwareDetailsDto(
         SoftwarePlatformDto platform,
         List<SoftwareHardwareDto> hardware,
         List<SoftwareCategoryDto> categories,
-        List<SoftwareReferenceDto> publishers,
-        List<SoftwareReferenceDto> developers,
         List<SoftwareCreditDto> credits,
         List<SoftwareSourceDto> sources,
         boolean canChange) {

@@ -61,36 +61,6 @@ public class SoftwareEntity {
     @Column(name = "category_id")
     private Set<UUID> categories = new HashSet<>();
 
-    @ElementCollection
-    @CollectionTable(name = "software_publisher_author", joinColumns = @JoinColumn(name = "software_id"))
-    @Column(name = "author_id")
-    private Set<UUID> publisherAuthors = new HashSet<>();
-
-    @ElementCollection
-    @CollectionTable(name = "software_publisher_group", joinColumns = @JoinColumn(name = "software_id"))
-    @Column(name = "group_id")
-    private Set<UUID> publisherGroups = new HashSet<>();
-
-    @ElementCollection
-    @CollectionTable(name = "software_publisher_author_label", joinColumns = @JoinColumn(name = "software_id"))
-    @Column(name = "label_id")
-    private Set<UUID> publisherAuthorLabels = new HashSet<>();
-
-    @ElementCollection
-    @CollectionTable(name = "software_publisher_group_label", joinColumns = @JoinColumn(name = "software_id"))
-    @Column(name = "label_id")
-    private Set<UUID> publisherGroupLabels = new HashSet<>();
-
-    @ElementCollection
-    @CollectionTable(name = "software_developer_group", joinColumns = @JoinColumn(name = "software_id"))
-    @Column(name = "group_id")
-    private Set<UUID> developerGroups = new HashSet<>();
-
-    @ElementCollection
-    @CollectionTable(name = "software_developer_label", joinColumns = @JoinColumn(name = "software_id"))
-    @Column(name = "label_id")
-    private Set<UUID> developerLabels = new HashSet<>();
-
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "software_id", nullable = false)
     private List<SoftwareReleaseEntity> releases = new ArrayList<>();

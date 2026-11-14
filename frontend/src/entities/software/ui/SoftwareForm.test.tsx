@@ -77,16 +77,14 @@ describe(SoftwareForm, () => {
         expect(within(main).getAllByText('*')).toHaveLength(2);
     });
 
-    it('puts what the software is, what it is tied to and who made it in sections of their own', () => {
+    it('puts what the software is and who made it in sections of their own', () => {
         renderForm({categories: <GamesOnly/>});
 
         expect(within(screen.getByRole('region', {name: 'Classification'})).getByRole('checkbox', {name: 'Games'})).toBeInTheDocument();
-
-        const relations = screen.getByRole('region', {name: 'Relations'});
-
-        expect(within(relations).getByLabelText('Publishers')).toBeInTheDocument();
-        expect(within(relations).getByLabelText('Developers')).toBeInTheDocument();
-        expect(within(screen.getByRole('region', {name: 'Authors'})).getByLabelText('Credits')).toBeInTheDocument();
+        expect(within(screen.getByRole('region', {name: 'Credits'})).getByRole('combobox', {name: 'Person or group'})).toBeInTheDocument();
+        expect(screen.queryByRole('region', {name: 'Relations'})).not.toBeInTheDocument();
+        expect(screen.queryByLabelText('Publishers')).not.toBeInTheDocument();
+        expect(screen.queryByLabelText('Developers')).not.toBeInTheDocument();
     });
 
     it('ends with its buttons, the submit last', () => {
@@ -111,8 +109,6 @@ describe(SoftwareForm, () => {
             platform: 'bk',
             hardware: [],
             categories: [],
-            publishers: [],
-            developers: [],
             credits: [],
         });
     });
@@ -130,7 +126,7 @@ describe(SoftwareForm, () => {
         expect(onSubmit).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({releaseDate: '1985'}));
     });
 
-    it('finds publishers and developers by aliases and submits the chosen references', async () => {
+    it('credits people, groups and their labels, the developers and publishers among them by their roles', async () => {
         stubFetchRoutes(new Map([
             ['/api/hardware?platform=agat', json([])],
             [
@@ -138,46 +134,41 @@ describe(SoftwareForm, () => {
                 json({items: [{id: PUBLISHER, type: 'author-label', title: 'J.P. — Jane Publisher'}]}),
             ],
             [
-                '/api/entity-lookup?types=group%2Cgroup-label&query=nebula',
+                '/api/entity-lookup?types=author%2Cauthor-label%2Cgroup%2Cgroup-label&query=nebula',
                 json({items: [{id: DEVELOPER, type: 'group', title: 'Nebula Studio'}]}),
             ],
         ]));
         const {onSubmit} = renderForm({
             initial: {title: 'Elite', description: '', releaseDate: '', platform: 'agat', hardware: [], categories: []},
         });
+        const credited = screen.getByRole('combobox', {name: 'Person or group'});
 
-        expect(screen.getByRole('combobox', {name: 'Publishers'})).toBeInTheDocument();
-        expect(screen.getByRole('combobox', {name: 'Developers'})).toBeInTheDocument();
-
-        await userEvent.type(screen.getByRole('combobox', {name: 'Publishers'}), 'j.p.');
+        await userEvent.type(credited, 'j.p.');
         await userEvent.click(await screen.findByRole('option', {name: 'J.P. — Jane Publisher'}));
-        await userEvent.type(screen.getByRole('combobox', {name: 'Developers'}), 'nebula');
+        await userEvent.click(screen.getByRole('button', {name: 'Add role to J.P. — Jane Publisher'}));
+        await userEvent.click(screen.getByRole('option', {name: 'Publisher'}));
+        await userEvent.type(credited, 'nebula');
         await userEvent.click(await screen.findByRole('option', {name: 'Nebula Studio'}));
+        await userEvent.click(screen.getByRole('button', {name: 'Add role to Nebula Studio'}));
+        await userEvent.click(screen.getByRole('option', {name: 'Developer'}));
         await userEvent.click(screen.getByRole('button', {name: 'Save'}));
 
         expect(onSubmit).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
-            publishers: [{id: PUBLISHER, type: 'author-label', title: 'J.P. — Jane Publisher'}],
-            developers: [{id: DEVELOPER, type: 'group', title: 'Nebula Studio'}],
+            credits: [
+                expect.objectContaining({id: PUBLISHER, type: 'author-label', roles: ['publisher']}),
+                expect.objectContaining({id: DEVELOPER, type: 'group', roles: ['developer']}),
+            ],
         }));
     });
 
-    it('shows refusals under publishers and developers', () => {
+    it('shows a refusal of the credits under them', () => {
         renderForm({
-            error: new BusinessError(422, 'software.publisher-unknown', [
-                {field: 'publishers', code: 'software.publisher-unknown'},
-                {field: 'developers', code: 'software.developer-unknown'},
-            ]),
-            messages: {
-                'software.publisher-unknown': 'One of the publishers is not in the archive any more.',
-                'software.developer-unknown': 'One of the developers is not in the archive any more.',
-            },
+            error: new BusinessError(422, 'software.credit-unknown', [{field: 'credits', code: 'software.credit-unknown'}]),
+            messages: {'software.credit-unknown': 'One of the credited is not in the archive any more.'},
         });
 
-        expect(screen.queryByRole('combobox', {name: 'Publishers'})).toHaveAccessibleDescription(
-            'One of the publishers is not in the archive any more.',
-        );
-        expect(screen.queryByRole('combobox', {name: 'Developers'})).toHaveAccessibleDescription(
-            'One of the developers is not in the archive any more.',
+        expect(screen.getByRole('combobox', {name: 'Person or group'})).toHaveAccessibleDescription(
+            'One of the credited is not in the archive any more.',
         );
     });
 

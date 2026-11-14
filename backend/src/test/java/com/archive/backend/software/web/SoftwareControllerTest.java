@@ -176,8 +176,9 @@ class SoftwareControllerTest {
                 .andExpect(jsonPath("$.title").value("Elite"))
                 .andExpect(jsonPath("$.description").value("Space trading"))
                 .andExpect(jsonPath("$.releaseDate").value("1985-09-20"))
-                .andExpect(jsonPath("$.publishers").isArray())
-                .andExpect(jsonPath("$.developers").isArray());
+                .andExpect(jsonPath("$.credits").isArray())
+                .andExpect(jsonPath("$.publishers").doesNotExist())
+                .andExpect(jsonPath("$.developers").doesNotExist());
     }
 
     @Test
@@ -190,8 +191,6 @@ class SoftwareControllerTest {
                         null,
                         null,
                         new SoftwarePlatform("vector", "Vector"),
-                        List.of(),
-                        List.of(),
                         List.of(),
                         List.of(),
                         List.of(),
@@ -377,7 +376,7 @@ class SoftwareControllerTest {
     }
 
     @Test
-    void answers400ForAPublisherOfAnUnknownReferenceType() throws Exception {
+    void answers400ForACreditOfAnUnknownType() throws Exception {
         when(createHandler.handle(any(CreateSoftwareCommand.class))).thenReturn(new SoftwareId(ID));
 
         mvc.perform(post("/api/software")
@@ -386,7 +385,7 @@ class SoftwareControllerTest {
                                 {
                                   "title": "Elite",
                                   "platform": "vector",
-                                  "publishers": [
+                                  "credits": [
                                     {"id": "00000000-0000-0000-0003-000000000001", "type": "software"}
                                   ]
                                 }
@@ -397,14 +396,14 @@ class SoftwareControllerTest {
     }
 
     @Test
-    void answers400ForAPublisherWithoutAnId() throws Exception {
+    void answers400ForACreditWithoutAnId() throws Exception {
         mvc.perform(post("/api/software")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
                                   "title": "Elite",
                                   "platform": "vector",
-                                  "publishers": [{"type": "author"}]
+                                  "credits": [{"type": "group"}]
                                 }
                                 """))
                 .andExpect(status().isBadRequest())

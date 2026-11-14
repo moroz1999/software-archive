@@ -24,8 +24,10 @@ export interface SoftwareReference {
     readonly ownerId?: string | null;
 }
 
+/** A person, a group or the exact label of either credited on software, with their roles; publishing and developing are roles. */
 export interface SoftwareCredit extends MemberRoleValue {
-    readonly type: 'author' | 'author-label';
+    readonly type: SoftwareReferenceType;
+    /** The person or group page a label belongs to; absent in values not loaded as software details. */
     readonly ownerId?: string | null;
 }
 
@@ -51,8 +53,6 @@ export interface SoftwareDetails extends Software {
     readonly platform: SoftwarePlatform;
     readonly hardware: readonly Hardware[];
     readonly categories: readonly SoftwareCategory[];
-    readonly publishers?: readonly SoftwareReference[];
-    readonly developers?: readonly SoftwareReference[];
     readonly credits?: readonly SoftwareCredit[];
     /** The pages of the archives it was imported from (docs/domain/imports.md). */
     readonly sources?: readonly SoftwareSource[];

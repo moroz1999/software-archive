@@ -41,7 +41,6 @@ class SoftwareScreenshotsTest {
                 null,
                 NO_HARDWARE,
                 CategorySet.EMPTY,
-                SoftwareReferences.EMPTY,
                 SoftwareCredits.EMPTY,
                 new AddedBy(MEMBER_ID));
         software.addRelease(RELEASE, CONTENT, NO_HARDWARE, new AddedBy(OTHER_ID));

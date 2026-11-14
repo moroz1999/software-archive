@@ -6,6 +6,6 @@ public class SoftwareCreditUnknownException extends RuleViolationException {
     private static final long serialVersionUID = 1L;
 
     public SoftwareCreditUnknownException() {
-        super("software.credit-unknown", "A credited person is not in the archive.", "credits");
+        super("software.credit-unknown", "Someone credited is not in the archive.", "credits");
     }
 }

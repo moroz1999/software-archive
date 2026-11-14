@@ -103,7 +103,8 @@ function Member({member}: {readonly member: GroupMember}) {
         <Inline gap="sm" align="baseline" wrap>
             <Text>{member.personId === null ? member.name : <TextLink href={authorPath(toAuthorId(member.personId))}>{member.name}</TextLink>}</Text>
             {member.personName !== null && <>{' '}<Text variant="bodySm" tone="muted">{member.personName}</Text></>}
-            {member.roles.map((role) => <Chip key={role} size="sm">{t(`roles.group.${role}`)}</Chip>)}
+            {/* An unknown role tells nothing to a reader. */}
+            {member.roles.filter((role) => role !== 'unknown').map((role) => <Chip key={role} size="sm">{t(`roles.group.${role}`)}</Chip>)}
             {dates !== null && <Text variant="bodySm" tone="muted">{dates}</Text>}
         </Inline>
     );

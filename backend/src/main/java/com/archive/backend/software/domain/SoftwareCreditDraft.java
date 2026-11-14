@@ -1,15 +1,21 @@
 package com.archive.backend.software.domain;
 
-import com.archive.backend.author.domain.PersonReference;
 import com.archive.backend.shared.domain.error.InvalidValueException;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
-public record SoftwareCreditDraft(PersonReference person, List<String> roles) {
+/**
+ * One credit of software: a person, a group or the exact label of either, with the roles they had in it; publishing
+ * and developing the software are roles too (docs/domain/software.md#credits).
+ */
+public record SoftwareCreditDraft(SoftwareReference participant, List<String> roles) {
 
     public static final Set<String> ALLOWED_ROLES = Set.of(
             "unknown",
+            "developer",
+            "publisher",
             "code",
             "release",
             "adaptation",
@@ -44,6 +50,7 @@ public record SoftwareCreditDraft(PersonReference person, List<String> roles) {
             "guest");
 
     public SoftwareCreditDraft {
+        Objects.requireNonNull(participant, "participant");
         roles = roles.isEmpty() ? List.of("unknown") : List.copyOf(new LinkedHashSet<>(roles));
         if (!ALLOWED_ROLES.containsAll(roles)) {
             throw new InvalidValueException("software.credit-role-invalid", "A software credit role is invalid.");

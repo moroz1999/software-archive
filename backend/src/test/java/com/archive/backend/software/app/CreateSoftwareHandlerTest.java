@@ -25,7 +25,6 @@ import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.SoftwareCreditSets;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
-import com.archive.backend.software.domain.SoftwareReferenceSets;
 import com.archive.backend.software.domain.SoftwareTitle;
 import com.archive.backend.user.domain.Actor;
 import com.archive.backend.user.domain.AddedBy;
@@ -38,12 +37,7 @@ class CreateSoftwareHandlerTest {
 
     private final InMemorySoftwareRepository repository = new InMemorySoftwareRepository();
     private final CreateSoftwareHandler handler = new CreateSoftwareHandler(
-            repository,
-            hardwareSets(),
-            categorySets(),
-            new SoftwareReferenceSets(reference -> true),
-            new SoftwareCreditSets(reference -> true),
-            event -> {});
+            repository, hardwareSets(), categorySets(), new SoftwareCreditSets(reference -> true), event -> {});
 
     @Test
     void storesNewSoftwareUnderANewId() {

@@ -10,12 +10,12 @@ public interface AffectedSoftware {
     /** The software in the category or in any category below it. */
     List<UUID> inSubtreeOf(UUID category);
 
-    /** The software any of the labels is credited on or names as its developer company. */
+    /** The software any of the labels is credited on. */
     List<UUID> creditedOn(Collection<UUID> labels);
 
     /** The software the person is credited on by themselves, not by a label. */
     List<UUID> creditingPerson(UUID person);
 
-    /** The software that names the group, not a label of it, as its developer company. */
-    List<UUID> developedByGroup(UUID group);
+    /** The software the group is credited on by itself, not by a label. */
+    List<UUID> creditingGroup(UUID group);
 }

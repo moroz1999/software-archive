@@ -19,7 +19,7 @@ The software list is the catalog of software. Visitors go through it by the cate
 
 Within a category the catalog is narrowed by a word and by filters:
 - **year** — the year of the software's release date; software with an unknown date has none;
-- **country** — the countries of the authors: every country where an owner of a label credited on the software is located, by any of their locations. Labels of nobody bring no country.
+- **country** — where the software comes from: every country where a person or a group credited on it, by themselves or by a label, is located, by any of their locations. Only the roles of the software itself count: who only cracked, adapted, translated or helped with it brings no country ([software.md](software.md#credits)). Labels of nobody bring no country.
 
 A fact of software that the catalog goes through or is narrowed by — its year, each of its categories and the categories above them — leads from the page of the software to the catalog of that value alone. A release has no such facts: its own year is not the year of its software.
 

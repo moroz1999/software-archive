@@ -11,7 +11,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
-/** Current people, groups and their owned labels, for validation and form lookup. */
+/**
+ * Current people, groups and labels, for validation of credits and for the lookup of the form. A label of nobody is
+ * credited as a label of a person: imported credits name such labels; the lookup offers owned labels only.
+ */
 @Repository
 @RequiredArgsConstructor
 public class JdbcSoftwareReferences implements SoftwareReferenceCatalog, SoftwareReferenceLookup {
@@ -46,7 +49,7 @@ public class JdbcSoftwareReferences implements SoftwareReferenceCatalog, Softwar
     public boolean contains(SoftwareReference reference) {
         String sql = switch (reference.type()) {
             case AUTHOR -> "SELECT EXISTS (SELECT 1 FROM person WHERE id = :id)";
-            case AUTHOR_LABEL -> "SELECT EXISTS (SELECT 1 FROM label WHERE id = :id AND person_id IS NOT NULL)";
+            case AUTHOR_LABEL -> "SELECT EXISTS (SELECT 1 FROM label WHERE id = :id AND group_id IS NULL)";
             case GROUP -> "SELECT EXISTS (SELECT 1 FROM \"group\" WHERE id = :id)";
             case GROUP_LABEL -> "SELECT EXISTS (SELECT 1 FROM label WHERE id = :id AND group_id IS NOT NULL)";
         };

@@ -29,7 +29,6 @@ import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.Software;
 import com.archive.backend.software.domain.SoftwareCreditSets;
 import com.archive.backend.software.domain.SoftwareDescription;
-import com.archive.backend.software.domain.SoftwareReferenceSets;
 import com.archive.backend.software.domain.SoftwareTitle;
 import com.archive.backend.user.domain.ChangeForbiddenException;
 import java.time.LocalDate;
@@ -40,12 +39,7 @@ class UpdateSoftwareHandlerTest {
 
     private final InMemorySoftwareRepository repository = new InMemorySoftwareRepository();
     private final UpdateSoftwareHandler handler = new UpdateSoftwareHandler(
-            repository,
-            hardwareSets(),
-            categorySets(),
-            new SoftwareReferenceSets(reference -> true),
-            new SoftwareCreditSets(reference -> true),
-            event -> {});
+            repository, hardwareSets(), categorySets(), new SoftwareCreditSets(reference -> true), event -> {});
 
     @Test
     void storesTheEditedSoftware() {

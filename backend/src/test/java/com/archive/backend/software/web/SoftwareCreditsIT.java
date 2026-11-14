@@ -27,13 +27,13 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Publishers and developer companies chosen while software is added or edited. */
+/** Credits of people, groups and their labels chosen while software is added or edited. */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import({TestcontainersConfiguration.class, TypesenseTestConfiguration.class})
 @Transactional
 @Rollback
-class SoftwareRelationsIT {
+class SoftwareCreditsIT {
 
     private static final UUID AUTHOR = id(1);
     private static final UUID ALIASED_AUTHOR = id(2);
@@ -71,7 +71,7 @@ class SoftwareRelationsIT {
     }
 
     @Test
-    void storesPublishersAndDeveloperCompaniesUnderTheChosenNames() throws Exception {
+    void creditsPeopleGroupsAndTheirLabelsUnderTheChosenNamesWithTheirRoles() throws Exception {
         String created = mvc.perform(post("/api/software")
                         .cookie(TestActors.accessCookie(accessTokens, MEMBER))
                         .contentType("application/json")
@@ -79,17 +79,14 @@ class SoftwareRelationsIT {
                                 {
                                   "title": "Elite",
                                   "platform": "vector",
-                                  "publishers": [
-                                    {"type": "author", "id": "%s"},
-                                    {"type": "author-label", "id": "%s"},
-                                    {"type": "group-label", "id": "%s"}
-                                  ],
-                                  "developers": [
-                                    {"type": "group", "id": "%s"},
-                                    {"type": "group-label", "id": "%s"}
+                                  "credits": [
+                                    {"type": "author", "id": "%s", "roles": ["publisher"]},
+                                    {"type": "author-label", "id": "%s", "roles": ["code"]},
+                                    {"type": "group", "id": "%s", "roles": ["developer"]},
+                                    {"type": "group-label", "id": "%s", "roles": ["developer", "publisher"]}
                                   ]
                                 }
-                                """.formatted(AUTHOR, AUTHOR_LABEL, GROUP_LABEL, DEVELOPER_GROUP, GROUP_LABEL)))
+                                """.formatted(AUTHOR, AUTHOR_LABEL, DEVELOPER_GROUP, GROUP_LABEL)))
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()
@@ -99,21 +96,23 @@ class SoftwareRelationsIT {
 
         mvc.perform(get("/api/software/{id}", softwareId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.publishers[*].id")
-                        .value(containsInAnyOrder(AUTHOR.toString(), AUTHOR_LABEL.toString(), GROUP_LABEL.toString())))
-                .andExpect(jsonPath("$.publishers[*].type")
-                        .value(containsInAnyOrder("author", "author-label", "group-label")))
-                .andExpect(jsonPath("$.developers[*].id")
-                        .value(containsInAnyOrder(DEVELOPER_GROUP.toString(), GROUP_LABEL.toString())))
-                .andExpect(jsonPath("$.developers[*].type").value(containsInAnyOrder("group", "group-label")))
-                .andExpect(jsonPath("$.publishers[*].title").isNotEmpty())
-                .andExpect(jsonPath("$.developers[*].title").isNotEmpty())
-                .andExpect(jsonPath("$.publishers[?(@.id == '%s')].ownerId".formatted(AUTHOR_LABEL))
+                .andExpect(jsonPath("$.publishers").doesNotExist())
+                .andExpect(jsonPath("$.developers").doesNotExist())
+                .andExpect(jsonPath("$.credits[*].type")
+                        .value(containsInAnyOrder("author", "author-label", "group", "group-label")))
+                .andExpect(jsonPath("$.credits[*].title").isNotEmpty())
+                .andExpect(jsonPath("$.credits[?(@.id == '%s')].roles[*]".formatted(AUTHOR))
+                        .value(contains("publisher")))
+                .andExpect(jsonPath("$.credits[?(@.id == '%s')].ownerId".formatted(AUTHOR_LABEL))
                         .value(contains(ALIASED_AUTHOR.toString())))
-                .andExpect(jsonPath("$.publishers[?(@.id == '%s')].ownerId".formatted(GROUP_LABEL))
+                .andExpect(jsonPath("$.credits[?(@.id == '%s')].ownerId".formatted(DEVELOPER_GROUP))
+                        .value(contains(DEVELOPER_GROUP.toString())))
+                .andExpect(jsonPath("$.credits[?(@.id == '%s')].roles[*]".formatted(DEVELOPER_GROUP))
+                        .value(contains("developer")))
+                .andExpect(jsonPath("$.credits[?(@.id == '%s')].ownerId".formatted(GROUP_LABEL))
                         .value(contains(ALIASED_GROUP.toString())))
-                .andExpect(jsonPath("$.developers[?(@.id == '%s')].ownerId".formatted(GROUP_LABEL))
-                        .value(contains(ALIASED_GROUP.toString())));
+                .andExpect(jsonPath("$.credits[?(@.id == '%s')].roles[*]".formatted(GROUP_LABEL))
+                        .value(contains("developer", "publisher")));
     }
 
     @Test
@@ -134,7 +133,7 @@ class SoftwareRelationsIT {
     }
 
     @Test
-    void refusesAPublisherThatIsNotInTheArchive() throws Exception {
+    void refusesACreditedGroupThatIsNotInTheArchive() throws Exception {
         mvc.perform(post("/api/software")
                         .cookie(TestActors.accessCookie(accessTokens, MEMBER))
                         .contentType("application/json")
@@ -142,16 +141,16 @@ class SoftwareRelationsIT {
                                 {
                                   "title": "Elite",
                                   "platform": "vector",
-                                  "publishers": [{"type": "author", "id": "%s"}]
+                                  "credits": [{"type": "group", "id": "%s", "roles": ["developer"]}]
                                 }
                                 """.formatted(UNKNOWN)))
                 .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.code").value("software.publisher-unknown"))
-                .andExpect(jsonPath("$.errors[0].field").value("publishers"));
+                .andExpect(jsonPath("$.code").value("software.credit-unknown"))
+                .andExpect(jsonPath("$.errors[0].field").value("credits"));
     }
 
     @Test
-    void refusesAnAuthorAsADeveloperCompany() throws Exception {
+    void refusesAGroupCreditedTwice() throws Exception {
         mvc.perform(post("/api/software")
                         .cookie(TestActors.accessCookie(accessTokens, MEMBER))
                         .contentType("application/json")
@@ -159,28 +158,14 @@ class SoftwareRelationsIT {
                                 {
                                   "title": "Elite",
                                   "platform": "vector",
-                                  "developers": [{"type": "author", "id": "%s"}]
+                                  "credits": [
+                                    {"type": "group", "id": "%1$s", "roles": ["developer"]},
+                                    {"type": "group", "id": "%1$s", "roles": ["publisher"]}
+                                  ]
                                 }
-                                """.formatted(AUTHOR)))
+                                """.formatted(DEVELOPER_GROUP)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("software.reference-type-invalid"));
-    }
-
-    @Test
-    void refusesADeveloperCompanyThatIsNotInTheArchive() throws Exception {
-        mvc.perform(post("/api/software")
-                        .cookie(TestActors.accessCookie(accessTokens, MEMBER))
-                        .contentType("application/json")
-                        .content("""
-                                {
-                                  "title": "Elite",
-                                  "platform": "vector",
-                                  "developers": [{"type": "group", "id": "%s"}]
-                                }
-                                """.formatted(UNKNOWN)))
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.code").value("software.developer-unknown"))
-                .andExpect(jsonPath("$.errors[0].field").value("developers"));
+                .andExpect(jsonPath("$.code").value("software.credit-duplicate"));
     }
 
     private static UUID id(int number) {

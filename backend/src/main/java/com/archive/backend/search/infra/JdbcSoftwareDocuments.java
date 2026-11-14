@@ -19,15 +19,21 @@ import org.springframework.stereotype.Repository;
 
 /**
  * Builds the software documents of the search with plain SQL: the categories of software with every category above
- * them, and the countries of the owners of its credited labels, by any of their locations
- * (docs/domain/search.md#software-catalog); and what its card shows.
+ * them, and the countries of the people and groups credited on it by themselves or by a label, by any of their
+ * locations, for the roles of the software itself (docs/domain/search.md#software-catalog); and what its card shows.
  */
 @Repository
 @RequiredArgsConstructor
 public class JdbcSoftwareDocuments implements SoftwareDocuments {
 
-    private static final String SELECT =
-            """
+    /**
+     * The roles of work on a copy of software rather than on the software itself: cracks, adaptations, translations,
+     * help. Who had only these gives the software no country.
+     */
+    private static final String UNOFFICIAL_ROLES = "'release', 'intro_code', 'intro_graphics', 'intro_music',"
+            + " 'adaptation', 'restoring', 'localization', 'translation', 'guest', 'support', 'testing'";
+
+    private static final String SELECT = """
             SELECT s.id, s.title, s.platform_code, s.release_year AS year,
             """ + ReleaseDateSql.of("s") + """
              AS release_date,
@@ -42,14 +48,17 @@ public class JdbcSoftwareDocuments implements SoftwareDocuments {
                          SELECT DISTINCT id FROM branch) AS categories,
                    ARRAY(SELECT DISTINCT COALESCE(el.country_id, city.country_id)
                          FROM software_contribution sc
-                         JOIN label l ON l.id = sc.label_id
+                         LEFT JOIN label l ON l.id = sc.label_id
                          JOIN entity_location el
-                           ON (el.entity_type = 'PERSON' AND el.entity_id = l.person_id)
-                           OR (el.entity_type = 'GROUP' AND el.entity_id = l.group_id)
+                           ON (el.entity_type = 'PERSON' AND el.entity_id = COALESCE(sc.person_id, l.person_id))
+                           OR (el.entity_type = 'GROUP' AND el.entity_id = COALESCE(sc.group_id, l.group_id))
                          LEFT JOIN city ON city.id = el.city_id
                          WHERE sc.software_id = s.id
+                           AND NOT sc.role_codes <@ ARRAY[""" + UNOFFICIAL_ROLES + """
+            ]
                            AND COALESCE(el.country_id, city.country_id) IS NOT NULL) AS countries,
-            """ + CardScreenshotsSql.of("s") + """
+            """
+            + CardScreenshotsSql.of("s") + """
              AS screenshots,
             """ + CardMadeBySql.of("s") + """
              AS made_by

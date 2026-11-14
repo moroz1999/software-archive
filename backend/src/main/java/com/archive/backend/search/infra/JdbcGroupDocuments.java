@@ -17,7 +17,7 @@ import org.springframework.stereotype.Repository;
 
 /**
  * Builds the documents of groups with plain SQL: under the main name, with every label, and with the platforms of the
- * software their labels are credited on.
+ * software they are credited on, by themselves or by a label.
  */
 @Repository
 @RequiredArgsConstructor
@@ -27,10 +27,10 @@ public class JdbcGroupDocuments implements GroupDocuments {
             SELECT n.group_id AS id, n.main_name, n.group_name,
                    ARRAY(SELECT l.name FROM label l
                          WHERE l.group_id = n.group_id ORDER BY lower(l.name), l.id) AS labels,
-                   ARRAY(SELECT DISTINCT s.platform_code FROM label l
-                         JOIN software_contribution sc ON sc.label_id = l.id
+                   ARRAY(SELECT DISTINCT s.platform_code FROM software_contribution sc
+                         LEFT JOIN label l ON l.id = sc.label_id
                          JOIN software s ON s.id = sc.software_id
-                         WHERE l.group_id = n.group_id ORDER BY s.platform_code) AS platforms
+                         WHERE COALESCE(sc.group_id, l.group_id) = n.group_id ORDER BY s.platform_code) AS platforms
             FROM named_group n
             """;
 

@@ -1,8 +1,5 @@
 package com.archive.backend.software.web.mapper;
 
-import com.archive.backend.author.domain.PersonReference;
-import com.archive.backend.author.domain.PersonReferenceId;
-import com.archive.backend.author.domain.PersonReferenceType;
 import com.archive.backend.category.domain.CategoryId;
 import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.PlatformCode;
@@ -28,8 +25,6 @@ import com.archive.backend.software.web.dto.ScreenshotDto;
 import com.archive.backend.software.web.dto.SoftwareCreatedDto;
 import com.archive.backend.software.web.dto.SoftwareDetailsDto;
 import com.archive.backend.software.web.dto.SoftwareListItemDto;
-import com.archive.backend.software.web.dto.SoftwareReferenceDto;
-import com.archive.backend.software.web.dto.SoftwareReferenceRequestDto;
 import com.archive.backend.software.web.dto.SoftwareReleaseDto;
 import com.archive.backend.software.web.dto.SoftwareRequestDto;
 import com.archive.backend.user.domain.Actor;
@@ -47,8 +42,6 @@ public interface SoftwareWebMapper {
     SoftwareListItemDto toListItem(SoftwareSummary summary);
 
     SoftwareDetailsDto toDetails(SoftwareDetails details);
-
-    SoftwareReferenceDto toReference(com.archive.backend.software.read.SoftwareReferenceOption reference);
 
     List<com.archive.backend.software.web.dto.SoftwareHardwareDto> toHardwareDtos(
             List<com.archive.backend.software.read.SoftwareHardware> hardware);
@@ -106,8 +99,6 @@ public interface SoftwareWebMapper {
                 toPlatform(request.platform()),
                 toHardware(request.hardware()),
                 toCategories(request.categories()),
-                toReferences(request.publishers()),
-                toDeveloperReferences(request.developers()),
                 toCredits(request.credits()));
     }
 
@@ -121,8 +112,6 @@ public interface SoftwareWebMapper {
                 toPlatform(request.platform()),
                 toHardware(request.hardware()),
                 toCategories(request.categories()),
-                toReferences(request.publishers()),
-                toDeveloperReferences(request.developers()),
                 toCredits(request.credits()));
     }
 
@@ -154,34 +143,6 @@ public interface SoftwareWebMapper {
         return ids == null ? Set.of() : ids.stream().map(CategoryId::new).collect(Collectors.toUnmodifiableSet());
     }
 
-    private static Set<SoftwareReference> toReferences(@Nullable List<SoftwareReferenceRequestDto> references) {
-        return references == null
-                ? Set.of()
-                : references.stream().map(SoftwareWebMapper::toReference).collect(Collectors.toUnmodifiableSet());
-    }
-
-    private static Set<SoftwareReference> toDeveloperReferences(
-            @Nullable List<SoftwareReferenceRequestDto> references) {
-        Set<SoftwareReference> mapped = toReferences(references);
-        if (mapped.stream().anyMatch(reference -> !reference.type().isGroup())) {
-            throw new InvalidValueException(
-                    "software.reference-type-invalid", "A developer company must be a group or a group label.");
-        }
-        return mapped;
-    }
-
-    private static SoftwareReference toReference(SoftwareReferenceRequestDto reference) {
-        if (reference.id() == null) {
-            throw new InvalidValueException("software.reference-id-required", "A software reference id is required.");
-        }
-        if (reference.type() == null) {
-            throw new InvalidValueException(
-                    "software.reference-type-invalid", "A software reference type is required.");
-        }
-        return new SoftwareReference(
-                SoftwareReferenceType.fromCode(reference.type()), new SoftwareReferenceId(reference.id()));
-    }
-
     private static List<SoftwareCreditDraft> toCredits(@Nullable List<SoftwareRequestDto.CreditDto> credits) {
         return credits == null
                 ? List.of()
@@ -191,14 +152,14 @@ public interface SoftwareWebMapper {
     private static SoftwareCreditDraft toCredit(SoftwareRequestDto.CreditDto credit) {
         UUID id = credit.id();
         if (id == null) {
-            throw new InvalidValueException("person.reference-id-required", "A person reference id is required.");
+            throw new InvalidValueException("software.reference-id-required", "A credited id is required.");
         }
         String type = credit.type();
         if (type == null) {
-            throw new InvalidValueException("person.reference-type-invalid", "A person reference type is required.");
+            throw new InvalidValueException("software.reference-type-invalid", "A credited type is required.");
         }
         return new SoftwareCreditDraft(
-                new PersonReference(PersonReferenceType.fromCode(type), new PersonReferenceId(id)),
+                new SoftwareReference(SoftwareReferenceType.fromCode(type), new SoftwareReferenceId(id)),
                 credit.roles() == null ? List.of() : credit.roles());
     }
 

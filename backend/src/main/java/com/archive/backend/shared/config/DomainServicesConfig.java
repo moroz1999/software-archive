@@ -14,7 +14,6 @@ import com.archive.backend.hardware.domain.HardwareCatalog;
 import com.archive.backend.hardware.domain.HardwareSets;
 import com.archive.backend.software.domain.SoftwareCreditSets;
 import com.archive.backend.software.domain.SoftwareReferenceCatalog;
-import com.archive.backend.software.domain.SoftwareReferenceSets;
 import com.archive.backend.user.domain.AccountConfirmation;
 import com.archive.backend.user.domain.GroupAssignment;
 import com.archive.backend.user.domain.PasswordHasher;
@@ -63,12 +62,7 @@ public class DomainServicesConfig {
     }
 
     @Bean
-    public SoftwareReferenceSets softwareReferenceSets(SoftwareReferenceCatalog catalog) {
-        return new SoftwareReferenceSets(catalog);
-    }
-
-    @Bean
-    public SoftwareCreditSets softwareCreditSets(PersonReferenceCatalog catalog) {
+    public SoftwareCreditSets softwareCreditSets(SoftwareReferenceCatalog catalog) {
         return new SoftwareCreditSets(catalog);
     }
 

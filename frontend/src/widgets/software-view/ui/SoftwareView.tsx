@@ -16,7 +16,6 @@ import {
     type SoftwareId,
     SoftwareReleases,
     SoftwareReleasesProvider,
-    type SoftwareReference,
     SoftwareScreenshots,
     ScreenshotsProvider,
     useSoftwareDetails,
@@ -105,16 +104,15 @@ function Details({software}: {readonly software: SoftwareDetails}) {
                     </Stack>
                 </Stack>
             )}
-            <References label={t('fields.publishers')} references={software.publishers ?? []}/>
-            <References label={t('fields.developers')} references={software.developers ?? []}/>
             {(software.credits?.length ?? 0) > 0 && (
                 <Section label={t('fields.credits')}>
                     <Stack as="ul" gap="xs" ariaLabel={t('fields.credits')}>
                         {software.credits?.map((credit) => (
                             <li key={`${credit.type}:${credit.id}`}>
                                 <Inline gap="xs" align="center" wrap>
-                                    <ReferenceName reference={credit}/>
-                                    {credit.roles.map((role) => <Chip key={role} size="sm">{t(`roles.software.${role}`)}</Chip>)}
+                                    <CreditName credit={credit}/>
+                                    {/* An unknown role tells nothing to a reader. */}
+                                    {credit.roles.filter((role) => role !== 'unknown').map((role) => <Chip key={role} size="sm">{t(`roles.software.${role}`)}</Chip>)}
                                 </Inline>
                             </li>
                         ))}
@@ -138,31 +136,19 @@ function Details({software}: {readonly software: SoftwareDetails}) {
     );
 }
 
-function References({label, references}: {readonly label: string; readonly references: readonly SoftwareReference[]}) {
-    if (references.length === 0) {
-        return null;
-    }
-    return (
-        <Section label={label}>
-            <Stack as="ul" gap="xs" ariaLabel={label}>
-                {references.map((reference) => <li key={`${reference.type}:${reference.id}`}><ReferenceName reference={reference}/></li>)}
-            </Stack>
-        </Section>
-    );
+/** The name of whoever is credited, leading to the page of the person or group it belongs to when that is known. */
+function CreditName({credit}: {readonly credit: SoftwareCredit}) {
+    const href = creditHref(credit);
+    return <Text>{href === null ? credit.title : <TextLink href={href}>{credit.title}</TextLink>}</Text>;
 }
 
-function ReferenceName({reference}: {readonly reference: SoftwareReference | SoftwareCredit}) {
-    const href = referenceHref(reference);
-    return <Text>{href === null ? reference.title : <TextLink href={href}>{reference.title}</TextLink>}</Text>;
-}
-
-function referenceHref(reference: SoftwareReference | SoftwareCredit): string | null {
-    if (reference.ownerId === undefined || reference.ownerId === null) {
+function creditHref(credit: SoftwareCredit): string | null {
+    if (credit.ownerId === undefined || credit.ownerId === null) {
         return null;
     }
-    return reference.type === 'author' || reference.type === 'author-label'
-        ? authorPath(toAuthorId(reference.ownerId))
-        : groupPath(toGroupId(reference.ownerId));
+    return credit.type === 'author' || credit.type === 'author-label'
+        ? authorPath(toAuthorId(credit.ownerId))
+        : groupPath(toGroupId(credit.ownerId));
 }
 
 /** A category of the software with its branch from the top of the tree down to it, each step leading to its catalog. */

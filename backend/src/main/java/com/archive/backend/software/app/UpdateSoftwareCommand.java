@@ -7,7 +7,6 @@ import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.SoftwareCreditDraft;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
-import com.archive.backend.software.domain.SoftwareReference;
 import com.archive.backend.software.domain.SoftwareTitle;
 import com.archive.backend.user.domain.Actor;
 import java.util.List;
@@ -23,8 +22,6 @@ public record UpdateSoftwareCommand(
         PlatformCode platform,
         Set<HardwareCode> hardware,
         Set<CategoryId> categories,
-        Set<SoftwareReference> publishers,
-        Set<SoftwareReference> developers,
         List<SoftwareCreditDraft> credits) {
 
     public UpdateSoftwareCommand(
@@ -35,32 +32,7 @@ public record UpdateSoftwareCommand(
             @Nullable ReleaseDate releaseDate,
             PlatformCode platform,
             Set<HardwareCode> hardware,
-            Set<CategoryId> categories,
-            Set<SoftwareReference> publishers,
-            Set<SoftwareReference> developers) {
-        this(
-                actor,
-                id,
-                title,
-                description,
-                releaseDate,
-                platform,
-                hardware,
-                categories,
-                publishers,
-                developers,
-                List.of());
-    }
-
-    public UpdateSoftwareCommand(
-            Actor actor,
-            SoftwareId id,
-            SoftwareTitle title,
-            @Nullable SoftwareDescription description,
-            @Nullable ReleaseDate releaseDate,
-            PlatformCode platform,
-            Set<HardwareCode> hardware,
             Set<CategoryId> categories) {
-        this(actor, id, title, description, releaseDate, platform, hardware, categories, Set.of(), Set.of(), List.of());
+        this(actor, id, title, description, releaseDate, platform, hardware, categories, List.of());
     }
 }

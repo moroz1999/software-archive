@@ -102,6 +102,18 @@ describe(GroupView, () => {
         expect(within(members).queryByRole('link', {name: 'Ghost'})).not.toBeInTheDocument();
     });
 
+    it('shows the known roles of the members and leaves the unknown one out', async () => {
+        stubFetch(json({...CREW, members: [
+            {id: ZED, type: 'author', title: 'Zed', name: 'Zed', personId: ZED, personName: null, roles: ['coder'], startDate: null, endDate: null},
+            {id: FEDYA, type: 'author', title: 'хакер федя', name: 'хакер федя', personId: FEDYA, personName: null, roles: ['unknown'], startDate: null, endDate: null},
+        ]}));
+        renderView();
+
+        await screen.findByRole('heading', {level: 1, name: 'Crew'});
+
+        expect(itemsOf('Members')).toStrictEqual(['ZedCoder', 'хакер федя']);
+    });
+
     it('leads to the groups inside it and to the groups it is inside', async () => {
         stubFetch(json(CREW));
         renderView();

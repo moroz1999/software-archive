@@ -7,9 +7,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
 import com.archive.backend.TestcontainersConfiguration;
-import com.archive.backend.author.domain.PersonReference;
-import com.archive.backend.author.domain.PersonReferenceId;
-import com.archive.backend.author.domain.PersonReferenceType;
 import com.archive.backend.category.domain.CategoryId;
 import com.archive.backend.category.domain.CategoryLine;
 import com.archive.backend.category.domain.CategorySet;
@@ -35,7 +32,9 @@ import com.archive.backend.software.domain.SoftwareCreditDraft;
 import com.archive.backend.software.domain.SoftwareCredits;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
-import com.archive.backend.software.domain.SoftwareReferences;
+import com.archive.backend.software.domain.SoftwareReference;
+import com.archive.backend.software.domain.SoftwareReferenceId;
+import com.archive.backend.software.domain.SoftwareReferenceType;
 import com.archive.backend.software.domain.SoftwareTitle;
 import com.archive.backend.user.TestActors;
 import com.archive.backend.user.domain.AddedBy;
@@ -474,7 +473,6 @@ class JpaSoftwareRepositoryIT {
                 null,
                 NO_HARDWARE,
                 CategorySet.EMPTY,
-                SoftwareReferences.EMPTY,
                 SoftwareCredits.EMPTY,
                 new AddedBy(MEMBER_ID));
         software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_HARDWARE, new AddedBy(OTHER_ID));
@@ -500,7 +498,6 @@ class JpaSoftwareRepositoryIT {
                 null,
                 NO_HARDWARE,
                 CategorySet.EMPTY,
-                SoftwareReferences.EMPTY,
                 SoftwareCredits.EMPTY,
                 new AddedBy(MEMBER_ID));
         software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_HARDWARE, new AddedBy(MEMBER_ID));
@@ -515,11 +512,19 @@ class JpaSoftwareRepositoryIT {
     }
 
     @Test
-    void savesSoftwareWithItsCreditsAgain() {
+    void savesSoftwareWithItsCreditsOfPeopleGroupsAndTheirLabelsAgain() {
         UUID person = UUID.fromString("00000000-0000-0000-0000-0000000000a1");
         UUID label = UUID.fromString("00000000-0000-0000-0000-0000000000a2");
+        UUID group = UUID.fromString("00000000-0000-0000-0000-0000000000a3");
+        UUID groupLabel = UUID.fromString("00000000-0000-0000-0000-0000000000a4");
         jdbc.update("INSERT INTO person (id) VALUES (?)", person);
-        jdbc.update("INSERT INTO label (id, name, person_id) VALUES (?, 'Zed', ?)", label, person);
+        jdbc.update("INSERT INTO \"group\" (id, name) VALUES (?, 'Crew')", group);
+        jdbc.update(
+                "INSERT INTO label (id, name, person_id, group_id) VALUES (?, 'Zed', ?, NULL), (?, 'CRW', NULL, ?)",
+                label,
+                person,
+                groupLabel,
+                group);
         repository.save(Software.create(
                 ID,
                 new SoftwareTitle("Elite"),
@@ -527,10 +532,10 @@ class JpaSoftwareRepositoryIT {
                 null,
                 NO_HARDWARE,
                 CategorySet.EMPTY,
-                SoftwareReferences.EMPTY,
-                SoftwareCredits.restore(List.of(new SoftwareCreditDraft(
-                        new PersonReference(PersonReferenceType.AUTHOR_LABEL, new PersonReferenceId(label)),
-                        List.of("code"))))));
+                SoftwareCredits.restore(List.of(
+                        credit(SoftwareReferenceType.AUTHOR_LABEL, label, "code"),
+                        credit(SoftwareReferenceType.GROUP, group, "developer"),
+                        credit(SoftwareReferenceType.GROUP_LABEL, groupLabel, "publisher")))));
         springDataSoftwareRepository.flush();
         entityManager.clear();
 
@@ -541,10 +546,16 @@ class JpaSoftwareRepositoryIT {
         entityManager.clear();
 
         assertThat(repository.findById(ID).orElseThrow().getCredits().all())
-                .extracting(credit -> credit.person().id().value(), SoftwareCreditDraft::roles)
-                .containsExactly(tuple(label, List.of("code")));
+                .containsExactlyInAnyOrder(
+                        credit(SoftwareReferenceType.AUTHOR_LABEL, label, "code"),
+                        credit(SoftwareReferenceType.GROUP, group, "developer"),
+                        credit(SoftwareReferenceType.GROUP_LABEL, groupLabel, "publisher"));
         assertThat(jdbc.queryForObject(
                         "SELECT count(*) FROM software_contribution WHERE software_id = ?", Integer.class, ID.value()))
-                .isEqualTo(1);
+                .isEqualTo(3);
+    }
+
+    private static SoftwareCreditDraft credit(SoftwareReferenceType type, UUID id, String role) {
+        return new SoftwareCreditDraft(new SoftwareReference(type, new SoftwareReferenceId(id)), List.of(role));
     }
 }

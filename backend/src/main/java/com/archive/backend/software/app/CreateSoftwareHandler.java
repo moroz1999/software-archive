@@ -5,7 +5,6 @@ import com.archive.backend.hardware.domain.HardwareSets;
 import com.archive.backend.software.domain.Software;
 import com.archive.backend.software.domain.SoftwareCreditSets;
 import com.archive.backend.software.domain.SoftwareId;
-import com.archive.backend.software.domain.SoftwareReferenceSets;
 import com.archive.backend.software.domain.SoftwareRepository;
 import com.archive.backend.user.domain.AddedBy;
 import java.util.UUID;
@@ -21,7 +20,6 @@ public class CreateSoftwareHandler {
     private final SoftwareRepository repository;
     private final HardwareSets hardwareSets;
     private final CategorySets categorySets;
-    private final SoftwareReferenceSets referenceSets;
     private final SoftwareCreditSets creditSets;
     private final ApplicationEventPublisher events;
 
@@ -36,7 +34,6 @@ public class CreateSoftwareHandler {
                 c.releaseDate(),
                 hardwareSets.of(c.platform(), c.hardware()),
                 categorySets.of(c.categories()),
-                referenceSets.of(c.publishers(), c.developers()),
                 creditSets.of(c.credits()),
                 addedBy);
         repository.save(software);

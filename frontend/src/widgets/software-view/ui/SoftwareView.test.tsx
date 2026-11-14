@@ -18,6 +18,11 @@ const AUTHOR = '00000000-0000-0000-0009-000000000002';
 const AUTHOR_LABEL = '00000000-0000-0000-0004-000000000001';
 const GROUP = '00000000-0000-0000-0010-000000000002';
 const GROUP_LABEL = '00000000-0000-0000-0004-000000000002';
+const GROUP_CREDITS = [
+    {id: AUTHOR_LABEL, type: 'author-label', title: 'J.P. — Jane Publisher', roles: ['publisher'], ownerId: AUTHOR},
+    {id: GROUP, type: 'group', title: 'Solar Studio', roles: ['developer'], ownerId: GROUP},
+    {id: GROUP_LABEL, type: 'group-label', title: 'Sol — Solar Studio', roles: ['developer', 'publisher'], ownerId: GROUP},
+];
 const ELITE = {
     id: ID,
     title: 'Elite',
@@ -30,8 +35,6 @@ const ELITE = {
         {id: SHOOTERS, title: 'Shooters', branch: [{id: GAMES, title: 'Games'}, {id: ACTION, title: 'Action'}, {id: SHOOTERS, title: 'Shooters'}]},
         {id: STRATEGY, title: 'Strategy', branch: [{id: GAMES, title: 'Games'}, {id: STRATEGY, title: 'Strategy'}]},
     ],
-    publishers: [],
-    developers: [],
     credits: [],
     sources: [],
     canChange: true,
@@ -213,36 +216,50 @@ describe(SoftwareView, () => {
         expect(within(credits).getByRole('link', {name: 'J.D. — Jane Doe'})).toHaveAttribute('href', `/authors/${AUTHOR}`);
     });
 
-    it('shows publishers and developers and leads from their labels to the owner pages', async () => {
-        stubFetch(json({
-            ...ELITE,
-            publishers: [
-                {id: AUTHOR_LABEL, type: 'author-label', title: 'J.P. — Jane Publisher', ownerId: AUTHOR},
-                {id: GROUP_LABEL, type: 'group-label', title: 'Solar — Solar Studio', ownerId: GROUP},
-            ],
-            developers: [{id: GROUP_LABEL, type: 'group-label', title: 'Solar — Solar Studio', ownerId: GROUP}],
-        }));
+    it('leads from the groups among the credits and from their labels to the group pages', async () => {
+        stubFetch(json({...ELITE, credits: GROUP_CREDITS}));
         renderView(ID);
 
-        const publishers = await screen.findByRole('list', {name: 'Publishers'});
-        const developers = screen.getByRole('list', {name: 'Developers'});
+        const credits = await screen.findByRole('list', {name: 'Credits'});
 
-        expect(within(publishers).getByRole('link', {name: 'J.P. — Jane Publisher'})).toHaveAttribute('href', `/authors/${AUTHOR}`);
-        expect(within(publishers).getByRole('link', {name: 'Solar — Solar Studio'})).toHaveAttribute('href', `/groups/${GROUP}`);
-        expect(within(developers).getByRole('link', {name: 'Solar — Solar Studio'})).toHaveAttribute('href', `/groups/${GROUP}`);
+        expect(within(credits).getByRole('link', {name: 'J.P. — Jane Publisher'})).toHaveAttribute('href', `/authors/${AUTHOR}`);
+        expect(within(credits).getByRole('link', {name: 'Solar Studio'})).toHaveAttribute('href', `/groups/${GROUP}`);
+        expect(within(credits).getByRole('link', {name: 'Sol — Solar Studio'})).toHaveAttribute('href', `/groups/${GROUP}`);
     });
 
-    it('shows a label without an owner without a broken link', async () => {
-        stubFetch(json({
-            ...ELITE,
-            publishers: [{id: AUTHOR_LABEL, type: 'author-label', title: 'Ghost', ownerId: null}],
-        }));
+    it('names the developers and publishers among the credits by their roles', async () => {
+        stubFetch(json({...ELITE, credits: GROUP_CREDITS}));
         renderView(ID);
 
-        const publishers = await screen.findByRole('list', {name: 'Publishers'});
+        const credits = await screen.findByRole('list', {name: 'Credits'});
 
-        expect(within(publishers).getByText('Ghost')).toBeInTheDocument();
-        expect(within(publishers).queryByRole('link', {name: 'Ghost'})).not.toBeInTheDocument();
+        expect(within(credits).getAllByRole('listitem').map((item) => item.textContent)).toStrictEqual([
+            'J.P. — Jane PublisherPublisher',
+            'Solar StudioDeveloper',
+            'Sol — Solar StudioDeveloperPublisher',
+        ]);
+    });
+
+    it('leaves the unknown role out of the credits', async () => {
+        stubFetch(json({...ELITE, credits: [
+            {id: AUTHOR, type: 'author', title: 'Jane Doe', roles: ['unknown'], ownerId: AUTHOR},
+            {id: GROUP, type: 'group', title: 'Solar Studio', roles: ['developer'], ownerId: GROUP},
+        ]}));
+        renderView(ID);
+
+        const credits = await screen.findByRole('list', {name: 'Credits'});
+
+        expect(within(credits).getAllByRole('listitem').map((item) => item.textContent)).toStrictEqual(['Jane Doe', 'Solar StudioDeveloper']);
+    });
+
+    it('shows a credited label without an owner without a broken link', async () => {
+        stubFetch(json({...ELITE, credits: [{id: AUTHOR_LABEL, type: 'author-label', title: 'Ghost', roles: ['code'], ownerId: null}]}));
+        renderView(ID);
+
+        const credits = await screen.findByRole('list', {name: 'Credits'});
+
+        expect(within(credits).getByText('Ghost')).toBeInTheDocument();
+        expect(within(credits).queryByRole('link', {name: 'Ghost'})).not.toBeInTheDocument();
     });
 
     it('shows no categories for software in none', async () => {

@@ -3,23 +3,19 @@ import {useTranslation} from 'react-i18next';
 import {Button} from '@/shared/ui/button';
 import {Form, FormActions, FormField, FormMessage, FormSection} from '@/shared/ui/form';
 import {Input} from '@/shared/ui/input';
-import {MultiEntityAutocomplete} from '@/shared/ui/multi-entity-autocomplete';
 import {MemberRoleEditor} from '@/shared/ui/member-role-editor';
 import {Select} from '@/shared/ui/select';
 import {Skeleton} from '@/shared/ui/skeleton';
 import {Textarea} from '@/shared/ui/textarea';
 import {useSkeleton} from '@/shared/lib/loading';
 import {PLATFORM_REQUIRED_KEY, RELEASE_DATE_HINT_KEY, RELEASE_DATE_INVALID_KEY, TITLE_PROBLEM_KEYS} from '../config/messages';
-import {fetchSoftwarePeople, fetchSoftwareReferences} from '../api/software-api';
+import {fetchSoftwareParticipants} from '../api/software-api';
 import {usePlatformHardware} from '../model/platform-hardware-context';
 import {PlatformHardwareProvider} from '../model/PlatformHardwareProvider';
-import {type SoftwareReferenceType, toSoftwarePlatformCode} from '../model/software';
+import {toSoftwarePlatformCode} from '../model/software';
 import {useSoftwareForm} from '../model/software-form-context';
 import {HardwarePicker} from './HardwarePicker';
 import styles from './SoftwareForm.module.css';
-
-const PUBLISHER_TYPES = ['author', 'author-label', 'group', 'group-label'] as const satisfies readonly SoftwareReferenceType[];
-const DEVELOPER_TYPES = ['group', 'group-label'] as const satisfies readonly SoftwareReferenceType[];
 
 export interface SoftwareFormProps {
     readonly submitLabel: string;
@@ -32,7 +28,7 @@ export interface SoftwareFormProps {
 /** The fields of software inside a SoftwareFormProvider, which holds their values and checks them. */
 export function SoftwareForm({submitLabel, actions, categories}: SoftwareFormProps) {
     const {t} = useTranslation();
-    const {values, errors, refusals, change, changePublishers, changeDevelopers, changeCredits, submit, platforms, busy, error} = useSoftwareForm();
+    const {values, errors, refusals, change, changeCredits, submit, platforms, busy, error} = useSoftwareForm();
     // Hardware belongs to its platform: the platform stays while hardware is chosen (docs/domain/hardware.md).
     const platformLocked = values.hardware.length > 0;
 
@@ -79,38 +75,12 @@ export function SoftwareForm({submitLabel, actions, categories}: SoftwareFormPro
                 )}
                 {categories}
             </FormSection>
-            <FormSection title={t('formSections.relations')}>
-                <FormField label={t('fields.publishers')} error={refusals.publishers}>
-                    {(control) => (
-                        <MultiEntityAutocomplete
-                            {...control}
-                            value={values.publishers ?? []}
-                            onChange={changePublishers}
-                            load={(query, signal) => fetchSoftwareReferences(PUBLISHER_TYPES, query, signal)}
-                            queryKey="software-publishers"
-                            disabled={busy}
-                        />
-                    )}
-                </FormField>
-                <FormField label={t('fields.developers')} error={refusals.developers}>
-                    {(control) => (
-                        <MultiEntityAutocomplete
-                            {...control}
-                            value={values.developers ?? []}
-                            onChange={changeDevelopers}
-                            load={(query, signal) => fetchSoftwareReferences(DEVELOPER_TYPES, query, signal)}
-                            queryKey="software-developers"
-                            disabled={busy}
-                        />
-                    )}
-                </FormField>
-            </FormSection>
-            <FormSection title={t('formSections.authors')} columns={1}>
+            <FormSection title={t('formSections.credits')} columns={1}>
                 <MemberRoleEditor
-                    label={t('fields.credits')}
+                    label={t('fields.participant')}
                     value={values.credits ?? []}
                     onChange={changeCredits}
-                    search={fetchSoftwarePeople}
+                    search={fetchSoftwareParticipants}
                     roles={SOFTWARE_ROLES.map((code) => ({code, title: t(`roles.software.${code}`)}))}
                     disabled={busy}
                     error={refusals.credits}
@@ -124,8 +94,9 @@ export function SoftwareForm({submitLabel, actions, categories}: SoftwareFormPro
     );
 }
 
+/** Developing and publishing come first: they are what software is known by (docs/domain/software.md#credits). */
 const SOFTWARE_ROLES = [
-    'unknown', 'code', 'release', 'adaptation', 'restoring', 'music', 'sfx', 'support', 'testing', 'graphics',
+    'unknown', 'developer', 'publisher', 'code', 'release', 'adaptation', 'restoring', 'music', 'sfx', 'support', 'testing', 'graphics',
     'loading_screen', 'intro_code', 'intro_graphics', 'intro_music', 'organizing', 'direction', '3dmodels', 'design',
     'logo', 'font', 'ascii', 'illustrating', 'tools', 'localization', 'concept', 'gamedesign', 'leveldesign', 'story',
     'text', 'editing', 'translation', 'video', 'guest',

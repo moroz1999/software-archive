@@ -1,48 +1,40 @@
 package com.archive.backend.software.read;
 
 /**
- * Who made software, as its card names them (docs/domain/software.md#card): its developer companies, or when it has
- * none, its credited authors; one SQL array of names in name order. A group or a person is named by their main name,
- * a label by itself. Shared by every read of cards, so the latest list and the catalog name the same.
+ * Who made software, as its card names them (docs/domain/software.md#card): those credited as its developers, or when
+ * there are none, everyone credited but those who only published it; one SQL array of names in name order. A group or
+ * a person is named by their main name, a label by itself. Shared by every read of cards, so the latest list and the
+ * catalog name the same.
  */
 public final class CardMadeBySql {
 
     private CardMadeBySql() {}
 
-    /** The main name of the group of the alias in the query around it. */
-    private static String groupName(String group) {
+    /** The main name of a person or a group of the query around it. */
+    private static String mainName(String column, String ownName, String alias) {
         return """
-                COALESCE((SELECT m.name FROM label m WHERE m.group_id = %1$s.id
-                          ORDER BY m.is_display_name DESC NULLS LAST, lower(m.name), m.id LIMIT 1), %1$s.name)""".formatted(group);
+                COALESCE((SELECT m.name FROM label m WHERE m.%1$s = %3$s.id
+                          ORDER BY m.is_display_name DESC NULLS LAST, lower(m.name), m.id LIMIT 1), %3$s.%2$s)""".formatted(column, ownName, alias);
     }
 
-    /** The main name of the person of the alias in the query around it. */
-    private static String personName(String person) {
+    /** The names of the credits of the software of the alias in the query around it that meet the condition. */
+    private static String names(String software, String condition) {
         return """
-                COALESCE((SELECT m.name FROM label m WHERE m.person_id = %1$s.id
-                          ORDER BY m.is_display_name DESC NULLS LAST, lower(m.name), m.id LIMIT 1), %1$s.real_name)""".formatted(person);
+                ARRAY(SELECT n.name FROM (
+                    SELECT COALESCE(l.name, %3$s, %4$s) AS name
+                    FROM software_contribution c
+                    LEFT JOIN label l ON l.id = c.label_id
+                    LEFT JOIN person p ON p.id = c.person_id
+                    LEFT JOIN "group" g ON g.id = c.group_id
+                    WHERE c.software_id = %1$s.id AND %2$s) n
+                    WHERE n.name IS NOT NULL
+                    ORDER BY lower(n.name))""".formatted(
+                software, condition, mainName("person_id", "real_name", "p"), mainName("group_id", "name", "g"));
     }
 
     /** The array expression for the software of the alias in the query around it. */
     public static String of(String software) {
-        return """
-                COALESCE(
-                    NULLIF(ARRAY(SELECT n.name FROM (
-                        SELECT %2$s AS name
-                        FROM software_developer_group d JOIN "group" g ON g.id = d.group_id
-                        WHERE d.software_id = %1$s.id
-                        UNION ALL
-                        SELECT l.name
-                        FROM software_developer_label d JOIN label l ON l.id = d.label_id
-                        WHERE d.software_id = %1$s.id) n
-                        ORDER BY lower(n.name)), ARRAY[]::text[]),
-                    ARRAY(SELECT n.name FROM (
-                        SELECT COALESCE(l.name, %3$s) AS name
-                        FROM software_contribution c
-                        LEFT JOIN label l ON l.id = c.label_id
-                        LEFT JOIN person p ON p.id = c.person_id
-                        WHERE c.software_id = %1$s.id) n
-                        WHERE n.name IS NOT NULL
-                        ORDER BY lower(n.name)))""".formatted(software, groupName("g"), personName("p"));
+        return "COALESCE(NULLIF(" + names(software, "'developer' = ANY (c.role_codes)") + ", ARRAY[]::text[]), "
+                + names(software, "c.role_codes <> ARRAY['publisher']") + ")";
     }
 }

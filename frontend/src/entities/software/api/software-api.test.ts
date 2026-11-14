@@ -9,6 +9,7 @@ const GAMES = '00000000-0000-0000-0006-000000000001';
 const ACTION = '00000000-0000-0000-0006-000000000002';
 const PUBLISHER = '00000000-0000-0000-0003-000000000001';
 const DEVELOPER = '00000000-0000-0000-0004-000000000001';
+const OWNER = '00000000-0000-0000-0003-000000000002';
 const AUTHOR_LABEL = 'author-label';
 const GROUP = 'group';
 const ID = toSoftwareId('00000000-0000-0000-0001-000000000001');
@@ -19,8 +20,10 @@ const DRAFT = {
     platform: toSoftwarePlatformCode('vector'),
     hardware: ['vector06c', 'ay8910'],
     categories: [GAMES],
-    publishers: [{id: PUBLISHER, type: AUTHOR_LABEL, title: 'J.P. — Jane Publisher'}],
-    developers: [{id: DEVELOPER, type: GROUP, title: 'Nebula Studio'}],
+    credits: [
+        {id: PUBLISHER, type: AUTHOR_LABEL, title: 'J.P. — Jane Publisher', roles: ['publisher'], startDate: '', endDate: ''},
+        {id: DEVELOPER, type: GROUP, title: 'Nebula Studio', roles: ['developer'], startDate: '', endDate: ''},
+    ],
 } satisfies SoftwareDraft;
 const VECTOR = {code: 'vector', name: 'Vector'};
 const VECTOR06C = {code: 'vector06c', name: 'Vector-06C', group: 'computers'};
@@ -38,9 +41,10 @@ describe(fetchSoftware, () => {
         const fetchMock = stubFetch(json({
             id: ID, title: 'Elite', description: 'Space trading', releaseDate: null, platform: VECTOR, hardware: [VECTOR06C],
             categories: [{id: ACTION, title: 'Action', branch: [{id: GAMES, title: 'Games'}, {id: ACTION, title: 'Action'}]}],
-            publishers: [{id: PUBLISHER, type: AUTHOR_LABEL, title: 'J.P. — Jane Publisher'}],
-            developers: [{id: DEVELOPER, type: GROUP, title: 'Nebula Studio'}],
-            credits: [],
+            credits: [
+                {id: PUBLISHER, type: AUTHOR_LABEL, title: 'J.P. — Jane Publisher', ownerId: OWNER, roles: ['publisher']},
+                {id: DEVELOPER, type: GROUP, title: 'Nebula Studio', ownerId: DEVELOPER, roles: ['developer']},
+            ],
             sources: [{archive: 'vektor-06c.ru', url: 'https://vektor-06c.ru/programmnoe-obespechenie/arkadnye-igry/joe-blade-/'}],
             canChange: true,
         }));
@@ -48,9 +52,10 @@ describe(fetchSoftware, () => {
         await expect(fetchSoftware(ID, new AbortController().signal)).resolves.toStrictEqual({
             id: ID, title: 'Elite', description: 'Space trading', releaseDate: null, platform: VECTOR, hardware: [VECTOR06C],
             categories: [{id: ACTION, title: 'Action', branch: [{id: GAMES, title: 'Games'}, {id: ACTION, title: 'Action'}]}],
-            publishers: [{id: PUBLISHER, type: AUTHOR_LABEL, title: 'J.P. — Jane Publisher'}],
-            developers: [{id: DEVELOPER, type: GROUP, title: 'Nebula Studio'}],
-            credits: [],
+            credits: [
+                {id: PUBLISHER, type: AUTHOR_LABEL, title: 'J.P. — Jane Publisher', ownerId: OWNER, roles: ['publisher'], startDate: '', endDate: ''},
+                {id: DEVELOPER, type: GROUP, title: 'Nebula Studio', ownerId: DEVELOPER, roles: ['developer'], startDate: '', endDate: ''},
+            ],
             sources: [{archive: 'vektor-06c.ru', url: 'https://vektor-06c.ru/programmnoe-obespechenie/arkadnye-igry/joe-blade-/'}],
             canChange: true,
         });
@@ -136,7 +141,7 @@ describe(createSoftware, () => {
         expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/software');
         expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
             method: 'POST',
-            body: '{"title":"Elite","description":null,"releaseDate":"1985-09-20","platform":"vector","hardware":["vector06c","ay8910"],"categories":["00000000-0000-0000-0006-000000000001"],"publishers":[{"id":"00000000-0000-0000-0003-000000000001","type":"author-label"}],"developers":[{"id":"00000000-0000-0000-0004-000000000001","type":"group"}],"credits":[]}',
+            body: '{"title":"Elite","description":null,"releaseDate":"1985-09-20","platform":"vector","hardware":["vector06c","ay8910"],"categories":["00000000-0000-0000-0006-000000000001"],"credits":[{"id":"00000000-0000-0000-0003-000000000001","type":"author-label","roles":["publisher"]},{"id":"00000000-0000-0000-0004-000000000001","type":"group","roles":["developer"]}]}',
         });
     });
 });
@@ -153,7 +158,7 @@ describe(updateSoftware, () => {
         expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/software/${ID}`);
         expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
             method: 'PUT',
-            body: '{"title":"Elite","description":null,"releaseDate":"1985-09-20","platform":"vector","hardware":["vector06c","ay8910"],"categories":["00000000-0000-0000-0006-000000000001"],"publishers":[{"id":"00000000-0000-0000-0003-000000000001","type":"author-label"}],"developers":[{"id":"00000000-0000-0000-0004-000000000001","type":"group"}],"credits":[]}',
+            body: '{"title":"Elite","description":null,"releaseDate":"1985-09-20","platform":"vector","hardware":["vector06c","ay8910"],"categories":["00000000-0000-0000-0006-000000000001"],"credits":[{"id":"00000000-0000-0000-0003-000000000001","type":"author-label","roles":["publisher"]},{"id":"00000000-0000-0000-0004-000000000001","type":"group","roles":["developer"]}]}',
         });
     });
 });

@@ -14,10 +14,9 @@ public record SoftwareRequestDto(
         @Nullable String platform,
         @Nullable List<String> hardware,
         @Nullable List<UUID> categories,
-        @Nullable List<SoftwareReferenceRequestDto> publishers,
-        @Nullable List<SoftwareReferenceRequestDto> developers,
         @Nullable List<CreditDto> credits) {
 
+    /** A person, a group or the exact label of either, with the roles they had. */
     public record CreditDto(
             @Nullable UUID id,
             @Nullable String type,

@@ -5,9 +5,7 @@ Software (a production) is a release of a program: the work itself, as it is kno
 - It is for exactly one platform and has its base hardware — see [hardware.md](hardware.md).
 - It has a title, a description and a release date — see [Release dates](#release-dates).
 - It can be in categories of the archive's tree — see [categories.md](categories.md).
-- It can name any number of publishers: people, groups, or the exact aliases under which they published it.
-- It can name any number of developer companies: groups or the exact group aliases under which they developed it. A person cannot be a developer company.
-- Publishers, developer companies and credited names lead from software to their person or group when that owner is known. A label of nobody remains named without a link.
+- It has credits: who made it, published it and worked on it — see [Credits](#credits).
 - The title follows the common title rules (see the domain index). The description and the release date may be unknown.
 - Software can be added, edited and deleted, its base hardware with it, chosen from the hardware of its platform. For now anyone can do it; access rules come later.
 - Deleting software deletes what belongs only to it: its releases, screenshots, alternative titles, languages, links and credits.
@@ -44,12 +42,17 @@ Screenshots are part of what the archive knows, as much as its records: they are
 
 ## Credits
 
-Credits tell who made the software. A credited author is a person or the exact alias they used for the work and has one or several roles (code, graphics, music, etc.); without a chosen role it is recorded as unknown.
+Credits tell who made the software, who published it and who worked on it. Developing and publishing are roles like any other, not separate lists: a studio that developed and published a game is credited once with both roles.
+- Anyone is credited: a person, a group, or the exact label of either under which they did the work. Each of them is credited once per software, with all their roles.
+- A credit has one or several roles (developer, publisher, code, graphics, music, etc.); without a chosen role it is recorded as unknown.
+- A label of nobody can be credited, as imports do; editing keeps it.
+- A credited name leads from software to its person or group when that owner is known. A label of nobody remains named without a link.
+- Some roles are work on a copy of the software rather than on the software itself: release (cracking), the intro code, graphics and music, adaptation, restoring, localization, translation, guest, support and testing. Whoever had only these roles does not tell where the software comes from ([search.md](search.md)).
 
 ## Card
 The card of software in a list is one link to its page: a click anywhere on it opens the software.
 - It shows the screenshots ([Screenshots](#screenshots)), the title, who made the software and its release year.
-- Who made it: its developer companies; for software without any, its credited authors. Each is named as the archive knows them: a group or a person by their main name, an alias by itself; in name order.
+- Who made it: those credited as its developers; for software without any, everyone credited but those who only published it. Each is named as the archive knows them: a group or a person by their main name, a label by itself; in name order.
 - Who made it stands on the left, the year on the right, on one line when both fit; the year moves under the names when they are long. What is unknown is left out.
 
 ## Fresh software

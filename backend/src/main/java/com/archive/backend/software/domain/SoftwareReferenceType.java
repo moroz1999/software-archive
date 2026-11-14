@@ -22,10 +22,6 @@ public enum SoftwareReferenceType {
         return code;
     }
 
-    public boolean isGroup() {
-        return this == GROUP || this == GROUP_LABEL;
-    }
-
     public static SoftwareReferenceType fromCode(String code) {
         return Arrays.stream(values())
                 .filter(type -> type.code.equals(code))

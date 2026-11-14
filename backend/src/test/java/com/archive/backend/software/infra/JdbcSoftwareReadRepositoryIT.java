@@ -8,6 +8,7 @@ import com.archive.backend.TestcontainersConfiguration;
 import com.archive.backend.software.read.ReleaseDetails;
 import com.archive.backend.software.read.SoftwareCategory;
 import com.archive.backend.software.read.SoftwareCategoryStep;
+import com.archive.backend.software.read.SoftwareCredit;
 import com.archive.backend.software.read.SoftwareDetails;
 import com.archive.backend.software.read.SoftwareHardware;
 import com.archive.backend.software.read.SoftwarePlatform;
@@ -186,7 +187,7 @@ class JdbcSoftwareReadRepositoryIT {
     }
 
     @Test
-    void theCardNamesTheDeveloperCompaniesElseTheCreditedAuthorsByName() {
+    void theCardNamesTheDevelopersElseEveryoneCreditedButThePublishersByName() {
         UUID crew = id(21);
         UUID band = id(22);
         UUID john = id(23);
@@ -199,16 +200,44 @@ class JdbcSoftwareReadRepositoryIT {
                     (?, 'JD', ?, NULL, true),
                     (?, 'Ace', NULL, NULL, false)
                 """, id(31), crew, id(32), band, id(33), john, id(34));
-        jdbc.update("INSERT INTO software_developer_group (software_id, group_id) VALUES (?, ?)", ELITE, crew);
-        jdbc.update("INSERT INTO software_developer_label (software_id, label_id) VALUES (?, ?)", ELITE, id(32));
         jdbc.update("""
-                INSERT INTO software_contribution (software_id, person_id, label_id) VALUES
-                    (?, ?, NULL), (?, ?, NULL), (?, NULL, ?)
-                """, ELITE, john, TETRIS, john, TETRIS, id(34));
+                INSERT INTO software_contribution (software_id, person_id, group_id, label_id, role_codes) VALUES
+                    (?, NULL, ?, NULL, ARRAY['developer']),
+                    (?, NULL, NULL, ?, ARRAY['music', 'developer']),
+                    (?, ?, NULL, NULL, ARRAY['code']),
+                    (?, ?, NULL, NULL, ARRAY['code']),
+                    (?, NULL, NULL, ?, ARRAY['unknown']),
+                    (?, NULL, ?, NULL, ARRAY['publisher'])
+                """, ELITE, crew, ELITE, id(32), ELITE, john, TETRIS, john, TETRIS, id(34), TETRIS, crew);
 
         assertThat(madeByOf(ELITE)).containsExactly("The Crew", "zeta");
         assertThat(madeByOf(TETRIS)).containsExactly("Ace", "JD");
         assertThat(madeByOf(NEWEST)).isEmpty();
+    }
+
+    @Test
+    void readsTheCreditsOfPeopleGroupsAndTheirLabelsWithTheOwnersOfTheLabels() {
+        UUID crew = id(21);
+        UUID john = id(23);
+        jdbc.update("INSERT INTO \"group\" (id, name) VALUES (?, 'Crew Ltd')", crew);
+        jdbc.update("INSERT INTO person (id, real_name) VALUES (?, 'John Doe')", john);
+        jdbc.update("""
+                INSERT INTO label (id, name, person_id, group_id, is_display_name) VALUES
+                    (?, 'The Crew', NULL, ?, true),
+                    (?, 'CRW', NULL, ?, false)
+                """, id(31), crew, id(32), crew);
+        jdbc.update("""
+                INSERT INTO software_contribution (software_id, person_id, group_id, label_id, role_codes) VALUES
+                    (?, ?, NULL, NULL, ARRAY['code']),
+                    (?, NULL, ?, NULL, ARRAY['developer']),
+                    (?, NULL, NULL, ?, ARRAY['publisher'])
+                """, ELITE, john, ELITE, crew, ELITE, id(32));
+
+        assertThat(reads.findById(ELITE).orElseThrow().credits())
+                .containsExactly(
+                        new SoftwareCredit(id(32), crew, "group-label", "CRW — Crew Ltd", List.of("publisher")),
+                        new SoftwareCredit(john, john, "author", "John Doe", List.of("code")),
+                        new SoftwareCredit(crew, crew, "group", "The Crew", List.of("developer")));
     }
 
     @Test

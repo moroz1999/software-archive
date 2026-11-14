@@ -5,8 +5,8 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 /**
- * One software with everything shown about it; its base hardware by group, then by name; its
- * categories in the order of the tree; the pages of the archives it was imported from.
+ * One software with everything shown about it; its base hardware by group, then by name; its categories in the order
+ * of the tree; everyone credited on it; the pages of the archives it was imported from.
  */
 public record SoftwareDetails(
         UUID id,
@@ -16,8 +16,6 @@ public record SoftwareDetails(
         SoftwarePlatform platform,
         List<SoftwareHardware> hardware,
         List<SoftwareCategory> categories,
-        List<SoftwareReferenceOption> publishers,
-        List<SoftwareReferenceOption> developers,
         List<SoftwareCredit> credits,
         List<SoftwareSource> sources,
         @Nullable UUID addedBy,
@@ -32,23 +30,19 @@ public record SoftwareDetails(
             SoftwarePlatform platform,
             List<SoftwareHardware> hardware,
             List<SoftwareCategory> categories,
-            List<SoftwareReferenceOption> publishers,
-            List<SoftwareReferenceOption> developers,
             List<SoftwareCredit> credits) {
-        this(
-                id,
-                title,
-                description,
-                releaseDate,
-                platform,
-                hardware,
-                categories,
-                publishers,
-                developers,
-                credits,
-                List.of(),
-                null,
-                false);
+        this(id, title, description, releaseDate, platform, hardware, categories, credits, List.of(), null, false);
+    }
+
+    public SoftwareDetails(
+            UUID id,
+            String title,
+            @Nullable String description,
+            @Nullable String releaseDate,
+            SoftwarePlatform platform,
+            List<SoftwareHardware> hardware,
+            List<SoftwareCategory> categories) {
+        this(id, title, description, releaseDate, platform, hardware, categories, List.of());
     }
 
     /** The same software, telling whether the actor may change it. */
@@ -61,35 +55,9 @@ public record SoftwareDetails(
                 platform,
                 hardware,
                 categories,
-                publishers,
-                developers,
                 credits,
                 sources,
                 addedBy,
                 canChange);
-    }
-
-    public SoftwareDetails(
-            UUID id,
-            String title,
-            @Nullable String description,
-            @Nullable String releaseDate,
-            SoftwarePlatform platform,
-            List<SoftwareHardware> hardware,
-            List<SoftwareCategory> categories,
-            List<SoftwareReferenceOption> publishers,
-            List<SoftwareReferenceOption> developers) {
-        this(id, title, description, releaseDate, platform, hardware, categories, publishers, developers, List.of());
-    }
-
-    public SoftwareDetails(
-            UUID id,
-            String title,
-            @Nullable String description,
-            @Nullable String releaseDate,
-            SoftwarePlatform platform,
-            List<SoftwareHardware> hardware,
-            List<SoftwareCategory> categories) {
-        this(id, title, description, releaseDate, platform, hardware, categories, List.of(), List.of(), List.of());
     }
 }

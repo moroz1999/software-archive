@@ -36,7 +36,6 @@ class SoftwarePermissionsTest {
                 null,
                 NO_HARDWARE,
                 CategorySet.EMPTY,
-                SoftwareReferences.EMPTY,
                 SoftwareCredits.EMPTY,
                 addedBy);
     }

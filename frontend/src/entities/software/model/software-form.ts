@@ -1,10 +1,10 @@
 import {type TitleProblem, titleProblem} from '@/shared/lib/title';
+import type {MemberRoleValue} from '@/shared/ui/member-role-editor';
 import {parseReleaseDateText, releaseDateField} from '../lib/release-date';
 import {
     type ReleaseDate,
     type SoftwareDetails,
     type SoftwarePlatformCode,
-    type SoftwareReference,
     type SoftwareTitle,
     toSoftwarePlatformCode,
     toSoftwareTitle,
@@ -22,9 +22,7 @@ export interface SoftwareFormValues {
     readonly hardware: readonly string[];
     /** The ids of the checked categories. */
     readonly categories: readonly string[];
-    readonly publishers?: readonly SoftwareReference[];
-    readonly developers?: readonly SoftwareReference[];
-    readonly credits?: readonly import('@/shared/ui/member-role-editor').MemberRoleValue[];
+    readonly credits?: readonly MemberRoleValue[];
 }
 
 /** A platform the form offers. */
@@ -41,9 +39,7 @@ export interface SoftwareDraft {
     readonly platform: SoftwarePlatformCode;
     readonly hardware: readonly string[];
     readonly categories: readonly string[];
-    readonly publishers: readonly SoftwareReference[];
-    readonly developers: readonly SoftwareReference[];
-    readonly credits?: readonly import('@/shared/ui/member-role-editor').MemberRoleValue[];
+    readonly credits: readonly MemberRoleValue[];
 }
 
 export interface SoftwareFormErrors {
@@ -85,8 +81,6 @@ export function validateSoftwareForm(values: SoftwareFormValues): SoftwareFormRe
             platform: toSoftwarePlatformCode(values.platform),
             hardware: values.hardware,
             categories: values.categories,
-            publishers: values.publishers ?? [],
-            developers: values.developers ?? [],
             credits: values.credits ?? [],
         },
     };
@@ -101,8 +95,6 @@ export function toSoftwareFormValues(software?: SoftwareDetails): SoftwareFormVa
         platform: software?.platform.code ?? '',
         hardware: software?.hardware.map((item) => item.code) ?? [],
         categories: software?.categories.map((category) => category.id) ?? [],
-        publishers: software?.publishers ?? [],
-        developers: software?.developers ?? [],
         credits: software?.credits ?? [],
     };
 }

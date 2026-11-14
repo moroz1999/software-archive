@@ -48,12 +48,12 @@ public class EnqueueSearchDocumentsHandler {
         enqueueSoftware(affected.creditingPerson(author));
     }
 
-    /** The group, and the software it developed: its card names it. */
+    /** The group, and the software crediting it by itself: its card names it, its countries may have changed. */
     @EventListener
     public void on(GroupChanged event) {
         UUID group = event.group().value();
         enqueue(SearchEntityType.GROUP, List.of(group));
-        enqueueSoftware(affected.developedByGroup(group));
+        enqueueSoftware(affected.creditingGroup(group));
     }
 
     @EventListener
