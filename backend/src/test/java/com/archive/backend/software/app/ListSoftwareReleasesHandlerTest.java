@@ -64,6 +64,7 @@ class ListSoftwareReleasesHandlerTest {
                 List.of(),
                 List.of(),
                 List.of(),
+                List.of(),
                 null,
                 false));
         reads.addReleases(
@@ -101,6 +102,7 @@ class ListSoftwareReleasesHandlerTest {
                 null,
                 null,
                 new SoftwarePlatform("vector", "Vector"),
+                List.of(),
                 List.of(),
                 List.of(),
                 List.of(),

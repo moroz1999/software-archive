@@ -41,6 +41,7 @@ describe(fetchSoftware, () => {
             publishers: [{id: PUBLISHER, type: AUTHOR_LABEL, title: 'J.P. — Jane Publisher'}],
             developers: [{id: DEVELOPER, type: GROUP, title: 'Nebula Studio'}],
             credits: [],
+            sources: [{archive: 'vektor-06c.ru', url: 'https://vektor-06c.ru/programmnoe-obespechenie/arkadnye-igry/joe-blade-/'}],
             canChange: true,
         }));
 
@@ -50,6 +51,7 @@ describe(fetchSoftware, () => {
             publishers: [{id: PUBLISHER, type: AUTHOR_LABEL, title: 'J.P. — Jane Publisher'}],
             developers: [{id: DEVELOPER, type: GROUP, title: 'Nebula Studio'}],
             credits: [],
+            sources: [{archive: 'vektor-06c.ru', url: 'https://vektor-06c.ru/programmnoe-obespechenie/arkadnye-igry/joe-blade-/'}],
             canChange: true,
         });
         expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/software/${ID}`);

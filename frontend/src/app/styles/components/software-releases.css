@@ -5,6 +5,9 @@
     --software-releases-type-column-width: 120px;
     --software-releases-hardware-column-width: 30%;
 
+    /* The Download button of an archive with its size beside it. */
+    --software-releases-archive-column-width: 176px;
+
     /* The first screenshot beside the title of a release: its width, corners and the fill around a picture. */
     --software-releases-thumbnail-width: 64px;
     --software-releases-thumbnail-radius: var(--radius-sm);

@@ -24,6 +24,12 @@ export interface SoftwareReference {
 
 export type SoftwareCredit = MemberRoleValue;
 
+/** The page of software in an archive it was imported from. */
+export interface SoftwareSource {
+    readonly archive: string;
+    readonly url: string;
+}
+
 export interface Software {
     readonly id: SoftwareId;
     readonly title: SoftwareTitle;
@@ -41,6 +47,8 @@ export interface SoftwareDetails extends Software {
     readonly publishers?: readonly SoftwareReference[];
     readonly developers?: readonly SoftwareReference[];
     readonly credits?: readonly SoftwareCredit[];
+    /** The pages of the archives it was imported from (docs/domain/imports.md). */
+    readonly sources?: readonly SoftwareSource[];
     /** Whether whoever reads it may change it, as the archive tells. */
     readonly canChange: boolean;
 }

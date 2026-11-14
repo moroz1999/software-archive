@@ -139,7 +139,7 @@ export const resources = {
             versionFact: 'Version {{version}}', editNamed: 'Edit {{title}}', software: 'Software',
             hardwareHint: 'A group checked here replaces that group of the software.',
             archive: 'Archive', addArchive: 'Add archive', replaceArchive: 'Replace archive', removeArchive: 'Remove archive',
-            downloadArchive: 'Download archive', archiveHint: 'Any file type, up to 100 MB.',
+            downloadArchive: 'Download archive', download: 'Download', downloadNamed: 'Download {{title}}', archiveHint: 'Any file type, up to 100 MB.',
             archiveErrors: {
                 size: 'A release archive can be at most 100 MB.', name: 'Choose a named file for the release archive.',
                 change: 'Choose either replacement or removal of the release archive.',
@@ -154,7 +154,7 @@ export const resources = {
             parent: 'Parent', top: 'None, at the top', expand: 'Expand {{name}}', collapse: 'Collapse {{name}}', delete: 'Delete category',
             deleteQuestion: 'Delete “{{title}}” with all its subcategories? Their software stays in the archive and only leaves them.',
         },
-        software: {delete: 'Delete software', deleteQuestion: 'Delete “{{title}}” from the archive?', released: 'Released'},
+        software: {delete: 'Delete software', deleteQuestion: 'Delete “{{title}}” from the archive?', released: 'Released', source: 'Source'},
         screenshots: {
             heading: 'Screenshots', numbered: 'Screenshot {{n}}', nOfCount: 'Screenshot {{n}} of {{count}}',
             previous: 'Previous screenshot', next: 'Next screenshot', none: 'No screenshots yet.', add: 'Add screenshots',
@@ -315,7 +315,7 @@ export const resources = {
             editNamed: 'Редактировать {{title}}', software: 'Программа',
             hardwareHint: 'Выбранная здесь группа заменяет соответствующую группу оборудования программы.',
             archive: 'Архив', addArchive: 'Добавить архив', replaceArchive: 'Заменить архив', removeArchive: 'Удалить архив',
-            downloadArchive: 'Скачать архив', archiveHint: 'Файл любого типа, до 100 МБ.',
+            downloadArchive: 'Скачать архив', download: 'Скачать', downloadNamed: 'Скачать {{title}}', archiveHint: 'Файл любого типа, до 100 МБ.',
             archiveErrors: {
                 size: 'Архив релиза может весить не больше 100 МБ.', name: 'Выберите для релиза файл с именем.',
                 change: 'Выберите либо замену, либо удаление архива релиза.',
@@ -330,7 +330,7 @@ export const resources = {
             parent: 'Родитель', top: 'Нет, на верхнем уровне', expand: 'Раскрыть {{name}}', collapse: 'Свернуть {{name}}', delete: 'Удалить категорию',
             deleteQuestion: 'Удалить «{{title}}» со всеми подкатегориями? Их программы останутся в архиве и только покинут эти категории.',
         },
-        software: {delete: 'Удалить программу', deleteQuestion: 'Удалить «{{title}}» из архива?', released: 'Выпущено'},
+        software: {delete: 'Удалить программу', deleteQuestion: 'Удалить «{{title}}» из архива?', released: 'Выпущено', source: 'Источник'},
         screenshots: {
             heading: 'Скриншоты', numbered: 'Скриншот {{n}}', nOfCount: 'Скриншот {{n}} из {{count}}',
             previous: 'Предыдущий скриншот', next: 'Следующий скриншот', none: 'Скриншотов пока нет.', add: 'Добавить скриншоты',

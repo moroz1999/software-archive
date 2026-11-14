@@ -15,6 +15,7 @@ import com.archive.backend.software.read.SoftwareReadRepository;
 import com.archive.backend.software.read.SoftwareReferenceOption;
 import com.archive.backend.software.read.SoftwareRelease;
 import com.archive.backend.software.read.SoftwareScreenshot;
+import com.archive.backend.software.read.SoftwareSource;
 import com.archive.backend.software.read.SoftwareSummary;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -101,9 +102,22 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                         publishers(id),
                         developers(id),
                         credits(id),
+                        sources(id),
                         rs.getObject("added_by", UUID.class),
                         false))
                 .optional();
+    }
+
+    /** The pages of the archives the software was imported from (docs/features/vektor-import.md). */
+    private List<SoftwareSource> sources(UUID softwareId) {
+        return jdbc.sql("""
+                        SELECT origin, url FROM external_origin
+                        WHERE kind = 'SOFTWARE' AND entity_id = :id AND url IS NOT NULL
+                        ORDER BY origin
+                        """)
+                .param("id", softwareId)
+                .query((rs, row) -> new SoftwareSource(rs.getString("origin"), rs.getString("url")))
+                .list();
     }
 
     private List<SoftwareCredit> credits(UUID softwareId) {

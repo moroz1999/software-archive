@@ -84,6 +84,10 @@ export async function fetchSoftware(id: SoftwareId, signal: AbortSignal): Promis
             publishers: parseSoftwareReferences(dto['publishers'], 'publishers'),
             developers: parseSoftwareReferences(dto['developers'], 'developers'),
             credits: parseSoftwareCredits(dto['credits']),
+            sources: readArray(dto['sources'], 'sources').map((item) => {
+                const source = readObject(item, 'source');
+                return {archive: readString(source, 'archive'), url: readString(source, 'url')};
+            }),
             canChange: readBoolean(dto, 'canChange'),
         };
     });

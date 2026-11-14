@@ -6,7 +6,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * One software with everything shown about it; its base hardware by group, then by name; its
- * categories in the order of the tree.
+ * categories in the order of the tree; the pages of the archives it was imported from.
  */
 public record SoftwareDetails(
         UUID id,
@@ -19,6 +19,7 @@ public record SoftwareDetails(
         List<SoftwareReferenceOption> publishers,
         List<SoftwareReferenceOption> developers,
         List<SoftwareCredit> credits,
+        List<SoftwareSource> sources,
         @Nullable UUID addedBy,
         boolean canChange) {
 
@@ -45,6 +46,7 @@ public record SoftwareDetails(
                 publishers,
                 developers,
                 credits,
+                List.of(),
                 null,
                 false);
     }
@@ -62,6 +64,7 @@ public record SoftwareDetails(
                 publishers,
                 developers,
                 credits,
+                sources,
                 addedBy,
                 canChange);
     }

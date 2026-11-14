@@ -63,6 +63,7 @@ public final class VektorPages {
         Element archiveName = download == null ? null : download.selectFirst(".archive-name");
         return new VektorProgram(
                 listing.id(),
+                listing.url(),
                 section(listing.url()),
                 property(page, "НАИМЕНОВАНИЕ"),
                 property(page, "АВТОР"),

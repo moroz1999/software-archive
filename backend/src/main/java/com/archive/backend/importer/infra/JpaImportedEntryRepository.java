@@ -2,6 +2,7 @@ package com.archive.backend.importer.infra;
 
 import com.archive.backend.importer.domain.ExternalKind;
 import com.archive.backend.importer.domain.ExternalOrigin;
+import com.archive.backend.importer.domain.ExternalPage;
 import com.archive.backend.importer.domain.ImportedEntry;
 import com.archive.backend.importer.domain.ImportedEntryId;
 import com.archive.backend.importer.domain.ImportedEntryRepository;
@@ -24,7 +25,8 @@ public class JpaImportedEntryRepository implements ImportedEntryRepository {
                                 row.getKey().getOrigin(),
                                 ExternalKind.valueOf(row.getKey().getKind()),
                                 row.getKey().getExternalId()),
-                        new ImportedEntryId(row.getEntityId())));
+                        new ImportedEntryId(row.getEntityId()),
+                        row.getUrl() == null ? null : new ExternalPage(row.getUrl())));
     }
 
     @Override
@@ -32,6 +34,8 @@ public class JpaImportedEntryRepository implements ImportedEntryRepository {
         ExternalOriginEntity row = new ExternalOriginEntity();
         row.setKey(keyOf(entry.getOrigin()));
         row.setEntityId(entry.getEntry().value());
+        ExternalPage page = entry.getPage();
+        row.setUrl(page == null ? null : page.url());
         springDataExternalOriginRepository.saveAndFlush(row);
     }
 

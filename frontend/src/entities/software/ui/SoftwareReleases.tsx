@@ -4,6 +4,7 @@ import {classNames} from '@/shared/lib/class-names';
 import {MOBILE_QUERY, useMediaQuery} from '@/shared/lib/screen';
 import {useSkeleton} from '@/shared/lib/loading';
 import {Badge} from '@/shared/ui/badge';
+import {Button} from '@/shared/ui/button';
 import {Inline} from '@/shared/ui/inline';
 import {Panel} from '@/shared/ui/panel';
 import {Skeleton} from '@/shared/ui/skeleton';
@@ -16,6 +17,7 @@ import {CardScreenshots} from '@/shared/ui/card-screenshots';
 import {releasePath} from '../config/paths';
 import {releaseYear} from '../lib/release-year';
 import type {ReleaseType, SoftwareRelease} from '../model/release';
+import {fileSizeText, type ReleaseArchive} from '../model/release-archive';
 import type {SoftwareId} from '../model/software';
 import {useSoftwareReleases} from '../model/software-releases-context';
 import styles from './SoftwareReleases.module.css';
@@ -150,6 +152,7 @@ function ReleaseHeader({withActions, sort = null, onSort}: ReleaseHeaderProps) {
                 <TableHeaderCell align="center" className={styles.versionColumn}>{t('fields.version')}</TableHeaderCell>
                 <TableHeaderCell className={styles.typeColumn}>{t('fields.type')}</TableHeaderCell>
                 <TableHeaderCell className={styles.hardwareColumn}>{t('fields.hardware')}</TableHeaderCell>
+                <TableHeaderCell className={styles.archiveColumn}>{t('release.archive')}</TableHeaderCell>
                 {withActions && <TableHeaderCell/>}
             </TableRow>
         </TableHead>
@@ -200,11 +203,23 @@ function ReleaseTable({softwareId, releases, actions, sort, onSort}: ReleaseTabl
                                 {release.hardware.map((item) => <Text key={item.code} as="span">{item.name}</Text>)}
                             </Inline>
                         </TableCell>
+                        <TableCell>{release.archive != null && <Download release={release} archive={release.archive}/>}</TableCell>
                         {actions !== undefined && <TableCell align="end">{actions(release)}</TableCell>}
                     </TableRow>
                 ))}
             </TableBody>
         </Table>
+    );
+}
+
+/** The archive of a release to download, with its size. */
+function Download({release, archive}: {readonly release: SoftwareRelease; readonly archive: ReleaseArchive}) {
+    const {t} = useTranslation();
+    return (
+        <Inline gap="sm" align="center" wrap>
+            <Button href={archive.url} target="_self" color="secondary" ariaLabel={t('release.downloadNamed', {title: release.title})}>{t('release.download')}</Button>
+            <Text as="span" variant="bodySm" tone="muted">{fileSizeText(archive.size)}</Text>
+        </Inline>
     );
 }
 
@@ -246,6 +261,7 @@ function ReleaseCard({softwareId, release, actions}: ReleaseCardProps) {
                         {release.hardware.map((item) => <Badge key={item.code} variant="secondary">{item.name}</Badge>)}
                     </Inline>
                 )}
+                {release.archive != null && <Download release={release} archive={release.archive}/>}
                 {actions?.(release)}
             </Stack>
         </Panel>
@@ -296,6 +312,7 @@ function SoftwareReleasesSkeleton({withActions}: {readonly withActions: boolean}
                                                 <Skeleton inline className={styles.hardwareBone}/>
                                             </Inline>
                                         </TableCell>
+                                        <TableCell/>
                                         {withActions && <TableCell align="end"><Skeleton inline className={styles.buttonBone}/></TableCell>}
                                     </TableRow>
                                 ))}

@@ -9,6 +9,7 @@ import org.jspecify.annotations.Nullable;
  * A program as vektor-06c.ru shows it on its page: the lines of its card as they are written there.
  *
  * @param id the id of the program on the site
+ * @param url the absolute address of its page
  * @param section the code of its section in the address of the page
  * @param archiveUrl the absolute address of its ZIP archive; a program may have none
  * @param archiveFiles the names of the files inside the archive
@@ -16,6 +17,7 @@ import org.jspecify.annotations.Nullable;
 @ValueObject
 public record VektorProgram(
         String id,
+        String url,
         String section,
         String title,
         String authors,

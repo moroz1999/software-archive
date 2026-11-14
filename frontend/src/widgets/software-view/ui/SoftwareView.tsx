@@ -23,7 +23,7 @@ import {Inline} from '@/shared/ui/inline';
 import {PageLayout} from '@/shared/ui/page-layout';
 import {Skeleton} from '@/shared/ui/skeleton';
 import {Stack} from '@/shared/ui/stack';
-import {Heading, Text} from '@/shared/ui/typography';
+import {Heading, Text, TextLink} from '@/shared/ui/typography';
 import {SoftwareViewSkeleton} from './SoftwareViewSkeleton';
 import styles from './SoftwareView.module.css';
 import {useSkeleton} from '@/shared/lib/loading';
@@ -105,6 +105,14 @@ function Details({software}: {readonly software: SoftwareDetails}) {
                         ))}
                     </Stack>
                 </Section>
+            )}
+            {(software.sources?.length ?? 0) > 0 && (
+                <Stack as="section" gap="xs" ariaLabel={t('software.source')}>
+                    <Text variant="label" tone="muted">{t('software.source')}</Text>
+                    <Stack as="ul" gap="xs">
+                        {software.sources?.map((source) => <li key={source.url}><TextLink href={source.url}>{source.archive}</TextLink></li>)}
+                    </Stack>
+                </Stack>
             )}
             {lines.length > 0 && (
                 <Stack gap="sm">

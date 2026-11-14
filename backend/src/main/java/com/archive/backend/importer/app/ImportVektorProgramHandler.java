@@ -7,6 +7,7 @@ import com.archive.backend.category.domain.CategoryId;
 import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.importer.domain.ExternalOrigin;
+import com.archive.backend.importer.domain.ExternalPage;
 import com.archive.backend.importer.domain.ImportedEntry;
 import com.archive.backend.importer.domain.ImportedEntryId;
 import com.archive.backend.importer.domain.ImportedEntryRepository;
@@ -107,7 +108,9 @@ public class ImportVektorProgramHandler {
                             () -> new ByteArrayInputStream(picture)))));
         }
         entries.save(new ImportedEntry(
-                ExternalOrigin.software(VektorSite.ARCHIVE, program.id()), new ImportedEntryId(software.value())));
+                ExternalOrigin.software(VektorSite.ARCHIVE, program.id()),
+                new ImportedEntryId(software.value()),
+                new ExternalPage(program.url())));
     }
 
     /**

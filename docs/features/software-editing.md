@@ -36,7 +36,7 @@ Adding, editing and deleting software ([domain/software.md](../domain/software.m
 
 | Call | Answer | Errors |
 |---|---|---|
-| `GET /api/software/{id}` | `200` software details, including publisher/developer choices and credits as `{id, type, title, roles}` | `404 software.not-found`; `400` for a malformed id |
+| `GET /api/software/{id}` | `200` software details, including publisher/developer choices credits as `{id, type, title, roles}` and `sources: [{archive, url}]`, the pages of the archives it was imported from | `404 software.not-found`; `400` for a malformed id |
 | `POST /api/software` with the form values; credits are `{id, type, roles}` | `201`, `Location: /api/software/{id}`, `{id}` | Format errors; `422` for an unknown hardware, category, publisher, developer company or credited person under its field |
 | `PUT /api/software/{id}` (same body) | `204` | `404 software.not-found`; `422 software.platform-locked` (field `platform`) when the platform changes while a release has hardware; the errors of `POST` |
 | `DELETE /api/software/{id}` | `204` | `404 software.not-found` |

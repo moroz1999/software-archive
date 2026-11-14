@@ -106,6 +106,10 @@ class ImportVektorIT {
                                 + " WHERE origin = 'vektor-06c.ru' AND kind = 'SOFTWARE' AND external_id = '892'",
                         UUID.class))
                 .isEqualTo(id);
+        assertThat(jdbc.queryForObject(
+                        "SELECT url FROM external_origin WHERE kind = 'SOFTWARE' AND external_id = '892'",
+                        String.class))
+                .isEqualTo("https://vektor-06c.ru" + JOE_BLADE);
     }
 
     @Test

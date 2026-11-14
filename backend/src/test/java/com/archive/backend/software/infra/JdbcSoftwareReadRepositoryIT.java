@@ -13,6 +13,7 @@ import com.archive.backend.software.read.SoftwareHardware;
 import com.archive.backend.software.read.SoftwarePlatform;
 import com.archive.backend.software.read.SoftwareRelease;
 import com.archive.backend.software.read.SoftwareScreenshot;
+import com.archive.backend.software.read.SoftwareSource;
 import com.archive.backend.software.read.SoftwareSummary;
 import com.archive.backend.user.TestActors;
 import java.util.List;
@@ -187,6 +188,24 @@ class JdbcSoftwareReadRepositoryIT {
                         new SoftwarePlatform("vector", "Vector"),
                         List.of(VECTOR06C, TAPE, BEEPER, JOYSTICK),
                         List.of()));
+    }
+
+    @Test
+    void readsThePagesOfTheArchivesTheSoftwareWasImportedFrom() {
+        String page = "https://vektor-06c.ru/programmnoe-obespechenie/arkadnye-igry/elite/";
+        jdbc.update(
+                "INSERT INTO external_origin (origin, kind, external_id, entity_id, url) VALUES ('vektor-06c.ru', 'SOFTWARE', '7', ?, ?)",
+                ELITE,
+                page);
+        jdbc.update(
+                "INSERT INTO external_origin (origin, kind, external_id, entity_id) VALUES ('vektor-06c.ru', 'LABEL', 'Elite', ?)",
+                ELITE);
+
+        assertThat(reads.findById(ELITE))
+                .hasValueSatisfying(details ->
+                        assertThat(details.sources()).containsExactly(new SoftwareSource("vektor-06c.ru", page)));
+        assertThat(reads.findById(TETRIS))
+                .hasValueSatisfying(details -> assertThat(details.sources()).isEmpty());
     }
 
     @Test

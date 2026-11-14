@@ -29,6 +29,7 @@ const ELITE = {
     publishers: [],
     developers: [],
     credits: [],
+    sources: [],
     canChange: true,
 };
 const AY_MOD = {
@@ -175,6 +176,25 @@ describe(SoftwareView, () => {
         await screen.findByRole('heading', {level: 1, name: 'Elite'});
 
         expect(screen.queryByRole('region', {name: 'Categories'})).not.toBeInTheDocument();
+    });
+
+    it('leads to the page of the software in the archive it was imported from', async () => {
+        const url = 'https://vektor-06c.ru/programmnoe-obespechenie/arkadnye-igry/elite/';
+        stubFetch(json({...ELITE, sources: [{archive: 'vektor-06c.ru', url}]}));
+        renderView(ID);
+
+        const sources = await screen.findByRole('region', {name: 'Source'});
+
+        expect(within(sources).getByRole('link', {name: 'vektor-06c.ru'})).toHaveAttribute('href', url);
+    });
+
+    it('shows no source for software typed in by hand', async () => {
+        stubFetch(json(ELITE));
+        renderView(ID);
+
+        await screen.findByRole('heading', {level: 1, name: 'Elite'});
+
+        expect(screen.queryByRole('region', {name: 'Source'})).not.toBeInTheDocument();
     });
 
     it('shows nothing for an unknown description and release date', async () => {

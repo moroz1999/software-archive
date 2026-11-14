@@ -15,6 +15,7 @@ public record SoftwareDetailsDto(
         List<SoftwareReferenceDto> publishers,
         List<SoftwareReferenceDto> developers,
         List<SoftwareCreditDto> credits,
+        List<SoftwareSourceDto> sources,
         boolean canChange) {
 
     public record SoftwareCreditDto(UUID id, String type, String title, List<String> roles) {}

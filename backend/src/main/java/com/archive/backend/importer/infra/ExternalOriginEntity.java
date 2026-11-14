@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import java.util.UUID;
 import lombok.Data;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @Table(name = "external_origin")
@@ -17,4 +18,7 @@ public class ExternalOriginEntity {
 
     @Column(name = "entity_id", nullable = false)
     private UUID entityId;
+
+    @Column(name = "url")
+    private @Nullable String url;
 }

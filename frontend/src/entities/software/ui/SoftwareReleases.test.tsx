@@ -21,6 +21,7 @@ const AY_MOD = {
 const FIX = {...AY_MOD, id: '00000000-0000-0000-0007-000000000002', title: 'Elite Fix', version: null, type: 'bugfix', releaseDate: '1988-05-01', description: null};
 const ORIGINAL = {...AY_MOD, id: '00000000-0000-0000-0007-000000000003', title: 'Elite', version: null, type: 'original', releaseDate: null, description: null};
 const UNKNOWN = {...ORIGINAL, id: '00000000-0000-0000-0007-000000000004', type: 'unknown'};
+const ARCHIVE = {fileName: 'elite-ay.zip', size: 1536, url: '/api/software/00000000-0000-0000-0001-000000000001/releases/00000000-0000-0000-0007-000000000001/archive'};
 const SHOTS = [
     {id: '00000000-0000-0000-0055-000000000001', url: '/api/screenshots/00000000-0000-0000-0055-000000000001'},
     {id: '00000000-0000-0000-0055-000000000002', url: '/api/screenshots/00000000-0000-0000-0055-000000000002'},
@@ -61,7 +62,7 @@ describe(SoftwareReleases, () => {
 
         const table = await screen.findByRole('table', {name: 'Releases'});
 
-        expect(within(table).getAllByRole('columnheader').map((header) => header.textContent).slice(0, 5)).toStrictEqual(['Title', 'Year', 'Version', 'Type', 'Hardware']);
+        expect(within(table).getAllByRole('columnheader').map((header) => header.textContent).slice(0, 6)).toStrictEqual(['Title', 'Year', 'Version', 'Type', 'Hardware', 'Archive']);
         expect(within(table).getAllByRole('row')[1]).toHaveTextContent(/Elite AY.*With AY music.*1990.*1\.1.*Mod.*Vector-06C.*AY-3-8910.*Edit Elite AY/);
     });
 
@@ -141,6 +142,29 @@ describe(SoftwareReleases, () => {
         expect(screen.getByRole('article', {name: 'Elite'})).toBeInTheDocument();
     });
 
+    it('offers the archive of a release for download in its row of the table', async () => {
+        stubFetch(json([{...AY_MOD, archive: ARCHIVE}, ORIGINAL]));
+        renderReleases();
+
+        const table = await screen.findByRole('table', {name: 'Releases'});
+        const row = within(table).getByRole('row', {name: /Elite AY/u});
+
+        expect(within(row).getByRole('link', {name: 'Download Elite AY'})).toHaveAttribute('href', ARCHIVE.url);
+        expect(row).toHaveTextContent('1.5 KB');
+        expect(within(within(table).getByRole('row', {name: /^Elite(?! AY)/u})).queryByRole('link', {name: /^Download/u})).not.toBeInTheDocument();
+    });
+
+    it('offers the archive of a release for download on its card', async () => {
+        stubFetch(json([{...AY_MOD, archive: ARCHIVE}, ORIGINAL]));
+        renderReleases({phone: true});
+
+        const card = await screen.findByRole('article', {name: 'Elite AY'});
+
+        expect(within(card).getByRole('link', {name: 'Download Elite AY'})).toHaveAttribute('href', ARCHIVE.url);
+        expect(card).toHaveTextContent('1.5 KB');
+        expect(within(screen.getByRole('article', {name: 'Elite'})).queryByRole('link', {name: /^Download/u})).not.toBeInTheDocument();
+    });
+
     it('shows the first screenshot of a release in its row of the table', async () => {
         stubFetch(json([{...AY_MOD, screenshots: SHOTS}, ORIGINAL]));
         renderReleases();
@@ -176,7 +200,7 @@ describe(SoftwareReleases, () => {
 
         const skeleton = screen.getByTestId('software-releases-skeleton');
 
-        expect(within(skeleton).getAllByRole('columnheader', {hidden: true}).map((header) => header.textContent)).toStrictEqual(['Title', 'Year', 'Version', 'Type', 'Hardware', '']);
+        expect(within(skeleton).getAllByRole('columnheader', {hidden: true}).map((header) => header.textContent)).toStrictEqual(['Title', 'Year', 'Version', 'Type', 'Hardware', 'Archive', '']);
         expect(within(skeleton).getAllByRole('row', {hidden: true})).toHaveLength(4);
     });
 

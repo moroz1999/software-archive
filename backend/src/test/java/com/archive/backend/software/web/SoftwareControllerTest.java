@@ -47,6 +47,7 @@ import com.archive.backend.software.read.SoftwareHardware;
 import com.archive.backend.software.read.SoftwarePlatform;
 import com.archive.backend.software.read.SoftwareRelease;
 import com.archive.backend.software.read.SoftwareScreenshot;
+import com.archive.backend.software.read.SoftwareSource;
 import com.archive.backend.software.read.SoftwareSummary;
 import com.archive.backend.software.web.mapper.SoftwareWebMapperImpl;
 import com.archive.backend.user.domain.Actor;
@@ -175,6 +176,31 @@ class SoftwareControllerTest {
                 .andExpect(jsonPath("$.releaseDate").value("1985-09-20"))
                 .andExpect(jsonPath("$.publishers").isArray())
                 .andExpect(jsonPath("$.developers").isArray());
+    }
+
+    @Test
+    void returnsThePagesOfTheArchivesTheSoftwareWasImportedFrom() throws Exception {
+        String page = "https://vektor-06c.ru/programmnoe-obespechenie/arkadnye-igry/elite/";
+        when(getHandler.handle(new GetSoftwareQuery(Actor.anonymous(), new SoftwareId(ID))))
+                .thenReturn(new SoftwareDetails(
+                        ID,
+                        "Elite",
+                        null,
+                        null,
+                        new SoftwarePlatform("vector", "Vector"),
+                        List.of(),
+                        List.of(),
+                        List.of(),
+                        List.of(),
+                        List.of(),
+                        List.of(new SoftwareSource("vektor-06c.ru", page)),
+                        null,
+                        false));
+
+        mvc.perform(get("/api/software/{id}", ID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sources[0].archive").value("vektor-06c.ru"))
+                .andExpect(jsonPath("$.sources[0].url").value(page));
     }
 
     @Test

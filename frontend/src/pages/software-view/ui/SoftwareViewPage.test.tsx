@@ -8,7 +8,7 @@ import {json, noContent, renderWithQueries, stubFetchRoutes} from '@/shared/lib/
 import {loadSoftwareViewPage, preloadSoftwareViewPage} from '../index';
 
 const ID = '00000000-0000-0000-0001-000000000001';
-const ELITE = {id: ID, title: 'Elite', description: null, releaseDate: '1984-09-20', platform: {code: 'vector', name: 'Vector'}, hardware: [], categories: [], publishers: [], developers: [], credits: [], canChange: true};
+const ELITE = {id: ID, title: 'Elite', description: null, releaseDate: '1984-09-20', platform: {code: 'vector', name: 'Vector'}, hardware: [], categories: [], publishers: [], developers: [], credits: [], sources: [], canChange: true};
 
 /** Answers the software, its releases and that a public visitor reads them. */
 function stubFetch(software: () => Response) {

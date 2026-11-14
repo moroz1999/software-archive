@@ -106,6 +106,7 @@ describe('UI localization', () => {
                 publishers: [],
                 developers: [],
                 credits: [],
+                sources: [],
                 canChange: true,
             })],
             [`/api/software/${SOFTWARE_ID}/screenshots`, json([])],

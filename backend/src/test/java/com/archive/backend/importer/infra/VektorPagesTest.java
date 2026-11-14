@@ -51,6 +51,7 @@ class VektorPagesTest {
         assertThat(program)
                 .isEqualTo(new VektorProgram(
                         "524",
+                        LIST + "demo-programmy/512-demo/",
                         "demo-programmy",
                         "512 demo",
                         "Азарёнок П./P.G.A.",

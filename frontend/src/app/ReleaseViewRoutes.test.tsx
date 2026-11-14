@@ -22,6 +22,7 @@ const SOFTWARE = {
     publishers: [],
     developers: [],
     credits: [],
+    sources: [],
     canChange: true,
 };
 
