@@ -40,14 +40,20 @@ public class EnqueueSearchDocumentsHandler {
         enqueue(SearchEntityType.GROUP, owners.groupsCreditedOn(software));
     }
 
+    /** The person, and the software crediting them by themselves: its card names them. */
     @EventListener
     public void on(AuthorChanged event) {
-        enqueue(SearchEntityType.AUTHOR, List.of(event.author().value()));
+        UUID author = event.author().value();
+        enqueue(SearchEntityType.AUTHOR, List.of(author));
+        enqueueSoftware(affected.creditingPerson(author));
     }
 
+    /** The group, and the software it developed: its card names it. */
     @EventListener
     public void on(GroupChanged event) {
-        enqueue(SearchEntityType.GROUP, List.of(event.group().value()));
+        UUID group = event.group().value();
+        enqueue(SearchEntityType.GROUP, List.of(group));
+        enqueueSoftware(affected.developedByGroup(group));
     }
 
     @EventListener

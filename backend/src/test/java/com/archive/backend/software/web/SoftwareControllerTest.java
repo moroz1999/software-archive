@@ -120,18 +120,20 @@ class SoftwareControllerTest {
     }
 
     @Test
-    void sendsTheScreenshotsTheCardsOfTheLatestSoftwareShow() throws Exception {
+    void sendsTheScreenshotsAndTheMakersTheCardsOfTheLatestSoftwareShow() throws Exception {
         UUID shot = UUID.fromString("00000000-0000-0000-0055-000000000001");
         when(latestHandler.handle(new ListLatestSoftwareQuery(null, PageRequest.of(0, 12))))
                 .thenReturn(new PageImpl<>(
-                        List.of(new SoftwareSummary(ID, "Title", null, List.of(new SoftwareScreenshot(shot)))),
+                        List.of(new SoftwareSummary(
+                                ID, "Title", null, List.of(new SoftwareScreenshot(shot)), List.of("Ultimate"))),
                         PageRequest.of(0, 12),
                         1));
 
         mvc.perform(get("/api/software/latest").param("size", "12"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].screenshots[0].id").value(shot.toString()))
-                .andExpect(jsonPath("$.content[0].screenshots[0].url").value("/api/screenshots/" + shot));
+                .andExpect(jsonPath("$.content[0].screenshots[0].url").value("/api/screenshots/" + shot))
+                .andExpect(jsonPath("$.content[0].madeBy[0]").value("Ultimate"));
     }
 
     @Test

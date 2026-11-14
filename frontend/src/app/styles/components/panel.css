@@ -37,6 +37,15 @@
 
     /* Shadow lifting an elevated panel off the page. */
     --panel-shadow: var(--shadow-md);
+
+    /* Shadow of a panel that leads somewhere, under the pointer. */
+    --panel-link-hover-shadow: var(--shadow-lg);
+
+    /* Keyboard focus ring of a panel that leads somewhere. */
+    --panel-link-focus-ring: 0 0 0 var(--border-width-thick) var(--border-focused);
+
+    /* Duration of the shadow change of a panel that leads somewhere. */
+    --panel-link-transition: var(--animation-sm);
 }
 
 @media (prefers-color-scheme: dark) {

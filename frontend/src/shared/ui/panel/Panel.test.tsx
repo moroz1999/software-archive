@@ -1,5 +1,6 @@
 import {describe, expect, it} from 'vitest';
 import {render, screen} from '@testing-library/react';
+import {MemoryRouter} from 'react-router';
 import {Panel} from './Panel';
 
 describe(Panel, () => {
@@ -27,6 +28,23 @@ describe(Panel, () => {
         render(<Panel title="Credits">Body</Panel>);
 
         expect(screen.getByRole('heading', {level: 3, name: 'Credits'})).toBeInTheDocument();
+    });
+
+    it('with a link is one link over its whole body, named by the heading that names the panel', () => {
+        render(
+            <MemoryRouter>
+                <Panel as="article" labelledBy="title" href="/software/1">
+                    <h3 id="title">Elite</h3>
+                    <p>1985</p>
+                </Panel>
+            </MemoryRouter>,
+        );
+
+        const link = screen.getByRole('link', {name: 'Elite'});
+
+        expect(link).toHaveAttribute('href', '/software/1');
+        expect(link).toHaveTextContent('1985');
+        expect(screen.getByRole('article', {name: 'Elite'})).toContainElement(link);
     });
 
     it('renders as an article', () => {

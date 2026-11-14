@@ -28,6 +28,26 @@
     border: 0;
 }
 
+/* A panel that leads somewhere as a whole lifts under the pointer and rings under keyboard focus. */
+.linked {
+    transition: box-shadow var(--panel-link-transition) ease-in-out;
+}
+
+.linked:hover {
+    box-shadow: var(--panel-link-hover-shadow);
+}
+
+.linked:has(.link:focus-visible) {
+    box-shadow: var(--panel-link-focus-ring);
+}
+
+.link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    outline: none;
+}
+
 /* Edge-to-edge content (images) clipped by the panel corners. */
 .bleed { overflow: hidden; }
 

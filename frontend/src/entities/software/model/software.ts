@@ -36,6 +36,8 @@ export interface Software {
     readonly releaseDate: ReleaseDate | null;
     /** The screenshots its card shows, as lists give them (docs/domain/software.md#screenshots). */
     readonly screenshots?: readonly Screenshot[];
+    /** Who made it, as its card names them (docs/domain/software.md#card). */
+    readonly madeBy?: readonly string[];
 }
 
 /** One software with everything shown about it; its base hardware in the order of the groups, its categories in the order of the tree. */

@@ -161,8 +161,8 @@ class SoftwareSearchSyncIT {
         software.forEach(id -> jdbc.update("DELETE FROM software WHERE id = ?", id));
         jdbc.update("UPDATE category SET parent_id = ? WHERE id = ?", GAMES, ACTION);
         jdbc.update("DELETE FROM entity_location WHERE country_id IN (?, ?)", FINLAND, LATVIA);
-        jdbc.update("DELETE FROM label WHERE name IN ('Zed', 'ZS')");
-        jdbc.update("DELETE FROM person WHERE real_name = 'Zed Zedson'");
+        jdbc.update("DELETE FROM label WHERE name IN ('Zed', 'ZS', 'ZS Two')");
+        jdbc.update("DELETE FROM person WHERE real_name LIKE 'Zed Zedson%'");
         jdbc.update(
                 "DELETE FROM group_group_type WHERE group_id IN (SELECT id FROM \"group\" WHERE name = 'Zed Squad')");
         jdbc.update("DELETE FROM \"group\" WHERE name = 'Zed Squad'");
@@ -409,6 +409,92 @@ class SoftwareSearchSyncIT {
         worker.handle();
 
         assertThat(listIn(document(elite), "countries")).isEmpty();
+    }
+
+    private GroupId zedSquad() {
+        return createGroup.handle(new CreateGroupCommand(
+                ADMIN,
+                new GroupName("Zed Squad"),
+                null,
+                Set.of(new GroupTypeCode("demogroup")),
+                List.of(new LabelDraft(null, new LabelName("ZS"), true)),
+                List.of()));
+    }
+
+    private void updateZedSquad(GroupId group, List<LabelDraft> labels) {
+        updateGroup.handle(new UpdateGroupCommand(
+                ADMIN,
+                group,
+                new GroupName("Zed Squad"),
+                null,
+                Set.of(new GroupTypeCode("demogroup")),
+                labels,
+                List.of()));
+    }
+
+    @Test
+    void indexesTheNamesOfWhoMadeTheSoftwareForItsCard() throws Exception {
+        createAuthor.handle(
+                new CreateAuthorCommand(ADMIN, new RealName("Zed Zedson"), null, List.of(zed(null)), List.of()));
+        SoftwareId elite = create("Elite");
+        credit(elite, labelNamed("Zed"));
+
+        worker.handle();
+
+        assertThat(listIn(document(elite), "made_by")).containsExactly("Zed");
+    }
+
+    @Test
+    void renamingADeveloperCompanyRenamesItOnTheCardsOfItsSoftware() throws Exception {
+        GroupId group = zedSquad();
+        SoftwareId elite = create("Elite");
+        jdbc.update(
+                "INSERT INTO software_developer_group (software_id, group_id) VALUES (?, ?)",
+                elite.value(),
+                group.value());
+        worker.handle();
+        assertThat(listIn(document(elite), "made_by")).containsExactly("ZS");
+
+        updateZedSquad(group, List.of());
+        worker.handle();
+
+        assertThat(listIn(document(elite), "made_by")).containsExactly("Zed Squad");
+    }
+
+    @Test
+    void renamingTheLabelADeveloperCompanyMadeSoftwareUnderRenamesItOnTheCard() throws Exception {
+        GroupId group = zedSquad();
+        LabelId label = labelNamed("ZS");
+        SoftwareId elite = create("Elite");
+        jdbc.update(
+                "INSERT INTO software_developer_label (software_id, label_id) VALUES (?, ?)",
+                elite.value(),
+                label.value());
+        worker.handle();
+
+        updateZedSquad(group, List.of(new LabelDraft(label, new LabelName("ZS Two"), true)));
+        worker.handle();
+
+        assertThat(listIn(document(elite), "made_by")).containsExactly("ZS Two");
+    }
+
+    @Test
+    void renamingACreditedPersonRenamesThemOnTheCardsOfTheirSoftware() throws Exception {
+        AuthorId author = createAuthor.handle(
+                new CreateAuthorCommand(ADMIN, new RealName("Zed Zedson"), null, List.of(), List.of()));
+        SoftwareId elite = create("Elite");
+        jdbc.update(
+                "INSERT INTO software_contribution (software_id, person_id) VALUES (?, ?)",
+                elite.value(),
+                author.value());
+        worker.handle();
+        assertThat(listIn(document(elite), "made_by")).containsExactly("Zed Zedson");
+
+        updateAuthor.handle(
+                new UpdateAuthorCommand(ADMIN, author, new RealName("Zed Zedson Two"), null, List.of(), List.of()));
+        worker.handle();
+
+        assertThat(listIn(document(elite), "made_by")).containsExactly("Zed Zedson Two");
     }
 
     @Test

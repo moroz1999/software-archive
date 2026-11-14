@@ -41,10 +41,30 @@ describe(SoftwareCard, () => {
         expect(screen.getByRole('img', {name: 'No screenshot yet'})).toBeInTheDocument();
     });
 
-    it('leads by its title to the given page', () => {
-        render(<MemoryRouter><SoftwareCard software={ALPHA} href="/software/1/edit"/></MemoryRouter>);
+    it('is one link to the given page, named by the title, holding the picture and every line', () => {
+        render(<MemoryRouter><SoftwareCard software={{...ALPHA, madeBy: ['Ultimate']}} href="/software/1/edit"/></MemoryRouter>);
 
-        expect(screen.getByRole('link', {name: 'Fixture Software Alpha'})).toHaveAttribute('href', '/software/1/edit');
+        const link = screen.getByRole('link', {name: 'Fixture Software Alpha'});
+
+        expect(screen.getAllByRole('link')).toHaveLength(1);
+        expect(link).toHaveAttribute('href', '/software/1/edit');
+        expect(within(link).getByRole('img', {name: 'No screenshot yet'})).toBeInTheDocument();
+        expect(within(link).getByText('Ultimate')).toBeInTheDocument();
+        expect(within(link).getByText('1985')).toBeInTheDocument();
+    });
+
+    it('names who made the software, in the order given', () => {
+        render(<MemoryRouter><SoftwareCard software={{...ALPHA, madeBy: ['Ultimate', 'Zed']}} href="/software/1"/></MemoryRouter>);
+
+        expect(screen.getByText('Ultimate, Zed')).toBeInTheDocument();
+        expect(screen.getByText('1985')).toBeInTheDocument();
+    });
+
+    it('names who made the software even when the release date is unknown', () => {
+        render(<MemoryRouter><SoftwareCard software={{...ALPHA, releaseDate: null, madeBy: ['Ultimate']}} href="/software/1"/></MemoryRouter>);
+
+        expect(screen.getByText('Ultimate')).toBeInTheDocument();
+        expect(screen.queryByText('1985')).not.toBeInTheDocument();
     });
 
     it('shows no year when the release date is unknown', () => {

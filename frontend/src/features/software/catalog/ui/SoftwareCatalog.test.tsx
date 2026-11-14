@@ -61,7 +61,7 @@ function openCatalog(path = '/software') {
 
 async function cardTitles(): Promise<string[]> {
     await screen.findAllByRole('article');
-    return screen.getAllByRole('article').map((card) => within(card).getAllByRole('link')[0]?.textContent ?? '');
+    return screen.getAllByRole('article').map((card) => within(card).getByRole('heading').textContent);
 }
 
 

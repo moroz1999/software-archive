@@ -8,6 +8,11 @@
     height: var(--software-card-skeleton-title-height);
 }
 
+.madeBy {
+    width: var(--software-card-skeleton-made-by-width);
+    height: var(--software-card-skeleton-made-by-height);
+}
+
 .year {
     width: var(--software-card-skeleton-year-width);
     height: var(--software-card-skeleton-year-height);

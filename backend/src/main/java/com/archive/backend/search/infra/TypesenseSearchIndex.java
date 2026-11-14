@@ -83,6 +83,12 @@ public class TypesenseSearchIndex implements SearchIndex {
                                 .name("screenshots")
                                 .type(FieldTypes.STRING_ARRAY)
                                 .index(false)
+                                .optional(true),
+                        // Shown on the card only.
+                        new Field()
+                                .name("made_by")
+                                .type(FieldTypes.STRING_ARRAY)
+                                .index(false)
                                 .optional(true));
             case AUTHOR ->
                 List.of(
@@ -157,6 +163,7 @@ public class TypesenseSearchIndex implements SearchIndex {
         doc.put("categories", d.categories().stream().map(UUID::toString).toList());
         doc.put("countries", d.countries().stream().map(UUID::toString).toList());
         doc.put("screenshots", d.screenshots().stream().map(UUID::toString).toList());
+        doc.put("made_by", d.madeBy());
         return doc;
     }
 

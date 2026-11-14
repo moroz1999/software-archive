@@ -1,4 +1,4 @@
-import {getJson, mapResponse, type Page, parsePage, readNullableString, readObject, readString} from '@/shared/api';
+import {getJson, mapResponse, type Page, parsePage, readNullableString, readObject, readString, readStringArray} from '@/shared/api';
 import {type Software, toReleaseDate, toSoftwareId, toSoftwareTitle} from '../model/software';
 import {parseScreenshots} from './screenshot-api';
 
@@ -19,6 +19,7 @@ export function parseSoftware(item: unknown): Software {
         title: toSoftwareTitle(readString(dto, 'title')),
         releaseDate: releaseDate === null ? null : toReleaseDate(releaseDate),
         screenshots: parseScreenshots(dto['screenshots']),
+        madeBy: dto['madeBy'] === undefined ? [] : readStringArray(dto['madeBy'], 'madeBy'),
     };
 }
 

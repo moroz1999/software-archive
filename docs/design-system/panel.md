@@ -8,3 +8,4 @@
 - `title` adds a heading above the body (`titleLevel` 3 by default, or 2) and names the panel; `labelledBy` names it by a heading inside the body instead.
 - `contentBleed` lets the body go edge to edge, clipped by the corners — for images on cards.
 - `as`: `div` (default) | `section` | `article`.
+- `href` makes the whole panel one link, named as the panel is, that lifts under the pointer and rings under keyboard focus — for cards. Nothing inside it may be interactive.

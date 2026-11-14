@@ -35,6 +35,14 @@ describe(fetchLatestSoftware, () => {
         expect(page.items.map((software) => software.screenshots)).toStrictEqual([[shot], []]);
     });
 
+    it('reads who made the software of each card, no one when missing', async () => {
+        stubFetch(json(pageResponse([{...ALPHA, madeBy: ['Ultimate', 'Zed']}, ALPHA])));
+
+        const page = await fetchLatestSoftware(null, new AbortController().signal);
+
+        expect(page.items.map((software) => software.madeBy)).toStrictEqual([['Ultimate', 'Zed'], []]);
+    });
+
     it('fails with a system error when an item is malformed', async () => {
         stubFetch(json(pageResponse([{...ALPHA, id: 'not-a-uuid'}])));
 

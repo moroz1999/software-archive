@@ -1,5 +1,7 @@
 import {type ReactNode, useId} from 'react';
+import {Link} from 'react-router';
 import {classNames} from '@/shared/lib/class-names';
+import {isAppHref} from '@/shared/lib/href';
 import {Heading} from '../typography';
 import styles from './Panel.module.css';
 
@@ -23,6 +25,11 @@ export interface PanelProps {
     /** The body goes edge to edge, clipped by the corners (images on cards). */
     readonly contentBleed?: boolean;
     readonly as?: 'div' | 'section' | 'article';
+    /**
+     * The whole panel leads here: its body is one link named as the panel is. A path of this app is navigated
+     * client-side; anything else is a plain link. Nothing inside may be interactive.
+     */
+    readonly href?: string;
     /** External contour only; see docs/styles.md. */
     readonly className?: string;
 }
@@ -50,12 +57,24 @@ export function Panel({
     titleLevel = 3,
     contentBleed = false,
     as: Element = 'div',
+    href,
     className,
 }: PanelProps) {
     const titleId = useId();
+    const nameId = title === undefined ? labelledBy : titleId;
+    const content = (
+        <>
+            {title !== undefined && (
+                <Heading id={titleId} level={titleLevel} variant={titleLevel === 2 ? 'headline' : 'title'} className={styles.title}>
+                    {title}
+                </Heading>
+            )}
+            <div className={styles.body}>{children}</div>
+        </>
+    );
     return (
         <Element
-            aria-labelledby={title === undefined ? labelledBy : titleId}
+            aria-labelledby={nameId}
             className={classNames(
                 styles.panel,
                 radiusClass[radius],
@@ -63,15 +82,25 @@ export function Panel({
                 variantClass[variant],
                 surfaceClass[surface],
                 contentBleed && styles.bleed,
+                href !== undefined && styles.linked,
                 className,
             )}
         >
-            {title !== undefined && (
-                <Heading id={titleId} level={titleLevel} variant={titleLevel === 2 ? 'headline' : 'title'} className={styles.title}>
-                    {title}
-                </Heading>
-            )}
-            <div className={styles.body}>{children}</div>
+            {href === undefined ? content : <PanelLink href={href} labelledBy={nameId}>{content}</PanelLink>}
         </Element>
     );
+}
+
+interface PanelLinkProps {
+    readonly children: ReactNode;
+    readonly href: string;
+    readonly labelledBy: string | undefined;
+}
+
+/** The link over the whole body of a panel. */
+function PanelLink({children, href, labelledBy}: PanelLinkProps) {
+    if (isAppHref(href)) {
+        return <Link to={href} aria-labelledby={labelledBy} className={styles.link}>{children}</Link>;
+    }
+    return <a href={href} aria-labelledby={labelledBy} className={styles.link}>{children}</a>;
 }

@@ -4,6 +4,7 @@ import static com.archive.backend.search.infra.SqlArrays.list;
 
 import com.archive.backend.search.domain.SoftwareDocument;
 import com.archive.backend.search.domain.SoftwareDocuments;
+import com.archive.backend.software.read.CardMadeBySql;
 import com.archive.backend.software.read.CardScreenshotsSql;
 import com.archive.backend.software.read.ReleaseDateSql;
 import java.sql.ResultSet;
@@ -19,13 +20,14 @@ import org.springframework.stereotype.Repository;
 /**
  * Builds the software documents of the search with plain SQL: the categories of software with every category above
  * them, and the countries of the owners of its credited labels, by any of their locations
- * (docs/domain/search.md#software-catalog).
+ * (docs/domain/search.md#software-catalog); and what its card shows.
  */
 @Repository
 @RequiredArgsConstructor
 public class JdbcSoftwareDocuments implements SoftwareDocuments {
 
-    private static final String SELECT = """
+    private static final String SELECT =
+            """
             SELECT s.id, s.title, s.platform_code, s.release_year AS year,
             """ + ReleaseDateSql.of("s") + """
              AS release_date,
@@ -48,7 +50,9 @@ public class JdbcSoftwareDocuments implements SoftwareDocuments {
                          WHERE sc.software_id = s.id
                            AND COALESCE(el.country_id, city.country_id) IS NOT NULL) AS countries,
             """ + CardScreenshotsSql.of("s") + """
-             AS screenshots
+             AS screenshots,
+            """ + CardMadeBySql.of("s") + """
+             AS made_by
             FROM software s
             """;
 
@@ -81,6 +85,7 @@ public class JdbcSoftwareDocuments implements SoftwareDocuments {
                 rs.getObject("year", Integer.class),
                 list(rs.getArray("categories"), UUID.class),
                 list(rs.getArray("countries"), UUID.class),
-                list(rs.getArray("screenshots"), UUID.class));
+                list(rs.getArray("screenshots"), UUID.class),
+                list(rs.getArray("made_by"), String.class));
     }
 }

@@ -1,3 +1,4 @@
+import {Inline} from '@/shared/ui/inline';
 import {Inset} from '@/shared/ui/inset';
 import {Panel} from '@/shared/ui/panel';
 import {Skeleton} from '@/shared/ui/skeleton';
@@ -12,7 +13,10 @@ export function SoftwareCardSkeleton() {
             <Inset padding="lg">
                 <Stack gap="md">
                     <Skeleton className={styles.title}/>
-                    <Skeleton className={styles.year}/>
+                    <Inline gap="sm" justify="between" align="center">
+                        <Skeleton className={styles.madeBy}/>
+                        <Skeleton className={styles.year}/>
+                    </Inline>
                 </Stack>
             </Inset>
         </Panel>

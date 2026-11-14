@@ -177,6 +177,40 @@ class JdbcSoftwareReadRepositoryIT {
         assertThat(cardOf(ELITE)).containsExactly(shot(2), shot(1));
     }
 
+    private List<String> madeByOf(UUID software) {
+        return reads.findLatest(null, PageRequest.of(0, 10)).getContent().stream()
+                .filter(summary -> summary.id().equals(software))
+                .findFirst()
+                .orElseThrow()
+                .madeBy();
+    }
+
+    @Test
+    void theCardNamesTheDeveloperCompaniesElseTheCreditedAuthorsByName() {
+        UUID crew = id(21);
+        UUID band = id(22);
+        UUID john = id(23);
+        jdbc.update("INSERT INTO \"group\" (id, name) VALUES (?, 'Crew'), (?, 'Band')", crew, band);
+        jdbc.update("INSERT INTO person (id, real_name) VALUES (?, 'John Doe')", john);
+        jdbc.update("""
+                INSERT INTO label (id, name, person_id, group_id, is_display_name) VALUES
+                    (?, 'The Crew', NULL, ?, true),
+                    (?, 'zeta', NULL, ?, false),
+                    (?, 'JD', ?, NULL, true),
+                    (?, 'Ace', NULL, NULL, false)
+                """, id(31), crew, id(32), band, id(33), john, id(34));
+        jdbc.update("INSERT INTO software_developer_group (software_id, group_id) VALUES (?, ?)", ELITE, crew);
+        jdbc.update("INSERT INTO software_developer_label (software_id, label_id) VALUES (?, ?)", ELITE, id(32));
+        jdbc.update("""
+                INSERT INTO software_contribution (software_id, person_id, label_id) VALUES
+                    (?, ?, NULL), (?, ?, NULL), (?, NULL, ?)
+                """, ELITE, john, TETRIS, john, TETRIS, id(34));
+
+        assertThat(madeByOf(ELITE)).containsExactly("The Crew", "zeta");
+        assertThat(madeByOf(TETRIS)).containsExactly("Ace", "JD");
+        assertThat(madeByOf(NEWEST)).isEmpty();
+    }
+
     @Test
     void readsTheDetailsWithThePlatformAndTheHardwareInTheOrderOfTheGroups() {
         assertThat(reads.findById(ELITE))

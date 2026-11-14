@@ -18,7 +18,7 @@ One document per entity, with the entity's id as the document id. Facet values a
 
 | Collection | Matched by the keyword | Filters and facets |
 |---|---|---|
-| `software` | title, alternative titles | platform; release year; categories (each one of the software with all its ancestors); countries. Beside them, for the card only: the release date and the screenshots ([screenshots.md](screenshots.md#card)) |
+| `software` | title, alternative titles | platform; release year; categories (each one of the software with all its ancestors); countries. Beside them, for the card only: the release date, the screenshots ([screenshots.md](screenshots.md#card)) and who made it ([domain/software.md](../domain/software.md#card)) |
 | `authors` | every label of the person, real name | platforms |
 | `groups` | every label of the group, name | platforms |
 
@@ -27,7 +27,7 @@ Platforms of people and groups are those of the software their labels are credit
 ## Reads
 
 - **Software catalog.** The category and the chosen filters go to `filter_by`; year and country are asked through `facet_by`, the category never; an empty keyword is `q=*`. The answer is the page and, for each facet, the values with counts over the whole filtered result. `max_facet_values` fits the interface. The values of an active filter come from a separate search without its own condition, keeping the keyword, the category and the other conditions; all searches of one view go in one `multi_search`.
-  - As built: one `multi_search` with the main search and, for each chosen filter, a search with `per_page=0` that asks only its own facet; `max_facet_values` is 1000. The keyword is matched over `title` and `alternative_titles`, the page sorted by `title_sort`, the lowercased title. A card's release day is stored with the document, not indexed.
+  - As built: one `multi_search` with the main search and, for each chosen filter, a search with `per_page=0` that asks only its own facet; `max_facet_values` is 1000. The keyword is matched over `title` and `alternative_titles`, the page sorted by `title_sort`, the lowercased title. A card's release day is stored with the document, not indexed; so are who made it (`made_by`), given to the latest list and the search documents by one SQL expression, `software/read/CardMadeBySql`.
 - **Quick search.** One `multi_search` over the three collections with the keyword and the platform: a few hits and the count of matches per section.
   - As built: five hits per section, by `_text_match` and then by the lowercased title or name; a blank keyword finds nothing without asking Typesense.
 - **Full search.** The keyword and the platform as in the quick search, over the kinds asked. The matches of the kinds, in their order, make one list cut into pages; a page takes from each kind the part that falls on it.
@@ -40,6 +40,7 @@ Platforms of people and groups are those of the software their labels are credit
    - software saved or deleted → the software, and the people and groups of its credits before and after (platforms);
    - a label attached to or taken from an owner, deleted → its old and new owner, and the software it is credited on (countries);
    - locations of a person or a group changed → the software their labels are credited on;
+   - a person or a group edited or deleted → the software whose card names them: credited on by themselves or by a label, a developer company by itself or by a label;
    - a category moved or deleted → the software in it and in its subtree.
 2. **Worker.** One background worker takes the due tasks after commit. For each it reads the current state from PostgreSQL and upserts the full document under its stable id. A missing entity deletes its document; a document already missing counts as deleted.
 3. **Acknowledgement.** A task is removed only after Typesense confirmed it. A failed task stays and is retried with a growing delay.

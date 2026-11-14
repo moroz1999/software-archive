@@ -1,6 +1,7 @@
 package com.archive.backend.software.infra;
 
 import com.archive.backend.label.read.MainNameSql;
+import com.archive.backend.software.read.CardMadeBySql;
 import com.archive.backend.software.read.CardScreenshotsSql;
 import com.archive.backend.software.read.ReleaseArchiveDetails;
 import com.archive.backend.software.read.ReleaseDateSql;
@@ -70,14 +71,16 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
         params.put("offset", pageable.getOffset());
         List<SoftwareSummary> content = jdbc.sql("SELECT s.id, s.title, " + ReleaseDateSql.of("s")
                         + " AS release_date, " + CardScreenshotsSql.of("s")
-                        + " AS screenshots FROM software s" + where + " ORDER BY " + order
+                        + " AS screenshots, " + CardMadeBySql.of("s")
+                        + " AS made_by FROM software s" + where + " ORDER BY " + order
                         + " LIMIT :limit OFFSET :offset")
                 .params(params)
                 .query((rs, row) -> new SoftwareSummary(
                         rs.getObject("id", UUID.class),
                         rs.getString("title"),
                         rs.getString("release_date"),
-                        screenshots(rs)))
+                        screenshots(rs),
+                        Arrays.asList((String[]) rs.getArray("made_by").getArray())))
                 .list();
         return new PageImpl<>(content, pageable, total);
     }

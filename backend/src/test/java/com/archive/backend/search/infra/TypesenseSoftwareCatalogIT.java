@@ -56,7 +56,8 @@ class TypesenseSoftwareCatalogIT {
             1987,
             List.of(SHOOTERS, ACTION, GAMES),
             List.of(FINLAND),
-            List.of(TITLE_SCREEN, IN_GAME));
+            List.of(TITLE_SCREEN, IN_GAME),
+            List.of("Ultimate", "Zed"));
     private static final SoftwareDocument EXOLON = software(
             2, "Exolon", List.of(), "vector", LocalDate.of(1987, 9, 1), List.of(ACTION, GAMES), List.of(BRITAIN));
     private static final SoftwareDocument TETRIS = software(
@@ -139,8 +140,8 @@ class TypesenseSoftwareCatalogIT {
         SoftwareCatalogPage page = find(new SoftwareCatalogFilter("Elite", "vector", null, null, null));
 
         assertThat(page.items().getContent())
-                .containsExactly(
-                        new SoftwareCatalogItem(ELITE.id(), "Elite", "1987-05-01", List.of(TITLE_SCREEN, IN_GAME)));
+                .containsExactly(new SoftwareCatalogItem(
+                        ELITE.id(), "Elite", "1987-05-01", List.of(TITLE_SCREEN, IN_GAME), List.of("Ultimate", "Zed")));
         assertThat(find(new SoftwareCatalogFilter("Demo", "vector", null, null, null))
                         .items()
                         .getContent())

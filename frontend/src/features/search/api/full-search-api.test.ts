@@ -42,7 +42,7 @@ describe(fetchFullSearch, () => {
             sets: [
                 {kind: 'author', total: 52, items: [{id: ZED, name: 'Zed', realName: 'John Doe'}]},
                 {kind: 'group', total: 1, items: [{id: SQUAD, name: 'ZS'}]},
-                {kind: 'software', total: 51, items: [{id: ELITE, title: 'Elite', releaseDate: '1987-05-01', screenshots: []}]},
+                {kind: 'software', total: 51, items: [{id: ELITE, title: 'Elite', releaseDate: '1987-05-01', screenshots: [], madeBy: []}]},
             ],
             page: {number: 1, size: 50, totalElements: 104, totalPages: 3},
         });

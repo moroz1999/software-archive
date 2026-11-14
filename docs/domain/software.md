@@ -45,5 +45,11 @@ Screenshots are part of what the archive knows, as much as its records: they are
 
 Credits tell who made the software. A credited author is a person or the exact alias they used for the work and has one or several roles (code, graphics, music, etc.); without a chosen role it is recorded as unknown.
 
+## Card
+The card of software in a list is one link to its page: a click anywhere on it opens the software.
+- It shows the screenshots ([Screenshots](#screenshots)), the title, who made the software and its release year.
+- Who made it: its developer companies; for software without any, its credited authors. Each is named as the archive knows them: a group or a person by their main name, an alias by itself; in name order.
+- Who made it stands on the left, the year on the right, on one line when both fit; the year moves under the names when they are long. What is unknown is left out.
+
 ## Fresh software
 The home page shows the software most recently added to the archive, newest first.

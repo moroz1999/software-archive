@@ -5,4 +5,8 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 public record SoftwareCatalogItemDto(
-        UUID id, String title, @Nullable String releaseDate, List<CardScreenshotDto> screenshots) {}
+        UUID id,
+        String title,
+        @Nullable String releaseDate,
+        List<CardScreenshotDto> screenshots,
+        List<String> madeBy) {}

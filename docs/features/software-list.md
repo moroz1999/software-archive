@@ -27,8 +27,9 @@ The way through the catalog, not a filter ([domain/search.md](../domain/search.m
 ## Card
 
 - A 4:3 picture slot with the screenshots of the card ([screenshots.md](screenshots.md#card)): pointing across it goes through them; the image placeholder when there are none.
-- The title in one line, cut with an ellipsis when too long; it leads to the software's page ([software-view.md](software-view.md)).
-- The release year under it, muted; nothing when the release date is unknown.
+- The whole card is one link to the software's page ([software-view.md](software-view.md)), named by the title; it holds nothing else interactive.
+- The title in one line, cut with an ellipsis when too long.
+- Under it, muted, who made the software on the left and the release year on the right, wrapping when they do not fit ([domain/software.md](../domain/software.md#card)); each is left out when unknown.
 
 ## Loading and errors
 
@@ -41,6 +42,6 @@ The way through the catalog, not a filter ([domain/search.md](../domain/search.m
 
 `GET /api/software?q={keyword}&platform={code}&year={year}&category={categoryId}&country={countryId}&page={n}&size={size}` — every parameter optional; a blank keyword is none.
 
-- `content` — the page of software (`id`, `title`, `releaseDate` as a year (`1987`), an ISO day or `null`, `screenshots` of the card as `[{id, url}]`); `page` — `size`, `number`, `totalElements`, `totalPages`.
+- `content` — the page of software (`id`, `title`, `releaseDate` as a year (`1987`), an ISO day or `null`, `screenshots` of the card as `[{id, url}]`, `madeBy` — the names of who made it, in their order); `page` — `size`, `number`, `totalElements`, `totalPages`.
 - `facets` — `years`, `countries`: the values of each filter, `{value, count}`, counted over the whole result in the category. The values of a chosen filter are counted without its own condition. Categories are not counted.
 - 400 for an invalid platform code (`platform.code-invalid`) or a year, category or country that is not a number or an id.

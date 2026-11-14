@@ -176,6 +176,9 @@ public class TypesenseSoftwareCatalog implements SoftwareCatalog {
                         ? screenshots.stream()
                                 .map(id -> UUID.fromString(String.valueOf(id)))
                                 .toList()
+                        : List.of(),
+                doc.get("made_by") instanceof List<?> madeBy
+                        ? madeBy.stream().map(String::valueOf).toList()
                         : List.of());
     }
 }
