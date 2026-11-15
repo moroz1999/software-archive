@@ -2,9 +2,11 @@ package com.archive.backend.software.web;
 
 import com.archive.backend.author.domain.AuthorId;
 import com.archive.backend.group.domain.GroupId;
+import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.software.app.ListAuthorSoftwareQuery;
 import com.archive.backend.software.app.ListCreditedSoftwareHandler;
 import com.archive.backend.software.app.ListGroupSoftwareQuery;
+import com.archive.backend.software.app.ListLabelSoftwareQuery;
 import com.archive.backend.software.web.dto.CreditedSoftwareDto;
 import com.archive.backend.software.web.mapper.SoftwareWebMapper;
 import java.util.List;
@@ -25,6 +27,11 @@ public class CreditedSoftwareController {
     @GetMapping("/api/authors/{id}/software")
     public List<CreditedSoftwareDto> ofAuthor(@PathVariable UUID id) {
         return webMapper.toCredited(handler.handle(new ListAuthorSoftwareQuery(new AuthorId(id))));
+    }
+
+    @GetMapping("/api/labels/{id}/software")
+    public List<CreditedSoftwareDto> ofLabel(@PathVariable UUID id) {
+        return webMapper.toCredited(handler.handle(new ListLabelSoftwareQuery(new LabelId(id))));
     }
 
     @GetMapping("/api/groups/{id}/software")

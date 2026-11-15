@@ -3,6 +3,7 @@ import {createBrowserRouter, type RouteObject} from 'react-router';
 import {AUTHOR_EDIT_ROUTE, AUTHOR_NEW_PATH, AUTHOR_ROUTE, AUTHORS_PATH} from '@/entities/authors';
 import {CATEGORIES_PATH, CATEGORY_EDIT_ROUTE, CATEGORY_NEW_PATH} from '@/entities/categories';
 import {GROUP_EDIT_ROUTE, GROUP_NEW_PATH, GROUP_ROUTE, GROUPS_PATH} from '@/entities/groups';
+import {LABEL_ROUTE} from '@/entities/labels';
 import {MANAGEMENT_USERS_PATH, REGISTER_PATH, VERIFY_EMAIL_PATH} from '@/entities/users';
 import {RELEASE_EDIT_ROUTE, RELEASE_NEW_ROUTE, RELEASE_ROUTE, SOFTWARE_EDIT_ROUTE, SOFTWARE_LIST_PATH, SOFTWARE_NEW_PATH, SOFTWARE_ROUTE} from '@/entities/software';
 import {loadAuthorEditPage, preloadAuthorEditPage} from '@/pages/author-edit';
@@ -17,6 +18,7 @@ import {loadManagementUsersPage, preloadManagementUsersPage, shouldPreloadManage
 import {loadGroupEditPage, preloadGroupEditPage} from '@/pages/group-edit';
 import {loadGroupNewPage, preloadGroupNewPage} from '@/pages/group-new';
 import {loadGroupViewPage, preloadGroupViewPage} from '@/pages/group-view';
+import {loadLabelViewPage, preloadLabelViewPage} from '@/pages/label-view';
 import {loadGroupsPage, preloadGroupsPage, shouldPreloadGroupsPage} from '@/pages/groups';
 import {loadHomePage, preloadHomePage} from '@/pages/home';
 import {loadRegisterPage} from '@/pages/account/register';
@@ -87,6 +89,7 @@ const routes = (queryClient: QueryClient): RouteObject[] => [{Component: AppLayo
         {path: GROUP_NEW_PATH, loader: preloadGroupNewPage(queryClient), lazy: {Component: loadGroupNewPage}, HydrateFallback: nothing},
         {path: GROUP_ROUTE, loader: preloadGroupViewPage(queryClient), lazy: {Component: loadGroupViewPage}, HydrateFallback: nothing},
         {path: GROUP_EDIT_ROUTE, loader: preloadGroupEditPage(queryClient), lazy: {Component: loadGroupEditPage}, HydrateFallback: nothing},
+        {path: LABEL_ROUTE, loader: preloadLabelViewPage(queryClient), lazy: {Component: loadLabelViewPage}, HydrateFallback: nothing},
         {Component: AdministratorRoute, children: [
             {path: CATEGORIES_PATH, loader: preloadCategoriesPage(queryClient), lazy: {Component: loadCategoriesPage}, HydrateFallback: nothing},
             {path: CATEGORY_NEW_PATH, loader: preloadCategoryNewPage(queryClient), lazy: {Component: loadCategoryNewPage}, HydrateFallback: nothing},

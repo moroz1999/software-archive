@@ -39,6 +39,7 @@ class CreditedSoftwareIT {
     private static final UUID TETRIS = id(12);
     private static final UUID LINES = id(13);
     private static final UUID PONG = id(14);
+    private static final UUID GHOST = id(7);
 
     @Autowired
     private MockMvc mvc;
@@ -100,6 +101,21 @@ class CreditedSoftwareIT {
                 .andExpect(jsonPath("$[0].credits[0].roles").value(contains("developer")))
                 .andExpect(jsonPath("$[1].credits[0].as").value("CRW"))
                 .andExpect(jsonPath("$[1].credits[0].roles").value(contains("publisher")));
+    }
+
+    @Test
+    void listsTheSoftwareOfALabelCreditedUnderItself() throws Exception {
+        jdbc.update("INSERT INTO label (id, name) VALUES (?, 'Ghost')", GHOST);
+        jdbc.update(
+                "INSERT INTO software_contribution (software_id, label_id, role_codes) VALUES (?, ?, ARRAY['sfx'])",
+                PONG,
+                GHOST);
+
+        mvc.perform(get("/api/labels/{id}/software", GHOST))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].title").value(contains("Pong")))
+                .andExpect(jsonPath("$[0].credits[0].as").value(nullValue()))
+                .andExpect(jsonPath("$[0].credits[0].roles").value(contains("sfx")));
     }
 
     @Test

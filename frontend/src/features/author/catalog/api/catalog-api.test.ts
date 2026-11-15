@@ -24,8 +24,8 @@ describe(fetchAuthorCatalogPage, () => {
 
         expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/authors?page=0&size=100');
         expect(page.items).toStrictEqual([
-            {personId: PERSON, name: 'Axe', realName: 'John Doe', labelOf: 'Zed'},
-            {personId: PERSON, name: 'Zed', realName: null, labelOf: null},
+            {kind: 'person', personId: PERSON, name: 'Axe', realName: 'John Doe', labelOf: 'Zed'},
+            {kind: 'person', personId: PERSON, name: 'Zed', realName: null, labelOf: null},
         ]);
     });
 

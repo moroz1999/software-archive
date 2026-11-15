@@ -1,6 +1,7 @@
 import {Fragment, type ReactNode, useId} from 'react';
 import {useTranslation} from 'react-i18next';
 import {authorPath, toAuthorId} from '@/entities/authors';
+import {labelPath, toLabelId} from '@/entities/labels';
 import {groupPath, toGroupId} from '@/entities/groups';
 import {
     HardwareList,
@@ -136,7 +137,7 @@ function Details({software}: {readonly software: SoftwareDetails}) {
     );
 }
 
-/** The name of whoever is credited, leading to the page of the person or group it belongs to when that is known. */
+/** The name of whoever is credited, leading to the page of the person or group it belongs to, a label of nobody to its own. */
 function CreditName({credit}: {readonly credit: SoftwareCredit}) {
     const href = creditHref(credit);
     return <Text>{href === null ? credit.title : <TextLink href={href}>{credit.title}</TextLink>}</Text>;
@@ -144,7 +145,8 @@ function CreditName({credit}: {readonly credit: SoftwareCredit}) {
 
 function creditHref(credit: SoftwareCredit): string | null {
     if (credit.ownerId === undefined || credit.ownerId === null) {
-        return null;
+        // A label of nobody has a page of its own.
+        return credit.type === 'author-label' || credit.type === 'group-label' ? labelPath(toLabelId(credit.id)) : null;
     }
     return credit.type === 'author' || credit.type === 'author-label'
         ? authorPath(toAuthorId(credit.ownerId))

@@ -1,13 +1,13 @@
 import {authorPath} from '@/entities/authors';
 import {PlaceFilters} from '@/entities/locations';
-import {LabelEntriesSkeleton, LabelEntry, LetterFilter} from '@/entities/labels';
+import {LabelEntriesSkeleton, LabelEntry, labelPath, LetterFilter} from '@/entities/labels';
 import {Grid} from '@/shared/ui/grid';
 import {LoadingState} from '@/shared/ui/loading-state';
 import {Pagination} from '@/shared/ui/pagination';
 import {Stack} from '@/shared/ui/stack';
 import {Text} from '@/shared/ui/typography';
 import {useAuthorCatalog} from '../model/author-catalog-context';
-import type {AuthorCatalogEntry} from '../model/catalog';
+import type {AuthorCatalogEntry, PersonEntry} from '../model/catalog';
 import {catalogHref} from '../model/catalog-filter';
 import {useSkeleton} from '@/shared/lib/loading';
 
@@ -33,7 +33,7 @@ export function AuthorCatalog() {
 }
 
 /** Next to an entry: the real name of the person, or for a label of a person without one, the main name. */
-function noteOf(entry: AuthorCatalogEntry, labelOf: (name: string) => string): string | null {
+function noteOf(entry: PersonEntry, labelOf: (name: string) => string): string | null {
     if (entry.realName !== null) {
         return entry.realName;
     }
@@ -59,11 +59,7 @@ function Entries() {
         <LoadingState loading={changing}>
             <Stack gap="lg">
                 <Grid as="ul" ariaLabel={t('pages.authors')} desktopColumns={4} tabletColumns={3} mobileColumns={1} gap="md">
-                    {entries.data.items.map((entry) => (
-                        <li key={`${entry.personId}-${entry.name}`}>
-                            <LabelEntry name={entry.name} href={authorPath(entry.personId)} note={noteOf(entry, (name) => t('author.labelOf', {name}))}/>
-                        </li>
-                    ))}
+                    {entries.data.items.map((entry) => <li key={keyOf(entry)}><Entry entry={entry}/></li>)}
                 </Grid>
                 <Pagination
                     page={entries.data.number}
@@ -76,3 +72,16 @@ function Entries() {
     );
 }
 import {useTranslation} from 'react-i18next';
+
+function keyOf(entry: AuthorCatalogEntry): string {
+    return entry.kind === 'person' ? `${entry.personId}-${entry.name}` : entry.labelId;
+}
+
+/** A person's entry leads to the person; a label of nobody to its own page, its owner unknown. */
+function Entry({entry}: {readonly entry: AuthorCatalogEntry}) {
+    const {t} = useTranslation();
+    if (entry.kind === 'label') {
+        return <LabelEntry name={entry.name} href={labelPath(entry.labelId)} note={t('label.ownerUnknownNote')}/>;
+    }
+    return <LabelEntry name={entry.name} href={authorPath(entry.personId)} note={noteOf(entry, (name) => t('author.labelOf', {name}))}/>;
+}

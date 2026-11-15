@@ -1,4 +1,5 @@
 import {toAuthorId} from '@/entities/authors';
+import {toLabelId} from '@/entities/labels';
 import type {PlatformCode} from '@/entities/platforms';
 import {getJson, mapResponse, type Page, parsePage, readNullableString, readObject, readString} from '@/shared/api';
 import type {AuthorCatalogEntry} from '../model/catalog';
@@ -7,10 +8,19 @@ import type {AuthorCatalogFilter} from '../model/catalog-filter';
 /** Entries on one page of the catalog. */
 const PAGE_SIZE = 100;
 
+/** An entry is of a person or a label of nobody, never both. */
 function parseEntry(item: unknown): AuthorCatalogEntry {
     const dto = readObject(item, 'catalog entry');
+    const personId = readNullableString(dto, 'personId');
+    if (personId === null) {
+        return {kind: 'label', labelId: toLabelId(readString(dto, 'labelId')), name: readString(dto, 'name')};
+    }
+    if (readNullableString(dto, 'labelId') !== null) {
+        throw new TypeError('A catalog entry is of a person or of a label of nobody, not of both.');
+    }
     return {
-        personId: toAuthorId(readString(dto, 'personId')),
+        kind: 'person',
+        personId: toAuthorId(personId),
         name: readString(dto, 'name'),
         realName: readNullableString(dto, 'realName'),
         labelOf: readNullableString(dto, 'labelOf'),

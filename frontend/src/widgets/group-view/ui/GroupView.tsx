@@ -1,6 +1,7 @@
 import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
 import {authorPath, toAuthorId} from '@/entities/authors';
+import {labelPath, toLabelId} from '@/entities/labels';
 import {locationText, primaryFirst} from '@/entities/locations';
 import {groupEditPath, type GroupDetails, GroupDetailsProvider, type GroupId, groupPath, type GroupMember, type RelatedGroup, useGroupDetails} from '@/entities/groups';
 import {CreditedSoftwareList} from '@/entities/software';
@@ -97,7 +98,18 @@ function Details({group}: {readonly group: GroupDetails}) {
     );
 }
 
-/** The label a member was a member under, leading to the person behind it when known, with their main name when it is another one. */
+/** Where a member leads: to the person behind the label when known, otherwise to the page of the label of nobody. */
+function memberHref(member: GroupMember): string {
+    if (member.personId !== null) {
+        return authorPath(toAuthorId(member.personId));
+    }
+    if (member.id === null) {
+        throw new TypeError(`A member without a person has no label: ${member.name}`);
+    }
+    return labelPath(toLabelId(member.id));
+}
+
+/** The label a member was a member under, leading to the person behind it or to the label's own page, with the person's main name when it is another one. */
 function Member({member}: {readonly member: GroupMember}) {
     const {t} = useTranslation();
     const dates = [member.startDate, member.endDate].some((date) => date !== null)
@@ -105,7 +117,7 @@ function Member({member}: {readonly member: GroupMember}) {
         : null;
     return (
         <Inline gap="sm" align="baseline" wrap>
-            <Text>{member.personId === null ? member.name : <TextLink href={authorPath(toAuthorId(member.personId))}>{member.name}</TextLink>}</Text>
+            <Text><TextLink href={memberHref(member)}>{member.name}</TextLink></Text>
             {member.personName !== null && <>{' '}<Text variant="bodySm" tone="muted">{member.personName}</Text></>}
             {/* An unknown role tells nothing to a reader. */}
             {member.roles.filter((role) => role !== 'unknown').map((role) => <Chip key={role} size="sm">{t(`roles.group.${role}`)}</Chip>)}

@@ -15,6 +15,7 @@ const NORWAY = '00000000-0000-0000-0002-000000000002';
 const HELSINKI = '00000000-0000-0000-0002-000000000101';
 
 const CARL = '00000000-0000-0000-0003-000000000003';
+const GHOST = '00000000-0000-0000-0004-000000000001';
 
 const ENTRIES = [
     {personId: ZED, name: 'Axe', realName: 'John Doe', labelOf: 'Zed'},
@@ -68,6 +69,14 @@ describe(AuthorCatalog, () => {
             unsubscribe();
         });
         unsubscribers.length = 0;
+    });
+
+    it('lists a label of nobody among the people, leading to its own page with its owner unknown', async () => {
+        stubFetchRoutes(routes({[ALL]: catalogPage([{personId: null, labelId: GHOST, name: 'Ghost', realName: null, labelOf: null}, ...ENTRIES])}));
+        openCatalog();
+
+        await expect(entryLines()).resolves.toContain('Ghost owner unknown');
+        expect(screen.getByRole('link', {name: 'Ghost'})).toHaveAttribute('href', `/labels/${GHOST}`);
     });
 
     it('follows the platform switch', async () => {

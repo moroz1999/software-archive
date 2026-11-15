@@ -119,13 +119,21 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
         return creditedOn("group_id", MainNameSql.GROUPS, "named_group", groupId);
     }
 
+    @Override
+    public List<CreditedSoftware> findCreditedOnLabel(UUID labelId) {
+        return cards(credits("""
+                        SELECT software_id, NULL AS as_label, role_codes
+                        FROM software_contribution
+                        WHERE label_id = :owner
+                        """, labelId));
+    }
+
     /**
      * The software an owner is credited on, by the owner column of the credits and of their labels, with the owner's
      * credits on each: by themselves first, then by label in name order; a label is named unless it is the main name.
      */
     private List<CreditedSoftware> creditedOn(String ownerColumn, String mainNames, String named, UUID ownerId) {
-        Map<UUID, List<CreditedSoftware.OwnCredit>> credits = new HashMap<>();
-        jdbc.sql("WITH " + mainNames + """
+        return cards(credits("WITH " + mainNames + """
                         SELECT sc.software_id,
                                CASE WHEN sc.label_id IS NULL OR sc.label_id = n.main_label_id THEN NULL ELSE l.name END
                                    AS as_label,
@@ -135,7 +143,13 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                         JOIN %2$s n ON n.%1$s = COALESCE(sc.%1$s, l.%1$s)
                         WHERE n.%1$s = :owner
                         ORDER BY sc.label_id IS NOT NULL, lower(l.name), sc.id
-                        """.formatted(ownerColumn, named))
+                        """.formatted(ownerColumn, named), ownerId));
+    }
+
+    /** The credits the query of {@code :owner} finds, by their software, in the order it gives. */
+    private Map<UUID, List<CreditedSoftware.OwnCredit>> credits(String sql, UUID ownerId) {
+        Map<UUID, List<CreditedSoftware.OwnCredit>> credits = new HashMap<>();
+        jdbc.sql(sql)
                 .param("owner", ownerId)
                 .query((rs, row) -> {
                     credits.computeIfAbsent(rs.getObject("software_id", UUID.class), id -> new ArrayList<>())
@@ -144,6 +158,11 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                     return row;
                 })
                 .list();
+        return credits;
+    }
+
+    /** The cards of the credited software, by release date, then title, with the credits on each. */
+    private List<CreditedSoftware> cards(Map<UUID, List<CreditedSoftware.OwnCredit>> credits) {
         if (credits.isEmpty()) {
             return List.of();
         }

@@ -1,6 +1,7 @@
 package com.archive.backend.label.domain;
 
 import com.archive.backend.shared.domain.ddd.ValueObject;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -75,6 +76,18 @@ public final class OwnLabels {
             throw new LabelNotOwnException();
         }
         return id;
+    }
+
+    /**
+     * The labels with a label of nobody given to the owner, its display name when the person attaching it says so.
+     */
+    public OwnLabels adopt(OwnLabel label, boolean display) {
+        if (!display && isEmpty()) {
+            throw new LabelDisplayNameException();
+        }
+        List<OwnLabel> labels = new ArrayList<>(all);
+        labels.add(label);
+        return new OwnLabels(labels, display ? label.id() : this.display);
     }
 
     public List<OwnLabel> all() {

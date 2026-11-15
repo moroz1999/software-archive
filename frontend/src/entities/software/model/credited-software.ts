@@ -1,8 +1,8 @@
 import type {Software} from './software';
 
-/** A person or a group whose page lists the software they are credited on; `kind` is the part of their address. */
+/** A person, a group or a label whose page lists the software they are credited on; `kind` is the part of their address. */
 export interface CreditedOwner {
-    readonly kind: 'authors' | 'groups';
+    readonly kind: 'authors' | 'groups' | 'labels';
     readonly id: string;
 }
 

@@ -1,0 +1,9 @@
+:root {
+    /* Title bone: a short name in the display line of a page heading. */
+    --label-view-title-bone-width: 240px;
+    --label-view-title-bone-height: var(--space-40);
+
+    /* Line bone: a name in a line of body text. */
+    --label-view-line-bone-width: 200px;
+    --label-view-line-bone-height: var(--space-20);
+}

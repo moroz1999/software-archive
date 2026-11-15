@@ -133,6 +133,20 @@ class SoftwareCreditsIT {
     }
 
     @Test
+    void offersALabelOfNobodyAsALabelOfAPersonWithoutAnOwner() throws Exception {
+        UUID ghost = id(7);
+        jdbc.update("INSERT INTO label (id, name) VALUES (?, 'Ghost Publisher')", ghost);
+
+        mvc.perform(get("/api/entity-lookup")
+                        .param("types", "author,author-label")
+                        .param("query", "ghost"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].id").value(ghost.toString()))
+                .andExpect(jsonPath("$.items[0].type").value("author-label"))
+                .andExpect(jsonPath("$.items[0].ownerId").value(org.hamcrest.Matchers.nullValue()));
+    }
+
+    @Test
     void refusesACreditedGroupThatIsNotInTheArchive() throws Exception {
         mvc.perform(post("/api/software")
                         .cookie(TestActors.accessCookie(accessTokens, MEMBER))

@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 
 /**
  * Current people, groups and labels, for validation of credits and for the lookup of the form. A label of nobody is
- * credited as a label of a person: imported credits name such labels; the lookup offers owned labels only.
+ * credited and offered as a label of a person without an owner: imported credits name such labels.
  */
 @Repository
 @RequiredArgsConstructor
@@ -31,6 +31,10 @@ public class JdbcSoftwareReferences implements SoftwareReferenceCatalog, Softwar
                        concat_ws(' ', l.name, p.main_name, p.real_name)
                 FROM label l
                 JOIN named_person p ON p.person_id = l.person_id
+                UNION ALL
+                SELECT l.id, NULL::uuid, 'author-label', l.name, l.name
+                FROM label l
+                WHERE l.person_id IS NULL AND l.group_id IS NULL
                 UNION ALL
                 SELECT g.group_id, g.group_id, 'group', g.main_name, concat_ws(' ', g.main_name, g.group_name)
                 FROM named_group g

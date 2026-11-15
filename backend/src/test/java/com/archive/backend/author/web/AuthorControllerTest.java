@@ -93,8 +93,8 @@ class AuthorControllerTest {
         when(listHandler.handle(new ListAuthorsQuery(null, null, null, null, PageRequest.of(0, 100))))
                 .thenReturn(new PageImpl<>(
                         List.of(
-                                new AuthorCatalogEntry(ID, "Axe", "John Doe", "Zed"),
-                                new AuthorCatalogEntry(ID, "Zed", "John Doe", null)),
+                                new AuthorCatalogEntry(ID, "Axe", "John Doe", "Zed", null),
+                                new AuthorCatalogEntry(ID, "Zed", "John Doe", null, null)),
                         PageRequest.of(0, 100),
                         2));
 
@@ -110,10 +110,24 @@ class AuthorControllerTest {
     }
 
     @Test
+    void sendsALabelOfNobodyByItsIdWithoutAPerson() throws Exception {
+        UUID ghost = UUID.fromString("00000000-0000-0000-0000-000000000077");
+        when(listHandler.handle(new ListAuthorsQuery(null, null, null, null, PageRequest.of(0, 100))))
+                .thenReturn(new PageImpl<>(
+                        List.of(new AuthorCatalogEntry(null, "Ghost", null, null, ghost)), PageRequest.of(0, 100), 1));
+
+        mvc.perform(get("/api/authors").param("page", "0").param("size", "100"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].personId").value(nullValue()))
+                .andExpect(jsonPath("$.content[0].labelId").value(ghost.toString()))
+                .andExpect(jsonPath("$.content[0].name").value("Ghost"));
+    }
+
+    @Test
     void sendsNoRealNameWhenTheEntryIsTheRealName() throws Exception {
         when(listHandler.handle(new ListAuthorsQuery(null, null, null, null, PageRequest.of(0, 100))))
                 .thenReturn(new PageImpl<>(
-                        List.of(new AuthorCatalogEntry(ID, "Carl Real", null, null)), PageRequest.of(0, 100), 1));
+                        List.of(new AuthorCatalogEntry(ID, "Carl Real", null, null, null)), PageRequest.of(0, 100), 1));
 
         mvc.perform(get("/api/authors").param("page", "0").param("size", "100"))
                 .andExpect(status().isOk())
@@ -130,7 +144,7 @@ class AuthorControllerTest {
                         new PlatformCode("vector"),
                         PageRequest.of(1, 100))))
                 .thenReturn(new PageImpl<>(
-                        List.of(new AuthorCatalogEntry(ID, "Борис", null, null)), PageRequest.of(1, 100), 101));
+                        List.of(new AuthorCatalogEntry(ID, "Борис", null, null, null)), PageRequest.of(1, 100), 101));
 
         mvc.perform(get("/api/authors")
                         .param("letter", "б")

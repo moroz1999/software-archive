@@ -151,6 +151,24 @@ class JpaGroupRepositoryIT {
     }
 
     @Test
+    void keepsTheMembersOfAGroupStoredAgain() {
+        storeCrew();
+        UUID ghost = id(61);
+        jdbc.update("INSERT INTO label (id, name) VALUES (?, 'Ghost')", ghost);
+        jdbc.update(
+                "INSERT INTO group_member (group_id, label_id, role_codes) VALUES (?, ?, ARRAY['coder'])",
+                ID.value(),
+                ghost);
+        Group withMember = reload();
+
+        repository.save(withMember);
+        reload();
+
+        assertThat(jdbc.queryForList("SELECT label_id FROM group_member WHERE group_id = ?", UUID.class, ID.value()))
+                .containsExactly(ghost);
+    }
+
+    @Test
     void leavesALabelTakenAwayAsALabelOfNobodyWithItsCreditsAndMemberships() {
         Group group = storeCrew();
         LabelId crw = label(group, "CRW");

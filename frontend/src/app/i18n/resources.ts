@@ -131,7 +131,15 @@ export const resources = {
             as: 'as {{name}}', labelOf: 'label of {{name}}', delete: 'Delete author',
             deleteQuestion: 'Delete “{{name}}” from the archive? Their labels stay in the archive as labels of nobody, with their credits.',
         },
-        label: {labels: 'Labels', name: 'Label {{n}}', placeholder: 'A name works were released under', display: 'Display name', remove: 'Remove label {{n}}', add: 'Add label'},
+        label: {labels: 'Labels', name: 'Label {{n}}', placeholder: 'A name works were released under', display: 'Display name', remove: 'Remove label {{n}}', add: 'Add label',
+            ownerUnknown: 'Owner unknown', ownerUnknownNote: 'owner unknown', attach: 'Attach to owner', attachAction: 'Attach',
+            whose: 'Whose label is “{{name}}”?',
+            errors: {
+                owned: 'The label has got an owner in the meantime. Reload the page.',
+                ownerUnknown: 'That person or group is no longer in the archive.',
+                displayOne: 'They have no labels yet: this one can only be their display name.',
+            },
+        },
         location: {
             locations: 'Locations', country: 'Country {{n}}', city: 'City {{n}}', chooseCountry: 'Choose a country', noCity: 'No city',
             primary: 'Primary', remove: 'Remove location {{n}}', add: 'Add location',
@@ -315,7 +323,15 @@ export const resources = {
             as: 'как {{name}}', labelOf: 'псевдоним {{name}}', delete: 'Удалить автора',
             deleteQuestion: 'Удалить «{{name}}» из архива? Его псевдонимы останутся в архиве ничьими, вместе с участием в работах.',
         },
-        label: {labels: 'Псевдонимы', name: 'Псевдоним {{n}}', placeholder: 'Имя, под которым выходили работы', display: 'Основной', remove: 'Убрать псевдоним {{n}}', add: 'Добавить псевдоним'},
+        label: {labels: 'Псевдонимы', name: 'Псевдоним {{n}}', placeholder: 'Имя, под которым выходили работы', display: 'Основной', remove: 'Убрать псевдоним {{n}}', add: 'Добавить псевдоним',
+            ownerUnknown: 'Владелец неизвестен', ownerUnknownNote: 'владелец неизвестен', attach: 'Привязать к владельцу', attachAction: 'Привязать',
+            whose: 'Чей это псевдоним — «{{name}}»?',
+            errors: {
+                owned: 'У псевдонима тем временем появился владелец. Обновите страницу.',
+                ownerUnknown: 'Этого человека или группы уже нет в архиве.',
+                displayOne: 'У них ещё нет псевдонимов: этот может быть только отображаемым именем.',
+            },
+        },
         location: {
             locations: 'Места', country: 'Страна {{n}}', city: 'Город {{n}}', chooseCountry: 'Выберите страну', noCity: 'Без города',
             primary: 'Основное', remove: 'Убрать место {{n}}', add: 'Добавить место',

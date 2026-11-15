@@ -1,6 +1,7 @@
 package com.archive.backend.author.domain;
 
 import com.archive.backend.geo.domain.Locations;
+import com.archive.backend.label.domain.Label;
 import com.archive.backend.label.domain.LabelDraft;
 import com.archive.backend.label.domain.OwnLabel;
 import com.archive.backend.label.domain.OwnLabels;
@@ -12,6 +13,7 @@ import com.archive.backend.user.domain.AddedBy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
@@ -103,6 +105,16 @@ public final class Author {
             throw new AuthorNamelessException();
         }
         return labels;
+    }
+
+    /**
+     * Takes a label of nobody found out to be the person's, as their display name when the person attaching it says
+     * so; only its works change their owner.
+     */
+    public void adopt(Label label, boolean display) {
+        labels = labels.adopt(new OwnLabel(label.getId(), label.getName()), display);
+        events.add(new OwnerOfLabelsChanged(Set.of(label.getId())));
+        events.add(new AuthorChanged(id));
     }
 
     /** Tells the person is going: its repository deletes it and leaves its labels to nobody. */

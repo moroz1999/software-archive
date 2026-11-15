@@ -252,14 +252,13 @@ describe(SoftwareView, () => {
         expect(within(credits).getAllByRole('listitem').map((item) => item.textContent)).toStrictEqual(['Jane Doe', 'Solar StudioDeveloper']);
     });
 
-    it('shows a credited label without an owner without a broken link', async () => {
+    it('leads from a credited label of nobody to the page of the label', async () => {
         stubFetch(json({...ELITE, credits: [{id: AUTHOR_LABEL, type: 'author-label', title: 'Ghost', roles: ['code'], ownerId: null}]}));
         renderView(ID);
 
         const credits = await screen.findByRole('list', {name: 'Credits'});
 
-        expect(within(credits).getByText('Ghost')).toBeInTheDocument();
-        expect(within(credits).queryByRole('link', {name: 'Ghost'})).not.toBeInTheDocument();
+        expect(within(credits).getByRole('link', {name: 'Ghost'})).toHaveAttribute('href', `/labels/${AUTHOR_LABEL}`);
     });
 
     it('shows no categories for software in none', async () => {

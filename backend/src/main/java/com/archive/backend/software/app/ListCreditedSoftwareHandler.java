@@ -23,4 +23,9 @@ public class ListCreditedSoftwareHandler {
     public List<CreditedSoftware> handle(ListGroupSoftwareQuery q) {
         return reads.findCreditedOnGroup(q.group().value());
     }
+
+    @Transactional(readOnly = true)
+    public List<CreditedSoftware> handle(ListLabelSoftwareQuery q) {
+        return reads.findCreditedOnLabel(q.label().value());
+    }
 }

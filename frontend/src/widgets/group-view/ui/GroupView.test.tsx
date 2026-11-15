@@ -7,6 +7,7 @@ import {toGroupId} from '@/entities/groups';
 import {GroupView} from './GroupView';
 
 const ID = '00000000-0000-0000-0005-000000000001';
+const GHOST = '00000000-0000-0000-0004-000000000099';
 const BAND = '00000000-0000-0000-0005-000000000002';
 const OLDIES = '00000000-0000-0000-0005-000000000003';
 const FEDYA = '00000000-0000-0000-0003-000000000001';
@@ -23,7 +24,7 @@ const CREW = {
         {countryId: '00000000-0000-0000-0002-000000000001', country: 'Finland', cityId: '00000000-0000-0000-0002-000000000011', city: 'Helsinki', primary: true},
     ],
     members: [
-        {id: null, type: 'author', title: 'Ghost', name: 'Ghost', personId: null, personName: null, roles: [], startDate: null, endDate: null},
+        {id: GHOST, type: 'author-label', title: 'Ghost', name: 'Ghost', personId: null, personName: null, roles: [], startDate: null, endDate: null},
         {id: ZED, type: 'author', title: 'Zed', name: 'Zed', personId: ZED, personName: null, roles: [], startDate: null, endDate: null},
         {id: FEDYA, type: 'author', title: 'хакер федя', name: 'хакер федя', personId: FEDYA, personName: 'MASTERSOFT', roles: [], startDate: null, endDate: null},
     ],
@@ -108,7 +109,7 @@ describe(GroupView, () => {
         expect(itemsOf('Locations')).toStrictEqual(['Helsinki, Finland', 'Norway']);
     });
 
-    it('lists the members under the labels they were members under, with the main name of the person when it differs', async () => {
+    it('lists the members under the labels they were members under, with the main name of the person when it differs, a label of nobody leading to its page', async () => {
         stubFetchAround(NO_SOFTWARE, json(CREW));
         renderView();
 
@@ -118,7 +119,7 @@ describe(GroupView, () => {
         expect(itemsOf('Members')).toStrictEqual(['Ghost', 'Zed', 'хакер федя MASTERSOFT']);
         expect(within(members).getByRole('link', {name: 'хакер федя'})).toHaveAttribute('href', `/authors/${FEDYA}`);
         expect(within(members).getByRole('link', {name: 'Zed'})).toHaveAttribute('href', `/authors/${ZED}`);
-        expect(within(members).queryByRole('link', {name: 'Ghost'})).not.toBeInTheDocument();
+        expect(within(members).getByRole('link', {name: 'Ghost'})).toHaveAttribute('href', `/labels/${GHOST}`);
     });
 
     it('shows the known roles of the members and leaves the unknown one out', async () => {

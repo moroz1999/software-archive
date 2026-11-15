@@ -92,6 +92,11 @@ class InMemorySoftwareReadRepository implements SoftwareReadRepository {
     }
 
     @Override
+    public List<CreditedSoftware> findCreditedOnLabel(UUID labelId) {
+        return List.of();
+    }
+
+    @Override
     public List<SoftwareScreenshot> findScreenshots(UUID softwareId) {
         return screenshots.getOrDefault(softwareId, List.of());
     }

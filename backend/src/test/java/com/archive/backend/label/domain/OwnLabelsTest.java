@@ -12,6 +12,7 @@ class OwnLabelsTest {
 
     private static final LabelId ZED = new LabelId(UUID.fromString("00000000-0000-0000-0000-000000000001"));
     private static final LabelId AXE = new LabelId(UUID.fromString("00000000-0000-0000-0000-000000000002"));
+    private static final LabelId BOB = new LabelId(UUID.fromString("00000000-0000-0000-0000-000000000003"));
 
     private static final OwnLabels ZED_AND_AXE = OwnLabels.restore(
             List.of(new OwnLabel(ZED, new LabelName("Zed")), new OwnLabel(AXE, new LabelName("Axe"))), ZED);
@@ -89,6 +90,35 @@ class OwnLabelsTest {
     void cannotBeRestoredWithoutTheDisplayName() {
         assertThatThrownBy(() -> OwnLabels.restore(List.of(new OwnLabel(ZED, new LabelName("Zed"))), null))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void adoptsALabelOfNobodyBesideItsDisplayName() {
+        OwnLabel bob = new OwnLabel(BOB, new LabelName("Bob"));
+
+        OwnLabels labels = ZED_AND_AXE.adopt(bob, false);
+
+        assertThat(labels.all())
+                .containsExactly(new OwnLabel(ZED, new LabelName("Zed")), new OwnLabel(AXE, new LabelName("Axe")), bob);
+        assertThat(labels.display()).isEqualTo(ZED);
+    }
+
+    @Test
+    void adoptsALabelOfNobodyAsItsDisplayNameWhenToldTo() {
+        OwnLabels labels = ZED_AND_AXE.adopt(new OwnLabel(BOB, new LabelName("Bob")), true);
+
+        assertThat(labels.all()).hasSize(3);
+        assertThat(labels.display()).isEqualTo(BOB);
+    }
+
+    @Test
+    void needsTheFirstLabelItAdoptsMarkedAsTheDisplayName() {
+        OwnLabel bob = new OwnLabel(BOB, new LabelName("Bob"));
+
+        assertThatThrownBy(() -> OwnLabels.of(List.of()).adopt(bob, false))
+                .isInstanceOfSatisfying(
+                        RuleViolationException.class, e -> assertThat(e.code()).isEqualTo("label.display-one"));
+        assertThat(OwnLabels.of(List.of()).adopt(bob, true).display()).isEqualTo(BOB);
     }
 
     @Test

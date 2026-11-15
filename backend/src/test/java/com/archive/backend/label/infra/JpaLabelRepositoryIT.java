@@ -38,4 +38,19 @@ class JpaLabelRepositoryIT {
         assertThat(row.get("person_id")).isNull();
         assertThat(row.get("group_id")).isNull();
     }
+
+    @Test
+    void findsALabelOfNobodyButNotALabelOfAnOwner() {
+        UUID owned = UUID.fromString("00000000-0000-0000-0000-000000000002");
+        UUID person = UUID.fromString("00000000-0000-0000-0000-000000000003");
+        jdbc.update("INSERT INTO person (id, real_name) VALUES (?, 'Jane Doe')", person);
+        jdbc.update(
+                "INSERT INTO label (id, name, person_id) VALUES (?, 'Nobody', NULL), (?, 'JD', ?)", ID, owned, person);
+
+        assertThat(repository.lockOfNobody(new LabelId(ID)))
+                .hasValueSatisfying(label -> assertThat(label.getName()).isEqualTo(new LabelName("Nobody")));
+        assertThat(repository.lockOfNobody(new LabelId(owned))).isEmpty();
+        assertThat(repository.exists(new LabelId(owned))).isTrue();
+        assertThat(repository.exists(new LabelId(UUID.randomUUID()))).isFalse();
+    }
 }

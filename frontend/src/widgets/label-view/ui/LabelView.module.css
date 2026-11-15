@@ -1,0 +1,9 @@
+.titleBone {
+    width: var(--label-view-title-bone-width);
+    height: var(--label-view-title-bone-height);
+}
+
+.lineBone {
+    width: var(--label-view-line-bone-width);
+    height: var(--label-view-line-bone-height);
+}

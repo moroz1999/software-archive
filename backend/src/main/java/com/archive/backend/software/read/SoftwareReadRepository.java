@@ -38,6 +38,9 @@ public interface SoftwareReadRepository {
     /** The same for a group. */
     List<CreditedSoftware> findCreditedOnGroup(UUID groupId);
 
+    /** The software a label is credited on, by itself. */
+    List<CreditedSoftware> findCreditedOnLabel(UUID labelId);
+
     /** The software's own screenshots in their order; none for unknown software. */
     List<SoftwareScreenshot> findScreenshots(UUID softwareId);
 

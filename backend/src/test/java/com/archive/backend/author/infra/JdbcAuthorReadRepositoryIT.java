@@ -46,6 +46,8 @@ class JdbcAuthorReadRepositoryIT {
 
     private static final UUID ZED_LABEL = id(201);
     private static final UUID AXE_LABEL = id(202);
+    private static final UUID GHOST = id(203);
+    private static final UUID SHADOW = id(204);
     /** Known by its label Crew Label; Zed is a member of it under both labels. */
     private static final UUID CREW = id(301);
     /** Known only by its name; Zed is a member of it under the main name. */
@@ -78,7 +80,7 @@ class JdbcAuthorReadRepositoryIT {
                 INSERT INTO label (id, name, person_id, group_id, is_display_name) VALUES
                     (?, 'Zed', ?, NULL, TRUE), (?, 'Axe', ?, NULL, FALSE),
                     (gen_random_uuid(), 'Mona', ?, NULL, FALSE), (gen_random_uuid(), 'Bob', ?, NULL, FALSE),
-                    (gen_random_uuid(), 'Crew Label', NULL, ?, TRUE), (gen_random_uuid(), 'Nobody', NULL, NULL, FALSE)
+                    (gen_random_uuid(), 'Crew Label', NULL, ?, TRUE)
                 """, ZED_LABEL, ZED, AXE_LABEL, ZED, BOB, BOB, CREW);
         jdbc.update(
                 "INSERT INTO group_member (group_id, label_id) VALUES (?, ?), (?, ?), (?, ?)",
@@ -97,17 +99,48 @@ class JdbcAuthorReadRepositoryIT {
     }
 
     @Test
-    void listsPeopleUnderTheirMainNameAndTheirOtherLabelsByNameButNoLabelOfAGroupOrOfNobody() {
+    void listsPeopleUnderTheirMainNameAndTheirOtherLabelsByNameButNoLabelOfAGroup() {
         Page<AuthorCatalogEntry> page = reads.findCatalogPage(null, null, null, null, FIRST_PAGE);
 
         assertThat(page.getContent())
                 .containsExactly(
-                        new AuthorCatalogEntry(ZED, "Axe", "John Doe", "Zed"),
-                        new AuthorCatalogEntry(BOB, "Bob", null, null),
-                        new AuthorCatalogEntry(CARL, "Carl Real", null, null),
-                        new AuthorCatalogEntry(BOB, "Mona", null, "Bob"),
-                        new AuthorCatalogEntry(ZED, "Zed", "John Doe", null));
+                        new AuthorCatalogEntry(ZED, "Axe", "John Doe", "Zed", null),
+                        new AuthorCatalogEntry(BOB, "Bob", null, null, null),
+                        new AuthorCatalogEntry(CARL, "Carl Real", null, null, null),
+                        new AuthorCatalogEntry(BOB, "Mona", null, "Bob", null),
+                        new AuthorCatalogEntry(ZED, "Zed", "John Doe", null, null));
         assertThat(page.getTotalElements()).isEqualTo(5);
+    }
+
+    @Test
+    void listsALabelOfNobodyAsAnEntryOfItsOwnAmongThePeople() {
+        jdbc.update("INSERT INTO label (id, name) VALUES (?, 'Ghost')", GHOST);
+
+        assertThat(reads.findCatalogPage(null, null, null, null, FIRST_PAGE).getContent())
+                .extracting(AuthorCatalogEntry::name)
+                .containsExactly("Axe", "Bob", "Carl Real", "Ghost", "Mona", "Zed");
+        assertThat(reads.findCatalogPage("G", null, null, null, FIRST_PAGE).getContent())
+                .containsExactly(new AuthorCatalogEntry(null, "Ghost", null, null, GHOST));
+    }
+
+    @Test
+    void keepsALabelOfNobodyForAPlatformItIsCreditedOn() {
+        jdbc.update("INSERT INTO label (id, name) VALUES (?, 'Ghost'), (?, 'Shadow')", GHOST, SHADOW);
+        jdbc.update("INSERT INTO software (id, title, platform_code) VALUES (?, 'Pong', 'vector')", id(404));
+        jdbc.update("INSERT INTO software_contribution (software_id, label_id) VALUES (?, ?)", id(404), GHOST);
+
+        assertThat(reads.findCatalogPage(null, null, null, "vector", FIRST_PAGE).getContent())
+                .extracting(AuthorCatalogEntry::name)
+                .containsExactly("Ghost");
+    }
+
+    @Test
+    void leavesTheLabelsOfNobodyOutOfAPlace() {
+        jdbc.update("INSERT INTO label (id, name) VALUES (?, 'Ghost')", GHOST);
+
+        assertThat(reads.findCatalogPage(null, FINLAND, null, null, FIRST_PAGE).getContent())
+                .extracting(AuthorCatalogEntry::name)
+                .doesNotContain("Ghost");
     }
 
     @Test
@@ -186,7 +219,7 @@ class JdbcAuthorReadRepositoryIT {
     void combinesTheFilters() {
         assertThat(reads.findCatalogPage("Z", FINLAND, HELSINKI, null, FIRST_PAGE)
                         .getContent())
-                .containsExactly(new AuthorCatalogEntry(ZED, "Zed", "John Doe", null));
+                .containsExactly(new AuthorCatalogEntry(ZED, "Zed", "John Doe", null, null));
     }
 
     @Test

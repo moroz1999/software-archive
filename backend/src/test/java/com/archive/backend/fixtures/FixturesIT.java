@@ -98,7 +98,16 @@ class FixturesIT {
     void everyFixtureAuthorHasARealNameButTheOneKnownOnlyByIt() throws Exception {
         mvc.perform(get("/api/authors").param("size", "1000"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[?(@.realName == null)].name").value(contains("Ivan Petrov")));
+                .andExpect(jsonPath("$.content[?(@.realName == null && @.personId != null)].name")
+                        .value(contains("Ivan Petrov")));
+    }
+
+    @Test
+    void fixtureLabelsOfNobodyAreInTheAuthorCatalog() throws Exception {
+        mvc.perform(get("/api/authors").param("size", "1000"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[?(@.labelId != null)].name")
+                        .value(containsInAnyOrder("Ghost Rider", "Mystery Coder", "Аноним")));
     }
 
     @Test

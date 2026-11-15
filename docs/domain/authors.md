@@ -13,6 +13,8 @@ A name works are released under ("VASYANSOFT"). Works are credited to labels, or
 A label is taken as it is first met: often nobody knows yet whose it is, so a label can belong to nobody. Once it is found out, the label is attached to its owner — a person (a nickname) or a group (an alternative name of the group) — never to both.
 An owner can have several labels; exactly one of them is the display name. Labels can be tied to cities.
 A label taken away from its owner is not deleted: it becomes a label of nobody and keeps its credits and memberships. A label is deleted only on purpose.
+A label is only a name as some program or source gave it; it means somebody only once a person who knows says whose it is. Equal names are not the same label: a label of nobody is never matched to an owner by its name.
+A label of nobody is attached to its owner by hand, from its own page: the person attaching it chooses the owner and says whether it becomes the owner's display name. It goes over with its credits and memberships. An owner without labels gets it only as the display name, by the rule of exactly one. Labels of nobody came in with imports, entries of nobody, so only administrators attach them.
 
 ## Locations
 People and groups are located in countries, or in cities of them; one place counts once. An owner with locations has exactly one primary location, the one they are best known from.
@@ -30,9 +32,9 @@ A person or a group is shown under one main name: their display name; for a reco
 The author catalog and the group catalog are where visitors find authors and groups. Each lists its owners and their labels mixed together, sorted by name, 100 entries per page:
 - an owner appears under their main name;
 - each other label of theirs appears as an entry of its own and leads to the same owner;
-- labels of nobody are in neither catalog.
+- a label of nobody is an entry of the author catalog, with its owner unknown, leading to its own page: it may as well be a group's, but nobody knows yet. It is not in the group catalog.
 
-A catalog follows the platform switch ([hardware.md](hardware.md#platform-switch)): with a platform chosen it lists only the owners credited on software of that platform.
+A catalog follows the platform switch ([hardware.md](hardware.md#platform-switch)): with a platform chosen it lists only the owners credited on software of that platform, and the labels of nobody credited on it themselves. A label of nobody has no locations: a place filter leaves it out.
 
 Visitors narrow a catalog:
 - by the first letter of the entry's name: a Latin letter A–Z, a Cyrillic letter А–Я, or `#` for names starting with anything else (digits, symbols, other scripts). Case does not matter; Ё counts as Е;
@@ -46,6 +48,9 @@ Groups and their labels. The name of the group stands next to every entry of it,
 
 ## Author page
 The page of a person: the main name, the real name, notes, all their labels, their locations (the primary one first) and the groups they were members of, each under the group's main name with the label they were a member under, unless it is their main name ("ZHOPAGROUP as хакер федя"); and the software they are credited on, by themselves or under any of their labels, oldest first, with their roles on each and the label they were credited under, unless it is their main name.
+
+## Label page
+The page of a label of nobody: its name, that its owner is unknown, the groups it was a member of and the software it is credited on; and, for administrators, attaching it to its owner. A label with an owner is shown on the page of the owner.
 
 ## Group page
 The page of a group: the main name, the name, the group types, notes, all its labels, its locations (the primary one first), its members under the selected person name or alias with their roles and dates, the groups that are members of it and the groups it is a member of; and the software it is credited on, by itself or under any of its labels, as on the author page.

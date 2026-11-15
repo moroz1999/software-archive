@@ -22,6 +22,13 @@ public final class Label {
     }
 
     /**
+     * A label of nobody read back from storage.
+     */
+    public static Label restore(LabelId id, LabelName name) {
+        return new Label(id, name);
+    }
+
+    /**
      * A new label of nobody; only a signed-in user adds entries.
      */
     public static Label create(LabelId id, LabelName name, Actor actor) {

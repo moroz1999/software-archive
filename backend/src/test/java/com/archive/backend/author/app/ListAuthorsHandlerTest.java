@@ -20,13 +20,13 @@ class ListAuthorsHandlerTest {
     @Test
     void returnsTheRequestedPageOfTheCatalog() {
         UUID person = UUID.randomUUID();
-        reads.add(new AuthorCatalogEntry(person, "Axe", "John Doe", "Zed"));
-        reads.add(new AuthorCatalogEntry(person, "Zed", "John Doe", null));
+        reads.add(new AuthorCatalogEntry(person, "Axe", "John Doe", "Zed", null));
+        reads.add(new AuthorCatalogEntry(person, "Zed", "John Doe", null, null));
 
         Page<AuthorCatalogEntry> page =
                 handler.handle(new ListAuthorsQuery(null, null, null, null, PageRequest.of(1, 1)));
 
-        assertThat(page.getContent()).containsExactly(new AuthorCatalogEntry(person, "Zed", "John Doe", null));
+        assertThat(page.getContent()).containsExactly(new AuthorCatalogEntry(person, "Zed", "John Doe", null, null));
         assertThat(page.getTotalElements()).isEqualTo(2);
     }
 
