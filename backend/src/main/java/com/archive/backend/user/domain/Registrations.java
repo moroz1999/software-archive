@@ -22,6 +22,32 @@ public final class Registrations {
      * The new account, not stored yet; abandoned accounts in its way are deleted.
      */
     public User register(UserName name, Email email, Password password, Instant now, InterfaceLanguage language) {
+        claim(name, email, now);
+        return User.register(
+                new UserId(UUID.randomUUID()),
+                name,
+                email,
+                hasher.hash(password),
+                ConfirmationToken.generate(),
+                now,
+                language);
+    }
+
+    /**
+     * The first administrator of an archive that has none, not stored yet; abandoned accounts in its way are deleted.
+     */
+    public User registerAdministrator(UserName name, Email email, Password password, Instant now) {
+        if (users.hasAdmin()) {
+            throw new AdministratorExistsException();
+        }
+        claim(name, email, now);
+        return User.createAdministrator(new UserId(UUID.randomUUID()), name, email, hasher.hash(password), now);
+    }
+
+    /**
+     * Checks the name and the email are free and deletes the abandoned accounts holding them.
+     */
+    private void claim(UserName name, Email email, Instant now) {
         Optional<User> nameHolder = users.findByName(name);
         Optional<User> emailHolder = users.findByEmail(email);
         if (nameHolder.filter(holder -> !holder.isAbandoned(now)).isPresent()) {
@@ -37,13 +63,5 @@ public final class Registrations {
                         .filter(holder.getId()::equals)
                         .isEmpty())
                 .ifPresent(users::delete);
-        return User.register(
-                new UserId(UUID.randomUUID()),
-                name,
-                email,
-                hasher.hash(password),
-                ConfirmationToken.generate(),
-                now,
-                language);
     }
 }

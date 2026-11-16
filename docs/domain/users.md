@@ -27,6 +27,8 @@ A member adds releases to any software. A release can be edited and deleted by w
 
 The first confirmed account of the archive becomes an administrator.
 
+A new archive gets its first administrator from the server it runs on, without a letter: whoever runs the archive gives the user name, email and password, and the account is confirmed at once. This works only while the archive has no administrator; the user name and email obey the same rules as in registration.
+
 ## Managing users
 Administrators see every account of the archive — confirmed or still waiting for its link — with its email, the day it registered and its groups, and find one by a part of its user name or email.
 An administrator gives a confirmed user the groups given on purpose: administrator and moderator. Being a member comes with confirmation and is not given or taken away; an unconfirmed account gets no groups.

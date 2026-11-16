@@ -72,6 +72,14 @@ public final class User {
     }
 
     /**
+     * The first administrator of the archive, created from the command line: confirmed at once, with no letter.
+     */
+    public static User createAdministrator(UserId id, UserName name, Email email, PasswordHash hash, Instant now) {
+        return new User(
+                id, name, email, hash, now, UserStatus.CONFIRMED, Set.of(UserGroup.MEMBER, UserGroup.ADMIN), null);
+    }
+
+    /**
      * Replaces the confirmation link of an unconfirmed account with a new one.
      */
     public void renewConfirmation(ConfirmationToken token, Instant now, InterfaceLanguage language) {

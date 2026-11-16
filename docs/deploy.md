@@ -12,5 +12,5 @@ Named volumes keep what must survive a rebuild of the containers: the database, 
 
 ## Not set up yet
 
-- No mail server: registration cannot send its confirmation link and fails with a system error, so accounts are made by hand in the database.
+- No mail server: registration cannot send its confirmation link and fails with a system error. The first administrator is created by the `create-admin` command of the first start, which needs no mail.
 - Permissions of accounts are configured in the database.

@@ -52,6 +52,10 @@ Wrong credentials are `422`, not `401`: they are a mistake in the form, shown in
 
 `auth.*` in `application.yml`: the JWT secret (production sets its own, at least 32 bytes), the access token lifetime, the public URL of the frontend that links lead to, the sender of letters, secure cookies. Mail goes through `spring.mail`; locally Mailpit catches it ([local-dev.md](../local-dev.md)).
 
+### First administrator
+
+`create-admin` as the argument of the backend (`docker compose ... run --rm backend create-admin`, [README](../README.md#first-start)) starts the application as a command: `ArchiveCatalogApplication` adds the options of a command — no web server, no search worker, warnings only in the log — and `CreateAdminRunner` asks the account in the terminal (`CreateAdminCommandLine`), passwords without echo, and exits with its code before the tasks of a started archive (the search rebuild, stopping unfinished imports) run. Flyway migrates the database first, so it works on an empty one. `Registrations.registerAdministrator` refuses with `user.admin-exists` once there is an administrator; a refusal or a wrong value is printed and the command exits with 1.
+
 ### Fixtures
 
 `R__0_users.sql`, applied before the other fixtures, which are all added by `Admin`: `Admin`, `Moderator`, `Member` (each `name@archive.test`), `Pending` waiting for its link (`/verify-email?token=pending-fixture-token`) and `Abandoned`, whose link expired. Every password is `password1`.
