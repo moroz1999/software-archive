@@ -6,6 +6,12 @@ export interface LabelOwner {
     readonly id: string;
 }
 
+/** The owner of a label as its page shows them: a person by the real name with the main name as the note, a group by its name. */
+export interface NamedLabelOwner extends LabelOwner {
+    readonly name: string;
+    readonly note: string | null;
+}
+
 /** A group the label was a member of, under the group's main name. */
 export interface LabelGroup {
     readonly id: string;
@@ -16,7 +22,7 @@ export interface LabelGroup {
 export interface LabelDetails {
     readonly id: LabelId;
     readonly name: string;
-    readonly owner: LabelOwner | null;
+    readonly owner: NamedLabelOwner | null;
     readonly groups: readonly LabelGroup[];
     /** The reader may attach the label to its owner. */
     readonly canChange: boolean;

@@ -137,20 +137,20 @@ function Details({software}: {readonly software: SoftwareDetails}) {
     );
 }
 
-/** The name of whoever is credited, leading to the page of the person or group it belongs to, a label of nobody to its own. */
+/** The name of whoever is credited, leading to the person or the group, a label to its own page. */
 function CreditName({credit}: {readonly credit: SoftwareCredit}) {
     const href = creditHref(credit);
     return <Text>{href === null ? credit.title : <TextLink href={href}>{credit.title}</TextLink>}</Text>;
 }
 
 function creditHref(credit: SoftwareCredit): string | null {
-    if (credit.ownerId === undefined || credit.ownerId === null) {
-        // A label of nobody has a page of its own.
-        return credit.type === 'author-label' || credit.type === 'group-label' ? labelPath(toLabelId(credit.id)) : null;
+    if (credit.type === 'author-label' || credit.type === 'group-label') {
+        return labelPath(toLabelId(credit.id));
     }
-    return credit.type === 'author' || credit.type === 'author-label'
-        ? authorPath(toAuthorId(credit.ownerId))
-        : groupPath(toGroupId(credit.ownerId));
+    if (credit.ownerId === undefined || credit.ownerId === null) {
+        return null;
+    }
+    return credit.type === 'author' ? authorPath(toAuthorId(credit.ownerId)) : groupPath(toGroupId(credit.ownerId));
 }
 
 /** A category of the software with its branch from the top of the tree down to it, each step leading to its catalog. */

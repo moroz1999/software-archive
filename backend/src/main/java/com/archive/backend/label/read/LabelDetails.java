@@ -10,8 +10,12 @@ import org.jspecify.annotations.Nullable;
  */
 public record LabelDetails(UUID id, String name, @Nullable Owner owner, List<MemberOf> groups, boolean canChange) {
 
-    /** The person ({@code author}) or the group the label belongs to. */
-    public record Owner(String type, UUID id) {}
+    /**
+     * The person ({@code author}) or the group the label belongs to: a person by the real name with the main name
+     * next to it ({@code note}), or by the main name without a real name; a group by its name.
+     */
+    public record Owner(
+            String type, UUID id, String name, @Nullable String note) {}
 
     public record MemberOf(UUID id, String name) {}
 

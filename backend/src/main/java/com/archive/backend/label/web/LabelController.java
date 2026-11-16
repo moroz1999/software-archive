@@ -55,8 +55,7 @@ public class LabelController {
                 attachToAuthorHandler.handle(new AttachLabelToAuthorCommand(
                         actor, new LabelAttachment(new LabelId(id), display), new AuthorId(owner)));
             case "group" ->
-                attachToGroupHandler.handle(new AttachLabelToGroupCommand(
-                        actor, new LabelAttachment(new LabelId(id), display), new GroupId(owner)));
+                attachToGroupHandler.handle(new AttachLabelToGroupCommand(actor, new LabelId(id), new GroupId(owner)));
             default ->
                 throw new InvalidValueException("label.owner-type-invalid", "A label belongs to a person or a group.");
         }

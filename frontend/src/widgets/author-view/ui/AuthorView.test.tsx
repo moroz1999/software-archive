@@ -105,6 +105,16 @@ describe(AuthorView, () => {
         expect(screen.getByText('and musician')).toBeInTheDocument();
     });
 
+    it('leads to the page of every label of the author', async () => {
+        stubFetchAround(NO_SOFTWARE, json(ZED));
+        renderView();
+
+        const labels = await screen.findByRole('list', {name: 'Labels'});
+
+        expect(within(labels).getByRole('link', {name: 'Axe'})).toHaveAttribute('href', '/labels/00000000-0000-0000-0004-000000000001');
+        expect(within(labels).getByRole('link', {name: 'Zed'})).toHaveAttribute('href', '/labels/00000000-0000-0000-0004-000000000002');
+    });
+
     it('leads to every group of the author, naming the label they were a member under unless it is the main name', async () => {
         stubFetchAround(NO_SOFTWARE, json(ZED));
         renderView();

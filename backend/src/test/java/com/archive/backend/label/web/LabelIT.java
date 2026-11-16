@@ -93,7 +93,29 @@ class LabelIT {
         mvc.perform(get("/api/labels/{id}", JD))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.owner.type").value("author"))
-                .andExpect(jsonPath("$.owner.id").value(JANE.toString()));
+                .andExpect(jsonPath("$.owner.id").value(JANE.toString()))
+                .andExpect(jsonPath("$.owner.name").value("Jane Doe"))
+                .andExpect(jsonPath("$.owner.note").value("JD"));
+    }
+
+    @Test
+    void namesThePersonWithoutARealNameByTheMainName() throws Exception {
+        jdbc.update("UPDATE person SET real_name = NULL WHERE id = ?", JANE);
+
+        mvc.perform(get("/api/labels/{id}", JD))
+                .andExpect(jsonPath("$.owner.name").value("JD"))
+                .andExpect(jsonPath("$.owner.note").value(nullValue()));
+    }
+
+    @Test
+    void namesTheGroupThatOwnsTheLabelByItsName() throws Exception {
+        attach(GHOST, "group", CREW).andExpect(status().isNoContent());
+
+        mvc.perform(get("/api/labels/{id}", GHOST))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.owner.type").value("group"))
+                .andExpect(jsonPath("$.owner.name").value("Crew"))
+                .andExpect(jsonPath("$.owner.note").value(nullValue()));
     }
 
     @Test
@@ -125,15 +147,11 @@ class LabelIT {
     }
 
     @Test
-    void attachesTheLabelToAGroupWithoutLabelsOnlyAsItsDisplayName() throws Exception {
-        attach(GHOST, "group", CREW)
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.code").value("label.display-one"));
-
-        attach(GHOST, "group", CREW, true).andExpect(status().isNoContent());
+    void attachesTheLabelToAGroupWithoutLabelsLeavingTheGroupUnderItsName() throws Exception {
+        attach(GHOST, "group", CREW).andExpect(status().isNoContent());
 
         mvc.perform(get("/api/groups/{id}", CREW))
-                .andExpect(jsonPath("$.name").value("Ghost"))
+                .andExpect(jsonPath("$.name").value("Crew"))
                 .andExpect(jsonPath("$.labels[*].name").value(hasItem("Ghost")));
     }
 

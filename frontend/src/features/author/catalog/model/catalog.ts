@@ -1,22 +1,26 @@
 import type {AuthorId} from '@/entities/authors';
 import type {LabelId} from '@/entities/labels';
 
-/** An entry of the catalog: a person under their main name, one of their other labels with the main name, or a label of nobody. */
-export type AuthorCatalogEntry = PersonEntry | NobodysLabelEntry;
+/**
+ * An entry of the catalog: a person under the real name with the main label next to it, or a label — of a person with the real
+ * name next to it, else the main name, or of nobody (docs/domain/authors.md).
+ */
+export type AuthorCatalogEntry = PersonEntry | LabelCatalogEntry;
 
-/** A person under their main name, or one of their other labels with the main name. */
+/** A person under the real name, leading to the person. */
 export interface PersonEntry {
     readonly kind: 'person';
     readonly personId: AuthorId;
     readonly name: string;
-    /** The real name of the person, shown next to the entry; null when unknown or when it is the entry's name. */
-    readonly realName: string | null;
-    readonly labelOf: string | null;
+    /** Shown next to the name: the main label; null without labels. */
+    readonly note: string | null;
 }
 
-/** A label whose owner is not known yet, leading to its own page. */
-export interface NobodysLabelEntry {
+/** A label, the main one too, leading to its own page. */
+export interface LabelCatalogEntry {
     readonly kind: 'label';
     readonly labelId: LabelId;
     readonly name: string;
+    /** Shown next to the name: whose it is; null for a label of nobody and for the main name itself. */
+    readonly note: string | null;
 }

@@ -12,7 +12,6 @@ export function createGroupMessages(t: TFunction): BusinessMessages {
         'group.type-unknown': t('errors.groupTypeUnknown'),
         'group.member-unknown': t('errors.groupMemberUnknown'),
         'label.not-own': t('errors.labelNotOwn'),
-        'label.display-one': t('errors.labelDisplayOne'),
         'location.unknown': t('errors.locationUnknown'),
         'location.primary-one': t('errors.locationPrimaryOne'),
     };

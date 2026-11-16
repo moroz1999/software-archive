@@ -111,7 +111,7 @@ export const resources = {
         loading: {refreshing: 'Refreshing', searching: 'Searching'},
         selection: {remove: 'Remove {{name}}', selected_one: '{{count}} selected', selected_other: '{{count}} selected'},
         roles: {
-            add: 'Add role', addTo: 'Add role to {{name}}', for: 'Role for {{name}}',
+            add: 'Add role', for: 'Role for {{name}}', from: 'From', to: 'To',
             startDateFor: 'Start date for {{name}}', endDateFor: 'End date for {{name}}',
             group: {
                 coder: 'Coder', cracker: 'Cracker', graphician: 'Graphician', hardware: 'Hardware', musician: 'Musician',
@@ -128,14 +128,14 @@ export const resources = {
         },
         author: {
             realName: 'Real name', labels: 'Labels', locations: 'Locations', groups: 'Groups', notes: 'Notes',
-            as: 'as {{name}}', labelOf: 'label of {{name}}', delete: 'Delete author',
+            as: 'as {{name}}', delete: 'Delete author',
             deleteQuestion: 'Delete “{{name}}” from the archive? Their labels stay in the archive as labels of nobody, with their credits.',
         },
         label: {labels: 'Labels', name: 'Label {{n}}', placeholder: 'A name works were released under', display: 'Display name', remove: 'Remove label {{n}}', add: 'Add label',
-            ownerUnknown: 'Owner unknown', ownerUnknownNote: 'owner unknown', attach: 'Attach to owner', attachAction: 'Attach',
+            owner: 'Whose label', ownerUnknown: 'Not known yet whose label this is', attach: 'Say whose label', attachAction: 'Save',
             whose: 'Whose label is “{{name}}”?',
             errors: {
-                owned: 'The label has got an owner in the meantime. Reload the page.',
+                owned: 'Someone has said whose label this is in the meantime. Reload the page.',
                 ownerUnknown: 'That person or group is no longer in the archive.',
                 displayOne: 'They have no labels yet: this one can only be their display name.',
             },
@@ -303,7 +303,7 @@ export const resources = {
             selected_many: 'Выбрано {{count}}', selected_other: 'Выбрано {{count}}',
         },
         roles: {
-            add: 'Добавить роль', addTo: 'Добавить роль: {{name}}', for: 'Роль: {{name}}',
+            add: 'Добавить роль', for: 'Роль: {{name}}', from: 'С', to: 'По',
             startDateFor: 'Дата начала: {{name}}', endDateFor: 'Дата окончания: {{name}}',
             group: {
                 coder: 'Кодер', cracker: 'Взломщик', graphician: 'График', hardware: 'Аппаратчик', musician: 'Музыкант',
@@ -320,14 +320,14 @@ export const resources = {
         },
         author: {
             realName: 'Настоящее имя', labels: 'Псевдонимы', locations: 'Места', groups: 'Группы', notes: 'Заметки',
-            as: 'как {{name}}', labelOf: 'псевдоним {{name}}', delete: 'Удалить автора',
+            as: 'как {{name}}', delete: 'Удалить автора',
             deleteQuestion: 'Удалить «{{name}}» из архива? Его псевдонимы останутся в архиве ничьими, вместе с участием в работах.',
         },
         label: {labels: 'Псевдонимы', name: 'Псевдоним {{n}}', placeholder: 'Имя, под которым выходили работы', display: 'Основной', remove: 'Убрать псевдоним {{n}}', add: 'Добавить псевдоним',
-            ownerUnknown: 'Владелец неизвестен', ownerUnknownNote: 'владелец неизвестен', attach: 'Привязать к владельцу', attachAction: 'Привязать',
+            owner: 'Чей псевдоним', ownerUnknown: 'Пока неизвестно, чей это псевдоним', attach: 'Указать, чей псевдоним', attachAction: 'Сохранить',
             whose: 'Чей это псевдоним — «{{name}}»?',
             errors: {
-                owned: 'У псевдонима тем временем появился владелец. Обновите страницу.',
+                owned: 'Кто-то уже указал, чей это псевдоним. Обновите страницу.',
                 ownerUnknown: 'Этого человека или группы уже нет в архиве.',
                 displayOne: 'У них ещё нет псевдонимов: этот может быть только отображаемым именем.',
             },

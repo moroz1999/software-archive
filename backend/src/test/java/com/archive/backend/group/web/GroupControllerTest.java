@@ -42,10 +42,10 @@ import com.archive.backend.group.read.GroupMember;
 import com.archive.backend.group.read.RelatedGroup;
 import com.archive.backend.group.web.mapper.GroupWebMapperImpl;
 import com.archive.backend.hardware.domain.PlatformCode;
-import com.archive.backend.label.domain.LabelDraft;
 import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.LabelLetter;
 import com.archive.backend.label.domain.LabelName;
+import com.archive.backend.label.domain.UnmarkedLabelDraft;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
 import com.archive.backend.shared.web.ApiExceptionHandler;
@@ -98,17 +98,20 @@ class GroupControllerTest {
         when(listHandler.handle(new ListGroupsQuery(null, null, null, null, PageRequest.of(0, 100))))
                 .thenReturn(new PageImpl<>(
                         List.of(
-                                new GroupCatalogEntry(ID, "Crew", "Crew Ltd"),
-                                new GroupCatalogEntry(INNER, "Band", null)),
+                                new GroupCatalogEntry(null, LABEL, "Crew", "Crew Ltd"),
+                                new GroupCatalogEntry(INNER, null, "Band", null)),
                         PageRequest.of(0, 100),
                         2));
 
         mvc.perform(get("/api/groups").param("page", "0").param("size", "100"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].groupId").value(ID.toString()))
+                .andExpect(jsonPath("$.content[0].groupId").value(nullValue()))
+                .andExpect(jsonPath("$.content[0].labelId").value(LABEL.toString()))
                 .andExpect(jsonPath("$.content[0].name").value("Crew"))
-                .andExpect(jsonPath("$.content[0].groupName").value("Crew Ltd"))
-                .andExpect(jsonPath("$.content[1].groupName").value(nullValue()))
+                .andExpect(jsonPath("$.content[0].note").value("Crew Ltd"))
+                .andExpect(jsonPath("$.content[1].groupId").value(INNER.toString()))
+                .andExpect(jsonPath("$.content[1].labelId").value(nullValue()))
+                .andExpect(jsonPath("$.content[1].note").value(nullValue()))
                 .andExpect(jsonPath("$.page.totalElements").value(2))
                 .andExpect(jsonPath("$.page.size").value(100));
     }
@@ -121,8 +124,8 @@ class GroupControllerTest {
                         new CityId(CITY),
                         new PlatformCode("vector"),
                         PageRequest.of(1, 100))))
-                .thenReturn(
-                        new PageImpl<>(List.of(new GroupCatalogEntry(ID, "Сцена", null)), PageRequest.of(1, 100), 101));
+                .thenReturn(new PageImpl<>(
+                        List.of(new GroupCatalogEntry(ID, null, "Сцена", null)), PageRequest.of(1, 100), 101));
 
         mvc.perform(get("/api/groups")
                         .param("letter", "с")
@@ -166,11 +169,10 @@ class GroupControllerTest {
         when(getHandler.handle(new GetGroupQuery(Actor.anonymous(), new GroupId(ID))))
                 .thenReturn(new GroupDetails(
                         ID,
-                        "Crew",
                         "Crew Ltd",
                         "Since 1990",
                         List.of("demogroup"),
-                        List.of(new GroupLabel(LABEL, "Crew", true)),
+                        List.of(new GroupLabel(LABEL, "Crew")),
                         List.of(
                                 new GroupLocation(COUNTRY, "Finland", CITY, "Helsinki", true),
                                 new GroupLocation(COUNTRY, "Norway", null, null, false)),
@@ -183,13 +185,13 @@ class GroupControllerTest {
         mvc.perform(get("/api/groups/{id}", ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(ID.toString()))
-                .andExpect(jsonPath("$.name").value("Crew"))
-                .andExpect(jsonPath("$.groupName").value("Crew Ltd"))
+                .andExpect(jsonPath("$.name").value("Crew Ltd"))
+                .andExpect(jsonPath("$.groupName").doesNotExist())
                 .andExpect(jsonPath("$.notes").value("Since 1990"))
                 .andExpect(jsonPath("$.types[0]").value("demogroup"))
                 .andExpect(jsonPath("$.labels[0].id").value(LABEL.toString()))
                 .andExpect(jsonPath("$.labels[0].name").value("Crew"))
-                .andExpect(jsonPath("$.labels[0].display").value(true))
+                .andExpect(jsonPath("$.labels[0].display").doesNotExist())
                 .andExpect(jsonPath("$.locations[0].countryId").value(COUNTRY.toString()))
                 .andExpect(jsonPath("$.locations[0].cityId").value(CITY.toString()))
                 .andExpect(jsonPath("$.locations[1].cityId").value(nullValue()))
@@ -222,15 +224,15 @@ class GroupControllerTest {
 
     private static final String CREW_JSON = """
             {"name":"Crew Ltd","notes":"Since 1990","types":["demogroup","label"],\
-            "labels":[{"id":"%s","name":"Crew","display":true},{"id":null,"name":"CRW","display":false}],\
+            "labels":[{"id":"%s","name":"Crew"},{"id":null,"name":"CRW"}],\
             "locations":[{"country":"%s","city":"%s","primary":true}]}""".formatted(LABEL, COUNTRY, CITY);
 
     private static final Set<GroupTypeCode> CREW_TYPES =
             Set.of(new GroupTypeCode("demogroup"), new GroupTypeCode("label"));
 
-    private static final List<LabelDraft> CREW_LABELS = List.of(
-            new LabelDraft(new LabelId(LABEL), new LabelName("Crew"), true),
-            new LabelDraft(null, new LabelName("CRW"), false));
+    private static final List<UnmarkedLabelDraft> CREW_LABELS = List.of(
+            new UnmarkedLabelDraft(new LabelId(LABEL), new LabelName("Crew")),
+            new UnmarkedLabelDraft(null, new LabelName("CRW")));
 
     private static final List<LocationDraft> CREW_LOCATIONS =
             List.of(new LocationDraft(new CountryId(COUNTRY), new CityId(CITY), true));

@@ -25,10 +25,7 @@ public record GroupRequestDto(
         this(name, notes, types, labels, locations, null);
     }
 
-    public record LabelDto(
-            @Nullable UUID id,
-            @Nullable String name,
-            @Nullable Boolean display) {}
+    public record LabelDto(@Nullable UUID id, @Nullable String name) {}
 
     public record LocationDto(
             @Nullable UUID country,

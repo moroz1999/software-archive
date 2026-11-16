@@ -28,7 +28,7 @@ describe('GroupsPage', () => {
     it('preloads the catalog of the address, the countries and the cities of the chosen country', async () => {
         const fetchMock = stubFetchRoutes(new Map([
             ['/api/auth/me', json(MEMBER)],
-            [`/api/groups?page=0&size=100&letter=Z&country=${FINLAND}`, json(pageResponse([{groupId: CREW, name: 'Crew', groupName: null}], {size: 100}))],
+            [`/api/groups?page=0&size=100&letter=Z&country=${FINLAND}`, json(pageResponse([{groupId: CREW, labelId: null, name: 'Crew', note: null}], {size: 100}))],
             ['/api/countries', json([{id: FINLAND, name: 'Finland'}])],
             [`/api/countries/${FINLAND}/cities`, json([])],
         ]));

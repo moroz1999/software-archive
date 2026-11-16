@@ -21,10 +21,10 @@ import com.archive.backend.group.web.dto.GroupCreatedDto;
 import com.archive.backend.group.web.dto.GroupDetailsDto;
 import com.archive.backend.group.web.dto.GroupRequestDto;
 import com.archive.backend.hardware.domain.PlatformCode;
-import com.archive.backend.label.domain.LabelDraft;
 import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.LabelLetter;
 import com.archive.backend.label.domain.LabelName;
+import com.archive.backend.label.domain.UnmarkedLabelDraft;
 import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.user.domain.Actor;
 import java.util.LinkedHashSet;
@@ -89,20 +89,19 @@ public interface GroupWebMapper {
                 : types.stream().map(GroupTypeCode::new).collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    private static List<LabelDraft> toLabels(@Nullable List<GroupRequestDto.LabelDto> labels) {
+    private static List<UnmarkedLabelDraft> toLabels(@Nullable List<GroupRequestDto.LabelDto> labels) {
         return labels == null
                 ? List.of()
                 : labels.stream().map(GroupWebMapper::toLabel).toList();
     }
 
-    private static LabelDraft toLabel(GroupRequestDto.LabelDto label) {
+    private static UnmarkedLabelDraft toLabel(GroupRequestDto.LabelDto label) {
         String name = label.name();
         if (name == null) {
             throw new InvalidValueException("title.required", "A label needs a name.");
         }
         UUID id = label.id();
-        return new LabelDraft(
-                id == null ? null : new LabelId(id), new LabelName(name), Boolean.TRUE.equals(label.display()));
+        return new UnmarkedLabelDraft(id == null ? null : new LabelId(id), new LabelName(name));
     }
 
     private static List<LocationDraft> toLocations(@Nullable List<GroupRequestDto.LocationDto> locations) {

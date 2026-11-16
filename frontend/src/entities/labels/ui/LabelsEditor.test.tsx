@@ -38,6 +38,22 @@ describe(LabelsEditor, () => {
         expect(checked('Display name')).toStrictEqual([true, false]);
     });
 
+    it('offers no display name for an owner who has none, a group', () => {
+        render(<Harness initial={[{...ZED, display: false}, AXE]} withDisplayName={false}/>);
+
+        expect(screen.getByRole('textbox', {name: 'Label 1'})).toHaveValue('Zed');
+        expect(screen.queryByRole('radio', {name: 'Display name'})).not.toBeInTheDocument();
+    });
+
+    it('marks no new label as the display name of an owner who has none', async () => {
+        render(<Harness initial={[]} withDisplayName={false}/>);
+
+        await userEvent.click(screen.getByRole('button', {name: 'Add label'}));
+        await userEvent.type(screen.getByRole('textbox', {name: 'Label 1'}), 'Crew');
+
+        expect(value()).toStrictEqual([{id: null, name: 'Crew', display: false}]);
+    });
+
     it('renames a label, keeping its id', async () => {
         render(<Harness initial={[ZED]}/>);
 

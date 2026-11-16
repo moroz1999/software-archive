@@ -35,7 +35,7 @@ public interface GroupMapper {
                 notes == null ? null : new GroupNotes(notes),
                 GroupTypeSet.restore(
                         entity.getTypes().stream().map(GroupTypeCode::new).collect(Collectors.toSet())),
-                LabelRows.toLabels(entity.getLabels()),
+                LabelRows.toUnmarked(entity.getLabels()),
                 LocationRows.toLocations(entity.getLocations()),
                 GroupMembers.restore(
                         entity.getMembers().stream().map(GroupMapper::toMember).toList()),
@@ -52,7 +52,7 @@ public interface GroupMapper {
                 .map(GroupTypeCode::value)
                 .collect(Collectors.toCollection(HashSet::new)));
         entity.setAddedBy(AddedByRows.fromAddedBy(group.getAddedBy()));
-        entity.setLabels(LabelRows.fromLabels(group.getLabels()));
+        entity.setLabels(LabelRows.fromUnmarked(group.getLabels()));
         entity.setLocations(LocationRows.fromLocations(group.getLocations(), GroupLocationEntity::new));
         entity.setMembers(group.getMembers().all().stream()
                 .map(GroupMapper::fromMember)

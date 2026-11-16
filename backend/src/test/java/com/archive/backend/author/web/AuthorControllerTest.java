@@ -93,18 +93,20 @@ class AuthorControllerTest {
         when(listHandler.handle(new ListAuthorsQuery(null, null, null, null, PageRequest.of(0, 100))))
                 .thenReturn(new PageImpl<>(
                         List.of(
-                                new AuthorCatalogEntry(ID, "Axe", "John Doe", "Zed", null),
-                                new AuthorCatalogEntry(ID, "Zed", "John Doe", null, null)),
+                                new AuthorCatalogEntry(null, LABEL, "Axe", "John Doe"),
+                                new AuthorCatalogEntry(ID, null, "John Doe", "Zed")),
                         PageRequest.of(0, 100),
                         2));
 
         mvc.perform(get("/api/authors").param("page", "0").param("size", "100"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].personId").value(ID.toString()))
+                .andExpect(jsonPath("$.content[0].personId").value(nullValue()))
+                .andExpect(jsonPath("$.content[0].labelId").value(LABEL.toString()))
                 .andExpect(jsonPath("$.content[0].name").value("Axe"))
-                .andExpect(jsonPath("$.content[0].realName").value("John Doe"))
-                .andExpect(jsonPath("$.content[0].labelOf").value("Zed"))
-                .andExpect(jsonPath("$.content[1].labelOf").value(nullValue()))
+                .andExpect(jsonPath("$.content[0].note").value("John Doe"))
+                .andExpect(jsonPath("$.content[1].personId").value(ID.toString()))
+                .andExpect(jsonPath("$.content[1].labelId").value(nullValue()))
+                .andExpect(jsonPath("$.content[1].note").value("Zed"))
                 .andExpect(jsonPath("$.page.totalElements").value(2))
                 .andExpect(jsonPath("$.page.size").value(100));
     }
@@ -114,7 +116,7 @@ class AuthorControllerTest {
         UUID ghost = UUID.fromString("00000000-0000-0000-0000-000000000077");
         when(listHandler.handle(new ListAuthorsQuery(null, null, null, null, PageRequest.of(0, 100))))
                 .thenReturn(new PageImpl<>(
-                        List.of(new AuthorCatalogEntry(null, "Ghost", null, null, ghost)), PageRequest.of(0, 100), 1));
+                        List.of(new AuthorCatalogEntry(null, ghost, "Ghost", null)), PageRequest.of(0, 100), 1));
 
         mvc.perform(get("/api/authors").param("page", "0").param("size", "100"))
                 .andExpect(status().isOk())
@@ -124,15 +126,15 @@ class AuthorControllerTest {
     }
 
     @Test
-    void sendsNoRealNameWhenTheEntryIsTheRealName() throws Exception {
+    void sendsNoNoteForAPersonWithoutLabels() throws Exception {
         when(listHandler.handle(new ListAuthorsQuery(null, null, null, null, PageRequest.of(0, 100))))
                 .thenReturn(new PageImpl<>(
-                        List.of(new AuthorCatalogEntry(ID, "Carl Real", null, null, null)), PageRequest.of(0, 100), 1));
+                        List.of(new AuthorCatalogEntry(ID, null, "Carl Real", null)), PageRequest.of(0, 100), 1));
 
         mvc.perform(get("/api/authors").param("page", "0").param("size", "100"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].name").value("Carl Real"))
-                .andExpect(jsonPath("$.content[0].realName").value(nullValue()));
+                .andExpect(jsonPath("$.content[0].note").value(nullValue()));
     }
 
     @Test
@@ -144,7 +146,7 @@ class AuthorControllerTest {
                         new PlatformCode("vector"),
                         PageRequest.of(1, 100))))
                 .thenReturn(new PageImpl<>(
-                        List.of(new AuthorCatalogEntry(ID, "Борис", null, null, null)), PageRequest.of(1, 100), 101));
+                        List.of(new AuthorCatalogEntry(ID, null, "Борис", null)), PageRequest.of(1, 100), 101));
 
         mvc.perform(get("/api/authors")
                         .param("letter", "б")

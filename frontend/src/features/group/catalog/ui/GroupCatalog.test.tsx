@@ -14,11 +14,15 @@ const FINLAND = '00000000-0000-0000-0002-000000000001';
 const NORWAY = '00000000-0000-0000-0002-000000000002';
 const HELSINKI = '00000000-0000-0000-0002-000000000101';
 
-/** Crew Ltd under its labels Crew and CRW; Band known only by its name. */
+const CREW_LABEL = '00000000-0000-0000-0004-000000000001';
+const CRW_LABEL = '00000000-0000-0000-0004-000000000002';
+
+/** Crew Ltd under its name and its labels Crew and CRW, each an entry of its own; Band known only by its name. */
 const ENTRIES = [
-    {groupId: BAND, name: 'Band', groupName: null},
-    {groupId: CREW, name: 'Crew', groupName: 'Crew Ltd'},
-    {groupId: CREW, name: 'CRW', groupName: 'Crew Ltd'},
+    {groupId: BAND, labelId: null, name: 'Band', note: null},
+    {groupId: null, labelId: CREW_LABEL, name: 'Crew', note: 'Crew Ltd'},
+    {groupId: CREW, labelId: null, name: 'Crew Ltd', note: null},
+    {groupId: null, labelId: CRW_LABEL, name: 'CRW', note: 'Crew Ltd'},
 ];
 const COUNTRIES = [{id: FINLAND, name: 'Finland'}, {id: NORWAY, name: 'Norway'}];
 const FINNISH_CITIES = [{id: HELSINKI, name: 'Helsinki'}];
@@ -82,25 +86,26 @@ describe(GroupCatalog, () => {
         openCatalog();
 
         expect(screen.getByTestId('group-catalog-skeleton')).toBeInTheDocument();
-        await expect(entryNames()).resolves.toStrictEqual(['Band', 'Crew', 'CRW']);
+        await expect(entryNames()).resolves.toStrictEqual(['Band', 'Crew', 'Crew Ltd', 'CRW']);
         expect(screen.queryByTestId('group-catalog-skeleton')).not.toBeInTheDocument();
     });
 
-    it('leads from every entry to its group', async () => {
+    it('leads from a group to the group and from every label of it to the label\'s page', async () => {
         stubFetchRoutes(routes({[ALL]: catalogPage(ENTRIES)}));
         openCatalog();
 
         const list = await screen.findByRole('list', {name: 'Groups'});
 
-        expect(within(list).getByRole('link', {name: 'CRW'})).toHaveAttribute('href', `/groups/${CREW}`);
+        expect(within(list).getByRole('link', {name: 'Crew Ltd'})).toHaveAttribute('href', `/groups/${CREW}`);
         expect(within(list).getByRole('link', {name: 'Band'})).toHaveAttribute('href', `/groups/${BAND}`);
+        expect(within(list).getByRole('link', {name: 'CRW'})).toHaveAttribute('href', `/labels/${CRW_LABEL}`);
     });
 
     it('names the name of the group next to every label, and nothing next to the name itself', async () => {
         stubFetchRoutes(routes({[ALL]: catalogPage(ENTRIES)}));
         openCatalog();
 
-        await expect(entryLines()).resolves.toStrictEqual(['Band', 'Crew Crew Ltd', 'CRW Crew Ltd']);
+        await expect(entryLines()).resolves.toStrictEqual(['Band', 'Crew Crew Ltd', 'Crew Ltd', 'CRW Crew Ltd']);
     });
 
     it('offers all letters, the current one marked, each keeping the place filters and starting from the first page', async () => {
@@ -137,7 +142,7 @@ describe(GroupCatalog, () => {
         await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Country'}), 'Finland');
 
         await vi.waitFor(async () => {
-            await expect(entryNames()).resolves.toStrictEqual(['CRW']);
+            await expect(entryNames()).resolves.toStrictEqual(['Crew Ltd']);
         });
 
         expect(router.state.location.search).toBe(`?country=${FINLAND}`);
@@ -191,13 +196,13 @@ describe(GroupCatalog, () => {
             expect(screen.getByTestId('loading-state-spinner')).toHaveAttribute('aria-hidden', 'false');
         });
 
-        await expect(entryNames()).resolves.toStrictEqual(['Band', 'Crew', 'CRW']);
+        await expect(entryNames()).resolves.toStrictEqual(['Band', 'Crew', 'Crew Ltd', 'CRW']);
         expect(within(screen.getByRole('navigation', {name: 'First letter'})).queryByRole('link')).not.toBeInTheDocument();
 
         answerFinland?.();
 
         await vi.waitFor(async () => {
-            await expect(entryNames()).resolves.toStrictEqual(['CRW']);
+            await expect(entryNames()).resolves.toStrictEqual(['Crew Ltd']);
         });
 
         expect(screen.getByTestId('loading-state-spinner')).toHaveAttribute('aria-hidden', 'true');
@@ -213,7 +218,7 @@ describe(GroupCatalog, () => {
         expect(screen.getByRole('combobox', {name: 'Country'})).toBeEnabled();
 
         await vi.waitFor(async () => {
-            await expect(entryNames()).resolves.toStrictEqual(['CRW']);
+            await expect(entryNames()).resolves.toStrictEqual(['Crew Ltd']);
         });
 
         expect(screen.queryByTestId('loading-state-spinner')).not.toBeInTheDocument();
@@ -271,7 +276,7 @@ describe(GroupCatalog, () => {
         stubFetchRoutes(new Map([['/api/platforms', json([])], [ALL, catalogPage(ENTRIES)], ['/api/countries', json({status: 500}, 500)]]));
         openCatalog();
 
-        await expect(entryNames()).resolves.toStrictEqual(['Band', 'Crew', 'CRW']);
+        await expect(entryNames()).resolves.toStrictEqual(['Band', 'Crew', 'Crew Ltd', 'CRW']);
 
         await vi.waitFor(() => {
             expect(reports).toHaveLength(1);

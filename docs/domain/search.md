@@ -5,7 +5,7 @@ How visitors find software, people and groups by a word, and narrow the software
 ## Quick search
 - A search button in the header of every page opens a window with a field. As the visitor types, the window shows brief results by kind: people, groups, software — each with its first five matches, best first, and the count of all of them. From the window the visitor goes to the full search of the same word.
 - Software is found by its title and alternative titles; a person by any of their labels and the real name; a group by any of its labels and its name. Labels of nobody are not found on their own.
-- A person or a group found by any of their names is shown under the main name ([authors.md](authors.md#main-name)); a person with the real name next to it, unless it is the main name itself.
+- A person or a group found by any of their names is shown under the main name, a group under its name ([authors.md](authors.md#main-name)); a person with the real name next to it, unless it is the main name itself.
 - Search follows the platform switch ([hardware.md](hardware.md#platform-switch)).
 
 ## Full search

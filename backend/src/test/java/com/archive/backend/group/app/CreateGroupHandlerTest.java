@@ -19,9 +19,9 @@ import com.archive.backend.group.domain.GroupMemberSets;
 import com.archive.backend.group.domain.GroupName;
 import com.archive.backend.group.domain.GroupNotes;
 import com.archive.backend.group.domain.GroupTypeCode;
-import com.archive.backend.label.domain.LabelDraft;
 import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.label.domain.OwnLabel;
+import com.archive.backend.label.domain.UnmarkedLabelDraft;
 import com.archive.backend.shared.domain.error.RuleViolationException;
 import com.archive.backend.user.domain.Actor;
 import com.archive.backend.user.domain.AddedBy;
@@ -43,7 +43,7 @@ class CreateGroupHandlerTest {
                 new GroupName("Crew Ltd"),
                 new GroupNotes("Since 1990"),
                 Set.of(DEMOGROUP, LABEL),
-                List.of(new LabelDraft(null, new LabelName("CRW"), true)),
+                List.of(new UnmarkedLabelDraft(null, new LabelName("CRW"))),
                 List.of(new LocationDraft(NORWAY, null, true))));
 
         assertThat(repository.findById(id)).hasValueSatisfying(group -> {

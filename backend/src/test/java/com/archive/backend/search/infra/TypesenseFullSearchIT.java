@@ -48,10 +48,11 @@ class TypesenseFullSearchIT {
     }
 
     private static final List<AuthorDocument> AUTHORS = List.of(
-            new AuthorDocument(id(11), "Zed", List.of("Zed"), "Zed Smith", List.of("vector")),
-            new AuthorDocument(id(12), "Zorro", List.of("Zorro"), null, List.of("vector")),
-            new AuthorDocument(id(13), "John", List.of("John"), "Zak Doe", List.of("vector")),
-            new AuthorDocument(id(14), "Zak", List.of("Zak"), null, List.of("bk")));
+            AuthorDocument.person(id(11), "Zed", List.of("Zed"), "Zed Smith", List.of("vector")),
+            AuthorDocument.person(id(12), "Zorro", List.of("Zorro"), null, List.of("vector")),
+            AuthorDocument.person(id(13), "John", List.of("John"), "Zak Doe", List.of("vector")),
+            AuthorDocument.person(id(14), "Zak", List.of("Zak"), null, List.of("bk")),
+            AuthorDocument.label(id(15), "Phantom", List.of("msx")));
 
     private static final List<GroupDocument> GROUPS = List.of(
             new GroupDocument(id(21), "ZS", List.of("ZS"), "Zed Squad", List.of("vector")),
@@ -142,10 +143,17 @@ class TypesenseFullSearchIT {
         FullSearchResult software = search.find("zynaps", "bk", ALL, 0, 50);
 
         assertThat(result.sets())
-                .containsExactly(new FoundSet.Authors(1, List.of(new FoundAuthor(id(11), "Zed", "Zed Smith"))));
+                .containsExactly(
+                        new FoundSet.Authors(1, List.of(new FoundAuthor(id(11), "Zed", "Zed Smith", "person"))));
         assertThat(software.sets())
                 .containsExactly(
                         new FoundSet.Software(1, List.of(new SoftwareCatalogItem(id(35), "Zynaps 35", "1987-05-01"))));
+    }
+
+    @Test
+    void findsALabelOfNobodyAmongThePeople() {
+        assertThat(search.find("phantom", null, ALL, 0, 50).sets())
+                .containsExactly(new FoundSet.Authors(1, List.of(new FoundAuthor(id(15), "Phantom", null, "label"))));
     }
 
     @Test

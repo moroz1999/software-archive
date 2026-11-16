@@ -98,7 +98,7 @@ class FixturesIT {
     void everyFixtureAuthorHasARealNameButTheOneKnownOnlyByIt() throws Exception {
         mvc.perform(get("/api/authors").param("size", "1000"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[?(@.realName == null && @.personId != null)].name")
+                .andExpect(jsonPath("$.content[?(@.note == null && @.personId != null)].name")
                         .value(contains("Ivan Petrov")));
     }
 
@@ -106,7 +106,7 @@ class FixturesIT {
     void fixtureLabelsOfNobodyAreInTheAuthorCatalog() throws Exception {
         mvc.perform(get("/api/authors").param("size", "1000"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[?(@.labelId != null)].name")
+                .andExpect(jsonPath("$.content[?(@.labelId != null && @.note == null)].name")
                         .value(containsInAnyOrder("Ghost Rider", "Mystery Coder", "Аноним")));
     }
 
@@ -122,6 +122,7 @@ class FixturesIT {
     void aFixtureGroupHasMembersUnderFormerLabelsUnknownMembersAndGroupsAroundIt() throws Exception {
         mvc.perform(get("/api/groups/{id}", BYTE_BRIGADE))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Byte Brigade"))
                 .andExpect(jsonPath("$.labels", hasSize(greaterThan(1))))
                 .andExpect(jsonPath("$.members[?(@.personName != null)]", hasSize(greaterThan(0))))
                 .andExpect(jsonPath("$.members[?(@.personId == null)]", hasSize(greaterThan(0))))

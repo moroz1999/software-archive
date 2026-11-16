@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 import '@testing-library/jest-dom/vitest';
 import {afterEach, vi} from 'vitest';
 import {cleanup} from '@testing-library/react';
@@ -30,3 +31,23 @@ Object.defineProperty(globalThis, 'matchMedia', {
     configurable: true,
     value: (query: string) => ({matches: false, media: query, addEventListener: () => undefined, removeEventListener: () => undefined}),
 });
+
+// jsdom has no Popover API, yet hides every popover until it is shown. Showing and hiding one toggle a marker that
+// this stylesheet shows, as the browser shows an open popover; tests spy on the calls to see that overlays make them.
+// jsdom weighs its own stylesheet against the page's by specificity alone, so the rule needs `!important` to win as an
+// author rule does in a browser.
+// The Stylelint plugin tests run in node, with no DOM to stand in for.
+if (typeof document !== 'undefined') {
+    const shownPopover = 'data-popover-open';
+    const popoverStyle = document.createElement('style');
+    popoverStyle.textContent = `[popover][${shownPopover}] { display: block !important; }`;
+    document.head.append(popoverStyle);
+    Object.defineProperties(HTMLElement.prototype, {
+        showPopover: {writable: true, configurable: true, value(this: HTMLElement) {
+            this.setAttribute(shownPopover, '');
+        }},
+        hidePopover: {writable: true, configurable: true, value(this: HTMLElement) {
+            this.removeAttribute(shownPopover);
+        }},
+    });
+}

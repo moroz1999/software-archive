@@ -27,11 +27,10 @@ class GetGroupHandlerTest {
     void returnsTheGroup() {
         GroupDetails group = new GroupDetails(
                 ID,
-                "Crew",
                 "Crew Ltd",
                 null,
                 List.of(),
-                List.of(new GroupLabel(UUID.randomUUID(), "Crew", true)),
+                List.of(new GroupLabel(UUID.randomUUID(), "Crew")),
                 List.of(),
                 List.of(),
                 List.of(),
@@ -53,7 +52,6 @@ class GetGroupHandlerTest {
     void tellsWhetherTheActorMayChangeTheGroup() {
         reads.add(new GroupDetails(
                 ID,
-                "Crew",
                 "Crew Ltd",
                 null,
                 List.of(),

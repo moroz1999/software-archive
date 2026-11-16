@@ -8,8 +8,7 @@ import {EditGroupProvider} from './EditGroupProvider';
 
 const GROUP = {
     id: toGroupId('00000000-0000-0000-0005-000000000001'),
-    name: 'Crew',
-    groupName: 'Crew Ltd',
+    name: 'Crew Ltd',
     notes: 'Since 1990',
     types: ['demogroup'],
     labels: [],

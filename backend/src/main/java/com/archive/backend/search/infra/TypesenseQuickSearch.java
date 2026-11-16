@@ -62,7 +62,8 @@ public class TypesenseQuickSearch implements QuickSearch {
         return new FoundAuthor(
                 UUID.fromString(String.valueOf(doc.get("id"))),
                 name,
-                realName == null || name.equals(realName) ? null : String.valueOf(realName));
+                realName == null || name.equals(realName) ? null : String.valueOf(realName),
+                String.valueOf(doc.get("kind")));
     }
 
     static FoundGroup group(Map<String, Object> doc) {

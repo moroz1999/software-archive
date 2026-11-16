@@ -11,10 +11,11 @@ const ELITE = '00000000-0000-0000-00fd-000000000001';
 const ZED = '00000000-0000-0000-00fd-000000000011';
 const CARL = '00000000-0000-0000-00fd-000000000012';
 const SQUAD = '00000000-0000-0000-00fd-000000000021';
+const PHANTOM = '00000000-0000-0000-00fd-000000000031';
 
 const FOUND = {
     software: {items: [{id: ELITE, title: 'Elite', releaseDate: '1987-05-01'}], total: 12},
-    authors: {items: [{id: ZED, name: 'Zed', realName: 'John Doe'}, {id: CARL, name: 'Carl', realName: null}], total: 2},
+    authors: {items: [{id: ZED, name: 'Zed', realName: 'John Doe', kind: 'person'}, {id: CARL, name: 'Carl', realName: null, kind: 'person'}], total: 2},
     groups: {items: [{id: SQUAD, name: 'ZS'}], total: 1},
 };
 const NOTHING = {software: {items: [], total: 0}, authors: {items: [], total: 0}, groups: {items: [], total: 0}};
@@ -110,6 +111,21 @@ describe(QuickSearch, () => {
         expect(within(window).getByRole('link', {name: 'Zed'})).toHaveAttribute('href', `/authors/${ZED}`);
         expect(within(window).getByRole('link', {name: 'ZS'})).toHaveAttribute('href', `/groups/${SQUAD}`);
         expect(within(window).getByRole('link', {name: 'Elite'})).toHaveAttribute('href', `/software/${ELITE}`);
+    });
+
+    it('shows a label of nobody among the people with nothing next to it, leading to the label\'s page', async () => {
+        stubFetchRoutes(routes({'/api/search/quick?q=ph': json({
+            ...NOTHING,
+            authors: {items: [{id: PHANTOM, name: 'Phantom', realName: null, kind: 'label'}], total: 1},
+        })}));
+        openPage();
+
+        const window = await search('ph');
+
+        const option = await within(window).findByRole('option', {name: /Phantom/u});
+
+        expect(option).toHaveTextContent(/^Phantom$/u);
+        expect(within(option).getByRole('link', {name: /Phantom/u})).toHaveAttribute('href', `/labels/${PHANTOM}`);
     });
 
     it('names every kind by its caption', async () => {

@@ -11,7 +11,7 @@ const SQUAD = '00000000-0000-0000-00fd-000000000021';
 const PAGE = {size: 50, number: 1, totalElements: 104, totalPages: 3};
 const FOUND = {
     sets: [
-        {type: 'author', total: 52, items: [{id: ZED, name: 'Zed', realName: 'John Doe'}]},
+        {type: 'author', total: 52, items: [{id: ZED, name: 'Zed', realName: 'John Doe', kind: 'person'}]},
         {type: 'group', total: 1, items: [{id: SQUAD, name: 'ZS'}]},
         {type: 'software', total: 51, items: [{id: ELITE, title: 'Elite', releaseDate: '1987-05-01', screenshots: []}]},
     ],
@@ -40,7 +40,7 @@ describe(fetchFullSearch, () => {
 
         await expect(fetchFullSearch({keyword: 'z', types: [], page: 1}, null, new AbortController().signal)).resolves.toStrictEqual({
             sets: [
-                {kind: 'author', total: 52, items: [{id: ZED, name: 'Zed', realName: 'John Doe'}]},
+                {kind: 'author', total: 52, items: [{id: ZED, name: 'Zed', realName: 'John Doe', kind: 'person'}]},
                 {kind: 'group', total: 1, items: [{id: SQUAD, name: 'ZS'}]},
                 {kind: 'software', total: 51, items: [{id: ELITE, title: 'Elite', releaseDate: '1987-05-01', screenshots: [], madeBy: []}]},
             ],

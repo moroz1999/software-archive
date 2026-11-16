@@ -7,11 +7,10 @@ import {createGroup, deleteGroup, fetchGroup, fetchGroupTypes, updateGroup} from
 const ID = toGroupId('00000000-0000-0000-0005-000000000001');
 const CREW = {
     id: ID,
-    name: 'Crew',
-    groupName: 'Crew Ltd',
+    name: 'Crew Ltd',
     notes: 'Since 1990',
     types: ['demogroup'],
-    labels: [{id: '00000000-0000-0000-0004-000000000001', name: 'Crew', display: true}],
+    labels: [{id: '00000000-0000-0000-0004-000000000001', name: 'Crew'}],
     locations: [{countryId: '00000000-0000-0000-0002-000000000001', country: 'Finland', cityId: null, city: null, primary: true}],
     members: [
         {
@@ -58,11 +57,11 @@ const DRAFT = {
     name: 'Crew Ltd',
     notes: null,
     types: ['demogroup'],
-    labels: [{id: '00000000-0000-0000-0004-000000000001', name: 'Crew', display: true}, {id: null, name: 'CRW', display: false}],
+    labels: [{id: '00000000-0000-0000-0004-000000000001', name: 'Crew'}, {id: null, name: 'CRW'}],
     locations: [{country: '00000000-0000-0000-0002-000000000001', city: null, primary: true}],
 };
 const BODY = '{"name":"Crew Ltd","notes":null,"types":["demogroup"],'
-    + '"labels":[{"id":"00000000-0000-0000-0004-000000000001","name":"Crew","display":true},{"id":null,"name":"CRW","display":false}],'
+    + '"labels":[{"id":"00000000-0000-0000-0004-000000000001","name":"Crew"},{"id":null,"name":"CRW"}],'
     + '"locations":[{"country":"00000000-0000-0000-0002-000000000001","city":null,"primary":true}],"members":[]}';
 
 describe(createGroup, () => {

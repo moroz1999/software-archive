@@ -12,11 +12,10 @@ const HELSINKI = '00000000-0000-0000-0002-000000000011';
 const CREW_LABEL = '00000000-0000-0000-0004-000000000001';
 const CREW = {
     id: ID,
-    name: 'Crew',
-    groupName: 'Crew Ltd',
+    name: 'Crew Ltd',
     notes: null,
     types: ['demogroup'],
-    labels: [{id: CREW_LABEL, name: 'Crew', display: true}],
+    labels: [{id: CREW_LABEL, name: 'Crew'}],
     locations: [{countryId: FINLAND, country: 'Finland', cityId: HELSINKI, city: 'Helsinki', primary: true}],
     members: [],
     memberGroups: [],
@@ -90,6 +89,7 @@ describe(GroupEditor, () => {
         await screen.findByRole('textbox', {name: 'Name'});
 
         expect(within(screen.getByRole('region', {name: 'Names'})).getByRole('textbox', {name: 'Label 1'})).toBeInTheDocument();
+        expect(screen.queryByRole('radio', {name: 'Display name'})).not.toBeInTheDocument();
         expect(within(screen.getByRole('region', {name: 'Geography'})).getByRole('group', {name: 'Locations'})).toBeInTheDocument();
         expect(screen.getByRole('region', {name: 'Members'})).toBeInTheDocument();
     });
@@ -114,7 +114,7 @@ describe(GroupEditor, () => {
             name: 'Crew Ltd',
             notes: null,
             types: ['demogroup'],
-            labels: [{id: CREW_LABEL, name: 'Crew', display: true}, {id: null, name: 'CRW', display: false}],
+            labels: [{id: CREW_LABEL, name: 'Crew'}, {id: null, name: 'CRW'}],
             locations: [{country: FINLAND, city: HELSINKI, primary: true}],
             members: [],
         }));

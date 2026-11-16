@@ -97,6 +97,8 @@ public class TypesenseSearchIndex implements SearchIndex {
                         new Field().name("name_sort").type(FieldTypes.STRING).sort(true),
                         new Field().name("labels").type(FieldTypes.STRING_ARRAY),
                         new Field().name("real_name").type(FieldTypes.STRING).optional(true),
+                        // A person or a label of nobody: which page a match leads to.
+                        new Field().name("kind").type(FieldTypes.STRING).index(false),
                         new Field()
                                 .name("platforms")
                                 .type(FieldTypes.STRING_ARRAY)
@@ -124,6 +126,7 @@ public class TypesenseSearchIndex implements SearchIndex {
 
     private static Map<String, Object> toMap(AuthorDocument d) {
         Map<String, Object> doc = named(d.id(), d.name(), d.labels(), d.platforms());
+        doc.put("kind", d.kind().name().toLowerCase(Locale.ROOT));
         if (d.realName() != null) {
             doc.put("real_name", d.realName());
         }

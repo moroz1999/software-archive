@@ -5,7 +5,7 @@ The page of one person at `/authors/{id}` ([domain/authors.md](../domain/authors
 ## Page
 
 - The main name is the page heading, with "Edit" next to it leading to the editing ([author-editing.md](author-editing.md)).
-- Under it, each when known: Real name, Labels, Locations ("City, Country", the primary one first), Groups, Notes line by line.
+- Under it, each when known: Real name, Labels (each leading to its page, [label-view.md](label-view.md)), Locations ("City, Country", the primary one first), Groups, Notes line by line.
 - A group leads to its page ([group-view.md](group-view.md)), with "as {label}" muted next to it when the person was a member under another label than the main name; a membership under two labels is two lines.
 - Software, below everything else: the software the person is credited on, as the cards of the software list ([software-list.md](software-list.md#card)), by release date, then title; under who made it and the year, each of their credits on it — "as {label}" muted when it was under another label than the main name, then the role chips, an unknown role not shown. Left out when there is none.
 

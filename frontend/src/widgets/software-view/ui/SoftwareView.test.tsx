@@ -204,7 +204,7 @@ describe(SoftwareView, () => {
         ]);
     });
 
-    it('leads from a credited label to the page of its author', async () => {
+    it('leads from a credited label of an author to the label\'s page', async () => {
         stubFetch(json({
             ...ELITE,
             credits: [{id: AUTHOR_LABEL, type: 'author-label', title: 'J.D. — Jane Doe', roles: ['code'], ownerId: AUTHOR}],
@@ -213,18 +213,18 @@ describe(SoftwareView, () => {
 
         const credits = await screen.findByRole('list', {name: 'Credits'});
 
-        expect(within(credits).getByRole('link', {name: 'J.D. — Jane Doe'})).toHaveAttribute('href', `/authors/${AUTHOR}`);
+        expect(within(credits).getByRole('link', {name: 'J.D. — Jane Doe'})).toHaveAttribute('href', `/labels/${AUTHOR_LABEL}`);
     });
 
-    it('leads from the groups among the credits and from their labels to the group pages', async () => {
+    it('leads from the groups among the credits to the group pages and from every label to its page', async () => {
         stubFetch(json({...ELITE, credits: GROUP_CREDITS}));
         renderView(ID);
 
         const credits = await screen.findByRole('list', {name: 'Credits'});
 
-        expect(within(credits).getByRole('link', {name: 'J.P. — Jane Publisher'})).toHaveAttribute('href', `/authors/${AUTHOR}`);
+        expect(within(credits).getByRole('link', {name: 'J.P. — Jane Publisher'})).toHaveAttribute('href', `/labels/${AUTHOR_LABEL}`);
         expect(within(credits).getByRole('link', {name: 'Solar Studio'})).toHaveAttribute('href', `/groups/${GROUP}`);
-        expect(within(credits).getByRole('link', {name: 'Sol — Solar Studio'})).toHaveAttribute('href', `/groups/${GROUP}`);
+        expect(within(credits).getByRole('link', {name: 'Sol — Solar Studio'})).toHaveAttribute('href', `/labels/${GROUP_LABEL}`);
     });
 
     it('names the developers and publishers among the credits by their roles', async () => {

@@ -24,7 +24,7 @@ function toBody(draft: GroupDraft): unknown {
         name: draft.name,
         notes: draft.notes,
         types: draft.types,
-        labels: draft.labels.map((label) => ({id: label.id, name: label.name, display: label.display})),
+        labels: draft.labels.map((label) => ({id: label.id, name: label.name})),
         locations: draft.locations.map((location) => ({country: location.country, city: location.city, primary: location.primary})),
         members: (draft.members ?? []).map(({id, type, roles, startDate, endDate}) => ({
             id, type, roles, startDate: startDate === '' ? null : startDate, endDate: endDate === '' ? null : endDate,
@@ -34,7 +34,7 @@ function toBody(draft: GroupDraft): unknown {
 
 function parseLabel(item: unknown): GroupLabel {
     const dto = readObject(item, 'label');
-    return {id: readString(dto, 'id'), name: readString(dto, 'name'), display: readBoolean(dto, 'display')};
+    return {id: readString(dto, 'id'), name: readString(dto, 'name')};
 }
 
 function parseLocation(item: unknown): GroupLocation {
@@ -76,7 +76,6 @@ export async function fetchGroup(id: GroupId, signal: AbortSignal): Promise<Grou
         return {
             id: toGroupId(readString(dto, 'id')),
             name: readString(dto, 'name'),
-            groupName: readString(dto, 'groupName'),
             notes: readNullableString(dto, 'notes'),
             types: readStringArray(dto['types'], 'types'),
             labels: readArray(dto['labels'], 'labels').map(parseLabel),

@@ -23,6 +23,15 @@ public class JdbcAffectedOwners implements AffectedOwners {
         return creditedOn(software, "group_id");
     }
 
+    @Override
+    public List<UUID> labelsOfNobodyCreditedOn(UUID software) {
+        return jdbc.sql("""
+                        SELECT l.id FROM software_contribution sc
+                        JOIN label l ON l.id = sc.label_id
+                        WHERE sc.software_id = :software AND l.person_id IS NULL AND l.group_id IS NULL
+                        """).param("software", software).query(UUID.class).list();
+    }
+
     /** The owners credited by themselves or by a label, by the owner column of the credits and of the labels. */
     private List<UUID> creditedOn(UUID software, String ownerColumn) {
         return jdbc.sql("""

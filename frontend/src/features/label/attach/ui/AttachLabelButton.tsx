@@ -19,8 +19,8 @@ export interface AttachLabelButtonProps {
 }
 
 /**
- * Attaches a label of nobody to the person or group found out to be its owner; whoever attaches it says whether it is
- * the owner's display name.
+ * Attaches a label of nobody to the person or group found out to be its owner; whoever attaches it to a person says
+ * whether it is their display name, a group has none.
  */
 export function AttachLabelButton({label, onAttached}: AttachLabelButtonProps) {
     return (
@@ -65,7 +65,7 @@ function AttachWithDialog() {
                             loading={attaching}
                             onClick={() => {
                                 if (owner !== null) {
-                                    attach(owner, display);
+                                    attach(owner, owner.type === 'author' && display);
                                 }
                             }}
                         >
@@ -90,7 +90,7 @@ function AttachWithDialog() {
                             />
                         )}
                     </FormField>
-                    <Checkbox label={t('label.display')} checked={display} onChange={setDisplay} disabled={attaching}/>
+                    {owner?.type !== 'group' && <Checkbox label={t('label.display')} checked={display} onChange={setDisplay} disabled={attaching}/>}
                     {error !== undefined && <Text role="alert" tone="danger">{error}</Text>}
                 </Stack>
             </Dialog>

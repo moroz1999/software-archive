@@ -48,7 +48,8 @@ class CreditedSoftwareIT {
     private JdbcTemplate jdbc;
 
     /**
-     * Jane Doe, known as JD (the display name) and Jane Alt; Crew, known as The Crew (the display name) and CRW.
+     * Jane Doe, known as JD (the display name) and Jane Alt; Crew, known also as The Crew (marked as a display name,
+     * as groups had one once) and CRW.
      * Elite (1985) credits Jane herself and
      * Jane Alt, and Crew itself; Lines (1985) credits JD; Tetris (no date) credits JD and CRW; Pong nobody of them.
      */
@@ -88,6 +89,7 @@ class CreditedSoftwareIT {
                 .andExpect(jsonPath("$[0].credits[*].as").value(contains(null, "Jane Alt")))
                 .andExpect(jsonPath("$[0].credits[0].roles").value(contains("code")))
                 .andExpect(jsonPath("$[0].credits[1].roles").value(contains("music")))
+                .andExpect(jsonPath("$[1].madeBy").value(contains("JD")))
                 .andExpect(jsonPath("$[1].credits[0].as").value(nullValue()))
                 .andExpect(jsonPath("$[1].credits[0].roles").value(contains("graphics")))
                 .andExpect(jsonPath("$[2].credits[0].roles").value(contains("unknown")));
@@ -98,9 +100,26 @@ class CreditedSoftwareIT {
         mvc.perform(get("/api/groups/{id}/software", CREW))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].title").value(contains("Elite", "Tetris")))
+                .andExpect(jsonPath("$[0].madeBy").value(contains("Crew")))
+                .andExpect(jsonPath("$[0].credits[0].as").value(nullValue()))
                 .andExpect(jsonPath("$[0].credits[0].roles").value(contains("developer")))
                 .andExpect(jsonPath("$[1].credits[0].as").value("CRW"))
                 .andExpect(jsonPath("$[1].credits[0].roles").value(contains("publisher")));
+    }
+
+    @Test
+    void namesWhoMadeTheSoftwareByTheLabelTheyWereCreditedUnder() throws Exception {
+        jdbc.update(
+                "INSERT INTO software_contribution (software_id, label_id, role_codes) VALUES (?, ?, ARRAY['developer']), (?, ?, ARRAY['developer'])",
+                PONG,
+                JANE_ALT,
+                PONG,
+                THE_CREW);
+
+        mvc.perform(get("/api/groups/{id}/software", CREW))
+                .andExpect(jsonPath("$[0].title").value("Pong"))
+                .andExpect(jsonPath("$[0].madeBy").value(contains("Jane Alt", "The Crew")))
+                .andExpect(jsonPath("$[0].credits[0].as").value("The Crew"));
     }
 
     @Test

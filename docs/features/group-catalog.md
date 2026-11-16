@@ -5,11 +5,11 @@ The catalog at `/groups` ([domain/authors.md](../domain/authors.md#group-catalog
 ## Page
 
 - "Add group" next to the page title leads to adding a group ([group-editing.md](group-editing.md)).
-- An entry is the name leading to the group's page ([group-view.md](group-view.md)), with the group's name muted on the same line unless the entry is that name.
+- A group's entry is its name leading to the group's page ([group-view.md](group-view.md)); a label's entry leads to its own page ([label-view.md](label-view.md)), with the group's name muted on the same line.
 - "No groups found." when nothing matches.
 
 ## REST
 
 | Call | Answer | Errors |
 |---|---|---|
-| `GET /api/groups?letter=&country=&city=&platform=&page=&size=` | page of `{groupId, name, groupName}`; `groupName` `null` when the entry is the group's name | `400 label.letter-invalid`, `400 platform.code-invalid`; `400` for a malformed id |
+| `GET /api/groups?letter=&country=&city=&platform=&page=&size=` | page of `{groupId, labelId, name, note}`, exactly one of `groupId` (a group) and `labelId` (a label); `note` is the group's name next to a label, `null` for a group | `400 label.letter-invalid`, `400 platform.code-invalid`; `400` for a malformed id |

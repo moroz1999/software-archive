@@ -6,7 +6,7 @@ Adding, editing and deleting groups: teams with a name of their own, at least on
 
 | Page | Path | Content |
 |---|---|---|
-| Groups | `/groups` | "Add group" next to the page title ([group-catalog.md](group-catalog.md)); a group's page ([group-view.md](group-view.md)) has "Edit" next to the main name |
+| Groups | `/groups` | "Add group" next to the page title ([group-catalog.md](group-catalog.md)); a group's page ([group-view.md](group-view.md)) has "Edit" next to its name |
 | Add group | `/groups/new` | Empty form; Cancel returns to the catalog, "Add group" submits and opens the group's page |
 | Edit group | `/groups/{id}/edit` | "Delete" next to the page title; the form with the group's values, Cancel and "Save" back to the group's page; the catalog after deleting |
 
@@ -14,7 +14,7 @@ Adding, editing and deleting groups: teams with a name of their own, at least on
 
 - In one narrow column, in sections: Main (Name, required, at most 255 characters; Types, required; Notes, multi-line), Names (Labels), Geography (Locations), Members; Cancel and the submit button at its bottom right — the same layout as the author form ([author-editing.md](author-editing.md)).
 - Types: a checkbox for every type of the reference book, under its code; at least one is needed, "Choose at least one type." under Types on submit.
-- Labels and Locations: the same editors and rules as for authors — exactly one display name among the labels and exactly one primary location, a label taken away stays in the archive as a label of nobody. A group may have no labels: it is then shown under its name.
+- Labels and Locations: the same editors as for authors, but the labels have no "Display name" — a group is always shown under its name; exactly one primary location; a label taken away stays in the archive as a label of nobody.
 - Members: people and their aliases are found remotely by name; every selected member has removable role chips and optional start and end days. The form replaces the complete roster.
 - Format rules are checked before sending; errors appear under their fields on submit and clear when the field is edited. Empty notes are sent as unknown (`null`).
 - While saving, the fields and the buttons are locked.
@@ -39,4 +39,4 @@ Adding, editing and deleting groups: teams with a name of their own, at least on
 | `PUT /api/groups/{id}` (same body) | `204` | `404 group.not-found`; the errors of `POST` |
 | `DELETE /api/groups/{id}` | `204` | `404 group.not-found` |
 
-`types`, `labels` and `locations` are the group's whole lists, with the same meaning as for authors; missing lists mean none, `notes` is `null` when unknown. Records from before the rule are read as for authors.
+`types`, `labels` (`{id, name}`, without `display`) and `locations` are the group's whole lists, with the same meaning as for authors; missing lists mean none, `notes` is `null` when unknown. Records from before the rule are read as for authors.

@@ -1,0 +1,38 @@
+:root {
+    /* Space between the grid of cards and the field that adds members. */
+    --member-role-editor-gap: var(--space-12);
+    --member-role-editor-grid-gap: var(--space-12);
+
+    /* A member card: a recessed framed box. */
+    --member-role-editor-card-gap: var(--space-8);
+    --member-role-editor-card-padding: var(--space-12);
+    --member-role-editor-card-border-width: var(--border-width-thin);
+    --member-role-editor-card-border-color: var(--border-color);
+    --member-role-editor-card-radius: var(--radius-md);
+    --member-role-editor-card-bg: var(--background-deep);
+
+    /* Space between the name and the remove button in the card head. */
+    --member-role-editor-head-gap: var(--space-8);
+
+    /* Space between the chosen role chips. */
+    --member-role-editor-roles-gap: var(--space-4);
+
+    /* Space between the start and end date fields. */
+    --member-role-editor-dates-gap: var(--space-8);
+
+    /* Framed dropdown of the roles. */
+    --member-role-editor-list-border-width: var(--border-width-thin);
+    --member-role-editor-list-border-color: var(--border-color);
+    --member-role-editor-list-radius: var(--radius-lg);
+    --member-role-editor-list-bg: var(--surface);
+    --member-role-editor-list-shadow: var(--shadow-md);
+    --member-role-editor-list-max-height: 240px;
+
+    /* Role rows of the dropdown. */
+    --member-role-editor-option-padding: var(--space-8) var(--space-12);
+    --member-role-editor-option-text: var(--text-color);
+    --member-role-editor-option-active-bg: var(--background-deep);
+
+    /* The note that no role matches. */
+    --member-role-editor-empty-padding: var(--space-12);
+}

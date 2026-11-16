@@ -145,11 +145,11 @@ describe(SoftwareForm, () => {
 
         await userEvent.type(credited, 'j.p.');
         await userEvent.click(await screen.findByRole('option', {name: 'J.P. — Jane Publisher'}));
-        await userEvent.click(screen.getByRole('button', {name: 'Add role to J.P. — Jane Publisher'}));
+        await userEvent.click(screen.getByRole('combobox', {name: 'Role for J.P. — Jane Publisher'}));
         await userEvent.click(screen.getByRole('option', {name: 'Publisher'}));
         await userEvent.type(credited, 'nebula');
         await userEvent.click(await screen.findByRole('option', {name: 'Nebula Studio'}));
-        await userEvent.click(screen.getByRole('button', {name: 'Add role to Nebula Studio'}));
+        await userEvent.click(screen.getByRole('combobox', {name: 'Role for Nebula Studio'}));
         await userEvent.click(screen.getByRole('option', {name: 'Developer'}));
         await userEvent.click(screen.getByRole('button', {name: 'Save'}));
 

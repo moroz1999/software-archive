@@ -1,4 +1,5 @@
 import {toGroupId} from '@/entities/groups';
+import {toLabelId} from '@/entities/labels';
 import type {PlatformCode} from '@/entities/platforms';
 import {getJson, mapResponse, type Page, parsePage, readNullableString, readObject, readString} from '@/shared/api';
 import type {GroupCatalogEntry} from '../model/catalog';
@@ -7,13 +8,19 @@ import type {GroupCatalogFilter} from '../model/catalog-filter';
 /** Entries on one page of the catalog. */
 const PAGE_SIZE = 100;
 
+/** An entry is of a group or of a label, never both. */
 function parseEntry(item: unknown): GroupCatalogEntry {
     const dto = readObject(item, 'catalog entry');
-    return {
-        groupId: toGroupId(readString(dto, 'groupId')),
-        name: readString(dto, 'name'),
-        groupName: readNullableString(dto, 'groupName'),
-    };
+    const groupId = readNullableString(dto, 'groupId');
+    const labelId = readNullableString(dto, 'labelId');
+    const name = readString(dto, 'name');
+    const note = readNullableString(dto, 'note');
+    if ((groupId === null) === (labelId === null)) {
+        throw new TypeError('A catalog entry is of a group or of a label, never both or neither.');
+    }
+    return groupId === null
+        ? {kind: 'label', labelId: toLabelId(labelId ?? ''), name, note}
+        : {kind: 'group', groupId: toGroupId(groupId), name, note};
 }
 
 /** A page of the catalog: `GET /api/groups`, with the filters that are set, of the platform when one is chosen. */

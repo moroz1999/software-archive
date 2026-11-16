@@ -4,20 +4,19 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 /**
- * An entry of the author catalog: a person under their main name, or one of their other labels with the main name it
- * belongs to, or a label of nobody. The real name of the person is shown next to the entry, unless it is the entry's
- * name itself.
+ * An entry of the author catalog: a person under their real name with their main label next to it, or a label —
+ * theirs with the real name next to it, else the main name it belongs to, or one of nobody (docs/domain/authors.md).
+ * It leads to the person or to the label's own page.
  */
 public record AuthorCatalogEntry(
         @Nullable UUID personId,
+        @Nullable UUID labelId,
         String name,
-        @Nullable String realName,
-        @Nullable String labelOf,
-        @Nullable UUID labelId) {
+        @Nullable String note) {
 
     public AuthorCatalogEntry {
         if ((personId == null) == (labelId == null)) {
-            throw new IllegalArgumentException("An entry is of a person or of a label of nobody: " + name);
+            throw new IllegalArgumentException("An entry is of a person or of a label: " + name);
         }
     }
 }

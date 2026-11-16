@@ -3,6 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {type AuthorDetails, AuthorDetailsProvider, authorEditPath, type AuthorId, useAuthorDetails} from '@/entities/authors';
 import {locationText, primaryFirst} from '@/entities/locations';
 import {groupPath, toGroupId} from '@/entities/groups';
+import {labelPath, toLabelId} from '@/entities/labels';
 import {CreditedSoftwareList} from '@/entities/software';
 import {Button} from '@/shared/ui/button';
 import {Inline} from '@/shared/ui/inline';
@@ -64,7 +65,7 @@ function Details({author}: {readonly author: AuthorDetails}) {
             {author.labels.length > 0 && (
                 <Section label={t('author.labels')}>
                     <ItemList label={t('author.labels')}>
-                        {author.labels.map((label) => <li key={label.id}><Text>{label.name}</Text></li>)}
+                        {author.labels.map((label) => <li key={label.id}><Text><TextLink href={labelPath(toLabelId(label.id))}>{label.name}</TextLink></Text></li>)}
                     </ItemList>
                 </Section>
             )}

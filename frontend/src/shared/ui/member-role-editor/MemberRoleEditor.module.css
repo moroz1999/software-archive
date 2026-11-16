@@ -1,0 +1,98 @@
+.root {
+    display: flex;
+    flex-direction: column;
+    gap: var(--member-role-editor-gap);
+    min-width: 0;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--member-role-editor-grid-gap);
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--member-role-editor-card-gap);
+    min-width: 0;
+    padding: var(--member-role-editor-card-padding);
+    border-width: var(--member-role-editor-card-border-width);
+    border-style: solid;
+    border-color: var(--member-role-editor-card-border-color);
+    border-radius: var(--member-role-editor-card-radius);
+    background: var(--member-role-editor-card-bg);
+}
+
+.head {
+    display: flex;
+    align-items: center;
+    gap: var(--member-role-editor-head-gap);
+}
+
+.name {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--member-role-editor-roles-gap);
+}
+
+.dates {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--member-role-editor-dates-gap);
+}
+
+.overlay {
+    overflow: hidden;
+    border-width: var(--member-role-editor-list-border-width);
+    border-style: solid;
+    border-color: var(--member-role-editor-list-border-color);
+    border-radius: var(--member-role-editor-list-radius);
+    background: var(--member-role-editor-list-bg);
+    box-shadow: var(--member-role-editor-list-shadow);
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    max-height: var(--member-role-editor-list-max-height);
+    overflow: auto;
+}
+
+.option {
+    width: 100%;
+    padding: var(--member-role-editor-option-padding);
+    border: 0;
+    background: transparent;
+    color: var(--member-role-editor-option-text);
+    text-align: left;
+    cursor: pointer;
+}
+
+.option:hover,
+.option[aria-selected="true"] {
+    background: var(--member-role-editor-option-active-bg);
+}
+
+.empty {
+    padding: var(--member-role-editor-empty-padding);
+}
+
+/* Tablet: narrower than 992px. */
+@media (width < 992px) {
+    .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Mobile: narrower than 576px. */
+@media (width < 576px) {
+    .grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

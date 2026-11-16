@@ -23,12 +23,11 @@ public class AttachLabelToGroupHandler {
 
     @Transactional
     public void handle(AttachLabelToGroupCommand c) {
-        Label label = labels.lockOfNobody(c.label().label())
-                .orElseThrow(() ->
-                        labels.exists(c.label().label()) ? new LabelOwnedException() : new LabelNotFoundException());
+        Label label = labels.lockOfNobody(c.label())
+                .orElseThrow(() -> labels.exists(c.label()) ? new LabelOwnedException() : new LabelNotFoundException());
         Group group = groups.findById(c.group()).orElseThrow(LabelOwnerUnknownException::new);
         group.requireChangeableBy(c.actor());
-        group.adopt(label, c.label().display());
+        group.adopt(label);
         groups.save(group);
         group.pullEvents().forEach(events::publishEvent);
     }

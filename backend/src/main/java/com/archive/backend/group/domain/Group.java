@@ -2,10 +2,10 @@ package com.archive.backend.group.domain;
 
 import com.archive.backend.geo.domain.Locations;
 import com.archive.backend.label.domain.Label;
-import com.archive.backend.label.domain.LabelDraft;
 import com.archive.backend.label.domain.OwnLabel;
-import com.archive.backend.label.domain.OwnLabels;
 import com.archive.backend.label.domain.OwnerOfLabelsChanged;
+import com.archive.backend.label.domain.UnmarkedLabelDraft;
+import com.archive.backend.label.domain.UnmarkedLabels;
 import com.archive.backend.shared.domain.ddd.AggregateRoot;
 import com.archive.backend.shared.domain.ddd.DomainEvent;
 import com.archive.backend.user.domain.Actor;
@@ -30,7 +30,7 @@ public final class Group {
     private GroupName name;
     private @Nullable GroupNotes notes;
     private GroupTypeSet types;
-    private OwnLabels labels;
+    private UnmarkedLabels labels;
     private Locations locations;
     private GroupMembers members;
     /** Whoever added the group may change it (docs/domain/users.md). */
@@ -44,7 +44,7 @@ public final class Group {
             GroupName name,
             @Nullable GroupNotes notes,
             GroupTypeSet types,
-            OwnLabels labels,
+            UnmarkedLabels labels,
             Locations locations,
             GroupMembers members,
             AddedBy addedBy) {
@@ -63,7 +63,7 @@ public final class Group {
             GroupName name,
             @Nullable GroupNotes notes,
             GroupTypeSet types,
-            OwnLabels labels,
+            UnmarkedLabels labels,
             Locations locations,
             GroupMembers members) {
         this(id, name, notes, types, labels, locations, members, AddedBy.NOBODY);
@@ -74,7 +74,7 @@ public final class Group {
             GroupName name,
             @Nullable GroupNotes notes,
             GroupTypeSet types,
-            OwnLabels labels,
+            UnmarkedLabels labels,
             Locations locations) {
         this(id, name, notes, types, labels, locations, GroupMembers.EMPTY);
     }
@@ -84,11 +84,11 @@ public final class Group {
             GroupName name,
             @Nullable GroupNotes notes,
             GroupTypeSet types,
-            List<LabelDraft> labels,
+            List<UnmarkedLabelDraft> labels,
             Locations locations,
             GroupMembers members,
             AddedBy addedBy) {
-        Group group = new Group(id, name, notes, types, OwnLabels.of(labels), locations, members, addedBy);
+        Group group = new Group(id, name, notes, types, UnmarkedLabels.of(labels), locations, members, addedBy);
         group.markChanged();
         return group;
     }
@@ -98,7 +98,7 @@ public final class Group {
             GroupName name,
             @Nullable GroupNotes notes,
             GroupTypeSet types,
-            List<LabelDraft> labels,
+            List<UnmarkedLabelDraft> labels,
             Locations locations,
             GroupMembers members) {
         return create(id, name, notes, types, labels, locations, members, AddedBy.NOBODY);
@@ -114,7 +114,7 @@ public final class Group {
             GroupName name,
             @Nullable GroupNotes notes,
             GroupTypeSet types,
-            List<LabelDraft> labels,
+            List<UnmarkedLabelDraft> labels,
             Locations locations) {
         return create(id, name, notes, types, labels, locations, GroupMembers.EMPTY);
     }
@@ -126,9 +126,9 @@ public final class Group {
             GroupName name,
             @Nullable GroupNotes notes,
             GroupTypeSet types,
-            List<LabelDraft> labels,
+            List<UnmarkedLabelDraft> labels,
             Locations locations) {
-        OwnLabels edited = this.labels.replace(labels);
+        UnmarkedLabels edited = this.labels.replace(labels);
         events.add(labelsChanged());
         markChanged();
         this.name = Objects.requireNonNull(name, "name");
@@ -144,12 +144,9 @@ public final class Group {
         markChanged();
     }
 
-    /**
-     * Takes a label of nobody found out to be the group's, as its display name when the person attaching it says so;
-     * only its works change their owner.
-     */
-    public void adopt(Label label, boolean display) {
-        labels = labels.adopt(new OwnLabel(label.getId(), label.getName()), display);
+    /** Takes a label of nobody found out to be the group's; only its works change their owner. */
+    public void adopt(Label label) {
+        labels = labels.adopt(new OwnLabel(label.getId(), label.getName()));
         events.add(new OwnerOfLabelsChanged(Set.of(label.getId())));
         markChanged();
     }

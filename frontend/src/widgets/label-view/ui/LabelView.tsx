@@ -1,11 +1,12 @@
 import {useTranslation} from 'react-i18next';
-import {Navigate, useNavigate} from 'react-router';
+import {useNavigate} from 'react-router';
 import {authorPath, toAuthorId} from '@/entities/authors';
 import {groupPath, toGroupId} from '@/entities/groups';
 import {type LabelDetails, LabelDetailsProvider, type LabelId, type LabelOwner, useLabelDetails} from '@/entities/labels';
 import {CreditedSoftwareList} from '@/entities/software';
 import {AttachLabelButton} from '@/features/label/attach';
 import {useSkeleton} from '@/shared/lib/loading';
+import {Inline} from '@/shared/ui/inline';
 import {PageLayout} from '@/shared/ui/page-layout';
 import {Skeleton} from '@/shared/ui/skeleton';
 import {Stack} from '@/shared/ui/stack';
@@ -17,8 +18,8 @@ export interface LabelViewProps {
 }
 
 /**
- * The page of a label of nobody: its name, the groups it was a member of and the software it is credited on, until a
- * person who knows whose it is attaches it to its owner. A label with an owner is shown on the owner's page.
+ * The page of a label: its name, whose it is when known, the groups it was a member of and the software it is credited
+ * on; a label of nobody waits there for a person who knows whose it is to attach it to its owner.
  */
 export function LabelView({id}: LabelViewProps) {
     return (
@@ -54,9 +55,6 @@ function LoadedView() {
         return null;
     }
     const label = query.data;
-    if (label.owner !== null) {
-        return <Navigate to={ownerPath(label.owner)} replace/>;
-    }
     return (
         <PageLayout
             title={label.name}
@@ -78,7 +76,17 @@ function Details({label}: {readonly label: LabelDetails}) {
     const {t} = useTranslation();
     return (
         <Stack gap="lg">
-            <Text tone="muted">{t('label.ownerUnknown')}</Text>
+            {label.owner === null
+                ? <Text tone="muted">{t('label.ownerUnknown')}</Text>
+                : (
+                    <Stack gap="xs">
+                        <Text variant="label" tone="muted">{t('label.owner')}</Text>
+                        <Inline gap="sm" align="baseline" wrap>
+                            <Text><TextLink href={ownerPath(label.owner)}>{label.owner.name}</TextLink></Text>
+                            {label.owner.note !== null && <>{' '}<Text variant="bodySm" tone="muted">{label.owner.note}</Text></>}
+                        </Inline>
+                    </Stack>
+                )}
             {label.groups.length > 0 && (
                 <Stack gap="xs">
                     <Text variant="label" tone="muted">{t('group.memberOf')}</Text>

@@ -34,6 +34,7 @@ import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.label.domain.LabelDraft;
 import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.LabelName;
+import com.archive.backend.label.domain.UnmarkedLabelDraft;
 import com.archive.backend.search.TypesenseProbe;
 import com.archive.backend.software.app.AddScreenshotsCommand;
 import com.archive.backend.software.app.AddScreenshotsHandler;
@@ -433,11 +434,11 @@ class SoftwareSearchSyncIT {
                 new GroupName("Zed Squad"),
                 null,
                 Set.of(new GroupTypeCode("demogroup")),
-                List.of(new LabelDraft(null, new LabelName("ZS"), true)),
+                List.of(new UnmarkedLabelDraft(null, new LabelName("ZS"))),
                 List.of()));
     }
 
-    private void updateZedSquad(GroupId group, List<LabelDraft> labels) {
+    private void updateZedSquad(GroupId group, List<UnmarkedLabelDraft> labels) {
         updateGroup.handle(new UpdateGroupCommand(
                 ADMIN,
                 group,
@@ -488,7 +489,7 @@ class SoftwareSearchSyncIT {
                 label.value());
         worker.handle();
 
-        updateZedSquad(group, List.of(new LabelDraft(label, new LabelName("ZS Two"), true)));
+        updateZedSquad(group, List.of(new UnmarkedLabelDraft(label, new LabelName("ZS Two"))));
         worker.handle();
 
         assertThat(listIn(document(elite), "made_by")).containsExactly("ZS Two");
@@ -520,7 +521,7 @@ class SoftwareSearchSyncIT {
                 new GroupName("Zed Squad"),
                 null,
                 Set.of(new GroupTypeCode("demogroup")),
-                List.of(new LabelDraft(null, new LabelName("ZS"), true)),
+                List.of(new UnmarkedLabelDraft(null, new LabelName("ZS"))),
                 List.of(in(FINLAND))));
         LabelId label = labelNamed("ZS");
         SoftwareId elite = create("Elite");
@@ -537,7 +538,7 @@ class SoftwareSearchSyncIT {
                 new GroupName("Zed Squad"),
                 null,
                 Set.of(new GroupTypeCode("demogroup")),
-                List.of(new LabelDraft(label, new LabelName("ZS"), true)),
+                List.of(new UnmarkedLabelDraft(label, new LabelName("ZS"))),
                 List.of(in(LATVIA))));
         worker.handle();
 
@@ -551,7 +552,7 @@ class SoftwareSearchSyncIT {
                 new GroupName("Zed Squad"),
                 null,
                 Set.of(new GroupTypeCode("demogroup")),
-                List.of(new LabelDraft(null, new LabelName("ZS"), true)),
+                List.of(new UnmarkedLabelDraft(null, new LabelName("ZS"))),
                 List.of(in(FINLAND))));
         LabelId label = labelNamed("ZS");
         SoftwareId elite = create("Elite");
@@ -564,7 +565,7 @@ class SoftwareSearchSyncIT {
                 new GroupName("Zed Squad"),
                 null,
                 Set.of(new GroupTypeCode("demogroup")),
-                List.of(new LabelDraft(label, new LabelName("ZS"), true)),
+                List.of(new UnmarkedLabelDraft(label, new LabelName("ZS"))),
                 List.of(in(LATVIA))));
         worker.handle();
 

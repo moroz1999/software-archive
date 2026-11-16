@@ -15,9 +15,18 @@ export interface AnchoredOverlayProps {
     readonly className?: string;
 }
 
-/** A portal positioned under an element, kept anchored while the viewport moves. */
+/**
+ * A portal positioned under an element, kept anchored while the viewport moves. It is a manual popover shown in the
+ * top layer, so it stays above the page and any window on it without a stacking order of its own.
+ */
 export function AnchoredOverlay({anchor, open, children, align = 'stretch', className}: AnchoredOverlayProps) {
     const overlay = useRef<HTMLDivElement>(null);
+
+    useLayoutEffect(() => {
+        if (open) {
+            overlay.current?.showPopover();
+        }
+    }, [open]);
 
     useLayoutEffect(() => {
         if (!open) {
@@ -47,5 +56,5 @@ export function AnchoredOverlay({anchor, open, children, align = 'stretch', clas
     if (!open) {
         return null;
     }
-    return createPortal(<div ref={overlay} className={classNames(styles.overlay, align === 'end' && styles.end, className)}>{children}</div>, document.body);
+    return createPortal(<div ref={overlay} popover="manual" className={classNames(styles.overlay, align === 'end' && styles.end, className)}>{children}</div>, document.body);
 }

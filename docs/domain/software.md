@@ -52,7 +52,7 @@ Credits tell who made the software, who published it and who worked on it. Devel
 ## Card
 The card of software in a list is one link to its page: a click anywhere on it opens the software.
 - It shows the screenshots ([Screenshots](#screenshots)), the title, who made the software and its release year.
-- Who made it: those credited as its developers; for software without any, everyone credited but those who only published it. Each is named as the archive knows them: a group or a person by their main name, a label by itself; in name order.
+- Who made it: those credited as its developers; for software without any, everyone credited but those who only published it. Each is named as the archive knows them: a person by their main name, a group by its name, a label by itself ([authors.md](authors.md#credits-under-a-label)); in name order.
 - Who made it stands on the left, the year on the right, on one line when both fit; the year moves under the names when they are long. What is unknown is left out.
 
 ## Fresh software

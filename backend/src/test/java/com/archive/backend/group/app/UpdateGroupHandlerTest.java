@@ -20,9 +20,9 @@ import com.archive.backend.geo.domain.Place;
 import com.archive.backend.group.domain.GroupMemberSets;
 import com.archive.backend.group.domain.GroupName;
 import com.archive.backend.group.domain.GroupNotes;
-import com.archive.backend.label.domain.LabelDraft;
 import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.label.domain.OwnLabel;
+import com.archive.backend.label.domain.UnmarkedLabelDraft;
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.shared.domain.error.RuleViolationException;
 import com.archive.backend.user.domain.ChangeForbiddenException;
@@ -48,8 +48,8 @@ class UpdateGroupHandlerTest {
                 new GroupNotes("Disbanded"),
                 Set.of(LABEL),
                 List.of(
-                        new LabelDraft(CRW, new LabelName("CRW!"), false),
-                        new LabelDraft(null, new LabelName("Crew"), true)),
+                        new UnmarkedLabelDraft(CRW, new LabelName("CRW!")),
+                        new UnmarkedLabelDraft(null, new LabelName("Crew"))),
                 List.of(new LocationDraft(NORWAY, null, true))));
 
         assertThat(repository.findById(CREW)).hasValueSatisfying(group -> {
@@ -82,7 +82,7 @@ class UpdateGroupHandlerTest {
                         new GroupName("Crew"),
                         null,
                         Set.of(DEMOGROUP),
-                        List.of(new LabelDraft(CRW, new LabelName("CRW"), true)),
+                        List.of(new UnmarkedLabelDraft(CRW, new LabelName("CRW"))),
                         List.of(new LocationDraft(new CountryId(UUID.randomUUID()), null, true)))))
                 .isInstanceOfSatisfying(
                         RuleViolationException.class, e -> assertThat(e.code()).isEqualTo("location.unknown"));

@@ -10,7 +10,7 @@ import {Text} from '@/shared/ui/typography';
 import type {LabelValue} from '../model/label-value';
 
 /** The labels with a display name: the first one when none is. */
-function withDisplayName(labels: readonly LabelValue[]): readonly LabelValue[] {
+function markedFirst(labels: readonly LabelValue[]): readonly LabelValue[] {
     return labels.some((label) => label.display) ? labels : labels.map((label, i) => ({...label, display: i === 0}));
 }
 
@@ -22,14 +22,16 @@ export interface LabelsEditorProps {
     /** What is wrong with the labels as a whole. */
     readonly error?: string | undefined;
     readonly disabled?: boolean;
+    /** Whether the owner has a display name among the labels: a person has, a group has not. */
+    readonly withDisplayName?: boolean;
 }
 
 /**
- * The labels of an owner: renamed in place, added, taken away; exactly one of them, chosen by its radio, is the display name — the
- * first label added becomes it, and taking it away passes it to the first label left. A label taken away is not deleted, it only
- * stops being the owner's (docs/domain/authors.md).
+ * The labels of an owner: renamed in place, added, taken away. Of a person exactly one, chosen by its radio, is the display name — the
+ * first label added becomes it, and taking it away passes it to the first label left; a group has none. A label taken away is not
+ * deleted, it only stops being the owner's (docs/domain/authors.md).
  */
-export function LabelsEditor({value, onChange, rowErrors = [], error, disabled = false}: LabelsEditorProps) {
+export function LabelsEditor({value, onChange, rowErrors = [], error, disabled = false, withDisplayName = true}: LabelsEditorProps) {
     const {t} = useTranslation();
     const id = useId();
 
@@ -52,22 +54,25 @@ export function LabelsEditor({value, onChange, rowErrors = [], error, disabled =
                         key={index}
                         trailing={(
                             <>
-                                <Radio
-                                    label={t('label.display')}
-                                    name={`${id}-display`}
-                                    checked={label.display}
-                                    onChoose={() => {
-                                        mark(index);
-                                    }}
-                                    disabled={disabled}
-                                />
+                                {withDisplayName && (
+                                    <Radio
+                                        label={t('label.display')}
+                                        name={`${id}-display`}
+                                        checked={label.display}
+                                        onChoose={() => {
+                                            mark(index);
+                                        }}
+                                        disabled={disabled}
+                                    />
+                                )}
                                 <Button
                                     color="transparent"
                                     size="sm"
                                     square
                                     ariaLabel={t('label.remove', {n})}
                                     onClick={() => {
-                                        onChange(withDisplayName(value.filter((_, i) => i !== index)));
+                                        const left = value.filter((_, i) => i !== index);
+                                        onChange(withDisplayName ? markedFirst(left) : left);
                                     }}
                                     disabled={disabled}
                                 >
@@ -97,7 +102,7 @@ export function LabelsEditor({value, onChange, rowErrors = [], error, disabled =
                     color="outlined"
                     size="sm"
                     onClick={() => {
-                        onChange([...value, {id: null, name: '', display: value.length === 0}]);
+                        onChange([...value, {id: null, name: '', display: withDisplayName && value.length === 0}]);
                     }}
                     disabled={disabled}
                 >

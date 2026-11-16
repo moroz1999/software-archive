@@ -32,6 +32,7 @@ class SearchRebuildIT {
     private static final UUID ZED_LABEL = UUID.fromString("00000000-0000-0000-00fe-000000000012");
     private static final UUID SQUAD = UUID.fromString("00000000-0000-0000-00fe-000000000021");
     private static final UUID SQUAD_LABEL = UUID.fromString("00000000-0000-0000-00fe-000000000022");
+    private static final UUID GHOST_LABEL = UUID.fromString("00000000-0000-0000-00bb-000000000077");
 
     @Autowired
     private RebuildSearchIndexHandler rebuild;
@@ -62,7 +63,7 @@ class SearchRebuildIT {
     void putBack() {
         probe.resume();
         jdbc.update("DELETE FROM software WHERE id IN (?, ?)", ELITE, TETRIS);
-        jdbc.update("DELETE FROM label WHERE id IN (?, ?)", ZED_LABEL, SQUAD_LABEL);
+        jdbc.update("DELETE FROM label WHERE id IN (?, ?, ?)", ZED_LABEL, SQUAD_LABEL, GHOST_LABEL);
         jdbc.update("DELETE FROM person WHERE id = ?", ZED);
         jdbc.update("DELETE FROM \"group\" WHERE id = ?", SQUAD);
         jdbc.update("DELETE FROM search_outbox");
@@ -117,7 +118,20 @@ class SearchRebuildIT {
                 .isPresent()
                 .get()
                 .extracting(doc -> doc.get("name"))
-                .isEqualTo("ZS");
+                .isEqualTo("Zed Squad");
+    }
+
+    @Test
+    void loadsTheLabelsOfNobodyAmongThePeople() throws Exception {
+        jdbc.update("INSERT INTO label (id, name) VALUES (?, 'Ghost Zed')", GHOST_LABEL);
+
+        rebuild.handle();
+
+        assertThat(probe.author(GHOST_LABEL))
+                .isPresent()
+                .get()
+                .extracting(doc -> doc.get("kind"))
+                .isEqualTo("label");
     }
 
     @Test

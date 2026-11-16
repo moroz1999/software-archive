@@ -8,22 +8,39 @@ import {AttachLabelButton, type LabelOwner} from './AttachLabelButton';
 
 const LABEL = {id: toLabelId('00000000-0000-0000-0004-000000000001'), name: 'Ghost'};
 const JANE = '00000000-0000-0000-0003-000000000001';
-const LOOKUP = new Map([['/api/entity-lookup?types=author%2Cgroup&query=jane', json({items: [{id: JANE, type: 'author', title: 'Jane Doe'}]})]]);
+const CREW = '00000000-0000-0000-0005-000000000001';
+const LOOKUP = new Map([
+    ['/api/entity-lookup?types=author%2Cgroup&query=jane', json({items: [{id: JANE, type: 'author', title: 'Jane Doe'}]})],
+    ['/api/entity-lookup?types=author%2Cgroup&query=crew', json({items: [{id: CREW, type: 'group', title: 'Crew'}]})],
+]);
 
 async function chooseJane() {
-    await userEvent.click(screen.getByRole('button', {name: 'Attach to owner'}));
+    await userEvent.click(screen.getByRole('button', {name: 'Say whose label'}));
     await userEvent.type(screen.getByRole('combobox', {name: 'Person or group'}), 'jane');
     await userEvent.click(await screen.findByRole('option', {name: 'Jane Doe'}));
 }
 
 async function chooseJaneAndAttach() {
     await chooseJane();
-    await userEvent.click(screen.getByRole('button', {name: 'Attach'}));
+    await userEvent.click(screen.getByRole('button', {name: 'Save'}));
 }
 
 describe(AttachLabelButton, () => {
     afterEach(() => {
         vi.unstubAllGlobals();
+        vi.restoreAllMocks();
+    });
+
+    it('shows the owners found above its window, in the top layer', async () => {
+        stubFetchAround(LOOKUP, noContent());
+        const showPopover = vi.spyOn(HTMLElement.prototype, 'showPopover');
+        renderWithQueries(<AttachLabelButton label={LABEL} onAttached={vi.fn<(owner: LabelOwner) => void>()}/>);
+
+        await userEvent.click(screen.getByRole('button', {name: 'Say whose label'}));
+        await userEvent.type(screen.getByRole('combobox', {name: 'Person or group'}), 'jane');
+        const option = await screen.findByRole('option', {name: 'Jane Doe'});
+
+        expect(showPopover.mock.contexts.at(-1)).toContainElement(option);
     });
 
     it('attaches the label to the person or group chosen and hands over the owner', async () => {
@@ -50,10 +67,27 @@ describe(AttachLabelButton, () => {
         expect(screen.getByRole('checkbox', {name: 'Display name'})).not.toBeChecked();
 
         await userEvent.click(screen.getByRole('checkbox', {name: 'Display name'}));
-        await userEvent.click(screen.getByRole('button', {name: 'Attach'}));
+        await userEvent.click(screen.getByRole('button', {name: 'Save'}));
 
         await vi.waitFor(() => {
             expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({body: JSON.stringify({type: 'author', id: JANE, display: true})});
+        });
+    });
+
+    it('offers no display name for a group, which has none, and attaches the label to it', async () => {
+        const fetchMock = stubFetchAround(LOOKUP, noContent());
+        renderWithQueries(<AttachLabelButton label={LABEL} onAttached={vi.fn<(owner: LabelOwner) => void>()}/>);
+
+        await userEvent.click(screen.getByRole('button', {name: 'Say whose label'}));
+        await userEvent.type(screen.getByRole('combobox', {name: 'Person or group'}), 'crew');
+        await userEvent.click(await screen.findByRole('option', {name: 'Crew'}));
+
+        expect(screen.queryByRole('checkbox', {name: 'Display name'})).not.toBeInTheDocument();
+
+        await userEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        await vi.waitFor(() => {
+            expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({body: JSON.stringify({type: 'group', id: CREW, display: false})});
         });
     });
 
@@ -61,14 +95,14 @@ describe(AttachLabelButton, () => {
         stubFetchAround(LOOKUP, noContent());
         renderWithQueries(<AttachLabelButton label={LABEL} onAttached={vi.fn<(owner: LabelOwner) => void>()}/>);
 
-        await userEvent.click(screen.getByRole('button', {name: 'Attach to owner'}));
+        await userEvent.click(screen.getByRole('button', {name: 'Say whose label'}));
 
-        expect(screen.getByRole('dialog', {name: 'Attach to owner'})).toHaveTextContent('Whose label is “Ghost”?');
-        expect(screen.getByRole('button', {name: 'Attach'})).toBeDisabled();
+        expect(screen.getByRole('dialog', {name: 'Say whose label'})).toHaveTextContent('Whose label is “Ghost”?');
+        expect(screen.getByRole('button', {name: 'Save'})).toBeDisabled();
     });
 
     it.each([
-        [409, 'label.owned', 'The label has got an owner in the meantime. Reload the page.'],
+        [409, 'label.owned', 'Someone has said whose label this is in the meantime. Reload the page.'],
         [422, 'label.owner-unknown', 'That person or group is no longer in the archive.'],
         [422, 'label.display-one', 'They have no labels yet: this one can only be their display name.'],
         [403, 'access.denied', 'Only whoever added this, or an administrator, may change it.'],

@@ -8,7 +8,8 @@ import {json, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {loadSearchPage, preloadSearchPage, shouldPreloadSearchPage} from '../index';
 
 const ELITE = {id: '00000000-0000-0000-00fd-000000000001', title: 'Elite', releaseDate: '1987-05-01'};
-const ZED = {id: '00000000-0000-0000-00fd-000000000011', name: 'Zed', realName: 'John Doe'};
+const ZED = {id: '00000000-0000-0000-00fd-000000000011', name: 'Zed', realName: 'John Doe', kind: 'person'};
+const PHANTOM = {id: '00000000-0000-0000-00fd-000000000031', name: 'Phantom', realName: null, kind: 'label'};
 const SQUAD = {id: '00000000-0000-0000-00fd-000000000021', name: 'ZS'};
 
 function found(page = 0, sets: readonly unknown[] = [
@@ -73,6 +74,17 @@ describe('SearchPage', () => {
         expect(within(authors).getByRole('link', {name: 'Zed'})).toHaveAttribute('href', `/authors/${ZED.id}`);
         expect(within(groups).getByRole('link', {name: 'ZS'})).toHaveAttribute('href', `/groups/${SQUAD.id}`);
         expect(within(screen.getByRole('region', {name: 'Software (51)'})).getByRole('article', {name: 'Elite'})).toBeInTheDocument();
+    });
+
+    it('shows a label of nobody among the people with nothing next to it, leading to the label\'s page', async () => {
+        stubFetchRoutes(routes([['/api/search?q=ph&page=0', found(0, [{type: 'author', total: 1, items: [PHANTOM]}])]]));
+
+        renderRoute('/search?q=ph');
+
+        const authors = await screen.findByRole('region', {name: 'Authors (1)'});
+
+        expect(within(within(authors).getByRole('table')).getByRole('row', {name: 'Phantom'})).toBeInTheDocument();
+        expect(within(authors).getByRole('link', {name: 'Phantom'})).toHaveAttribute('href', `/labels/${PHANTOM.id}`);
     });
 
     it('lists the kinds in order: people, groups, software', async () => {

@@ -1,6 +1,6 @@
-import {getJson, mapResponse, postNoContent, readArray, readBoolean, readObject, readString, type JsonObject} from '@/shared/api';
+import {getJson, mapResponse, postNoContent, readArray, readBoolean, readNullableString, readObject, readString, type JsonObject} from '@/shared/api';
 import {labelPath} from '../config/paths';
-import type {LabelDetails, LabelOwner, LabelOwnerOption} from '../model/label';
+import type {LabelDetails, LabelOwner, LabelOwnerOption, NamedLabelOwner} from '../model/label';
 import {type LabelId, toLabelId} from '../model/label-id';
 
 function readOwnerType(dto: JsonObject, name: string): LabelOwner['type'] {
@@ -11,12 +11,12 @@ function readOwnerType(dto: JsonObject, name: string): LabelOwner['type'] {
     return type;
 }
 
-function parseOwner(raw: unknown): LabelOwner | null {
+function parseOwner(raw: unknown): NamedLabelOwner | null {
     if (raw === null) {
         return null;
     }
     const dto = readObject(raw, 'owner');
-    return {type: readOwnerType(dto, 'type'), id: readString(dto, 'id')};
+    return {type: readOwnerType(dto, 'type'), id: readString(dto, 'id'), name: readString(dto, 'name'), note: readNullableString(dto, 'note')};
 }
 
 /** The page of a label: `GET /api/labels/{id}`. */

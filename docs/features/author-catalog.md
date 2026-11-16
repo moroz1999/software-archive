@@ -9,7 +9,7 @@ The group catalog ([group-catalog.md](group-catalog.md)) works the same way. The
 - "Add author" next to the page title leads to adding an author ([author-editing.md](author-editing.md)).
 - Letters: "All", A–Z, А–Я, `#`; the current one is marked.
 - Country and City: City offers the cities of the chosen country and is locked until one is chosen; choosing another country forgets the city.
-- An entry is the name leading to the person's page ([author-view.md](author-view.md)), with the person's real name muted on the same line; a label of a person without a real name says "label of {main name}" there instead. A label of nobody says "owner unknown" and leads to its own page ([label-view.md](label-view.md)).
+- A person's entry is the real name leading to the person's page ([author-view.md](author-view.md)), with the display name muted on the same line. A label's entry, the display name too, leads to its own page ([label-view.md](label-view.md)), with the person's real name muted next to it, or the main name for a person without one; a label of nobody and the main name of a person without a real name have nothing next to them.
 - Pages below the entries; "No authors found." when nothing matches.
 
 ## Address
@@ -26,6 +26,6 @@ The filter lives in the address — `/authors?letter=Б&country={id}&city={id}&p
 
 | Call | Answer | Errors |
 |---|---|---|
-| `GET /api/authors?letter=&country=&city=&platform=&page=&size=` | page of `{personId, labelId, name, realName, labelOf}`, exactly one of `personId` and `labelId`: `labelId` only for a label of nobody; `realName` `null` when unknown or when the entry is the real name, `labelOf` `null` for a main name | `400 label.letter-invalid`, `400 platform.code-invalid`; `400` for a malformed id |
+| `GET /api/authors?letter=&country=&city=&platform=&page=&size=` | page of `{personId, labelId, name, note}`, exactly one of `personId` (a person) and `labelId` (a label); `note` is shown next to the name, `null` for nothing | `400 label.letter-invalid`, `400 platform.code-invalid`; `400` for a malformed id |
 | `GET /api/countries` | `[{id, name}]` by name | |
 | `GET /api/countries/{id}/cities` | `[{id, name}]` by name; empty for an unknown country | `400` for a malformed id |

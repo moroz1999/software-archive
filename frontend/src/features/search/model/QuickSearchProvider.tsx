@@ -1,11 +1,11 @@
 import {type ReactNode, useCallback, useEffect, useId, useMemo, useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
-import {authorPath} from '@/entities/authors';
 import {groupPath} from '@/entities/groups';
 import {usePlatformSelection} from '@/entities/platforms';
 import {softwarePath} from '@/entities/software';
 import {useLoadingLock} from '@/shared/lib/loading';
 import {quickSearchQuery} from '../api/quick-search-queries';
+import {foundAuthorHref} from './found';
 import type {QuickSearchResult} from './quick-search';
 import {type QuickKind, QuickSearchContext} from './quick-search-context';
 
@@ -25,7 +25,7 @@ function kindsOf(result: QuickSearchResult, optionId: (index: number) => string)
     let index = 0;
     const next = () => optionId(index++);
     const kinds: QuickKind[] = [
-        {kind: 'author', total: result.authors.total, matches: result.authors.items.map((author) => ({id: next(), kind: 'author', title: author.name, href: authorPath(author.id)}))},
+        {kind: 'author', total: result.authors.total, matches: result.authors.items.map((author) => ({id: next(), kind: 'author', title: author.name, href: foundAuthorHref(author)}))},
         {kind: 'group', total: result.groups.total, matches: result.groups.items.map((group) => ({id: next(), kind: 'group', title: group.name, href: groupPath(group.id)}))},
         {kind: 'software', total: result.software.total, matches: result.software.items.map((software) => ({id: next(), kind: 'software', title: software.title, href: softwarePath(software.id)}))},
     ];

@@ -4,6 +4,7 @@ import com.archive.backend.author.domain.AuthorChanged;
 import com.archive.backend.category.domain.CategoryDeleted;
 import com.archive.backend.category.domain.CategoryMoved;
 import com.archive.backend.group.domain.GroupChanged;
+import com.archive.backend.label.domain.LabelCreated;
 import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.OwnerOfLabelsChanged;
 import com.archive.backend.search.domain.AffectedOwners;
@@ -31,13 +32,20 @@ public class EnqueueSearchDocumentsHandler {
     private final AffectedSoftware affected;
     private final AffectedOwners owners;
 
-    /** The software, and the people and groups credited on it: their platforms may have changed. */
+    /** The software, and the people, groups and labels of nobody credited on it: their platforms may have changed. */
     @EventListener
     public void on(SoftwareChanged event) {
         UUID software = event.software().value();
         enqueueSoftware(List.of(software));
         enqueue(SearchEntityType.AUTHOR, owners.peopleCreditedOn(software));
         enqueue(SearchEntityType.GROUP, owners.groupsCreditedOn(software));
+        enqueue(SearchEntityType.AUTHOR, owners.labelsOfNobodyCreditedOn(software));
+    }
+
+    /** A new label of nobody is found among the people. */
+    @EventListener
+    public void on(LabelCreated event) {
+        enqueue(SearchEntityType.AUTHOR, List.of(event.label().value()));
     }
 
     /** The person, and the software crediting them by themselves: its card names them. */
@@ -66,11 +74,16 @@ public class EnqueueSearchDocumentsHandler {
         enqueueSoftware(affected.inSubtreeOf(event.category().value()));
     }
 
+    /**
+     * The software credited on the labels, and the labels themselves: a label given an owner is no longer found by
+     * itself, a label left without one is again.
+     */
     @EventListener
     public void on(OwnerOfLabelsChanged event) {
-        if (!event.labels().isEmpty()) {
-            enqueueSoftware(affected.creditedOn(
-                    event.labels().stream().map(LabelId::value).toList()));
+        List<UUID> labels = event.labels().stream().map(LabelId::value).toList();
+        if (!labels.isEmpty()) {
+            enqueueSoftware(affected.creditedOn(labels));
+            enqueue(SearchEntityType.AUTHOR, labels);
         }
     }
 

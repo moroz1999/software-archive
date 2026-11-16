@@ -35,16 +35,17 @@ import org.springframework.stereotype.Repository;
 public class JdbcGroupReadRepository implements GroupReadRepository {
 
     /**
-     * Groups under their main name, and their other labels; the group's name goes next to each, unless it is the entry.
+     * Groups under their name, and every label of theirs with the group's name next to it; {@code owner_id} is the
+     * group of either, for the filters.
      */
-    private static final String ENTRIES = "WITH " + MainNameSql.GROUPS + """
-            , entries AS (
-                SELECT n.group_id, n.main_name AS name, n.group_name
-                FROM named_group n
+    private static final String ENTRIES = """
+            WITH entries AS (
+                SELECT g.id AS owner_id, g.id AS group_id, NULL::uuid AS label_id, g.name, NULL AS note
+                FROM "group" g
                 UNION ALL
-                SELECT n.group_id, l.name, n.group_name
-                FROM named_group n
-                JOIN label l ON l.group_id = n.group_id AND l.id <> n.main_label_id
+                SELECT g.id, NULL::uuid, l.id, l.name, g.name
+                FROM "group" g
+                JOIN label l ON l.group_id = g.id
             )
             """;
 
@@ -55,7 +56,7 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
             EXISTS (
                 SELECT 1 FROM entity_location l
                 LEFT JOIN city c ON c.id = l.city_id
-                WHERE l.entity_type = 'GROUP' AND l.entity_id = e.group_id AND %s
+                WHERE l.entity_type = 'GROUP' AND l.entity_id = e.owner_id AND %s
             )""";
 
     /**
@@ -92,7 +93,7 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
             params.put("city", cityId);
         }
         if (platform != null) {
-            conditions.add(PlatformFilterSql.condition("e.group_id", "group_id", platform, params));
+            conditions.add(PlatformFilterSql.condition("e.owner_id", "group_id", platform, params));
         }
         String where = conditions.isEmpty() ? "" : " WHERE " + String.join(" AND ", conditions);
 
@@ -102,12 +103,16 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
                 .single();
         params.put("limit", pageable.getPageSize());
         params.put("offset", pageable.getOffset());
-        List<GroupCatalogEntry> content = jdbc.sql(ENTRIES
-                        + "SELECT e.group_id, e.name, CASE WHEN e.name = e.group_name THEN NULL ELSE e.group_name END AS group_name FROM entries e"
-                        + where + " ORDER BY lower(e.name), e.name, e.group_id LIMIT :limit OFFSET :offset")
+        List<GroupCatalogEntry> content = jdbc.sql(
+                        ENTRIES
+                                + "SELECT e.group_id, e.label_id, e.name, e.note FROM entries e" + where
+                                + " ORDER BY lower(e.name), e.name, e.owner_id, e.label_id NULLS FIRST LIMIT :limit OFFSET :offset")
                 .params(params)
                 .query((rs, row) -> new GroupCatalogEntry(
-                        rs.getObject("group_id", UUID.class), rs.getString("name"), rs.getString("group_name")))
+                        rs.getObject("group_id", UUID.class),
+                        rs.getObject("label_id", UUID.class),
+                        rs.getString("name"),
+                        rs.getString("note")))
                 .list();
         return new PageImpl<>(content, pageable, total);
     }
@@ -115,13 +120,12 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
     @Override
     public Optional<GroupDetails> findById(UUID id) {
         return jdbc.sql("WITH " + MainNameSql.GROUPS
-                        + "SELECT main_name, group_name, notes, (SELECT added_by FROM \"group\" WHERE id = :id) AS added_by"
+                        + "SELECT main_name, notes, (SELECT added_by FROM \"group\" WHERE id = :id) AS added_by"
                         + " FROM named_group WHERE group_id = :id")
                 .param("id", id)
                 .query((rs, row) -> new GroupDetails(
                         id,
                         rs.getString("main_name"),
-                        rs.getString("group_name"),
                         rs.getString("notes"),
                         types(id),
                         labels(id),
@@ -141,20 +145,10 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
                 .list();
     }
 
-    /**
-     * The label shown as the main name is the display name, also of a record from before the rule with none marked.
-     */
     private List<GroupLabel> labels(UUID groupId) {
-        return jdbc.sql("WITH " + MainNameSql.GROUPS + """
-                        SELECT l.id, l.name, l.id = n.main_label_id AS display
-                        FROM label l
-                        JOIN named_group n ON n.group_id = l.group_id
-                        WHERE l.group_id = :id
-                        ORDER BY lower(l.name), l.id
-                        """)
+        return jdbc.sql("SELECT id, name FROM label WHERE group_id = :id ORDER BY lower(name), id")
                 .param("id", groupId)
-                .query((rs, row) ->
-                        new GroupLabel(rs.getObject("id", UUID.class), rs.getString("name"), rs.getBoolean("display")))
+                .query((rs, row) -> new GroupLabel(rs.getObject("id", UUID.class), rs.getString("name")))
                 .list();
     }
 

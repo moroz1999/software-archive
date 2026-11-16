@@ -54,7 +54,9 @@ class QuickSearchControllerTest {
                 .thenReturn(new QuickSearchResult(
                         new QuickSection<>(List.of(new SoftwareCatalogItem(ELITE, "Elite", "1987-05-01")), 12),
                         new QuickSection<>(
-                                List.of(new FoundAuthor(ZED, "Zed", "John Doe"), new FoundAuthor(CARL, "Carl", null)),
+                                List.of(
+                                        new FoundAuthor(ZED, "Zed", "John Doe", "person"),
+                                        new FoundAuthor(CARL, "Carl", null, "person")),
                                 2),
                         new QuickSection<>(List.of(new FoundGroup(SQUAD, "ZS")), 1)));
     }
@@ -76,6 +78,7 @@ class QuickSearchControllerTest {
                 .andExpect(jsonPath("$.authors.items[0].id").value(ZED.toString()))
                 .andExpect(jsonPath("$.authors.items[0].name").value("Zed"))
                 .andExpect(jsonPath("$.authors.items[0].realName").value("John Doe"))
+                .andExpect(jsonPath("$.authors.items[0].kind").value("person"))
                 .andExpect(jsonPath("$.authors.items[1].realName").isEmpty())
                 .andExpect(jsonPath("$.authors.total").value(2))
                 .andExpect(jsonPath("$.groups.items[0].id").value(SQUAD.toString()))

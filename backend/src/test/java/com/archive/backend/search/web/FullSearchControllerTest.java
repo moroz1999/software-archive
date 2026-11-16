@@ -58,7 +58,7 @@ class FullSearchControllerTest {
                         50,
                         104,
                         List.of(
-                                new FoundSet.Authors(52, List.of(new FoundAuthor(ZED, "Zed", "John Doe"))),
+                                new FoundSet.Authors(52, List.of(new FoundAuthor(ZED, "Zed", "John Doe", "person"))),
                                 new FoundSet.Groups(1, List.of(new FoundGroup(SQUAD, "ZS"))),
                                 new FoundSet.Software(
                                         51, List.of(new SoftwareCatalogItem(ELITE, "Elite", "1987-05-01"))))));
@@ -79,6 +79,7 @@ class FullSearchControllerTest {
                 .andExpect(jsonPath("$.sets[0].items[0].id").value(ZED.toString()))
                 .andExpect(jsonPath("$.sets[0].items[0].name").value("Zed"))
                 .andExpect(jsonPath("$.sets[0].items[0].realName").value("John Doe"))
+                .andExpect(jsonPath("$.sets[0].items[0].kind").value("person"))
                 .andExpect(jsonPath("$.sets[1].type").value("group"))
                 .andExpect(jsonPath("$.sets[1].items[0].name").value("ZS"))
                 .andExpect(jsonPath("$.sets[2].type").value("software"))

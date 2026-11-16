@@ -7,11 +7,11 @@ import com.archive.backend.geo.domain.CountryId;
 import com.archive.backend.geo.domain.Location;
 import com.archive.backend.geo.domain.Locations;
 import com.archive.backend.geo.domain.Place;
-import com.archive.backend.label.domain.LabelDraft;
 import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.label.domain.OwnLabel;
-import com.archive.backend.label.domain.OwnLabels;
+import com.archive.backend.label.domain.UnmarkedLabelDraft;
+import com.archive.backend.label.domain.UnmarkedLabels;
 import com.archive.backend.shared.domain.error.RuleViolationException;
 import java.util.List;
 import java.util.Set;
@@ -34,7 +34,7 @@ class GroupTest {
                 new GroupName("Crew Ltd"),
                 null,
                 DEMOGROUP,
-                OwnLabels.restore(List.of(new OwnLabel(CRW, new LabelName("CRW"))), CRW),
+                UnmarkedLabels.restore(List.of(new OwnLabel(CRW, new LabelName("CRW")))),
                 NOWHERE);
     }
 
@@ -45,7 +45,7 @@ class GroupTest {
                 new GroupName("Crew Ltd"),
                 new GroupNotes("Since 1990"),
                 DEMOGROUP,
-                List.of(new LabelDraft(null, new LabelName("CRW"), true)),
+                List.of(new UnmarkedLabelDraft(null, new LabelName("CRW"))),
                 NORWAY);
 
         assertThat(group.getId()).isEqualTo(ID);
@@ -72,7 +72,7 @@ class GroupTest {
                 new GroupName("Crew"),
                 new GroupNotes("Disbanded"),
                 LABEL,
-                List.of(new LabelDraft(CRW, new LabelName("CRW!"), true)),
+                List.of(new UnmarkedLabelDraft(CRW, new LabelName("CRW!"))),
                 NORWAY);
 
         assertThat(group.getName()).isEqualTo(new GroupName("Crew"));
@@ -90,7 +90,7 @@ class GroupTest {
                         new GroupName("Crew"),
                         null,
                         LABEL,
-                        List.of(new LabelDraft(new LabelId(UUID.randomUUID()), new LabelName("Bob"), true)),
+                        List.of(new UnmarkedLabelDraft(new LabelId(UUID.randomUUID()), new LabelName("Bob"))),
                         NORWAY))
                 .isInstanceOfSatisfying(
                         RuleViolationException.class, e -> assertThat(e.code()).isEqualTo("label.not-own"));

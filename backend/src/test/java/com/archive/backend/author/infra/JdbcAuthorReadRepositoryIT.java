@@ -37,7 +37,7 @@ class JdbcAuthorReadRepositoryIT {
 
     /** Labels Zed (display name) and Axe; located in Helsinki (primary) and Norway; member of Crew as Axe and as Zed. */
     private static final UUID ZED = id(101);
-    /** Labels Mona and Bob, none marked: Bob is the main name; located in Norway. */
+    /** No real name; labels Mona and Bob, none marked: Bob is the main name; located in Norway. */
     private static final UUID BOB = id(102);
     /** No labels, only a real name; located in Tampere. */
     private static final UUID CARL = id(103);
@@ -48,6 +48,8 @@ class JdbcAuthorReadRepositoryIT {
     private static final UUID AXE_LABEL = id(202);
     private static final UUID GHOST = id(203);
     private static final UUID SHADOW = id(204);
+    private static final UUID MONA_LABEL = id(205);
+    private static final UUID BOB_LABEL = id(206);
     /** Known by its label Crew Label; Zed is a member of it under both labels. */
     private static final UUID CREW = id(301);
     /** Known only by its name; Zed is a member of it under the main name. */
@@ -79,9 +81,9 @@ class JdbcAuthorReadRepositoryIT {
         jdbc.update("""
                 INSERT INTO label (id, name, person_id, group_id, is_display_name) VALUES
                     (?, 'Zed', ?, NULL, TRUE), (?, 'Axe', ?, NULL, FALSE),
-                    (gen_random_uuid(), 'Mona', ?, NULL, FALSE), (gen_random_uuid(), 'Bob', ?, NULL, FALSE),
+                    (?, 'Mona', ?, NULL, FALSE), (?, 'Bob', ?, NULL, FALSE),
                     (gen_random_uuid(), 'Crew Label', NULL, ?, TRUE)
-                """, ZED_LABEL, ZED, AXE_LABEL, ZED, BOB, BOB, CREW);
+                """, ZED_LABEL, ZED, AXE_LABEL, ZED, MONA_LABEL, BOB, BOB_LABEL, BOB, CREW);
         jdbc.update(
                 "INSERT INTO group_member (group_id, label_id) VALUES (?, ?), (?, ?), (?, ?)",
                 CREW,
@@ -99,17 +101,18 @@ class JdbcAuthorReadRepositoryIT {
     }
 
     @Test
-    void listsPeopleUnderTheirMainNameAndTheirOtherLabelsByNameButNoLabelOfAGroup() {
+    void listsPeopleByTheRealNameAndEveryLabelOfTheirsAsAnEntryOfItsOwnButNoLabelOfAGroup() {
         Page<AuthorCatalogEntry> page = reads.findCatalogPage(null, null, null, null, FIRST_PAGE);
 
         assertThat(page.getContent())
                 .containsExactly(
-                        new AuthorCatalogEntry(ZED, "Axe", "John Doe", "Zed", null),
-                        new AuthorCatalogEntry(BOB, "Bob", null, null, null),
-                        new AuthorCatalogEntry(CARL, "Carl Real", null, null, null),
-                        new AuthorCatalogEntry(BOB, "Mona", null, "Bob", null),
-                        new AuthorCatalogEntry(ZED, "Zed", "John Doe", null, null));
-        assertThat(page.getTotalElements()).isEqualTo(5);
+                        new AuthorCatalogEntry(null, AXE_LABEL, "Axe", "John Doe"),
+                        new AuthorCatalogEntry(null, BOB_LABEL, "Bob", null),
+                        new AuthorCatalogEntry(CARL, null, "Carl Real", null),
+                        new AuthorCatalogEntry(ZED, null, "John Doe", "Zed"),
+                        new AuthorCatalogEntry(null, MONA_LABEL, "Mona", "Bob"),
+                        new AuthorCatalogEntry(null, ZED_LABEL, "Zed", "John Doe"));
+        assertThat(page.getTotalElements()).isEqualTo(6);
     }
 
     @Test
@@ -118,9 +121,9 @@ class JdbcAuthorReadRepositoryIT {
 
         assertThat(reads.findCatalogPage(null, null, null, null, FIRST_PAGE).getContent())
                 .extracting(AuthorCatalogEntry::name)
-                .containsExactly("Axe", "Bob", "Carl Real", "Ghost", "Mona", "Zed");
+                .containsExactly("Axe", "Bob", "Carl Real", "Ghost", "John Doe", "Mona", "Zed");
         assertThat(reads.findCatalogPage("G", null, null, null, FIRST_PAGE).getContent())
-                .containsExactly(new AuthorCatalogEntry(null, "Ghost", null, null, GHOST));
+                .containsExactly(new AuthorCatalogEntry(null, GHOST, "Ghost", null));
     }
 
     @Test
@@ -144,16 +147,17 @@ class JdbcAuthorReadRepositoryIT {
     }
 
     @Test
-    void namesTheRealNameNextToEveryEntryOfAPersonWhoHasOneButNotNextToItself() {
+    void namesTheMainLabelNextToAPersonAndTheRealNameOrElseTheMainNameNextToTheirLabels() {
         Page<AuthorCatalogEntry> page = reads.findCatalogPage(null, null, null, null, FIRST_PAGE);
 
         assertThat(page.getContent())
-                .extracting(AuthorCatalogEntry::name, AuthorCatalogEntry::realName)
+                .extracting(AuthorCatalogEntry::name, AuthorCatalogEntry::note)
                 .containsExactly(
                         tuple("Axe", "John Doe"),
                         tuple("Bob", null),
                         tuple("Carl Real", null),
-                        tuple("Mona", null),
+                        tuple("John Doe", "Zed"),
+                        tuple("Mona", "Bob"),
                         tuple("Zed", "John Doe"));
     }
 
@@ -161,8 +165,8 @@ class JdbcAuthorReadRepositoryIT {
     void readsTheRequestedPage() {
         Page<AuthorCatalogEntry> page = reads.findCatalogPage(null, null, null, null, PageRequest.of(1, 2));
 
-        assertThat(page.getContent()).extracting(AuthorCatalogEntry::name).containsExactly("Carl Real", "Mona");
-        assertThat(page.getTotalElements()).isEqualTo(5);
+        assertThat(page.getContent()).extracting(AuthorCatalogEntry::name).containsExactly("Carl Real", "John Doe");
+        assertThat(page.getTotalElements()).isEqualTo(6);
     }
 
     @Test
@@ -202,10 +206,10 @@ class JdbcAuthorReadRepositoryIT {
     void filtersByACountryOfAnyLocationGivenDirectlyOrThroughACity() {
         assertThat(reads.findCatalogPage(null, FINLAND, null, null, FIRST_PAGE).getContent())
                 .extracting(AuthorCatalogEntry::name)
-                .containsExactly("Axe", "Carl Real", "Zed");
+                .containsExactly("Axe", "Carl Real", "John Doe", "Zed");
         assertThat(reads.findCatalogPage(null, NORWAY, null, null, FIRST_PAGE).getContent())
                 .extracting(AuthorCatalogEntry::name)
-                .containsExactly("Axe", "Bob", "Mona", "Zed");
+                .containsExactly("Axe", "Bob", "John Doe", "Mona", "Zed");
     }
 
     @Test
@@ -219,7 +223,7 @@ class JdbcAuthorReadRepositoryIT {
     void combinesTheFilters() {
         assertThat(reads.findCatalogPage("Z", FINLAND, HELSINKI, null, FIRST_PAGE)
                         .getContent())
-                .containsExactly(new AuthorCatalogEntry(ZED, "Zed", "John Doe", null, null));
+                .containsExactly(new AuthorCatalogEntry(null, ZED_LABEL, "Zed", "John Doe"));
     }
 
     @Test
@@ -228,7 +232,7 @@ class JdbcAuthorReadRepositoryIT {
 
         assertThat(reads.findCatalogPage(null, null, null, "vector", FIRST_PAGE).getContent())
                 .extracting(AuthorCatalogEntry::name)
-                .containsExactly("Axe", "Zed");
+                .containsExactly("Axe", "John Doe", "Zed");
         assertThat(reads.findCatalogPage(null, null, null, "bk", FIRST_PAGE).getContent())
                 .extracting(AuthorCatalogEntry::name)
                 .containsExactly("Bob", "Mona");
@@ -276,8 +280,8 @@ class JdbcAuthorReadRepositoryIT {
                                 new AuthorLocation(NORWAY, "Norway", null, null, false)),
                         List.of(
                                 new AuthorGroup(BAND, "Band", null),
-                                new AuthorGroup(CREW, "Crew Label", "Axe"),
-                                new AuthorGroup(CREW, "Crew Label", null))));
+                                new AuthorGroup(CREW, "Crew", "Axe"),
+                                new AuthorGroup(CREW, "Crew", null))));
     }
 
     @Test

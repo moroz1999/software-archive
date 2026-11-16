@@ -8,23 +8,19 @@ import type {AuthorCatalogFilter} from '../model/catalog-filter';
 /** Entries on one page of the catalog. */
 const PAGE_SIZE = 100;
 
-/** An entry is of a person or a label of nobody, never both. */
+/** An entry is of a person or of a label, never both. */
 function parseEntry(item: unknown): AuthorCatalogEntry {
     const dto = readObject(item, 'catalog entry');
     const personId = readNullableString(dto, 'personId');
-    if (personId === null) {
-        return {kind: 'label', labelId: toLabelId(readString(dto, 'labelId')), name: readString(dto, 'name')};
+    const labelId = readNullableString(dto, 'labelId');
+    const name = readString(dto, 'name');
+    const note = readNullableString(dto, 'note');
+    if ((personId === null) === (labelId === null)) {
+        throw new TypeError('A catalog entry is of a person or of a label, never both or neither.');
     }
-    if (readNullableString(dto, 'labelId') !== null) {
-        throw new TypeError('A catalog entry is of a person or of a label of nobody, not of both.');
-    }
-    return {
-        kind: 'person',
-        personId: toAuthorId(personId),
-        name: readString(dto, 'name'),
-        realName: readNullableString(dto, 'realName'),
-        labelOf: readNullableString(dto, 'labelOf'),
-    };
+    return personId === null
+        ? {kind: 'label', labelId: toLabelId(labelId ?? ''), name, note}
+        : {kind: 'person', personId: toAuthorId(personId), name, note};
 }
 
 /** A page of the catalog: `GET /api/authors`, with the filters that are set, of the platform when one is chosen. */

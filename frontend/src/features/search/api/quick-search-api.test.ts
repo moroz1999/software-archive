@@ -11,7 +11,7 @@ const SQUAD = '00000000-0000-0000-00fd-000000000021';
 
 const FOUND = {
     software: {items: [{id: ELITE, title: 'Elite', releaseDate: '1987-05-01', screenshots: []}], total: 12},
-    authors: {items: [{id: ZED, name: 'Zed', realName: 'John Doe'}, {id: CARL, name: 'Carl', realName: null}], total: 2},
+    authors: {items: [{id: ZED, name: 'Zed', realName: 'John Doe', kind: 'person'}, {id: CARL, name: 'Carl', realName: null, kind: 'label'}], total: 2},
     groups: {items: [{id: SQUAD, name: 'ZS'}], total: 1},
 };
 
@@ -39,9 +39,15 @@ describe(fetchQuickSearch, () => {
 
         expect(result).toStrictEqual({
             software: {items: [{id: ELITE, title: 'Elite', releaseDate: '1987-05-01', screenshots: [], madeBy: []}], total: 12},
-            authors: {items: [{id: ZED, name: 'Zed', realName: 'John Doe'}, {id: CARL, name: 'Carl', realName: null}], total: 2},
+            authors: {items: [{kind: 'person', id: ZED, name: 'Zed', realName: 'John Doe'}, {kind: 'label', id: CARL, name: 'Carl'}], total: 2},
             groups: {items: [{id: SQUAD, name: 'ZS'}], total: 1},
         });
+    });
+
+    it('fails with a system error when a found author is of an unknown kind', async () => {
+        stubFetch(json({...FOUND, authors: {items: [{id: ZED, name: 'Zed', realName: null, kind: 'robot'}], total: 1}}));
+
+        await expect(fetchQuickSearch('z', null, new AbortController().signal)).rejects.toBeInstanceOf(SystemError);
     });
 
     it('fails with a system error when the answer is malformed', async () => {

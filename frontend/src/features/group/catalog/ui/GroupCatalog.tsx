@@ -1,6 +1,6 @@
 import {groupPath} from '@/entities/groups';
 import {PlaceFilters} from '@/entities/locations';
-import {LabelEntriesSkeleton, LabelEntry, LetterFilter} from '@/entities/labels';
+import {LabelEntriesSkeleton, LabelEntry, labelPath, LetterFilter} from '@/entities/labels';
 import {Grid} from '@/shared/ui/grid';
 import {LoadingState} from '@/shared/ui/loading-state';
 import {Pagination} from '@/shared/ui/pagination';
@@ -51,8 +51,8 @@ function Entries() {
             <Stack gap="lg">
                 <Grid as="ul" ariaLabel={t('pages.groups')} desktopColumns={4} tabletColumns={3} mobileColumns={1} gap="md">
                     {entries.data.items.map((entry) => (
-                        <li key={`${entry.groupId}-${entry.name}`}>
-                            <LabelEntry name={entry.name} href={groupPath(entry.groupId)} note={entry.groupName}/>
+                        <li key={entry.kind === 'group' ? entry.groupId : entry.labelId}>
+                            <LabelEntry name={entry.name} href={entry.kind === 'group' ? groupPath(entry.groupId) : labelPath(entry.labelId)} note={entry.note}/>
                         </li>
                     ))}
                 </Grid>

@@ -14,7 +14,7 @@ import com.archive.backend.group.domain.GroupTypes;
 import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.label.domain.OwnLabel;
-import com.archive.backend.label.domain.OwnLabels;
+import com.archive.backend.label.domain.UnmarkedLabels;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -38,7 +38,7 @@ final class GroupFixtures {
                 new GroupName("Crew Ltd"),
                 null,
                 GroupTypeSet.restore(Set.of(DEMOGROUP)),
-                OwnLabels.restore(List.of(new OwnLabel(CRW, new LabelName("CRW"))), CRW),
+                UnmarkedLabels.restore(List.of(new OwnLabel(CRW, new LabelName("CRW")))),
                 new Locations(List.of()));
     }
 

@@ -18,10 +18,8 @@ const NO_SOFTWARE = new Map([[SOFTWARE_URL, json([])]]);
 function openLabel() {
     const router = createMemoryRouter([
         {path: '/labels/:id', element: <LabelView id={toLabelId(ID)}/>},
-        {path: '/authors/:id', element: <p>The page of the person</p>},
     ], {initialEntries: [`/labels/${ID}`]});
     renderWithQueries(<RouterProvider router={router}/>);
-    return router;
 }
 
 describe(LabelView, () => {
@@ -29,12 +27,12 @@ describe(LabelView, () => {
         vi.unstubAllGlobals();
     });
 
-    it('shows the label under its name, its owner unknown', async () => {
+    it('shows the label under its name, not known yet whose it is', async () => {
         stubFetchAround(NO_SOFTWARE, json(GHOST));
         openLabel();
 
         await expect(screen.findByRole('heading', {level: 1, name: 'Ghost'})).resolves.toBeInTheDocument();
-        expect(screen.getByText('Owner unknown')).toBeInTheDocument();
+        expect(screen.getByText('Not known yet whose label this is')).toBeInTheDocument();
     });
 
     it('leads to the groups the label was a member of', async () => {
@@ -57,11 +55,11 @@ describe(LabelView, () => {
         await expect(within(software).findByRole('article')).resolves.toHaveTextContent('Code');
     });
 
-    it('offers attaching the label to its owner', async () => {
+    it('offers saying whose the label is', async () => {
         stubFetchAround(NO_SOFTWARE, json(GHOST));
         openLabel();
 
-        await expect(screen.findByRole('button', {name: 'Attach to owner'})).resolves.toBeInTheDocument();
+        await expect(screen.findByRole('button', {name: 'Say whose label'})).resolves.toBeInTheDocument();
     });
 
     it('offers no attaching to whoever may not do it', async () => {
@@ -70,15 +68,29 @@ describe(LabelView, () => {
 
         await screen.findByRole('heading', {level: 1, name: 'Ghost'});
 
-        expect(screen.queryByRole('button', {name: 'Attach to owner'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Say whose label'})).not.toBeInTheDocument();
     });
 
-    it('goes over to the page of the owner of a label that has one', async () => {
-        stubFetchAround(NO_SOFTWARE, json({...GHOST, owner: {type: 'author', id: JANE}}));
-        const router = openLabel();
+    it('shows whose the label is when known, the person by the real name with the main name next to it, leading to their page, and offers no attaching', async () => {
+        stubFetchAround(NO_SOFTWARE, json({...GHOST, owner: {type: 'author', id: JANE, name: 'Jane Doe', note: 'JD'}, canChange: false}));
+        openLabel();
 
-        await expect(screen.findByText('The page of the person')).resolves.toBeInTheDocument();
-        expect(router.state.location.pathname).toBe(`/authors/${JANE}`);
+        await screen.findByRole('heading', {level: 1, name: 'Ghost'});
+
+        expect(screen.getByText('Whose label')).toBeInTheDocument();
+        expect(screen.getByRole('link', {name: 'Jane Doe'})).toHaveAttribute('href', `/authors/${JANE}`);
+        expect(screen.getByText('JD')).toBeInTheDocument();
+        expect(screen.queryByText('Not known yet whose label this is')).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Say whose label'})).not.toBeInTheDocument();
+    });
+
+    it('leads to the page of a group that owns the label', async () => {
+        stubFetchAround(NO_SOFTWARE, json({...GHOST, owner: {type: 'group', id: CREW, name: 'Crew', note: null}, groups: [], canChange: false}));
+        openLabel();
+
+        await screen.findByRole('heading', {level: 1, name: 'Ghost'});
+
+        expect(screen.getByRole('link', {name: 'Crew'})).toHaveAttribute('href', `/groups/${CREW}`);
     });
 
     it('hands a system error to the error dialog and shows nothing of its own', async () => {

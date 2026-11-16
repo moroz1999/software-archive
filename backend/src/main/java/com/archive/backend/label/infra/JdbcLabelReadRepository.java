@@ -19,14 +19,24 @@ public class JdbcLabelReadRepository implements LabelReadRepository {
 
     @Override
     public Optional<LabelDetails> findById(UUID id) {
-        return jdbc.sql("SELECT name, person_id, group_id FROM label WHERE id = :id")
+        return jdbc.sql("WITH " + MainNameSql.PEOPLE + ", " + MainNameSql.GROUPS + """
+                        SELECT l.name, l.person_id, l.group_id,
+                               COALESCE(p.real_name, p.main_name, g.main_name) AS owner_name,
+                               CASE WHEN p.real_name IS NOT NULL AND p.main_label_id IS NOT NULL THEN p.main_name END
+                                   AS owner_note
+                        FROM label l
+                        LEFT JOIN named_person p ON p.person_id = l.person_id
+                        LEFT JOIN named_group g ON g.group_id = l.group_id
+                        WHERE l.id = :id
+                        """)
                 .param("id", id)
                 .query((rs, row) -> {
                     UUID person = rs.getObject("person_id", UUID.class);
                     UUID group = rs.getObject("group_id", UUID.class);
+                    String ownerName = rs.getString("owner_name");
                     LabelDetails.Owner owner = person != null
-                            ? new LabelDetails.Owner("author", person)
-                            : group != null ? new LabelDetails.Owner("group", group) : null;
+                            ? new LabelDetails.Owner("author", person, ownerName, rs.getString("owner_note"))
+                            : group != null ? new LabelDetails.Owner("group", group, ownerName, null) : null;
                     return new LabelDetails(id, rs.getString("name"), owner, groups(id), false);
                 })
                 .optional();

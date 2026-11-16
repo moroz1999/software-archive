@@ -32,22 +32,23 @@ import org.springframework.stereotype.Repository;
 public class JdbcAuthorReadRepository implements AuthorReadRepository {
 
     /**
-     * People under their main name, their other labels with the main name, and the labels of nobody; the real name
-     * goes next to each entry of a person, except next to a person shown under it.
+     * People with a real name under it, their main label next to it; every label of a person, the real name next to
+     * it, else the main name unless it is that name; and the labels of nobody. {@code owner_id} is the person of an
+     * entry, for the filters.
      */
     private static final String ENTRIES = "WITH " + MainNameSql.PEOPLE + """
             , entries AS (
-                SELECT n.person_id, n.main_name AS name,
-                       CASE WHEN n.main_label_id IS NULL THEN NULL ELSE n.real_name END AS real_name,
-                       NULL AS label_of, NULL::uuid AS label_id
+                SELECT n.person_id AS owner_id, n.person_id, NULL::uuid AS label_id, n.real_name AS name,
+                       CASE WHEN n.main_label_id IS NULL THEN NULL ELSE n.main_name END AS note
                 FROM named_person n
-                WHERE n.main_name IS NOT NULL
+                WHERE n.real_name IS NOT NULL
                 UNION ALL
-                SELECT n.person_id, l.name, n.real_name, n.main_name, NULL::uuid
+                SELECT n.person_id, NULL::uuid, l.id, l.name,
+                       COALESCE(n.real_name, CASE WHEN l.id = n.main_label_id THEN NULL ELSE n.main_name END)
                 FROM named_person n
-                JOIN label l ON l.person_id = n.person_id AND l.id <> n.main_label_id
+                JOIN label l ON l.person_id = n.person_id
                 UNION ALL
-                SELECT NULL::uuid, l.name, NULL, NULL, l.id
+                SELECT NULL::uuid, NULL::uuid, l.id, l.name, NULL
                 FROM label l
                 WHERE l.person_id IS NULL AND l.group_id IS NULL
             )
@@ -68,7 +69,7 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
             EXISTS (
                 SELECT 1 FROM entity_location l
                 LEFT JOIN city c ON c.id = l.city_id
-                WHERE l.entity_type = 'PERSON' AND l.entity_id = e.person_id AND %s
+                WHERE l.entity_type = 'PERSON' AND l.entity_id = e.owner_id AND %s
             )""";
 
     private final JdbcClient jdbc;
@@ -94,7 +95,7 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
             params.put("city", cityId);
         }
         if (platform != null) {
-            conditions.add("(" + PlatformFilterSql.condition("e.person_id", "person_id", platform, params) + " OR "
+            conditions.add("(" + PlatformFilterSql.condition("e.owner_id", "person_id", platform, params) + " OR "
                     + NOBODYS_LABEL_ON_PLATFORM + ")");
         }
         String where = conditions.isEmpty() ? "" : " WHERE " + String.join(" AND ", conditions);
@@ -105,16 +106,16 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
                 .single();
         params.put("limit", pageable.getPageSize());
         params.put("offset", pageable.getOffset());
-        List<AuthorCatalogEntry> content = jdbc.sql(ENTRIES
-                        + "SELECT e.person_id, e.name, e.real_name, e.label_of, e.label_id FROM entries e" + where
-                        + " ORDER BY lower(e.name), e.name, e.person_id, e.label_id LIMIT :limit OFFSET :offset")
+        List<AuthorCatalogEntry> content = jdbc.sql(
+                        ENTRIES
+                                + "SELECT e.person_id, e.label_id, e.name, e.note FROM entries e" + where
+                                + " ORDER BY lower(e.name), e.name, e.owner_id, e.label_id NULLS FIRST LIMIT :limit OFFSET :offset")
                 .params(params)
                 .query((rs, row) -> new AuthorCatalogEntry(
                         rs.getObject("person_id", UUID.class),
+                        rs.getObject("label_id", UUID.class),
                         rs.getString("name"),
-                        rs.getString("real_name"),
-                        rs.getString("label_of"),
-                        rs.getObject("label_id", UUID.class)))
+                        rs.getString("note")))
                 .list();
         return new PageImpl<>(content, pageable, total);
     }

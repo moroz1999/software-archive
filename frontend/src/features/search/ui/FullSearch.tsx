@@ -1,6 +1,5 @@
 import {type ReactNode, useId} from 'react';
 import {useTranslation} from 'react-i18next';
-import {authorPath} from '@/entities/authors';
 import {groupPath} from '@/entities/groups';
 import {SoftwareCard, SoftwareCardSkeleton, softwarePath} from '@/entities/software';
 import {useSkeleton} from '@/shared/lib/loading';
@@ -14,7 +13,7 @@ import {Skeleton} from '@/shared/ui/skeleton';
 import {Stack} from '@/shared/ui/stack';
 import {Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow} from '@/shared/ui/table';
 import {Heading, Text, TextLink} from '@/shared/ui/typography';
-import {FOUND_KINDS, type FoundKind, type FoundSet} from '../model/found';
+import {FOUND_KINDS, foundAuthorHref, type FoundKind, type FoundSet} from '../model/found';
 import {useFullSearch} from '../model/full-search-context';
 import {chosenKinds, fullSearchHref} from '../model/full-search-filter';
 import styles from './FullSearch.module.css';
@@ -112,8 +111,8 @@ function Matches({set}: {readonly set: FoundSet}) {
                     <TableBody>
                         {set.items.map((author) => (
                             <TableRow key={author.id}>
-                                <TableCell><TextLink href={authorPath(author.id)}>{author.name}</TextLink></TableCell>
-                                <TableCell>{author.realName}</TableCell>
+                                <TableCell><TextLink href={foundAuthorHref(author)}>{author.name}</TextLink></TableCell>
+                                <TableCell>{author.kind === 'person' ? author.realName : null}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

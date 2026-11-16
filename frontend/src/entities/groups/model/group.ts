@@ -5,11 +5,10 @@ import {isUuid} from '@/shared/lib/uuid';
 /** The id of a group: the team behind its names. */
 export type GroupId = Brand<string, 'GroupId'>;
 
+/** A label of a group: one of its alternative names. */
 export interface GroupLabel {
     readonly id: string;
     readonly name: string;
-    /** Chosen as the display name. */
-    readonly display: boolean;
 }
 
 /** Where a group is located: a country, a city of it, or both; the country of a city given alone is its own. */
@@ -43,9 +42,8 @@ export interface RelatedGroup {
 /** One group with everything shown on its page. */
 export interface GroupDetails {
     readonly id: GroupId;
-    /** The main name (docs/domain/authors.md). */
+    /** The group's own name, the one it is shown under (docs/domain/authors.md). */
     readonly name: string;
-    readonly groupName: string;
     readonly notes: string | null;
     readonly types: readonly string[];
     readonly labels: readonly GroupLabel[];

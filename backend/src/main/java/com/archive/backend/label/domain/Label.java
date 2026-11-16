@@ -1,7 +1,10 @@
 package com.archive.backend.label.domain;
 
 import com.archive.backend.shared.domain.ddd.AggregateRoot;
+import com.archive.backend.shared.domain.ddd.DomainEvent;
 import com.archive.backend.user.domain.Actor;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import lombok.Getter;
 
@@ -15,6 +18,9 @@ public final class Label {
 
     private final LabelId id;
     private final LabelName name;
+
+    @Getter(lombok.AccessLevel.NONE)
+    private final List<DomainEvent> events = new ArrayList<>();
 
     private Label(LabelId id, LabelName name) {
         this.id = Objects.requireNonNull(id, "id");
@@ -33,6 +39,15 @@ public final class Label {
      */
     public static Label create(LabelId id, LabelName name, Actor actor) {
         actor.requireAllowed(actor.mayAddEntries());
-        return new Label(id, name);
+        Label label = new Label(id, name);
+        label.events.add(new LabelCreated(id));
+        return label;
+    }
+
+    /** The events since the last pull, emptied. */
+    public List<DomainEvent> pullEvents() {
+        List<DomainEvent> pulled = List.copyOf(events);
+        events.clear();
+        return pulled;
     }
 }

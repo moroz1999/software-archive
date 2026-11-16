@@ -8,16 +8,16 @@ import org.junit.jupiter.api.Test;
 class AuthorCatalogEntryTest {
 
     @Test
-    void isOfAPersonOrALabelOfNobodyNeverBoth() {
+    void isOfAPersonOrALabelNeverBoth() {
         UUID id = UUID.randomUUID();
 
-        assertThatThrownBy(() -> new AuthorCatalogEntry(id, "Ghost", null, null, id))
+        assertThatThrownBy(() -> new AuthorCatalogEntry(id, id, "Ghost", null))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    void isOfAPersonOrALabelOfNobodyNeverNeither() {
-        assertThatThrownBy(() -> new AuthorCatalogEntry(null, "Ghost", null, null, null))
+    void isOfAPersonOrALabelNeverNeither() {
+        assertThatThrownBy(() -> new AuthorCatalogEntry(null, null, "Ghost", null))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 }

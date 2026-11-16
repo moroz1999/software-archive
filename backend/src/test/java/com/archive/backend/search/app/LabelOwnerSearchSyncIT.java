@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.archive.backend.TestcontainersConfiguration;
 import com.archive.backend.TypesenseTestConfiguration;
+import com.archive.backend.author.app.AttachLabelToAuthorCommand;
+import com.archive.backend.author.app.AttachLabelToAuthorHandler;
 import com.archive.backend.author.app.CreateAuthorCommand;
 import com.archive.backend.author.app.CreateAuthorHandler;
 import com.archive.backend.author.app.DeleteAuthorCommand;
@@ -23,9 +25,13 @@ import com.archive.backend.group.domain.GroupId;
 import com.archive.backend.group.domain.GroupName;
 import com.archive.backend.group.domain.GroupTypeCode;
 import com.archive.backend.hardware.domain.PlatformCode;
+import com.archive.backend.label.app.CreateLabelCommand;
+import com.archive.backend.label.app.CreateLabelHandler;
+import com.archive.backend.label.domain.LabelAttachment;
 import com.archive.backend.label.domain.LabelDraft;
 import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.LabelName;
+import com.archive.backend.label.domain.UnmarkedLabelDraft;
 import com.archive.backend.search.TypesenseProbe;
 import com.archive.backend.software.app.CreateSoftwareCommand;
 import com.archive.backend.software.app.CreateSoftwareHandler;
@@ -97,6 +103,12 @@ class LabelOwnerSearchSyncIT {
     private DeleteSoftwareHandler deleteSoftware;
 
     @Autowired
+    private CreateLabelHandler createLabel;
+
+    @Autowired
+    private AttachLabelToAuthorHandler attachLabel;
+
+    @Autowired
     private JdbcTemplate jdbc;
 
     @Autowired
@@ -118,7 +130,7 @@ class LabelOwnerSearchSyncIT {
         probe.resume();
         TestActors.remove(jdbc);
         software.forEach(id -> jdbc.update("DELETE FROM software WHERE id = ?", id));
-        jdbc.update("DELETE FROM label WHERE name IN ('Zed', 'Z', 'ZS', 'Squad')");
+        jdbc.update("DELETE FROM label WHERE name IN ('Zed', 'Z', 'ZS', 'Squad', 'Ghost Zed')");
         jdbc.update("DELETE FROM person WHERE real_name LIKE 'Zed Zedson%'");
         jdbc.update(
                 "DELETE FROM group_group_type WHERE group_id IN (SELECT id FROM \"group\" WHERE name LIKE 'Zed Squad%')");
@@ -128,6 +140,10 @@ class LabelOwnerSearchSyncIT {
 
     private static LabelDraft label(@Nullable LabelId id, String name, boolean display) {
         return new LabelDraft(id, new LabelName(name), display);
+    }
+
+    private static UnmarkedLabelDraft groupLabel(@Nullable LabelId id, String name) {
+        return new UnmarkedLabelDraft(id, new LabelName(name));
     }
 
     private LabelId labelNamed(String name) {
@@ -154,7 +170,7 @@ class LabelOwnerSearchSyncIT {
                 new GroupName("Zed Squad"),
                 null,
                 DEMOGROUP,
-                List.of(label(null, "ZS", true), label(null, "Squad", false)),
+                List.of(groupLabel(null, "ZS"), groupLabel(null, "Squad")),
                 List.of()));
     }
 
@@ -208,7 +224,10 @@ class LabelOwnerSearchSyncIT {
         worker.handle();
 
         Map<String, Object> doc = authorDocument(zed);
-        assertThat(doc).containsEntry("name", "Zed").containsEntry("real_name", "Zed Zedson");
+        assertThat(doc)
+                .containsEntry("name", "Zed")
+                .containsEntry("real_name", "Zed Zedson")
+                .containsEntry("kind", "person");
         assertThat(listIn(doc, "labels")).containsExactlyInAnyOrder("Zed", "Z");
         assertThat(listIn(doc, "platforms")).isEmpty();
     }
@@ -307,14 +326,89 @@ class LabelOwnerSearchSyncIT {
         assertThat(listIn(groupDocument(squad), "platforms")).isEmpty();
     }
 
+    private LabelId ghostZed() {
+        return createLabel.handle(new CreateLabelCommand(ADMIN, new LabelName("Ghost Zed")));
+    }
+
     @Test
-    void indexesACreatedGroupUnderTheMainNameWithEveryLabelAndItsName() throws Exception {
+    void indexesALabelOfNobodyAmongThePeopleUnderItsName() throws Exception {
+        LabelId ghost = ghostZed();
+
+        worker.handle();
+
+        Map<String, Object> doc = probe.author(ghost.value()).orElseThrow();
+        assertThat(doc)
+                .containsEntry("name", "Ghost Zed")
+                .containsEntry("kind", "label")
+                .doesNotContainKey("real_name");
+        assertThat(listIn(doc, "labels")).containsExactly("Ghost Zed");
+    }
+
+    @Test
+    void aLabelOfNobodyTakesThePlatformOfTheSoftwareCreditingIt() throws Exception {
+        LabelId ghost = ghostZed();
+        SoftwareId elite = elite("vector");
+
+        moveToPlatform(elite, "bk", "Ghost Zed");
+        worker.handle();
+
+        assertThat(listIn(probe.author(ghost.value()).orElseThrow(), "platforms"))
+                .containsExactly("bk");
+    }
+
+    @Test
+    void attachingALabelOfNobodyToItsOwnerLeavesOnlyTheOwnerToBeFound() throws Exception {
+        AuthorId zed = zedZedson();
+        LabelId ghost = ghostZed();
+        worker.handle();
+
+        attachLabel.handle(new AttachLabelToAuthorCommand(ADMIN, new LabelAttachment(ghost, false), zed));
+        worker.handle();
+
+        assertThat(probe.author(ghost.value())).isEmpty();
+        assertThat(listIn(authorDocument(zed), "labels")).contains("Ghost Zed");
+    }
+
+    @Test
+    void aLabelTakenFromItsOwnerIsFoundAsALabelOfNobody() throws Exception {
+        AuthorId zed = zedZedson();
+        LabelId z = labelNamed("Z");
+        worker.handle();
+
+        updateAuthor.handle(new UpdateAuthorCommand(
+                ADMIN,
+                zed,
+                new RealName("Zed Zedson"),
+                null,
+                List.of(label(labelNamed("Zed"), "Zed", true)),
+                List.of()));
+        worker.handle();
+
+        assertThat(probe.author(z.value()).orElseThrow())
+                .containsEntry("kind", "label")
+                .containsEntry("name", "Z");
+    }
+
+    @Test
+    void theLabelsOfADeletedPersonAreFoundAsLabelsOfNobody() throws Exception {
+        AuthorId zed = zedZedson();
+        LabelId z = labelNamed("Z");
+        worker.handle();
+
+        deleteAuthor.handle(new DeleteAuthorCommand(ADMIN, zed));
+        worker.handle();
+
+        assertThat(probe.author(z.value()).orElseThrow()).containsEntry("kind", "label");
+    }
+
+    @Test
+    void indexesACreatedGroupUnderItsNameWithEveryLabel() throws Exception {
         GroupId squad = zedSquad();
 
         worker.handle();
 
         Map<String, Object> doc = groupDocument(squad);
-        assertThat(doc).containsEntry("name", "ZS").containsEntry("group_name", "Zed Squad");
+        assertThat(doc).containsEntry("name", "Zed Squad").containsEntry("group_name", "Zed Squad");
         assertThat(listIn(doc, "labels")).containsExactlyInAnyOrder("ZS", "Squad");
         assertThat(listIn(doc, "platforms")).isEmpty();
     }
@@ -330,12 +424,12 @@ class LabelOwnerSearchSyncIT {
                 new GroupName("Zed Squad Two"),
                 null,
                 DEMOGROUP,
-                List.of(label(labelNamed("ZS"), "ZS", true)),
+                List.of(groupLabel(labelNamed("ZS"), "ZS")),
                 List.of()));
         worker.handle();
 
         Map<String, Object> doc = groupDocument(squad);
-        assertThat(doc).containsEntry("group_name", "Zed Squad Two");
+        assertThat(doc).containsEntry("name", "Zed Squad Two").containsEntry("group_name", "Zed Squad Two");
         assertThat(listIn(doc, "labels")).containsExactly("ZS");
     }
 

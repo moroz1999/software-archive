@@ -2,11 +2,17 @@ import {type TitleProblem, titleProblem} from '@/shared/lib/title';
 import type {MemberRoleValue} from '@/shared/ui/member-role-editor';
 import type {GroupDetails} from './group';
 
-/** A label in the form: a new one has no id yet. */
+/** A label in the form: a new one has no id yet; `display` stays unset, a group has no display name. */
 export interface GroupFormLabel {
     readonly id: string | null;
     readonly name: string;
     readonly display: boolean;
+}
+
+/** A label of a group to be created or saved. */
+export interface GroupDraftLabel {
+    readonly id: string | null;
+    readonly name: string;
 }
 
 /** A location in the form: the ids of the chosen country and city, each empty while not chosen. */
@@ -32,7 +38,7 @@ export interface GroupDraft {
     readonly name: string;
     readonly notes: string | null;
     readonly types: readonly string[];
-    readonly labels: readonly GroupFormLabel[];
+    readonly labels: readonly GroupDraftLabel[];
     readonly locations: readonly {readonly country: string; readonly city: string | null; readonly primary: boolean}[];
     readonly members?: readonly MemberRoleValue[];
 }
@@ -78,7 +84,7 @@ export function validateGroupForm(values: GroupFormValues): GroupFormResult {
             name: values.name,
             notes: values.notes.trim() === '' ? null : values.notes,
             types: values.types,
-            labels: values.labels,
+            labels: values.labels.map((label) => ({id: label.id, name: label.name})),
             locations: values.locations.map((location) => ({
                 country: location.country,
                 city: location.city === '' ? null : location.city,
@@ -92,10 +98,10 @@ export function validateGroupForm(values: GroupFormValues): GroupFormResult {
 /** The form values of an existing group, or of an empty form. */
 export function toGroupFormValues(group?: GroupDetails): GroupFormValues {
     return {
-        name: group?.groupName ?? '',
+        name: group?.name ?? '',
         notes: group?.notes ?? '',
         types: group?.types ?? [],
-        labels: group?.labels.map((label) => ({id: label.id, name: label.name, display: label.display})) ?? [],
+        labels: group?.labels.map((label) => ({id: label.id, name: label.name, display: false})) ?? [],
         locations: group?.locations.map((location) => ({
             country: location.countryId ?? '',
             city: location.cityId ?? '',

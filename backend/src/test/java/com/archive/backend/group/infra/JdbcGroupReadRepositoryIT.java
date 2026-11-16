@@ -2,7 +2,6 @@ package com.archive.backend.group.infra;
 
 import static com.archive.backend.user.TestActors.MEMBER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
 
 import com.archive.backend.TestcontainersConfiguration;
 import com.archive.backend.group.read.GroupCatalogEntry;
@@ -38,18 +37,21 @@ class JdbcGroupReadRepositoryIT {
     private static final UUID TAMPERE = id(12);
 
     /**
-     * Named Crew Ltd, known by the labels Crew (display name) and CRW; a demogroup and a label; located in Helsinki
+     * Named Crew Ltd, known also by the labels Crew (marked as a display name, as groups had one once) and CRW; a
+     * demogroup and a label; located in Helsinki
      * (primary) and Norway. Members: хакер федя (a label of Fedya, who is MASTERSOFT now), Zed (the main name of Zed)
      * and Ghost (a label of nobody known). Band is a group inside it; it is inside Oldies.
      */
     private static final UUID CREW = id(301);
     /** Known only by its name; located in Tampere. */
     private static final UUID BAND = id(302);
-    /** Named Oldies, known by the labels Zeta and Alpha, none marked: Alpha is the main name. */
+    /** Named Oldies, known also by the labels Zeta and Alpha. */
     private static final UUID OLDIES = id(303);
 
     private static final UUID CREW_LABEL = id(201);
     private static final UUID CRW_LABEL = id(202);
+    private static final UUID ZETA_LABEL = id(203);
+    private static final UUID ALPHA_LABEL = id(204);
     private static final UUID FEDYA = id(101);
     private static final UUID ZED = id(102);
 
@@ -82,8 +84,8 @@ class JdbcGroupReadRepositoryIT {
         jdbc.update("""
                 INSERT INTO label (id, name, person_id, group_id, is_display_name) VALUES
                     (?, 'Crew', NULL, ?, TRUE), (?, 'CRW', NULL, ?, FALSE),
-                    (gen_random_uuid(), 'Zeta', NULL, ?, FALSE), (gen_random_uuid(), 'Alpha', NULL, ?, FALSE)
-                """, CREW_LABEL, CREW, CRW_LABEL, CREW, OLDIES, OLDIES);
+                    (?, 'Zeta', NULL, ?, FALSE), (?, 'Alpha', NULL, ?, FALSE)
+                """, CREW_LABEL, CREW, CRW_LABEL, CREW, ZETA_LABEL, OLDIES, ALPHA_LABEL, OLDIES);
         jdbc.update("""
                 INSERT INTO label (id, name, person_id, group_id, is_display_name) VALUES
                     (?, 'MASTERSOFT', ?, NULL, TRUE), (?, 'хакер федя', ?, NULL, FALSE),
@@ -111,40 +113,34 @@ class JdbcGroupReadRepositoryIT {
     }
 
     @Test
-    void listsGroupsUnderTheirMainNameAndTheirOtherLabelsByNameButNoLabelOfAPersonOrOfNobody() {
+    void listsGroupsByTheirNameAndEveryLabelOfTheirsWithTheGroupNameButNoLabelOfAPersonOrOfNobody() {
         Page<GroupCatalogEntry> page = reads.findCatalogPage(null, null, null, null, FIRST_PAGE);
 
         assertThat(page.getContent())
                 .containsExactly(
-                        new GroupCatalogEntry(OLDIES, "Alpha", "Oldies"),
-                        new GroupCatalogEntry(BAND, "Band", null),
-                        new GroupCatalogEntry(CREW, "Crew", "Crew Ltd"),
-                        new GroupCatalogEntry(CREW, "CRW", "Crew Ltd"),
-                        new GroupCatalogEntry(OLDIES, "Zeta", "Oldies"));
-        assertThat(page.getTotalElements()).isEqualTo(5);
-    }
-
-    @Test
-    void namesNoGroupNameNextToALabelThatIsTheGroupName() {
-        jdbc.update("INSERT INTO label (name, group_id) VALUES ('Oldies', ?)", OLDIES);
-
-        assertThat(reads.findCatalogPage("O", null, null, null, FIRST_PAGE).getContent())
-                .containsExactly(new GroupCatalogEntry(OLDIES, "Oldies", null));
+                        new GroupCatalogEntry(null, ALPHA_LABEL, "Alpha", "Oldies"),
+                        new GroupCatalogEntry(BAND, null, "Band", null),
+                        new GroupCatalogEntry(null, CREW_LABEL, "Crew", "Crew Ltd"),
+                        new GroupCatalogEntry(CREW, null, "Crew Ltd", null),
+                        new GroupCatalogEntry(null, CRW_LABEL, "CRW", "Crew Ltd"),
+                        new GroupCatalogEntry(OLDIES, null, "Oldies", null),
+                        new GroupCatalogEntry(null, ZETA_LABEL, "Zeta", "Oldies"));
+        assertThat(page.getTotalElements()).isEqualTo(7);
     }
 
     @Test
     void readsTheRequestedPage() {
         Page<GroupCatalogEntry> page = reads.findCatalogPage(null, null, null, null, PageRequest.of(1, 2));
 
-        assertThat(page.getContent()).extracting(GroupCatalogEntry::name).containsExactly("Crew", "CRW");
-        assertThat(page.getTotalElements()).isEqualTo(5);
+        assertThat(page.getContent()).extracting(GroupCatalogEntry::name).containsExactly("Crew", "Crew Ltd");
+        assertThat(page.getTotalElements()).isEqualTo(7);
     }
 
     @Test
     void filtersByTheFirstLetterInAnyCase() {
         assertThat(reads.findCatalogPage("C", null, null, null, FIRST_PAGE).getContent())
                 .extracting(GroupCatalogEntry::name)
-                .containsExactly("Crew", "CRW");
+                .containsExactly("Crew", "Crew Ltd", "CRW");
     }
 
     @Test
@@ -168,10 +164,10 @@ class JdbcGroupReadRepositoryIT {
     void filtersByACountryOfAnyLocationGivenDirectlyOrThroughACity() {
         assertThat(reads.findCatalogPage(null, FINLAND, null, null, FIRST_PAGE).getContent())
                 .extracting(GroupCatalogEntry::name)
-                .containsExactly("Band", "Crew", "CRW");
+                .containsExactly("Band", "Crew", "Crew Ltd", "CRW");
         assertThat(reads.findCatalogPage(null, NORWAY, null, null, FIRST_PAGE).getContent())
                 .extracting(GroupCatalogEntry::name)
-                .containsExactly("Crew", "CRW");
+                .containsExactly("Crew", "Crew Ltd", "CRW");
     }
 
     @Test
@@ -186,7 +182,7 @@ class JdbcGroupReadRepositoryIT {
         assertThat(reads.findCatalogPage("C", FINLAND, HELSINKI, null, FIRST_PAGE)
                         .getContent())
                 .extracting(GroupCatalogEntry::name)
-                .containsExactly("Crew", "CRW");
+                .containsExactly("Crew", "Crew Ltd", "CRW");
     }
 
     @Test
@@ -195,10 +191,10 @@ class JdbcGroupReadRepositoryIT {
 
         assertThat(reads.findCatalogPage(null, null, null, "vector", FIRST_PAGE).getContent())
                 .extracting(GroupCatalogEntry::name)
-                .containsExactly("Crew", "CRW");
+                .containsExactly("Crew", "Crew Ltd", "CRW");
         assertThat(reads.findCatalogPage(null, null, null, "bk", FIRST_PAGE).getContent())
                 .extracting(GroupCatalogEntry::name)
-                .containsExactly("Alpha", "Zeta");
+                .containsExactly("Alpha", "Oldies", "Zeta");
     }
 
     @Test
@@ -216,7 +212,7 @@ class JdbcGroupReadRepositoryIT {
 
         assertThat(reads.findCatalogPage(null, null, null, "msx", FIRST_PAGE).getContent())
                 .extracting(GroupCatalogEntry::name)
-                .containsExactly("Alpha", "Zeta");
+                .containsExactly("Alpha", "Oldies", "Zeta");
     }
 
     @Test
@@ -226,7 +222,7 @@ class JdbcGroupReadRepositoryIT {
         assertThat(reads.findCatalogPage("C", null, HELSINKI, "vector", FIRST_PAGE)
                         .getContent())
                 .extracting(GroupCatalogEntry::name)
-                .containsExactly("Crew", "CRW");
+                .containsExactly("Crew", "Crew Ltd", "CRW");
     }
 
     @Test
@@ -234,11 +230,10 @@ class JdbcGroupReadRepositoryIT {
         assertThat(reads.findById(CREW))
                 .contains(new GroupDetails(
                         CREW,
-                        "Crew",
                         "Crew Ltd",
                         "Since 1990",
                         List.of("demogroup", "label"),
-                        List.of(new GroupLabel(CREW_LABEL, "Crew", true), new GroupLabel(CRW_LABEL, "CRW", false)),
+                        List.of(new GroupLabel(CREW_LABEL, "Crew"), new GroupLabel(CRW_LABEL, "CRW")),
                         List.of(
                                 new GroupLocation(FINLAND, "Finland", HELSINKI, "Helsinki", true),
                                 new GroupLocation(NORWAY, "Norway", null, null, false)),
@@ -247,7 +242,7 @@ class JdbcGroupReadRepositoryIT {
                                 labelMember(id(213), "Zed", "Zed", ZED, null),
                                 labelMember(id(212), "хакер федя — MASTERSOFT", "хакер федя", FEDYA, "MASTERSOFT")),
                         List.of(new RelatedGroup(BAND, "Band")),
-                        List.of(new RelatedGroup(OLDIES, "Alpha"))));
+                        List.of(new RelatedGroup(OLDIES, "Oldies"))));
     }
 
     @Test
@@ -256,21 +251,21 @@ class JdbcGroupReadRepositoryIT {
                 .contains(new GroupDetails(
                         BAND,
                         "Band",
-                        "Band",
                         null,
                         List.of(),
                         List.of(),
                         List.of(new GroupLocation(FINLAND, "Finland", TAMPERE, "Tampere", true)),
                         List.of(),
                         List.of(),
-                        List.of(new RelatedGroup(CREW, "Crew"))));
+                        List.of(new RelatedGroup(CREW, "Crew Ltd"))));
     }
 
     @Test
-    void marksTheMainNameOfAGroupFromBeforeTheRuleAsItsDisplayName() {
+    void showsAGroupUnderItsNameWhateverLabelIsMarked() {
+        assertThat(reads.findById(CREW).orElseThrow().name()).isEqualTo("Crew Ltd");
         assertThat(reads.findById(OLDIES).orElseThrow().labels())
-                .extracting(GroupLabel::name, GroupLabel::display)
-                .containsExactly(tuple("Alpha", true), tuple("Zeta", false));
+                .extracting(GroupLabel::name)
+                .containsExactly("Alpha", "Zeta");
     }
 
     @Test

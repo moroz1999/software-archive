@@ -7,7 +7,8 @@ import org.jspecify.annotations.Nullable;
 public record LabelDetailsDto(
         UUID id, String name, @Nullable OwnerDto owner, List<MemberOfDto> groups, boolean canChange) {
 
-    public record OwnerDto(String type, UUID id) {}
+    public record OwnerDto(
+            String type, UUID id, String name, @Nullable String note) {}
 
     public record MemberOfDto(UUID id, String name) {}
 }

@@ -7,7 +7,7 @@ import {Pagination} from '@/shared/ui/pagination';
 import {Stack} from '@/shared/ui/stack';
 import {Text} from '@/shared/ui/typography';
 import {useAuthorCatalog} from '../model/author-catalog-context';
-import type {AuthorCatalogEntry, PersonEntry} from '../model/catalog';
+import type {AuthorCatalogEntry} from '../model/catalog';
 import {catalogHref} from '../model/catalog-filter';
 import {useSkeleton} from '@/shared/lib/loading';
 
@@ -30,14 +30,6 @@ export function AuthorCatalog() {
             <Entries/>
         </Stack>
     );
-}
-
-/** Next to an entry: the real name of the person, or for a label of a person without one, the main name. */
-function noteOf(entry: PersonEntry, labelOf: (name: string) => string): string | null {
-    if (entry.realName !== null) {
-        return entry.realName;
-    }
-    return entry.labelOf === null ? null : labelOf(entry.labelOf);
 }
 
 function Entries() {
@@ -74,14 +66,11 @@ function Entries() {
 import {useTranslation} from 'react-i18next';
 
 function keyOf(entry: AuthorCatalogEntry): string {
-    return entry.kind === 'person' ? `${entry.personId}-${entry.name}` : entry.labelId;
+    return entry.kind === 'person' ? entry.personId : entry.labelId;
 }
 
-/** A person's entry leads to the person; a label of nobody to its own page, its owner unknown. */
+/** A person's entry leads to the person; a label's, the main one too, to its own page. */
 function Entry({entry}: {readonly entry: AuthorCatalogEntry}) {
-    const {t} = useTranslation();
-    if (entry.kind === 'label') {
-        return <LabelEntry name={entry.name} href={labelPath(entry.labelId)} note={t('label.ownerUnknownNote')}/>;
-    }
-    return <LabelEntry name={entry.name} href={authorPath(entry.personId)} note={noteOf(entry, (name) => t('author.labelOf', {name}))}/>;
+    const href = entry.kind === 'person' ? authorPath(entry.personId) : labelPath(entry.labelId);
+    return <LabelEntry name={entry.name} href={href} note={entry.note}/>;
 }

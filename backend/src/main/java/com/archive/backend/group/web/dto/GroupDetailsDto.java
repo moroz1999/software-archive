@@ -8,7 +8,6 @@ import org.jspecify.annotations.Nullable;
 public record GroupDetailsDto(
         UUID id,
         String name,
-        String groupName,
         @Nullable String notes,
         List<String> types,
         List<LabelDto> labels,
@@ -18,7 +17,7 @@ public record GroupDetailsDto(
         List<RelatedGroupDto> groups,
         boolean canChange) {
 
-    public record LabelDto(UUID id, String name, boolean display) {}
+    public record LabelDto(UUID id, String name) {}
 
     public record LocationDto(
             @Nullable UUID countryId,

@@ -15,7 +15,7 @@ describe(validateGroupForm, () => {
             name: 'Crew Ltd',
             notes: 'Since 1990',
             types: ['demogroup', 'label'],
-            labels: [{id: LABEL, name: 'Crew', display: true}, {id: null, name: 'CRW', display: false}],
+            labels: [{id: LABEL, name: 'Crew', display: false}, {id: null, name: 'CRW', display: false}],
             locations: [{country: FINLAND, city: HELSINKI, primary: true}],
         })).toStrictEqual({
             ok: true,
@@ -23,7 +23,7 @@ describe(validateGroupForm, () => {
                 name: 'Crew Ltd',
                 notes: 'Since 1990',
                 types: ['demogroup', 'label'],
-                labels: [{id: LABEL, name: 'Crew', display: true}, {id: null, name: 'CRW', display: false}],
+                labels: [{id: LABEL, name: 'Crew'}, {id: null, name: 'CRW'}],
                 locations: [{country: FINLAND, city: HELSINKI, primary: true}],
                 members: [],
             },
@@ -49,7 +49,7 @@ describe(validateGroupForm, () => {
     it('names the problem of every label in its row', () => {
         expect(validateGroupForm({
             ...CREW,
-            labels: [{id: null, name: 'Crew', display: true}, {id: null, name: ' ', display: false}],
+            labels: [{id: null, name: 'Crew', display: false}, {id: null, name: ' ', display: false}],
         })).toStrictEqual({ok: false, errors: {labels: [null, 'required']}});
     });
 
@@ -74,11 +74,10 @@ describe(toGroupFormValues, () => {
         expect(toGroupFormValues({
             canChange: true,
             id: toGroupId('00000000-0000-0000-0005-000000000001'),
-            name: 'Crew',
-            groupName: 'Crew Ltd',
+            name: 'Crew Ltd',
             notes: null,
             types: ['demogroup'],
-            labels: [{id: LABEL, name: 'Crew', display: true}],
+            labels: [{id: LABEL, name: 'Crew'}],
             locations: [{countryId: FINLAND, country: 'Finland', cityId: null, city: null, primary: true}],
             members: [],
             memberGroups: [],
@@ -87,7 +86,7 @@ describe(toGroupFormValues, () => {
             name: 'Crew Ltd',
             notes: '',
             types: ['demogroup'],
-            labels: [{id: LABEL, name: 'Crew', display: true}],
+            labels: [{id: LABEL, name: 'Crew', display: false}],
             locations: [{country: FINLAND, city: '', primary: true}],
             members: [],
         });

@@ -60,7 +60,6 @@ function Details({group}: {readonly group: GroupDetails}) {
     const notes = group.notes?.split('\n').filter((line) => line.trim() !== '') ?? [];
     return (
         <Stack gap="lg">
-            <Section label={t('group.name')}><Text>{group.groupName}</Text></Section>
             {group.types.length > 0 && (
                 <Section label={t('group.types')}>
                     <ItemList label={t('group.types')}>{group.types.map((type) => <li key={type}><Text>{type}</Text></li>)}</ItemList>
@@ -68,7 +67,7 @@ function Details({group}: {readonly group: GroupDetails}) {
             )}
             {group.labels.length > 0 && (
                 <Section label={t('group.labels')}>
-                    <ItemList label={t('group.labels')}>{group.labels.map((label) => <li key={label.id}><Text>{label.name}</Text></li>)}</ItemList>
+                    <ItemList label={t('group.labels')}>{group.labels.map((label) => <li key={label.id}><Text><TextLink href={labelPath(toLabelId(label.id))}>{label.name}</TextLink></Text></li>)}</ItemList>
                 </Section>
             )}
             {group.locations.length > 0 && (
@@ -98,27 +97,27 @@ function Details({group}: {readonly group: GroupDetails}) {
     );
 }
 
-/** Where a member leads: to the person behind the label when known, otherwise to the page of the label of nobody. */
-function memberHref(member: GroupMember): string {
-    if (member.personId !== null) {
-        return authorPath(toAuthorId(member.personId));
-    }
+/** Where a member leads: a label to its own page, a person recorded by themselves to the person. */
+function memberHref(member: GroupMember): string | null {
     if (member.id === null) {
-        throw new TypeError(`A member without a person has no label: ${member.name}`);
+        return null;
     }
-    return labelPath(toLabelId(member.id));
+    return member.type === 'author-label' ? labelPath(toLabelId(member.id)) : authorPath(toAuthorId(member.id));
 }
 
-/** The label a member was a member under, leading to the person behind it or to the label's own page, with the person's main name when it is another one. */
+/** The label a member was a member under, leading to its own page, with the person's main name leading to the person when it is another one. */
 function Member({member}: {readonly member: GroupMember}) {
     const {t} = useTranslation();
+    const href = memberHref(member);
     const dates = [member.startDate, member.endDate].some((date) => date !== null)
         ? `${member.startDate ?? '…'} – ${member.endDate ?? '…'}`
         : null;
     return (
         <Inline gap="sm" align="baseline" wrap>
-            <Text><TextLink href={memberHref(member)}>{member.name}</TextLink></Text>
-            {member.personName !== null && <>{' '}<Text variant="bodySm" tone="muted">{member.personName}</Text></>}
+            <Text>{href === null ? member.name : <TextLink href={href}>{member.name}</TextLink>}</Text>
+            {member.personName !== null && member.personId !== null && (
+                <>{' '}<Text variant="bodySm" tone="muted"><TextLink href={authorPath(toAuthorId(member.personId))}>{member.personName}</TextLink></Text></>
+            )}
             {/* An unknown role tells nothing to a reader. */}
             {member.roles.filter((role) => role !== 'unknown').map((role) => <Chip key={role} size="sm">{t(`roles.group.${role}`)}</Chip>)}
             {dates !== null && <Text variant="bodySm" tone="muted">{dates}</Text>}

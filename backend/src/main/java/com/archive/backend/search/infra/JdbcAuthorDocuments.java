@@ -18,37 +18,47 @@ import org.springframework.stereotype.Repository;
 /**
  * Builds the documents of people with plain SQL: under the main name, with every label, and with the platforms of the
  * software they are credited on, by themselves or by a label. A person without any name is not an author and has none.
+ * A label of nobody has a document of its own, under its name, with the platforms of the software crediting it.
  */
 @Repository
 @RequiredArgsConstructor
 public class JdbcAuthorDocuments implements AuthorDocuments {
 
     private static final String SELECT = "WITH " + MainNameSql.PEOPLE + """
-            SELECT n.person_id AS id, n.main_name, n.real_name,
-                   ARRAY(SELECT l.name FROM label l
-                         WHERE l.person_id = n.person_id ORDER BY lower(l.name), l.id) AS labels,
-                   ARRAY(SELECT DISTINCT s.platform_code FROM software_contribution sc
-                         LEFT JOIN label l ON l.id = sc.label_id
-                         JOIN software s ON s.id = sc.software_id
-                         WHERE COALESCE(sc.person_id, l.person_id) = n.person_id ORDER BY s.platform_code) AS platforms
-            FROM named_person n
-            WHERE n.main_name IS NOT NULL
+            , author AS (
+                SELECT n.person_id AS id, 'PERSON' AS kind, n.main_name, n.real_name,
+                       ARRAY(SELECT l.name FROM label l
+                             WHERE l.person_id = n.person_id ORDER BY lower(l.name), l.id) AS labels,
+                       ARRAY(SELECT DISTINCT s.platform_code FROM software_contribution sc
+                             LEFT JOIN label l ON l.id = sc.label_id
+                             JOIN software s ON s.id = sc.software_id
+                             WHERE COALESCE(sc.person_id, l.person_id) = n.person_id
+                             ORDER BY s.platform_code) AS platforms
+                FROM named_person n
+                WHERE n.main_name IS NOT NULL
+                UNION ALL
+                SELECT l.id, 'LABEL', l.name, NULL, ARRAY[l.name],
+                       ARRAY(SELECT DISTINCT s.platform_code FROM software_contribution sc
+                             JOIN software s ON s.id = sc.software_id
+                             WHERE sc.label_id = l.id ORDER BY s.platform_code)
+                FROM label l
+                WHERE l.person_id IS NULL AND l.group_id IS NULL)
+            SELECT * FROM author a
             """;
 
     private final JdbcClient jdbc;
 
     @Override
-    public Optional<AuthorDocument> of(UUID person) {
-        return jdbc.sql(SELECT + " AND n.person_id = :id")
-                .param("id", person)
+    public Optional<AuthorDocument> of(UUID author) {
+        return jdbc.sql(SELECT + " WHERE a.id = :id")
+                .param("id", author)
                 .query(JdbcAuthorDocuments::document)
                 .optional();
     }
 
     @Override
     public List<AuthorDocument> after(@Nullable UUID after, int limit) {
-        return jdbc.sql(SELECT
-                        + " AND (:after::uuid IS NULL OR n.person_id > :after::uuid) ORDER BY n.person_id LIMIT :limit")
+        return jdbc.sql(SELECT + " WHERE :after::uuid IS NULL OR a.id > :after::uuid ORDER BY a.id LIMIT :limit")
                 .param("after", after)
                 .param("limit", limit)
                 .query(JdbcAuthorDocuments::document)
@@ -58,6 +68,7 @@ public class JdbcAuthorDocuments implements AuthorDocuments {
     private static AuthorDocument document(ResultSet rs, int row) throws SQLException {
         return new AuthorDocument(
                 rs.getObject("id", UUID.class),
+                AuthorDocument.Kind.valueOf(rs.getString("kind")),
                 rs.getString("main_name"),
                 list(rs.getArray("labels"), String.class),
                 rs.getString("real_name"),

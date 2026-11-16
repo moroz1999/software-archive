@@ -1,13 +1,20 @@
-import type {AuthorId} from '@/entities/authors';
+import {type AuthorId, authorPath} from '@/entities/authors';
 import type {GroupId} from '@/entities/groups';
+import {type LabelId, labelPath} from '@/entities/labels';
 import type {Software} from '@/entities/software';
 import type {Page} from '@/shared/api';
 
-/** A person found by the search, under the main name; the real name when known and not the main name. */
-export interface FoundAuthor {
-    readonly id: AuthorId;
-    readonly name: string;
-    readonly realName: string | null;
+/**
+ * Found among the people: a person under the main name, with the real name when known and not the main name; or a
+ * label of nobody under its name (docs/features/search.md#collections).
+ */
+export type FoundAuthor =
+    | {readonly kind: 'person'; readonly id: AuthorId; readonly name: string; readonly realName: string | null}
+    | {readonly kind: 'label'; readonly id: LabelId; readonly name: string};
+
+/** A person leads to their page, a label of nobody to its own. */
+export function foundAuthorHref(author: FoundAuthor): string {
+    return author.kind === 'person' ? authorPath(author.id) : labelPath(author.id);
 }
 
 /** A group found by the search, under the main name. */

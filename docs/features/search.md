@@ -22,7 +22,7 @@ One document per entity, with the entity's id as the document id. Facet values a
 | `authors` | every label of the person, real name | platforms |
 | `groups` | every label of the group, name | platforms |
 
-Platforms of people and groups are those of the software they are credited on, by themselves or by a label. People and groups are stored under the main name, with every label beside it; a person without any name has no document.
+Platforms of people and groups are those of the software they are credited on, by themselves or by a label. People are stored under the main name, groups under their name, with every label beside it; a person without any name has no document.
 
 ## Reads
 

@@ -13,9 +13,9 @@ const AY_MOD = '00000000-0000-0000-0007-000000000002';
 const AY_MOD_DETAILS = {id: AY_MOD, title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: null, description: null, hardware: [], canChange: true};
 const ZED = '00000000-0000-0000-0003-000000000001';
 const CREW = '00000000-0000-0000-0005-000000000001';
-const ZED_DETAILS = {id: ZED, name: 'Zed', realName: null, notes: null, labels: [], locations: [], groups: [{id: CREW, name: 'Crew', as: null}], canChange: true};
+const ZED_DETAILS = {id: ZED, name: 'Zed', realName: null, notes: null, labels: [], locations: [], groups: [{id: CREW, name: 'Crew Ltd', as: null}], canChange: true};
 const CREW_DETAILS = {
-    id: CREW, name: 'Crew', groupName: 'Crew Ltd', notes: null, types: [], labels: [], locations: [],
+    id: CREW, name: 'Crew Ltd', notes: null, types: [], labels: [], locations: [],
     members: [{id: ZED, type: 'author', title: 'Zed', name: 'Zed', personId: ZED, personName: null, roles: [], startDate: null, endDate: null}], memberGroups: [], groups: [],
     canChange: true,
 };
@@ -77,7 +77,7 @@ describe(App, () => {
         stubRoutes([
             ['/api/software/latest?size=12', json(pageResponse([ALPHA], {size: 12}))],
             ['/api/software?page=0&size=20', json(pageResponse([ALPHA]))],
-            ['/api/authors?page=0&size=100', json(pageResponse([{personId: ZED, name: 'Zed', labelOf: null}], {size: 100}))],
+            ['/api/authors?page=0&size=100', json(pageResponse([{personId: ZED, labelId: null, name: 'Zed', note: null}], {size: 100}))],
             ['/api/countries', json([])],
             [`/api/authors/${ZED}`, json(ZED_DETAILS)],
         ]);
@@ -105,7 +105,7 @@ describe(App, () => {
     it('opens the groups from the main menu, a group from the catalog and its members from the group', async () => {
         stubRoutes([
             ['/api/software/latest?size=12', json(pageResponse([ALPHA], {size: 12}))],
-            ['/api/groups?page=0&size=100', json(pageResponse([{groupId: CREW, name: 'Crew', groupName: 'Crew Ltd'}], {size: 100}))],
+            ['/api/groups?page=0&size=100', json(pageResponse([{groupId: CREW, labelId: null, name: 'Crew Ltd', note: null}], {size: 100}))],
             ['/api/countries', json([])],
             [`/api/groups/${CREW}`, json(CREW_DETAILS)],
             [`/api/authors/${ZED}`, json(ZED_DETAILS)],
@@ -118,18 +118,18 @@ describe(App, () => {
 
         await expect(screen.findByRole('heading', {level: 1, name: 'Groups'})).resolves.toBeInTheDocument();
 
-        await userEvent.click(await screen.findByRole('link', {name: 'Crew'}));
+        await userEvent.click(await screen.findByRole('link', {name: 'Crew Ltd'}));
 
-        await expect(screen.findByRole('heading', {level: 1, name: 'Crew'})).resolves.toBeInTheDocument();
+        await expect(screen.findByRole('heading', {level: 1, name: 'Crew Ltd'})).resolves.toBeInTheDocument();
         expect(within(screen.getByRole('navigation', {name: 'Main menu'})).getByRole('link', {name: 'Groups'})).toHaveAttribute('aria-current', 'page');
 
         await userEvent.click(within(screen.getByRole('list', {name: 'Members'})).getByRole('link', {name: 'Zed'}));
 
         await expect(screen.findByRole('heading', {level: 1, name: 'Zed'})).resolves.toBeInTheDocument();
 
-        await userEvent.click(within(screen.getByRole('list', {name: 'Groups'})).getByRole('link', {name: 'Crew'}));
+        await userEvent.click(within(screen.getByRole('list', {name: 'Groups'})).getByRole('link', {name: 'Crew Ltd'}));
 
-        await expect(screen.findByRole('heading', {level: 1, name: 'Crew'})).resolves.toBeInTheDocument();
+        await expect(screen.findByRole('heading', {level: 1, name: 'Crew Ltd'})).resolves.toBeInTheDocument();
     });
 
     it('opens the registration from the account menu', async () => {

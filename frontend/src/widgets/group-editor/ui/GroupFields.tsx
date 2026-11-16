@@ -3,7 +3,7 @@ import {useGroupForm} from '@/entities/groups';
 import {LABEL_NAME_PROBLEM_KEYS, LabelsEditor} from '@/entities/labels';
 import {COUNTRY_REQUIRED_KEY, LocationsEditor} from '@/entities/locations';
 
-/** The labels of the group in the form around. */
+/** The labels of the group in the form around: its alternative names, none of them a display name. */
 export function GroupLabels() {
     const {t} = useTranslation();
     const {values, errors, refusals, changeLabels, busy} = useGroupForm();
@@ -14,6 +14,7 @@ export function GroupLabels() {
             rowErrors={errors.labels?.map((problem) => (problem === null ? undefined : t(LABEL_NAME_PROBLEM_KEYS[problem])))}
             error={refusals.labels}
             disabled={busy}
+            withDisplayName={false}
         />
     );
 }

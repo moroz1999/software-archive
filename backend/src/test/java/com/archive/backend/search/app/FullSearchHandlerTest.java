@@ -23,7 +23,10 @@ import org.springframework.data.domain.PageRequest;
 class FullSearchHandlerTest {
 
     private static final FullSearchResult FOUND = new FullSearchResult(
-            1, 50, 51, List.of(new FoundSet.Authors(51, List.of(new FoundAuthor(UUID.randomUUID(), "Zed", null)))));
+            1,
+            50,
+            51,
+            List.of(new FoundSet.Authors(51, List.of(new FoundAuthor(UUID.randomUUID(), "Zed", null, "person")))));
 
     private final List<String> asked = new ArrayList<>();
 

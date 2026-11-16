@@ -4,6 +4,7 @@ import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.label.domain.OwnLabel;
 import com.archive.backend.label.domain.OwnLabels;
+import com.archive.backend.label.domain.UnmarkedLabels;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -46,6 +47,25 @@ public final class LabelRows {
                     row.setId(label.id().value());
                     row.setName(label.name().value());
                     row.setDisplay(label.id().equals(display));
+                    return row;
+                })
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    /** The labels of a group: whatever is marked on them, a group has no display name. */
+    public static UnmarkedLabels toUnmarked(List<LabelEntity> rows) {
+        return UnmarkedLabels.restore(rows.stream()
+                .map(label -> new OwnLabel(new LabelId(label.getId()), new LabelName(label.getName())))
+                .toList());
+    }
+
+    public static List<LabelEntity> fromUnmarked(UnmarkedLabels labels) {
+        return labels.all().stream()
+                .map(label -> {
+                    LabelEntity row = new LabelEntity();
+                    row.setId(label.id().value());
+                    row.setName(label.name().value());
+                    row.setDisplay(false);
                     return row;
                 })
                 .collect(Collectors.toCollection(ArrayList::new));

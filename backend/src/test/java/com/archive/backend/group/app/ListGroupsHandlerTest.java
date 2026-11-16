@@ -20,13 +20,14 @@ class ListGroupsHandlerTest {
     @Test
     void returnsTheRequestedPageOfTheCatalog() {
         UUID group = UUID.randomUUID();
-        reads.add(new GroupCatalogEntry(group, "CRW", "Crew Ltd"));
-        reads.add(new GroupCatalogEntry(group, "Crew", "Crew Ltd"));
+        UUID label = UUID.randomUUID();
+        reads.add(new GroupCatalogEntry(group, null, "Crew Ltd", null));
+        reads.add(new GroupCatalogEntry(null, label, "CRW", "Crew Ltd"));
 
         Page<GroupCatalogEntry> page =
                 handler.handle(new ListGroupsQuery(null, null, null, null, PageRequest.of(1, 1)));
 
-        assertThat(page.getContent()).containsExactly(new GroupCatalogEntry(group, "Crew", "Crew Ltd"));
+        assertThat(page.getContent()).containsExactly(new GroupCatalogEntry(null, label, "CRW", "Crew Ltd"));
         assertThat(page.getTotalElements()).isEqualTo(2);
     }
 

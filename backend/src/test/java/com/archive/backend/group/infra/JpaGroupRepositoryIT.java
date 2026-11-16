@@ -15,10 +15,10 @@ import com.archive.backend.group.domain.GroupName;
 import com.archive.backend.group.domain.GroupNotes;
 import com.archive.backend.group.domain.GroupTypeCode;
 import com.archive.backend.group.domain.GroupTypeSet;
-import com.archive.backend.label.domain.LabelDraft;
 import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.label.domain.OwnLabel;
+import com.archive.backend.label.domain.UnmarkedLabelDraft;
 import com.archive.backend.user.TestActors;
 import com.archive.backend.user.domain.AddedBy;
 import jakarta.persistence.EntityManager;
@@ -65,7 +65,7 @@ class JpaGroupRepositoryIT {
         jdbc.update("INSERT INTO software (id, title, platform_code) VALUES (?, 'Elite', 'vector')", ELITE);
     }
 
-    /** Stores Crew Ltd with the labels Crew (display name) and CRW, and reads it back from an empty persistence context. */
+    /** Stores Crew Ltd with the labels Crew and CRW, and reads it back from an empty persistence context. */
     private Group storeCrew() {
         repository.save(Group.create(
                 ID,
@@ -73,8 +73,8 @@ class JpaGroupRepositoryIT {
                 new GroupNotes("Since 1990"),
                 DEMOGROUP_AND_LABEL,
                 List.of(
-                        new LabelDraft(null, new LabelName("Crew"), true),
-                        new LabelDraft(null, new LabelName("CRW"), false)),
+                        new UnmarkedLabelDraft(null, new LabelName("Crew")),
+                        new UnmarkedLabelDraft(null, new LabelName("CRW"))),
                 IN_NORWAY));
         return reload();
     }
@@ -121,7 +121,8 @@ class JpaGroupRepositoryIT {
         assertThat(group.getLabels().all())
                 .extracting(OwnLabel::name)
                 .containsExactlyInAnyOrder(new LabelName("Crew"), new LabelName("CRW"));
-        assertThat(group.getLabels().display()).isEqualTo(label(group, "Crew"));
+        assertThat(count("SELECT count(*) FROM label WHERE group_id = ? AND is_display_name", ID.value()))
+                .isZero();
         assertThat(group.getLocations()).isEqualTo(IN_NORWAY);
         assertThat(count(
                         "SELECT count(*) FROM entity_location WHERE entity_type = 'GROUP' AND entity_id = ?",
@@ -138,7 +139,7 @@ class JpaGroupRepositoryIT {
                 new GroupName("Crew"),
                 null,
                 GroupTypeSet.restore(Set.of(new GroupTypeCode("crack group"))),
-                List.of(new LabelDraft(crw, new LabelName("CRW!"), true)),
+                List.of(new UnmarkedLabelDraft(crw, new LabelName("CRW!"))),
                 new Locations(List.of()));
         repository.save(group);
         Group edited = reload();
@@ -179,7 +180,7 @@ class JpaGroupRepositoryIT {
                 group.getName(),
                 null,
                 group.getTypes(),
-                List.of(new LabelDraft(label(group, "Crew"), new LabelName("Crew"), true)),
+                List.of(new UnmarkedLabelDraft(label(group, "Crew"), new LabelName("Crew"))),
                 IN_NORWAY);
         repository.save(group);
         reload();
@@ -236,7 +237,7 @@ class JpaGroupRepositoryIT {
     }
 
     @Test
-    void marksTheMainLabelAndAPrimaryLocationOfARecordFromBeforeTheRule() {
+    void readsTheLabelsAndMarksAPrimaryLocationOfARecordFromBeforeTheRule() {
         jdbc.update("INSERT INTO \"group\" (id, name) VALUES (?, 'Crew Ltd')", ID.value());
         jdbc.update("INSERT INTO group_group_type (group_id, group_type_code) VALUES (?, 'demogroup')", ID.value());
         jdbc.update(
@@ -252,7 +253,9 @@ class JpaGroupRepositoryIT {
 
         Group group = repository.findById(ID).orElseThrow();
 
-        assertThat(group.getLabels().display()).isEqualTo(new LabelId(id(62)));
+        assertThat(group.getLabels().all())
+                .extracting(OwnLabel::id)
+                .containsExactlyInAnyOrder(new LabelId(id(61)), new LabelId(id(62)));
         assertThat(group.getLocations()).isEqualTo(IN_NORWAY);
     }
 
@@ -273,7 +276,7 @@ class JpaGroupRepositoryIT {
                 new GroupName("Crew Ltd"),
                 null,
                 DEMOGROUP_AND_LABEL,
-                List.of(new LabelDraft(null, new LabelName("Crew"), true)),
+                List.of(new UnmarkedLabelDraft(null, new LabelName("Crew"))),
                 IN_NORWAY,
                 GroupMembers.EMPTY,
                 new AddedBy(MEMBER_ID)));

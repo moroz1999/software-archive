@@ -47,16 +47,20 @@ class TypesenseQuickSearchIT {
     private static final UUID ZED = UUID.fromString("00000000-0000-0000-00fc-000000000011");
     private static final UUID BOB = UUID.fromString("00000000-0000-0000-00fc-000000000012");
     private static final UUID CARL = UUID.fromString("00000000-0000-0000-00fc-000000000013");
+    private static final UUID PHANTOM = UUID.fromString("00000000-0000-0000-00fc-000000000014");
     private static final UUID SQUAD = UUID.fromString("00000000-0000-0000-00fc-000000000021");
     private static final UUID CREW = UUID.fromString("00000000-0000-0000-00fc-000000000022");
 
     private static final AuthorDocument ZED_DOC =
-            new AuthorDocument(ZED, "Zed", List.of("Zed", "Zx"), "John Doe", List.of("vector"));
+            AuthorDocument.person(ZED, "Zed", List.of("Zed", "Zx"), "John Doe", List.of("vector"));
     private static final AuthorDocument BOB_DOC =
-            new AuthorDocument(BOB, "Bob", List.of("Bob"), "Zedd Smith", List.of("bk"));
+            AuthorDocument.person(BOB, "Bob", List.of("Bob"), "Zedd Smith", List.of("bk"));
     /** Known by the real name alone: it is the main name too. */
     private static final AuthorDocument CARL_DOC =
-            new AuthorDocument(CARL, "Carl Real", List.of(), "Carl Real", List.of("vector"));
+            AuthorDocument.person(CARL, "Carl Real", List.of(), "Carl Real", List.of("vector"));
+
+    /** A label of nobody: found among the people. */
+    private static final AuthorDocument PHANTOM_DOC = AuthorDocument.label(PHANTOM, "Phantom", List.of("msx"));
 
     private static final GroupDocument SQUAD_DOC =
             new GroupDocument(SQUAD, "ZS", List.of("ZS", "Zeta Squad"), "Zed Squad", List.of("vector"));
@@ -96,7 +100,7 @@ class TypesenseQuickSearchIT {
                 SearchEntityType.SOFTWARE,
                 java.util.stream.Stream.concat(java.util.stream.Stream.of(ELITE, EXOLON_BK), E_TITLES.stream())
                         .toList());
-        putInUse(SearchEntityType.AUTHOR, List.of(ZED_DOC, BOB_DOC, CARL_DOC));
+        putInUse(SearchEntityType.AUTHOR, List.of(ZED_DOC, BOB_DOC, CARL_DOC, PHANTOM_DOC));
         putInUse(SearchEntityType.GROUP, List.of(SQUAD_DOC, CREW_DOC));
     }
 
@@ -128,7 +132,7 @@ class TypesenseQuickSearchIT {
 
     @Test
     void findsAPersonByAnyLabelOrTheRealNameUnderTheMainName() {
-        FoundAuthor zed = new FoundAuthor(ZED, "Zed", "John Doe");
+        FoundAuthor zed = new FoundAuthor(ZED, "Zed", "John Doe", "person");
 
         assertThat(find("zx", null).authors().hits()).containsExactly(zed);
         assertThat(find("john", null).authors().hits()).containsExactly(zed);
@@ -136,7 +140,15 @@ class TypesenseQuickSearchIT {
 
     @Test
     void givesNoRealNameForAPersonShownUnderIt() {
-        assertThat(find("carl", null).authors().hits()).containsExactly(new FoundAuthor(CARL, "Carl Real", null));
+        assertThat(find("carl", null).authors().hits())
+                .containsExactly(new FoundAuthor(CARL, "Carl Real", null, "person"));
+    }
+
+    @Test
+    void findsALabelOfNobodyAmongThePeopleByItsNameAndPlatform() {
+        assertThat(find("phant", "msx").authors().hits())
+                .containsExactly(new FoundAuthor(PHANTOM, "Phantom", null, "label"));
+        assertThat(find("phant", "vector").authors().hits()).isEmpty();
     }
 
     @Test

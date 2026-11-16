@@ -5,12 +5,11 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 /**
- * One group with everything shown on its page.
+ * One group with everything shown on its page, under its name.
  */
 public record GroupDetails(
         UUID id,
         String name,
-        String groupName,
         @Nullable String notes,
         List<String> types,
         List<GroupLabel> labels,
@@ -24,7 +23,6 @@ public record GroupDetails(
     public GroupDetails(
             UUID id,
             String name,
-            String groupName,
             @Nullable String notes,
             List<String> types,
             List<GroupLabel> labels,
@@ -32,23 +30,12 @@ public record GroupDetails(
             List<GroupMember> members,
             List<RelatedGroup> memberGroups,
             List<RelatedGroup> groups) {
-        this(id, name, groupName, notes, types, labels, locations, members, memberGroups, groups, null, false);
+        this(id, name, notes, types, labels, locations, members, memberGroups, groups, null, false);
     }
 
     /** The same group, telling whether the actor may change it. */
     public GroupDetails withCanChange(boolean canChange) {
         return new GroupDetails(
-                id,
-                name,
-                groupName,
-                notes,
-                types,
-                labels,
-                locations,
-                members,
-                memberGroups,
-                groups,
-                addedBy,
-                canChange);
+                id, name, notes, types, labels, locations, members, memberGroups, groups, addedBy, canChange);
     }
 }
