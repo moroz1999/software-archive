@@ -1,0 +1,15 @@
+# The public entry of the production stack: HTTPS, the API and the static site (docs/deploy.md).
+{$SITE_ADDRESS} {
+	encode zstd gzip
+
+	handle /api/* {
+		reverse_proxy backend:8080
+	}
+
+	handle {
+		root * /srv
+		# Every route of the single-page application opens directly.
+		try_files {path} /index.html
+		file_server
+	}
+}

@@ -51,6 +51,7 @@ Read ONLY the documents relevant to your task.
 - **[docs/domain.md](docs/domain.md)** - Archive domain and entities: WHAT the archive does, never HOW
 - **[docs/features/](docs/features/)** - How individual features are built: the implementation behind a domain document
 - **[docs/local-dev.md](docs/local-dev.md)** - Running the stack locally and reaching it over HTTP
+- **[docs/deploy.md](docs/deploy.md)** - Production stack in Docker Compose behind Caddy: first start, volumes
 - **[docs/value-objects.md](docs/value-objects.md)** - Branded value objects in domain, commands and entities; scalars only in request/response and persistence
 - **[docs/error-handling.md](docs/error-handling.md)** - Business vs system errors: exceptions → REST statuses, inline errors vs error modal; every error path is tested
 - **[docs/testing.md](docs/testing.md)** - Red → Green → Refactor: all development is test-driven; test types per layer; e2e fixtures

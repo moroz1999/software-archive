@@ -1,0 +1,85 @@
+# Production stack: docker compose --env-file .env.prod -f compose.prod.yaml up -d --build (docs/deploy.md).
+# Only Caddy is published; PostgreSQL, Typesense and the backend live in the internal network.
+name: software-archive-prod
+
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-archive}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env.prod}
+      POSTGRES_DB: ${POSTGRES_DB:-archive}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  typesense:
+    image: typesense/typesense:28.0
+    restart: unless-stopped
+    command: --data-dir /data --listen-port 8108
+    environment:
+      TYPESENSE_API_KEY: ${TYPESENSE_API_KEY:?set TYPESENSE_API_KEY in .env.prod}
+    volumes:
+      - typesense-data:/data
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':> /dev/tcp/127.0.0.1/8108' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      typesense:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-archive}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-archive}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_JPA_SHOWSQL: "false"
+      SEARCH_TYPESENSE_URL: http://typesense:8108
+      SEARCH_TYPESENSE_APIKEY: ${TYPESENSE_API_KEY}
+      AUTH_JWTSECRET: ${AUTH_JWT_SECRET:?set AUTH_JWT_SECRET in .env.prod}
+      AUTH_PUBLICURL: https://${SITE_ADDRESS:?set SITE_ADDRESS in .env.prod}
+      AUTH_MAILFROM: no-reply@${SITE_ADDRESS}
+      SCREENSHOTS_STORAGEPATH: /data/upload/images
+      RELEASEARCHIVES_STORAGEPATH: /data/upload/releases
+    volumes:
+      - uploads:/data/upload
+    networks: [internal]
+
+  caddy:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on: [backend]
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks: [internal]
+
+networks:
+  internal:
+
+volumes:
+  pgdata:
+  typesense-data:
+  uploads:
+  caddy-data:
+  caddy-config:

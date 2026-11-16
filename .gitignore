@@ -24,8 +24,9 @@ hs_err_pid*
 replay_pid*
 
 .idea
-# Local environment for docker compose
+# Local environments for docker compose
 .env
+.env.prod
 
 # Uploaded screenshots: business data, kept and backed up outside git
 /upload/
