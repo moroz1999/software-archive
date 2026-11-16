@@ -57,9 +57,11 @@ The host needs Docker with Compose, ports 80 and 443 open, and a DNS `A` record 
 From the root of the repository:
 
 ```bash
-cp .env.prod.example .env.prod
-# fill in .env.prod: the domain, the PostgreSQL password, the Typesense key
-# and the JWT secret (openssl rand -base64 48)
+# once: asks the domain, generates the passwords and the secret into .env.prod
+./scripts/init-env-prod.sh
+docker compose --env-file .env.prod -f compose.prod.yaml build
+# once, on the empty database: asks the user name, email and password of the first administrator
+docker compose --env-file .env.prod -f compose.prod.yaml run --rm backend create-admin
 docker compose --env-file .env.prod -f compose.prod.yaml up -d --build
 docker compose --env-file .env.prod -f compose.prod.yaml logs -f backend   # Flyway migrations, then "Started"
 ```
