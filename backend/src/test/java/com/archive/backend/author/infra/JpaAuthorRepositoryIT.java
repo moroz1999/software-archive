@@ -1,5 +1,6 @@
 package com.archive.backend.author.infra;
 
+import static com.archive.backend.user.TestActors.BY_OTHER;
 import static com.archive.backend.user.TestActors.MEMBER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -59,6 +60,7 @@ class JpaAuthorRepositoryIT {
 
     @BeforeEach
     void insertPlaces() {
+        TestActors.store(jdbc);
         jdbc.update(
                 "INSERT INTO country (id, name) VALUES (?, 'Finland'), (?, 'Norway')", FINLAND.value(), NORWAY.value());
         jdbc.update(
@@ -76,7 +78,8 @@ class JpaAuthorRepositoryIT {
                 List.of(
                         new LabelDraft(null, new LabelName("Zed"), true),
                         new LabelDraft(null, new LabelName("Axe"), false)),
-                HELSINKI_AND_NORWAY));
+                HELSINKI_AND_NORWAY,
+                BY_OTHER));
         return reload();
     }
 
@@ -102,7 +105,7 @@ class JpaAuthorRepositoryIT {
 
     @Test
     void writesAtOnceForPlainSqlInTheSameTransaction() {
-        repository.save(Author.create(ID, new RealName("John Doe"), null, List.of(), HELSINKI_AND_NORWAY));
+        repository.save(Author.create(ID, new RealName("John Doe"), null, List.of(), HELSINKI_AND_NORWAY, BY_OTHER));
         assertThat(count("SELECT count(*) FROM person WHERE id = ?", ID.value()))
                 .isEqualTo(1);
 
@@ -243,7 +246,6 @@ class JpaAuthorRepositoryIT {
 
     @Test
     void remembersWhoAddedThePerson() {
-        TestActors.store(jdbc);
         repository.save(Author.create(
                 ID, new RealName("John Doe"), null, List.of(), HELSINKI_AND_NORWAY, new AddedBy(MEMBER_ID)));
 

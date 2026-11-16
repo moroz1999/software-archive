@@ -6,7 +6,7 @@ export {LetterFilter, type LetterFilterProps} from './ui/LetterFilter';
 export {type LabelValue} from './model/label-value';
 export {LabelsEditor, type LabelsEditorProps} from './ui/LabelsEditor';
 export {type LabelId, requireLabelId, toLabelId} from './model/label-id';
-export {attachLabel, fetchLabelOwners} from './api/label-api';
+export {attachLabel, fetchLabelOwners, makeAuthorOfLabel, makeGroupOfLabel} from './api/label-api';
 export {LABEL_QUERY_KEY, labelDetailsQuery} from './api/label-queries';
 export {LABEL_ROUTE, labelPath} from './config/paths';
 export {type LabelDetails, type LabelGroup, type LabelOwner, type LabelOwnerOption, type NamedLabelOwner} from './model/label';

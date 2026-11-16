@@ -2,6 +2,7 @@ package com.archive.backend.user;
 
 import com.archive.backend.shared.web.AccessTokenCookieFilter;
 import com.archive.backend.user.domain.Actor;
+import com.archive.backend.user.domain.AddedBy;
 import com.archive.backend.user.domain.ConfirmationToken;
 import com.archive.backend.user.domain.Email;
 import com.archive.backend.user.domain.InterfaceLanguage;
@@ -28,6 +29,9 @@ public final class TestActors {
     public static final Actor ADMIN = new Actor(ADMIN_ID, Set.of(UserGroup.ADMIN, UserGroup.MEMBER));
     public static final Actor MEMBER = new Actor(MEMBER_ID, Set.of(UserGroup.MEMBER));
     public static final Actor OTHER = new Actor(OTHER_ID, Set.of(UserGroup.MEMBER));
+
+    /** An entry added by the other member: changed only by them and administrators. */
+    public static final AddedBy BY_OTHER = new AddedBy(OTHER_ID);
 
     private TestActors() {}
 

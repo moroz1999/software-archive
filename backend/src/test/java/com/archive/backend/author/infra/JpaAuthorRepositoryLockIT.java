@@ -1,5 +1,6 @@
 package com.archive.backend.author.infra;
 
+import static com.archive.backend.user.TestActors.BY_OTHER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -8,6 +9,7 @@ import com.archive.backend.author.domain.Author;
 import com.archive.backend.author.domain.AuthorId;
 import com.archive.backend.author.domain.RealName;
 import com.archive.backend.geo.domain.Locations;
+import com.archive.backend.user.TestActors;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -48,16 +50,18 @@ class JpaAuthorRepositoryLockIT {
 
     @BeforeEach
     void storeAuthor() {
+        TestActors.store(jdbc);
         transaction = new TransactionTemplate(transactions);
         another = new TransactionTemplate(transactions);
         another.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         transaction.executeWithoutResult(status -> repository.save(
-                Author.create(ID, new RealName("John Doe"), null, List.of(), new Locations(List.of()))));
+                Author.create(ID, new RealName("John Doe"), null, List.of(), new Locations(List.of()), BY_OTHER)));
     }
 
     @AfterEach
     void removeAuthor() {
         jdbc.update("DELETE FROM person WHERE id = ?", ID.value());
+        TestActors.remove(jdbc);
     }
 
     @Test

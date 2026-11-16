@@ -2,6 +2,7 @@ package com.archive.backend.group.domain;
 
 import com.archive.backend.geo.domain.Locations;
 import com.archive.backend.label.domain.Label;
+import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.OwnLabel;
 import com.archive.backend.label.domain.OwnerOfLabelsChanged;
 import com.archive.backend.label.domain.UnmarkedLabelDraft;
@@ -58,27 +59,6 @@ public final class Group {
         this.addedBy = Objects.requireNonNull(addedBy, "addedBy");
     }
 
-    public Group(
-            GroupId id,
-            GroupName name,
-            @Nullable GroupNotes notes,
-            GroupTypeSet types,
-            UnmarkedLabels labels,
-            Locations locations,
-            GroupMembers members) {
-        this(id, name, notes, types, labels, locations, members, AddedBy.NOBODY);
-    }
-
-    public Group(
-            GroupId id,
-            GroupName name,
-            @Nullable GroupNotes notes,
-            GroupTypeSet types,
-            UnmarkedLabels labels,
-            Locations locations) {
-        this(id, name, notes, types, labels, locations, GroupMembers.EMPTY);
-    }
-
     public static Group create(
             GroupId id,
             GroupName name,
@@ -93,30 +73,9 @@ public final class Group {
         return group;
     }
 
-    public static Group create(
-            GroupId id,
-            GroupName name,
-            @Nullable GroupNotes notes,
-            GroupTypeSet types,
-            List<UnmarkedLabelDraft> labels,
-            Locations locations,
-            GroupMembers members) {
-        return create(id, name, notes, types, labels, locations, members, AddedBy.NOBODY);
-    }
-
     /** Whoever added the group changes it, and administrators any (docs/domain/users.md). */
     public void requireChangeableBy(Actor actor) {
         addedBy.requireChangeableBy(actor);
-    }
-
-    public static Group create(
-            GroupId id,
-            GroupName name,
-            @Nullable GroupNotes notes,
-            GroupTypeSet types,
-            List<UnmarkedLabelDraft> labels,
-            Locations locations) {
-        return create(id, name, notes, types, labels, locations, GroupMembers.EMPTY);
     }
 
     /**
@@ -148,6 +107,32 @@ public final class Group {
     public void adopt(Label label) {
         labels = labels.adopt(new OwnLabel(label.getId(), label.getName()));
         events.add(new OwnerOfLabelsChanged(Set.of(label.getId())));
+        markChanged();
+    }
+
+    /**
+     * A new group under the name of a label, which becomes one of its names; it goes over with its works.
+     */
+    public static Group namedAfter(GroupId id, Label label, GroupTypeSet types, AddedBy addedBy) {
+        UnmarkedLabels labels = UnmarkedLabels.of(List.of()).adopt(new OwnLabel(label.getId(), label.getName()));
+        Group group = new Group(
+                id,
+                new GroupName(label.getName().value()),
+                null,
+                types,
+                labels,
+                new Locations(List.of()),
+                GroupMembers.EMPTY,
+                addedBy);
+        group.events.add(new OwnerOfLabelsChanged(Set.of(label.getId())));
+        group.markChanged();
+        return group;
+    }
+
+    /** Gives up a label that turned out to be somebody else's; only its works change their owner. */
+    public void release(LabelId label) {
+        labels = labels.release(label);
+        events.add(new OwnerOfLabelsChanged(Set.of(label)));
         markChanged();
     }
 

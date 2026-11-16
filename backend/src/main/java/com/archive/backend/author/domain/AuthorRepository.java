@@ -1,5 +1,6 @@
 package com.archive.backend.author.domain;
 
+import com.archive.backend.label.domain.LabelId;
 import java.util.Optional;
 
 /**
@@ -8,6 +9,9 @@ import java.util.Optional;
 public interface AuthorRepository {
 
     Optional<Author> findById(AuthorId id);
+
+    /** The person a label belongs to, if it belongs to one. */
+    Optional<Author> findByLabel(LabelId label);
 
     void save(Author author);
 

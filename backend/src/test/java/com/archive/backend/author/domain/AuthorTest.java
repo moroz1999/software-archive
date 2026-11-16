@@ -1,5 +1,6 @@
 package com.archive.backend.author.domain;
 
+import static com.archive.backend.user.TestActors.BY_OTHER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -12,8 +13,10 @@ import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.label.domain.OwnLabel;
 import com.archive.backend.label.domain.OwnLabels;
+import com.archive.backend.label.domain.OwnerOfLabelsChanged;
 import com.archive.backend.shared.domain.error.RuleViolationException;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -26,12 +29,17 @@ class AuthorTest {
             new Locations(List.of(new Location(Place.restore(new CountryId(UUID.randomUUID()), null), true)));
 
     private static Author johnDoe() {
-        return Author.create(ID, new RealName("John Doe"), null, List.of(), NOWHERE);
+        return Author.create(ID, new RealName("John Doe"), null, List.of(), NOWHERE, BY_OTHER);
     }
 
     private static Author zed() {
         return new Author(
-                ID, null, null, OwnLabels.restore(List.of(new OwnLabel(ZED, new LabelName("Zed"))), ZED), NOWHERE);
+                ID,
+                null,
+                null,
+                OwnLabels.restore(List.of(new OwnLabel(ZED, new LabelName("Zed"))), ZED),
+                NOWHERE,
+                BY_OTHER);
     }
 
     @Test
@@ -41,7 +49,8 @@ class AuthorTest {
                 new RealName("John Doe"),
                 new AuthorNotes("Coder since 1984"),
                 List.of(new LabelDraft(null, new LabelName("Zed"), true)),
-                NORWAY);
+                NORWAY,
+                BY_OTHER);
 
         assertThat(author.getId()).isEqualTo(ID);
         assertThat(author.getRealName()).isEqualTo(new RealName("John Doe"));
@@ -62,7 +71,7 @@ class AuthorTest {
 
     @Test
     void cannotBeCreatedWithoutAnyName() {
-        assertThatThrownBy(() -> Author.create(ID, null, null, List.of(), NOWHERE))
+        assertThatThrownBy(() -> Author.create(ID, null, null, List.of(), NOWHERE, BY_OTHER))
                 .isInstanceOfSatisfying(RuleViolationException.class, e -> {
                     assertThat(e.code()).isEqualTo("author.nameless");
                     assertThat(e.field()).isEqualTo("realName");
@@ -143,5 +152,32 @@ class AuthorTest {
         author.delete();
 
         assertThat(author.pullEvents()).contains(new AuthorChanged(ID));
+    }
+
+    @Test
+    void releasesALabelAndTellsItsWorksChanged() {
+        Author author = new Author(
+                ID,
+                new RealName("John Doe"),
+                null,
+                OwnLabels.restore(List.of(new OwnLabel(ZED, new LabelName("Zed"))), ZED),
+                NOWHERE,
+                BY_OTHER);
+
+        author.release(ZED);
+
+        assertThat(author.getLabels().isEmpty()).isTrue();
+        assertThat(author.pullEvents())
+                .containsExactlyInAnyOrder(new OwnerOfLabelsChanged(Set.of(ZED)), new AuthorChanged(ID));
+    }
+
+    @Test
+    void keepsTheOnlyLabelOfAPersonWithoutARealName() {
+        Author author = zed();
+
+        assertThatThrownBy(() -> author.release(ZED))
+                .isInstanceOfSatisfying(
+                        RuleViolationException.class, e -> assertThat(e.code()).isEqualTo("author.nameless"));
+        assertThat(author.getLabels().isEmpty()).isFalse();
     }
 }

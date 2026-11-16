@@ -1,5 +1,6 @@
 package com.archive.backend.group.infra;
 
+import static com.archive.backend.user.TestActors.BY_OTHER;
 import static com.archive.backend.user.TestActors.MEMBER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -60,6 +61,7 @@ class JpaGroupRepositoryIT {
 
     @BeforeEach
     void insertAround() {
+        TestActors.store(jdbc);
         jdbc.update("INSERT INTO country (id, name) VALUES (?, 'Norway')", NORWAY.value());
         jdbc.update("INSERT INTO \"group\" (id, name) VALUES (?, 'Other')", OTHER);
         jdbc.update("INSERT INTO software (id, title, platform_code) VALUES (?, 'Elite', 'vector')", ELITE);
@@ -75,7 +77,9 @@ class JpaGroupRepositoryIT {
                 List.of(
                         new UnmarkedLabelDraft(null, new LabelName("Crew")),
                         new UnmarkedLabelDraft(null, new LabelName("CRW"))),
-                IN_NORWAY));
+                IN_NORWAY,
+                GroupMembers.EMPTY,
+                BY_OTHER));
         return reload();
     }
 
@@ -101,7 +105,15 @@ class JpaGroupRepositoryIT {
 
     @Test
     void writesAtOnceForPlainSqlInTheSameTransaction() {
-        repository.save(Group.create(ID, new GroupName("Crew Ltd"), null, DEMOGROUP_AND_LABEL, List.of(), IN_NORWAY));
+        repository.save(Group.create(
+                ID,
+                new GroupName("Crew Ltd"),
+                null,
+                DEMOGROUP_AND_LABEL,
+                List.of(),
+                IN_NORWAY,
+                GroupMembers.EMPTY,
+                BY_OTHER));
         assertThat(count("SELECT count(*) FROM \"group\" WHERE id = ?", ID.value()))
                 .isEqualTo(1);
 
@@ -270,7 +282,6 @@ class JpaGroupRepositoryIT {
 
     @Test
     void remembersWhoAddedTheGroup() {
-        TestActors.store(jdbc);
         repository.save(Group.create(
                 ID,
                 new GroupName("Crew Ltd"),

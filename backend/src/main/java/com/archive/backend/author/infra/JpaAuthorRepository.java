@@ -3,6 +3,7 @@ package com.archive.backend.author.infra;
 import com.archive.backend.author.domain.Author;
 import com.archive.backend.author.domain.AuthorId;
 import com.archive.backend.author.domain.AuthorRepository;
+import com.archive.backend.label.domain.LabelId;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -24,6 +25,11 @@ public class JpaAuthorRepository implements AuthorRepository {
                 .filter(entity ->
                         entity.getRealName() != null || !entity.getLabels().isEmpty())
                 .map(mapper::toDomain);
+    }
+
+    @Override
+    public Optional<Author> findByLabel(LabelId label) {
+        return springDataAuthorRepository.findByLabel(label.value()).map(mapper::toDomain);
     }
 
     @Override

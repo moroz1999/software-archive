@@ -1,6 +1,7 @@
 package com.archive.backend.software.domain;
 
 import static com.archive.backend.user.TestActors.ADMIN;
+import static com.archive.backend.user.TestActors.BY_OTHER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -12,7 +13,6 @@ import com.archive.backend.hardware.domain.HardwareSet;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.shared.domain.error.RuleViolationException;
-import com.archive.backend.user.domain.AddedBy;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
@@ -50,12 +50,20 @@ class SoftwareTest {
     }
 
     private static Software elite() {
-        return Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_VECTOR_HARDWARE, CategorySet.EMPTY);
+        return Software.create(
+                ID,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                NO_VECTOR_HARDWARE,
+                CategorySet.EMPTY,
+                SoftwareCredits.EMPTY,
+                BY_OTHER);
     }
 
     private static Software eliteWithAyMod() {
         Software software = elite();
-        software.addRelease(AY_MOD, AY_MOD_CONTENT, VECTOR_AY, AddedBy.NOBODY);
+        software.addRelease(AY_MOD, AY_MOD_CONTENT, VECTOR_AY, BY_OTHER);
         return software;
     }
 
@@ -67,7 +75,9 @@ class SoftwareTest {
                 new SoftwareDescription("Space trading"),
                 ReleaseDate.ofDay(LocalDate.of(1985, 9, 20)),
                 NO_VECTOR_HARDWARE,
-                CategorySet.EMPTY);
+                CategorySet.EMPTY,
+                SoftwareCredits.EMPTY,
+                BY_OTHER);
 
         assertThat(software.getId()).isEqualTo(ID);
         assertThat(software.getTitle()).isEqualTo(new SoftwareTitle("Elite"));
@@ -78,8 +88,15 @@ class SoftwareTest {
 
     @Test
     void takesItsPlatformFromItsHardware() {
-        Software software =
-                Software.create(ID, new SoftwareTitle("Elite"), null, null, VECTOR_06C_SET, CategorySet.EMPTY);
+        Software software = Software.create(
+                ID,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                VECTOR_06C_SET,
+                CategorySet.EMPTY,
+                SoftwareCredits.EMPTY,
+                BY_OTHER);
 
         assertThat(software.getPlatform()).isEqualTo(VECTOR);
         assertThat(software.getHardware()).isEqualTo(VECTOR_06C_SET);
@@ -98,7 +115,9 @@ class SoftwareTest {
                 new SoftwareDescription("Space trading"),
                 ReleaseDate.ofDay(LocalDate.of(1985, 9, 20)),
                 VECTOR_06C_SET,
-                CategorySet.EMPTY);
+                CategorySet.EMPTY,
+                SoftwareCredits.EMPTY,
+                BY_OTHER);
 
         software.edit(new SoftwareTitle("Elite Plus"), null, null, VECTOR_AY, CategorySet.EMPTY);
 
@@ -113,8 +132,8 @@ class SoftwareTest {
     void addsReleasesWithWhatTheyStateAndTheirHardware() {
         Software software = elite();
 
-        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_VECTOR_HARDWARE, AddedBy.NOBODY);
-        software.addRelease(AY_MOD, AY_MOD_CONTENT, VECTOR_AY, AddedBy.NOBODY);
+        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_VECTOR_HARDWARE, BY_OTHER);
+        software.addRelease(AY_MOD, AY_MOD_CONTENT, VECTOR_AY, BY_OTHER);
 
         assertThat(software.getReleases()).extracting(Release::id).containsExactly(ORIGINAL, AY_MOD);
         assertThat(software.release(AY_MOD)).hasValueSatisfying(release -> {
@@ -138,7 +157,7 @@ class SoftwareTest {
     @Test
     void removesARelease() {
         Software software = eliteWithAyMod();
-        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_VECTOR_HARDWARE, AddedBy.NOBODY);
+        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_VECTOR_HARDWARE, BY_OTHER);
 
         software.removeRelease(ORIGINAL, ADMIN);
 
@@ -149,7 +168,7 @@ class SoftwareTest {
     @Test
     void doesNotKnowAnyOtherRelease() {
         Software software = elite();
-        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_VECTOR_HARDWARE, AddedBy.NOBODY);
+        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_VECTOR_HARDWARE, BY_OTHER);
 
         assertThatThrownBy(() -> software.editRelease(AY_MOD, AY_MOD_CONTENT, VECTOR_AY, ADMIN))
                 .isInstanceOfSatisfying(
@@ -164,7 +183,7 @@ class SoftwareTest {
     void refusesAReleaseWithHardwareOfAnotherPlatform() {
         Software software = elite();
 
-        assertThatThrownBy(() -> software.addRelease(AY_MOD, AY_MOD_CONTENT, BK_0011M, AddedBy.NOBODY))
+        assertThatThrownBy(() -> software.addRelease(AY_MOD, AY_MOD_CONTENT, BK_0011M, BY_OTHER))
                 .isInstanceOfSatisfying(RuleViolationException.class, e -> {
                     assertThat(e.code()).isEqualTo("hardware.unknown");
                     assertThat(e.field()).isEqualTo("hardware");
@@ -189,7 +208,7 @@ class SoftwareTest {
     void takesAReleaseWithoutHardwareWhateverPlatformItsEmptySetNames() {
         Software software = elite();
 
-        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_BK_HARDWARE, AddedBy.NOBODY);
+        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_BK_HARDWARE, BY_OTHER);
 
         assertThat(software.getReleases()).extracting(Release::id).containsExactly(ORIGINAL);
     }
@@ -203,7 +222,9 @@ class SoftwareTest {
                         null,
                         NO_VECTOR_HARDWARE,
                         CategorySet.EMPTY,
-                        List.of(new Release(AY_MOD, AY_MOD_CONTENT, BK_0011M))))
+                        SoftwareCredits.EMPTY,
+                        List.of(new Release(AY_MOD, AY_MOD_CONTENT, BK_0011M, BY_OTHER)),
+                        BY_OTHER))
                 .isInstanceOfSatisfying(
                         RuleViolationException.class, e -> assertThat(e.code()).isEqualTo("hardware.unknown"));
     }
@@ -211,7 +232,7 @@ class SoftwareTest {
     @Test
     void changesThePlatformWhileNoReleaseHasHardware() {
         Software software = elite();
-        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_VECTOR_HARDWARE, AddedBy.NOBODY);
+        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_VECTOR_HARDWARE, BY_OTHER);
 
         software.edit(new SoftwareTitle("Elite"), null, null, NO_BK_HARDWARE, CategorySet.EMPTY);
 
@@ -220,8 +241,15 @@ class SoftwareTest {
 
     @Test
     void changesThePlatformTogetherWithHardwareOfTheNewPlatform() {
-        Software software =
-                Software.create(ID, new SoftwareTitle("Elite"), null, null, VECTOR_06C_SET, CategorySet.EMPTY);
+        Software software = Software.create(
+                ID,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                VECTOR_06C_SET,
+                CategorySet.EMPTY,
+                SoftwareCredits.EMPTY,
+                BY_OTHER);
 
         software.edit(new SoftwareTitle("Elite"), null, null, BK_0011M, CategorySet.EMPTY);
 
@@ -256,7 +284,8 @@ class SoftwareTest {
     @Test
     void isCreatedInItsCategoriesAndEditingReplacesThem() {
         CategorySet games = CategorySet.restore(List.of(new CategoryLine(new CategoryId(ORIGINAL.value()), List.of())));
-        Software software = Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_VECTOR_HARDWARE, games);
+        Software software = Software.create(
+                ID, new SoftwareTitle("Elite"), null, null, NO_VECTOR_HARDWARE, games, SoftwareCredits.EMPTY, BY_OTHER);
 
         assertThat(software.getCategories()).isEqualTo(games);
 

@@ -1,5 +1,6 @@
 package com.archive.backend.group.infra;
 
+import static com.archive.backend.user.TestActors.BY_OTHER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -7,9 +8,11 @@ import com.archive.backend.TestcontainersConfiguration;
 import com.archive.backend.geo.domain.Locations;
 import com.archive.backend.group.domain.Group;
 import com.archive.backend.group.domain.GroupId;
+import com.archive.backend.group.domain.GroupMembers;
 import com.archive.backend.group.domain.GroupName;
 import com.archive.backend.group.domain.GroupTypeCode;
 import com.archive.backend.group.domain.GroupTypeSet;
+import com.archive.backend.user.TestActors;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -51,6 +54,7 @@ class JpaGroupRepositoryLockIT {
 
     @BeforeEach
     void storeGroup() {
+        TestActors.store(jdbc);
         transaction = new TransactionTemplate(transactions);
         another = new TransactionTemplate(transactions);
         another.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -60,12 +64,15 @@ class JpaGroupRepositoryLockIT {
                 null,
                 GroupTypeSet.restore(Set.of(new GroupTypeCode("demogroup"))),
                 List.of(),
-                new Locations(List.of()))));
+                new Locations(List.of()),
+                GroupMembers.EMPTY,
+                BY_OTHER)));
     }
 
     @AfterEach
     void removeGroup() {
         jdbc.update("DELETE FROM \"group\" WHERE id = ?", ID.value());
+        TestActors.remove(jdbc);
     }
 
     @Test

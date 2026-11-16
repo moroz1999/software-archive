@@ -1,12 +1,12 @@
 package com.archive.backend.software.domain;
 
 import static com.archive.backend.user.TestActors.ADMIN;
+import static com.archive.backend.user.TestActors.BY_OTHER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.archive.backend.category.domain.CategorySet;
 import com.archive.backend.hardware.domain.HardwareSet;
 import com.archive.backend.hardware.domain.PlatformCode;
-import com.archive.backend.user.domain.AddedBy;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -27,9 +27,16 @@ class SoftwareReleaseArchivesTest {
     }
 
     private static Software software() {
-        Software software =
-                Software.create(SOFTWARE, new SoftwareTitle("Elite"), null, null, NO_HARDWARE, CategorySet.EMPTY);
-        software.addRelease(RELEASE, CONTENT, NO_HARDWARE, AddedBy.NOBODY, ORIGINAL);
+        Software software = Software.create(
+                SOFTWARE,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                NO_HARDWARE,
+                CategorySet.EMPTY,
+                SoftwareCredits.EMPTY,
+                BY_OTHER);
+        software.addRelease(RELEASE, CONTENT, NO_HARDWARE, BY_OTHER, ORIGINAL);
         software.pullEvents();
         return software;
     }

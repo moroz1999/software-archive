@@ -1,5 +1,7 @@
 package com.archive.backend.software.app;
 
+import static com.archive.backend.user.TestActors.BY_OTHER;
+
 import com.archive.backend.category.domain.CategoryId;
 import com.archive.backend.category.domain.CategoryLine;
 import com.archive.backend.category.domain.CategorySet;
@@ -13,9 +15,9 @@ import com.archive.backend.software.domain.ReleaseId;
 import com.archive.backend.software.domain.ReleaseTitle;
 import com.archive.backend.software.domain.ReleaseType;
 import com.archive.backend.software.domain.Software;
+import com.archive.backend.software.domain.SoftwareCredits;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareTitle;
-import com.archive.backend.user.domain.AddedBy;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -54,13 +56,21 @@ final class ReleaseFixtures {
     }
 
     static Software elite() {
-        return Software.create(ELITE, new SoftwareTitle("Elite"), null, null, vector(), CategorySet.EMPTY);
+        return Software.create(
+                ELITE,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                vector(),
+                CategorySet.EMPTY,
+                SoftwareCredits.EMPTY,
+                BY_OTHER);
     }
 
     /** Elite with its AY mod, which has the AY chip. */
     static Software eliteWithAyMod() {
         Software software = elite();
-        software.addRelease(AY_MOD, AY_MOD_CONTENT, vector(AY), AddedBy.NOBODY);
+        software.addRelease(AY_MOD, AY_MOD_CONTENT, vector(AY), BY_OTHER);
         return software;
     }
 

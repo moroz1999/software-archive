@@ -89,29 +89,6 @@ public final class Software {
         this(id, title, description, releaseDate, hardware, categories, credits, releases, addedBy, Screenshots.EMPTY);
     }
 
-    public Software(
-            SoftwareId id,
-            SoftwareTitle title,
-            @Nullable SoftwareDescription description,
-            @Nullable ReleaseDate releaseDate,
-            HardwareSet hardware,
-            CategorySet categories,
-            SoftwareCredits credits,
-            List<Release> releases) {
-        this(id, title, description, releaseDate, hardware, categories, credits, releases, AddedBy.NOBODY);
-    }
-
-    public Software(
-            SoftwareId id,
-            SoftwareTitle title,
-            @Nullable SoftwareDescription description,
-            @Nullable ReleaseDate releaseDate,
-            HardwareSet hardware,
-            CategorySet categories,
-            List<Release> releases) {
-        this(id, title, description, releaseDate, hardware, categories, SoftwareCredits.EMPTY, releases);
-    }
-
     public static Software create(
             SoftwareId id,
             SoftwareTitle title,
@@ -125,27 +102,6 @@ public final class Software {
                 new Software(id, title, description, releaseDate, hardware, categories, credits, List.of(), addedBy);
         software.markChanged();
         return software;
-    }
-
-    public static Software create(
-            SoftwareId id,
-            SoftwareTitle title,
-            @Nullable SoftwareDescription description,
-            @Nullable ReleaseDate releaseDate,
-            HardwareSet hardware,
-            CategorySet categories,
-            SoftwareCredits credits) {
-        return create(id, title, description, releaseDate, hardware, categories, credits, AddedBy.NOBODY);
-    }
-
-    public static Software create(
-            SoftwareId id,
-            SoftwareTitle title,
-            @Nullable SoftwareDescription description,
-            @Nullable ReleaseDate releaseDate,
-            HardwareSet hardware,
-            CategorySet categories) {
-        return create(id, title, description, releaseDate, hardware, categories, SoftwareCredits.EMPTY);
     }
 
     public PlatformCode getPlatform() {

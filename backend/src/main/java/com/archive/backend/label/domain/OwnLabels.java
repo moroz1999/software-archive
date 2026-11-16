@@ -90,6 +90,19 @@ public final class OwnLabels {
         return new OwnLabels(labels, display ? label.id() : this.display);
     }
 
+    /**
+     * The labels without one taken away from the owner. The display name goes only with the last label: while others
+     * stay, the owner is known by it until another one is marked.
+     */
+    public OwnLabels release(LabelId label) {
+        List<OwnLabel> labels =
+                all.stream().filter(own -> !own.id().equals(label)).toList();
+        if (label.equals(display) && !labels.isEmpty()) {
+            throw new LabelDisplayNameException();
+        }
+        return new OwnLabels(labels, labels.isEmpty() ? null : display);
+    }
+
     public List<OwnLabel> all() {
         return all;
     }

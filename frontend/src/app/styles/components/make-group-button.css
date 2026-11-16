@@ -1,0 +1,5 @@
+:root {
+    /* While the group types load: about one line of checkboxes. */
+    --make-group-button-loading-width: 240px;
+    --make-group-button-loading-height: var(--space-24);
+}

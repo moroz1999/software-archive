@@ -59,4 +59,9 @@ class UnmarkedLabelsTest {
         assertThat(UnmarkedLabels.of(List.of()).isEmpty()).isTrue();
         assertThat(CREW_AND_CRW.isEmpty()).isFalse();
     }
+
+    @Test
+    void releasesALabel() {
+        assertThat(CREW_AND_CRW.release(CREW).all()).containsExactly(new OwnLabel(CRW, new LabelName("CRW")));
+    }
 }

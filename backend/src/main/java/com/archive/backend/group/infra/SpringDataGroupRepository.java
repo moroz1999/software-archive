@@ -5,6 +5,8 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface SpringDataGroupRepository extends JpaRepository<GroupEntity, UUID> {
 
@@ -14,4 +16,9 @@ public interface SpringDataGroupRepository extends JpaRepository<GroupEntity, UU
     @Override
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<GroupEntity> findById(UUID id);
+
+    /** The group a label belongs to, locked for a change like {@link #findById}. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT o FROM GroupEntity o JOIN o.labels l WHERE l.id = :label")
+    Optional<GroupEntity> findByLabel(@Param("label") UUID label);
 }

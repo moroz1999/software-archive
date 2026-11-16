@@ -1,5 +1,6 @@
 package com.archive.backend.group.domain;
 
+import com.archive.backend.label.domain.LabelId;
 import java.util.Optional;
 
 /**
@@ -8,6 +9,9 @@ import java.util.Optional;
 public interface GroupRepository {
 
     Optional<Group> findById(GroupId id);
+
+    /** The group a label belongs to, if it belongs to one. */
+    Optional<Group> findByLabel(LabelId label);
 
     void save(Group group);
 

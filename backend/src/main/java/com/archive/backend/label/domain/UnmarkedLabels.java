@@ -59,6 +59,12 @@ public final class UnmarkedLabels {
         return new UnmarkedLabels(labels);
     }
 
+    /** The labels without one taken away from the group. */
+    public UnmarkedLabels release(LabelId label) {
+        return new UnmarkedLabels(
+                all.stream().filter(own -> !own.id().equals(label)).toList());
+    }
+
     public List<OwnLabel> all() {
         return all;
     }

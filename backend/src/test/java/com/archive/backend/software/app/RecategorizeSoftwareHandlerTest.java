@@ -4,11 +4,13 @@ import static com.archive.backend.software.app.ReleaseFixtures.ARCADE;
 import static com.archive.backend.software.app.ReleaseFixtures.ELITE;
 import static com.archive.backend.software.app.ReleaseFixtures.elite;
 import static com.archive.backend.software.app.ReleaseFixtures.vector;
+import static com.archive.backend.user.TestActors.BY_OTHER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.archive.backend.category.domain.CategoryMoved;
 import com.archive.backend.category.domain.CategorySet;
 import com.archive.backend.software.domain.Software;
+import com.archive.backend.software.domain.SoftwareCredits;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareTitle;
 import java.util.ArrayList;
@@ -34,7 +36,15 @@ class RecategorizeSoftwareHandlerTest {
     @Test
     void storesAgainTheSoftwareTheMoveBroughtUnderOneBranchOnly() {
         repository.save(elite());
-        repository.save(Software.create(TETRIS, new SoftwareTitle("Tetris"), null, null, vector(), CategorySet.EMPTY));
+        repository.save(Software.create(
+                TETRIS,
+                new SoftwareTitle("Tetris"),
+                null,
+                null,
+                vector(),
+                CategorySet.EMPTY,
+                SoftwareCredits.EMPTY,
+                BY_OTHER));
         stored.clear();
         RecategorizeSoftwareHandler handler =
                 new RecategorizeSoftwareHandler(repository, moved -> moved.equals(ARCADE) ? List.of(ELITE) : List.of());

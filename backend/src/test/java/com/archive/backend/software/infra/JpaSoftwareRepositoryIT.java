@@ -1,6 +1,8 @@
 package com.archive.backend.software.infra;
 
 import static com.archive.backend.user.TestActors.ADMIN;
+import static com.archive.backend.user.TestActors.ADMIN_ID;
+import static com.archive.backend.user.TestActors.BY_OTHER;
 import static com.archive.backend.user.TestActors.MEMBER_ID;
 import static com.archive.backend.user.TestActors.OTHER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,6 +46,7 @@ import java.time.Year;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -100,12 +103,25 @@ class JpaSoftwareRepositoryIT {
     @Autowired
     private JdbcTemplate jdbc;
 
+    @BeforeEach
+    void storeActors() {
+        TestActors.store(jdbc);
+    }
+
     @Autowired
     private EntityManager entityManager;
 
     @Test
     void writesAtOnceForPlainSqlInTheSameTransaction() {
-        repository.save(Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE, CategorySet.EMPTY));
+        repository.save(Software.create(
+                ID,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                NO_HARDWARE,
+                CategorySet.EMPTY,
+                SoftwareCredits.EMPTY,
+                BY_OTHER));
         assertThat(jdbc.queryForObject("SELECT count(*) FROM software WHERE id = ?", Integer.class, ID.value()))
                 .isEqualTo(1);
 
@@ -122,7 +138,9 @@ class JpaSoftwareRepositoryIT {
                 new SoftwareDescription("Space trading"),
                 ReleaseDate.ofDay(LocalDate.of(1985, 9, 20)),
                 NO_HARDWARE,
-                CategorySet.EMPTY));
+                CategorySet.EMPTY,
+                SoftwareCredits.EMPTY,
+                BY_OTHER));
         springDataSoftwareRepository.flush();
 
         assertThat(repository.findById(ID)).hasValueSatisfying(software -> {
@@ -146,8 +164,10 @@ class JpaSoftwareRepositoryIT {
                 null,
                 ReleaseDate.ofYear(Year.of(1987)),
                 NO_HARDWARE,
-                CategorySet.EMPTY);
-        software.addRelease(ORIGINAL, release, NO_HARDWARE, AddedBy.NOBODY);
+                CategorySet.EMPTY,
+                SoftwareCredits.EMPTY,
+                BY_OTHER);
+        software.addRelease(ORIGINAL, release, NO_HARDWARE, BY_OTHER);
         repository.save(software);
         springDataSoftwareRepository.flush();
         entityManager.clear();
@@ -159,7 +179,15 @@ class JpaSoftwareRepositoryIT {
 
     @Test
     void storesEdits() {
-        repository.save(Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE, CategorySet.EMPTY));
+        repository.save(Software.create(
+                ID,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                NO_HARDWARE,
+                CategorySet.EMPTY,
+                SoftwareCredits.EMPTY,
+                BY_OTHER));
         springDataSoftwareRepository.flush();
         Software software = repository.findById(ID).orElseThrow();
 
@@ -185,7 +213,15 @@ class JpaSoftwareRepositoryIT {
 
     @Test
     void deletesSoftwareWithEverythingThatBelongsToIt() {
-        repository.save(Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE, CategorySet.EMPTY));
+        repository.save(Software.create(
+                ID,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                NO_HARDWARE,
+                CategorySet.EMPTY,
+                SoftwareCredits.EMPTY,
+                BY_OTHER));
         springDataSoftwareRepository.flush();
         jdbc.update("INSERT INTO software_alternative_titles (title, software_id) VALUES ('Элита', ?)", ID.value());
         jdbc.update("INSERT INTO software_languages (software_id, language) VALUES (?, 'en')", ID.value());
@@ -223,8 +259,16 @@ class JpaSoftwareRepositoryIT {
 
     @Test
     void storesTheScreenshotsOfTheSoftwareAndOfItsReleasesInTheirOrder() {
-        Software software = Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE, CategorySet.EMPTY);
-        software.addRelease(AY_MOD, AY_MOD_CONTENT, NO_HARDWARE, AddedBy.NOBODY);
+        Software software = Software.create(
+                ID,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                NO_HARDWARE,
+                CategorySet.EMPTY,
+                SoftwareCredits.EMPTY,
+                BY_OTHER);
+        software.addRelease(AY_MOD, AY_MOD_CONTENT, NO_HARDWARE, BY_OTHER);
         software.addScreenshots(null, List.of(shot(1, ScreenshotFormat.PNG), shot(2, ScreenshotFormat.GIF)), ADMIN);
         software.addScreenshots(AY_MOD, List.of(shot(3, ScreenshotFormat.WEBP)), ADMIN);
         repository.save(software);
@@ -240,8 +284,16 @@ class JpaSoftwareRepositoryIT {
     @Test
     void storesTheOneArchiveOfARelease() {
         ReleaseArchive archive = new ReleaseArchive(new ReleaseArchiveId(UUID.randomUUID()), "elite.zip", 7);
-        Software software = Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE, CategorySet.EMPTY);
-        software.addRelease(AY_MOD, AY_MOD_CONTENT, NO_HARDWARE, AddedBy.NOBODY, archive);
+        Software software = Software.create(
+                ID,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                NO_HARDWARE,
+                CategorySet.EMPTY,
+                SoftwareCredits.EMPTY,
+                BY_OTHER);
+        software.addRelease(AY_MOD, AY_MOD_CONTENT, NO_HARDWARE, BY_OTHER, archive);
 
         repository.save(software);
         springDataSoftwareRepository.flush();
@@ -258,8 +310,16 @@ class JpaSoftwareRepositoryIT {
 
     @Test
     void storesReorderedAndRemovedScreenshots() {
-        Software software = Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE, CategorySet.EMPTY);
-        software.addRelease(AY_MOD, AY_MOD_CONTENT, NO_HARDWARE, AddedBy.NOBODY);
+        Software software = Software.create(
+                ID,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                NO_HARDWARE,
+                CategorySet.EMPTY,
+                SoftwareCredits.EMPTY,
+                BY_OTHER);
+        software.addRelease(AY_MOD, AY_MOD_CONTENT, NO_HARDWARE, BY_OTHER);
         software.addScreenshots(
                 null,
                 List.of(shot(1, ScreenshotFormat.PNG), shot(2, ScreenshotFormat.PNG), shot(3, ScreenshotFormat.PNG)),
@@ -297,9 +357,17 @@ class JpaSoftwareRepositoryIT {
 
     @Test
     void deletesTheScreenshotsWithTheirSoftwareAndRelease() {
-        Software software = Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE, CategorySet.EMPTY);
-        software.addRelease(AY_MOD, AY_MOD_CONTENT, NO_HARDWARE, AddedBy.NOBODY);
-        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_HARDWARE, AddedBy.NOBODY);
+        Software software = Software.create(
+                ID,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                NO_HARDWARE,
+                CategorySet.EMPTY,
+                SoftwareCredits.EMPTY,
+                BY_OTHER);
+        software.addRelease(AY_MOD, AY_MOD_CONTENT, NO_HARDWARE, BY_OTHER);
+        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_HARDWARE, BY_OTHER);
         software.addScreenshots(null, List.of(shot(1, ScreenshotFormat.PNG)), ADMIN);
         software.addScreenshots(AY_MOD, List.of(shot(2, ScreenshotFormat.PNG)), ADMIN);
         software.addScreenshots(ORIGINAL, List.of(shot(3, ScreenshotFormat.PNG)), ADMIN);
@@ -324,9 +392,17 @@ class JpaSoftwareRepositoryIT {
 
     @Test
     void storesReleasesWithTheirHardware() {
-        Software software = Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE, CategorySet.EMPTY);
-        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_HARDWARE, AddedBy.NOBODY);
-        software.addRelease(AY_MOD, AY_MOD_CONTENT, AY_AND_JOYSTICK, AddedBy.NOBODY);
+        Software software = Software.create(
+                ID,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                NO_HARDWARE,
+                CategorySet.EMPTY,
+                SoftwareCredits.EMPTY,
+                BY_OTHER);
+        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_HARDWARE, BY_OTHER);
+        software.addRelease(AY_MOD, AY_MOD_CONTENT, AY_AND_JOYSTICK, BY_OTHER);
         repository.save(software);
         springDataSoftwareRepository.flush();
 
@@ -338,9 +414,17 @@ class JpaSoftwareRepositoryIT {
 
     @Test
     void storesEditedAndRemovedReleases() {
-        Software software = Software.create(ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE, CategorySet.EMPTY);
-        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_HARDWARE, AddedBy.NOBODY);
-        software.addRelease(AY_MOD, AY_MOD_CONTENT, AY_AND_JOYSTICK, AddedBy.NOBODY);
+        Software software = Software.create(
+                ID,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                NO_HARDWARE,
+                CategorySet.EMPTY,
+                SoftwareCredits.EMPTY,
+                BY_OTHER);
+        software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_HARDWARE, BY_OTHER);
+        software.addRelease(AY_MOD, AY_MOD_CONTENT, AY_AND_JOYSTICK, BY_OTHER);
         repository.save(software);
         springDataSoftwareRepository.flush();
 
@@ -369,7 +453,9 @@ class JpaSoftwareRepositoryIT {
                 null,
                 null,
                 HardwareSet.restore(VECTOR, Set.of(new HardwareCode("vector06c"))),
-                CategorySet.EMPTY));
+                CategorySet.EMPTY,
+                SoftwareCredits.EMPTY,
+                BY_OTHER));
         springDataSoftwareRepository.flush();
         // Every request starts with an empty persistence context.
         entityManager.clear();
@@ -399,7 +485,9 @@ class JpaSoftwareRepositoryIT {
                 null,
                 null,
                 NO_HARDWARE,
-                CategorySet.restore(List.of(GAMES_LINE, INTRO_4K_LINE))));
+                CategorySet.restore(List.of(GAMES_LINE, INTRO_4K_LINE)),
+                SoftwareCredits.EMPTY,
+                BY_OTHER));
         springDataSoftwareRepository.flush();
         entityManager.clear();
 
@@ -416,7 +504,9 @@ class JpaSoftwareRepositoryIT {
                 null,
                 null,
                 NO_HARDWARE,
-                CategorySet.restore(List.of(GAMES_LINE, INTRO_4K_LINE))));
+                CategorySet.restore(List.of(GAMES_LINE, INTRO_4K_LINE)),
+                SoftwareCredits.EMPTY,
+                BY_OTHER));
         springDataSoftwareRepository.flush();
         entityManager.clear();
         Software software = repository.findById(ID).orElseThrow();
@@ -437,7 +527,9 @@ class JpaSoftwareRepositoryIT {
                 null,
                 null,
                 NO_HARDWARE,
-                CategorySet.restore(List.of(GAMES_LINE, INTRO_4K_LINE))));
+                CategorySet.restore(List.of(GAMES_LINE, INTRO_4K_LINE)),
+                SoftwareCredits.EMPTY,
+                BY_OTHER));
         springDataSoftwareRepository.flush();
         entityManager.clear();
 
@@ -451,7 +543,14 @@ class JpaSoftwareRepositoryIT {
     @Test
     void restoresNoCategoryAboveAnotherOfTheSoftware() {
         repository.save(Software.create(
-                ID, new SoftwareTitle("Elite"), null, null, NO_HARDWARE, CategorySet.restore(List.of(GAMES_LINE))));
+                ID,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                NO_HARDWARE,
+                CategorySet.restore(List.of(GAMES_LINE)),
+                SoftwareCredits.EMPTY,
+                BY_OTHER));
         springDataSoftwareRepository.flush();
         // Stored before the rule, or put there by a change of the tree.
         jdbc.update(
@@ -465,7 +564,6 @@ class JpaSoftwareRepositoryIT {
 
     @Test
     void remembersWhoAddedTheSoftwareAndEachRelease() {
-        TestActors.store(jdbc);
         Software software = Software.create(
                 ID,
                 new SoftwareTitle("Elite"),
@@ -476,7 +574,7 @@ class JpaSoftwareRepositoryIT {
                 SoftwareCredits.EMPTY,
                 new AddedBy(MEMBER_ID));
         software.addRelease(ORIGINAL, ORIGINAL_CONTENT, NO_HARDWARE, new AddedBy(OTHER_ID));
-        software.addRelease(AY_MOD, AY_MOD_CONTENT, NO_HARDWARE, AddedBy.NOBODY);
+        software.addRelease(AY_MOD, AY_MOD_CONTENT, NO_HARDWARE, new AddedBy(ADMIN_ID));
         repository.save(software);
         springDataSoftwareRepository.flush();
         entityManager.clear();
@@ -485,12 +583,12 @@ class JpaSoftwareRepositoryIT {
         assertThat(stored.getAddedBy()).isEqualTo(new AddedBy(MEMBER_ID));
         assertThat(stored.getReleases())
                 .extracting(Release::id, Release::addedBy)
-                .containsExactlyInAnyOrder(tuple(ORIGINAL, new AddedBy(OTHER_ID)), tuple(AY_MOD, AddedBy.NOBODY));
+                .containsExactlyInAnyOrder(
+                        tuple(ORIGINAL, new AddedBy(OTHER_ID)), tuple(AY_MOD, new AddedBy(ADMIN_ID)));
     }
 
     @Test
     void forgetsWhoAddedTheSoftwareOnceTheirAccountIsGone() {
-        TestActors.store(jdbc);
         Software software = Software.create(
                 ID,
                 new SoftwareTitle("Elite"),
@@ -507,8 +605,8 @@ class JpaSoftwareRepositoryIT {
         entityManager.clear();
 
         Software stored = repository.findById(ID).orElseThrow();
-        assertThat(stored.getAddedBy()).isEqualTo(AddedBy.NOBODY);
-        assertThat(stored.getReleases()).extracting(Release::addedBy).containsExactly(AddedBy.NOBODY);
+        assertThat(stored.getAddedBy()).isEqualTo(AddedBy.ACCOUNT_DELETED);
+        assertThat(stored.getReleases()).extracting(Release::addedBy).containsExactly(AddedBy.ACCOUNT_DELETED);
     }
 
     @Test
@@ -535,7 +633,8 @@ class JpaSoftwareRepositoryIT {
                 SoftwareCredits.restore(List.of(
                         credit(SoftwareReferenceType.AUTHOR_LABEL, label, "code"),
                         credit(SoftwareReferenceType.GROUP, group, "developer"),
-                        credit(SoftwareReferenceType.GROUP_LABEL, groupLabel, "publisher")))));
+                        credit(SoftwareReferenceType.GROUP_LABEL, groupLabel, "publisher"))),
+                BY_OTHER));
         springDataSoftwareRepository.flush();
         entityManager.clear();
 

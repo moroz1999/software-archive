@@ -23,8 +23,11 @@ public class JdbcLabelReadRepository implements LabelReadRepository {
                         SELECT l.name, l.person_id, l.group_id,
                                COALESCE(p.real_name, p.main_name, g.main_name) AS owner_name,
                                CASE WHEN p.real_name IS NOT NULL AND p.main_label_id IS NOT NULL THEN p.main_name END
-                                   AS owner_note
+                                   AS owner_note,
+                               COALESCE(person.added_by, owner_group.added_by) AS owner_added_by
                         FROM label l
+                        LEFT JOIN person ON person.id = l.person_id
+                        LEFT JOIN "group" owner_group ON owner_group.id = l.group_id
                         LEFT JOIN named_person p ON p.person_id = l.person_id
                         LEFT JOIN named_group g ON g.group_id = l.group_id
                         WHERE l.id = :id
@@ -34,10 +37,11 @@ public class JdbcLabelReadRepository implements LabelReadRepository {
                     UUID person = rs.getObject("person_id", UUID.class);
                     UUID group = rs.getObject("group_id", UUID.class);
                     String ownerName = rs.getString("owner_name");
+                    UUID addedBy = rs.getObject("owner_added_by", UUID.class);
                     LabelDetails.Owner owner = person != null
-                            ? new LabelDetails.Owner("author", person, ownerName, rs.getString("owner_note"))
-                            : group != null ? new LabelDetails.Owner("group", group, ownerName, null) : null;
-                    return new LabelDetails(id, rs.getString("name"), owner, groups(id), false);
+                            ? new LabelDetails.Owner("author", person, ownerName, rs.getString("owner_note"), addedBy)
+                            : group != null ? new LabelDetails.Owner("group", group, ownerName, null, addedBy) : null;
+                    return new LabelDetails(id, rs.getString("name"), owner, groups(id), false, false);
                 })
                 .optional();
     }

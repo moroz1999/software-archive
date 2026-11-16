@@ -1,4 +1,4 @@
-import {getJson, mapResponse, postNoContent, readArray, readBoolean, readNullableString, readObject, readString, type JsonObject} from '@/shared/api';
+import {getJson, mapResponse, postJson, postNoContent, readArray, readBoolean, readNullableString, readObject, readString, type JsonObject} from '@/shared/api';
 import {labelPath} from '../config/paths';
 import type {LabelDetails, LabelOwner, LabelOwnerOption, NamedLabelOwner} from '../model/label';
 import {type LabelId, toLabelId} from '../model/label-id';
@@ -33,6 +33,7 @@ export async function fetchLabel(id: LabelId, signal: AbortSignal): Promise<Labe
                 return {id: readString(group, 'id'), name: readString(group, 'name')};
             }),
             canChange: readBoolean(dto, 'canChange'),
+            canMakeOwner: readBoolean(dto, 'canMakeOwner'),
         };
     });
 }
@@ -40,6 +41,18 @@ export async function fetchLabel(id: LabelId, signal: AbortSignal): Promise<Labe
 /** Attaches a label of nobody to its owner, as the owner's display name when told to: `POST /api/labels/{id}/owner`. */
 export async function attachLabel(id: LabelId, owner: LabelOwner, display: boolean): Promise<void> {
     await postNoContent(`/api${labelPath(id)}/owner`, {type: owner.type, id: owner.id, display});
+}
+
+/** Makes a new person known by the label, taking it from whoever had it: `POST /api/labels/{id}/author`. */
+export async function makeAuthorOfLabel(id: LabelId): Promise<LabelOwner> {
+    const json = await postJson(`/api${labelPath(id)}/author`, {});
+    return mapResponse(() => ({type: 'author', id: readString(readObject(json, 'made person'), 'id')}));
+}
+
+/** Makes a new group of the types under the name of the label, taking it from whoever had it: `POST /api/labels/{id}/group`. */
+export async function makeGroupOfLabel(id: LabelId, types: readonly string[]): Promise<LabelOwner> {
+    const json = await postJson(`/api${labelPath(id)}/group`, {types});
+    return mapResponse(() => ({type: 'group', id: readString(readObject(json, 'made group'), 'id')}));
 }
 
 /** People and groups by name, for attaching a label to one of them. */

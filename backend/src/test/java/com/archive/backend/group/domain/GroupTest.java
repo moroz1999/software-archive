@@ -1,5 +1,6 @@
 package com.archive.backend.group.domain;
 
+import static com.archive.backend.user.TestActors.BY_OTHER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -10,6 +11,7 @@ import com.archive.backend.geo.domain.Place;
 import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.label.domain.OwnLabel;
+import com.archive.backend.label.domain.OwnerOfLabelsChanged;
 import com.archive.backend.label.domain.UnmarkedLabelDraft;
 import com.archive.backend.label.domain.UnmarkedLabels;
 import com.archive.backend.shared.domain.error.RuleViolationException;
@@ -35,7 +37,9 @@ class GroupTest {
                 null,
                 DEMOGROUP,
                 UnmarkedLabels.restore(List.of(new OwnLabel(CRW, new LabelName("CRW")))),
-                NOWHERE);
+                NOWHERE,
+                GroupMembers.EMPTY,
+                BY_OTHER);
     }
 
     @Test
@@ -46,7 +50,9 @@ class GroupTest {
                 new GroupNotes("Since 1990"),
                 DEMOGROUP,
                 List.of(new UnmarkedLabelDraft(null, new LabelName("CRW"))),
-                NORWAY);
+                NORWAY,
+                GroupMembers.EMPTY,
+                BY_OTHER);
 
         assertThat(group.getId()).isEqualTo(ID);
         assertThat(group.getName()).isEqualTo(new GroupName("Crew Ltd"));
@@ -58,7 +64,15 @@ class GroupTest {
 
     @Test
     void mayHaveNoLabels() {
-        assertThat(Group.create(ID, new GroupName("Crew Ltd"), null, DEMOGROUP, List.of(), NOWHERE)
+        assertThat(Group.create(
+                                ID,
+                                new GroupName("Crew Ltd"),
+                                null,
+                                DEMOGROUP,
+                                List.of(),
+                                NOWHERE,
+                                GroupMembers.EMPTY,
+                                BY_OTHER)
                         .getLabels()
                         .isEmpty())
                 .isTrue();
@@ -101,7 +115,15 @@ class GroupTest {
 
     @Test
     void tellsItWasAdded() {
-        assertThat(Group.create(ID, new GroupName("Crew Ltd"), null, DEMOGROUP, List.of(), NOWHERE)
+        assertThat(Group.create(
+                                ID,
+                                new GroupName("Crew Ltd"),
+                                null,
+                                DEMOGROUP,
+                                List.of(),
+                                NOWHERE,
+                                GroupMembers.EMPTY,
+                                BY_OTHER)
                         .pullEvents())
                 .contains(new GroupChanged(ID));
     }
@@ -122,5 +144,15 @@ class GroupTest {
         group.delete();
 
         assertThat(group.pullEvents()).contains(new GroupChanged(ID));
+    }
+
+    @Test
+    void releasesALabelAndTellsItsWorksChanged() {
+        Group group = crew();
+
+        group.release(CRW);
+
+        assertThat(group.getLabels().isEmpty()).isTrue();
+        assertThat(group.pullEvents()).contains(new OwnerOfLabelsChanged(Set.of(CRW)), new GroupChanged(ID));
     }
 }

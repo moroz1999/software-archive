@@ -28,7 +28,7 @@ Both are `HttpOnly`, `Secure` and `SameSite=Strict`: no script reads them and no
 
 Who may change what ([domain/users.md](../domain/users.md#user-groups)) is decided in the domain, asked by the command handlers: every write command carries the `Actor`.
 
-- Software, releases, people and groups remember who added them (`AddedBy`, the `added_by` column, `ON DELETE SET NULL`): an entry whose adder's account is gone, and one added before accounts, belong to nobody.
+- Software, releases, people and groups remember who added them (`AddedBy`, the `added_by` column): adding one always takes the signed-in user (`AddedBy.of(Actor)`). The column is empty only once the adder's account is deleted (`ON DELETE SET NULL`), which only loading and reading meet (`AddedBy.ACCOUNT_DELETED`).
 - The aggregate refuses a change (`requireChangeableBy(actor)`; releases inside `editRelease`/`removeRelease`; categories through `Category.requireKeptBy`): a public visitor with `401 auth.required`, a signed-in user with `403 access.denied` (`ChangeForbiddenException`).
 - The frontend shows both inside the form or the delete dialog, by the `401` and `403` texts of the slice.
 - Reads tell the reader what they may do, by the same domain rule (`AddedBy.mayBeChangedBy`): the details of software, people and groups and every release carry `canChange`, computed by the query handler for the `Actor` of the request; who added an entry never leaves the backend. `GET /api/auth/me` carries `abilities`: `add-entries` for every signed-in user, `keep-categories` for administrators.
@@ -54,7 +54,7 @@ Wrong credentials are `422`, not `401`: they are a mistake in the form, shown in
 
 ### Fixtures
 
-`R__4_users.sql`: `Admin`, `Moderator`, `Member` (each `name@archive.test`), `Pending` waiting for its link (`/verify-email?token=pending-fixture-token`) and `Abandoned`, whose link expired. Every password is `password1`.
+`R__0_users.sql`, applied before the other fixtures, which are all added by `Admin`: `Admin`, `Moderator`, `Member` (each `name@archive.test`), `Pending` waiting for its link (`/verify-email?token=pending-fixture-token`) and `Abandoned`, whose link expired. Every password is `password1`.
 
 ## Frontend
 

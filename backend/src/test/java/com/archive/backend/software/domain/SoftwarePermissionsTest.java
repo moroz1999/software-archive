@@ -64,8 +64,8 @@ class SoftwarePermissionsTest {
     }
 
     @Test
-    void ofNobodyIsChangedByAdministratorsOnly() {
-        Software software = addedBy(AddedBy.NOBODY);
+    void whoseAdderAccountIsDeletedIsChangedByAdministratorsOnly() {
+        Software software = addedBy(AddedBy.ACCOUNT_DELETED);
 
         assertThatCode(() -> software.requireChangeableBy(ADMIN)).doesNotThrowAnyException();
         assertThatThrownBy(() -> software.requireChangeableBy(MEMBER)).isInstanceOf(ChangeForbiddenException.class);

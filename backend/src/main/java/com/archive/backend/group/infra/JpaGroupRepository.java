@@ -3,6 +3,7 @@ package com.archive.backend.group.infra;
 import com.archive.backend.group.domain.Group;
 import com.archive.backend.group.domain.GroupId;
 import com.archive.backend.group.domain.GroupRepository;
+import com.archive.backend.label.domain.LabelId;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +23,11 @@ public class JpaGroupRepository implements GroupRepository {
     @Override
     public Optional<Group> findById(GroupId id) {
         return springDataGroupRepository.findById(id.value()).map(mapper::toDomain);
+    }
+
+    @Override
+    public Optional<Group> findByLabel(LabelId label) {
+        return springDataGroupRepository.findByLabel(label.value()).map(mapper::toDomain);
     }
 
     @Override

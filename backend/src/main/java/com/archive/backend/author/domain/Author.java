@@ -3,6 +3,7 @@ package com.archive.backend.author.domain;
 import com.archive.backend.geo.domain.Locations;
 import com.archive.backend.label.domain.Label;
 import com.archive.backend.label.domain.LabelDraft;
+import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.OwnLabel;
 import com.archive.backend.label.domain.OwnLabels;
 import com.archive.backend.label.domain.OwnerOfLabelsChanged;
@@ -51,15 +52,6 @@ public final class Author {
         this.addedBy = Objects.requireNonNull(addedBy, "addedBy");
     }
 
-    public Author(
-            AuthorId id,
-            @Nullable RealName realName,
-            @Nullable AuthorNotes notes,
-            OwnLabels labels,
-            Locations locations) {
-        this(id, realName, notes, labels, locations, AddedBy.NOBODY);
-    }
-
     public static Author create(
             AuthorId id,
             @Nullable RealName realName,
@@ -70,15 +62,6 @@ public final class Author {
         Author author = new Author(id, realName, notes, OwnLabels.of(labels), locations, addedBy);
         author.events.add(new AuthorChanged(id));
         return author;
-    }
-
-    public static Author create(
-            AuthorId id,
-            @Nullable RealName realName,
-            @Nullable AuthorNotes notes,
-            List<LabelDraft> labels,
-            Locations locations) {
-        return create(id, realName, notes, labels, locations, AddedBy.NOBODY);
     }
 
     /** Whoever added the person changes them, and administrators anyone (docs/domain/users.md). */
@@ -114,6 +97,28 @@ public final class Author {
     public void adopt(Label label, boolean display) {
         labels = labels.adopt(new OwnLabel(label.getId(), label.getName()), display);
         events.add(new OwnerOfLabelsChanged(Set.of(label.getId())));
+        events.add(new AuthorChanged(id));
+    }
+
+    /**
+     * A new person known only by a label, which becomes their display name as their only label; it goes over with its
+     * works.
+     */
+    public static Author knownAs(AuthorId id, Label label, AddedBy addedBy) {
+        OwnLabels labels = OwnLabels.of(List.of()).adopt(new OwnLabel(label.getId(), label.getName()), true);
+        Author author = new Author(id, null, null, labels, new Locations(List.of()), addedBy);
+        author.events.add(new OwnerOfLabelsChanged(Set.of(label.getId())));
+        author.events.add(new AuthorChanged(id));
+        return author;
+    }
+
+    /**
+     * Gives up a label that turned out to be somebody else's; only its works change their owner. The person keeps
+     * their display name while other labels stay, and some name at all.
+     */
+    public void release(LabelId label) {
+        labels = requireNamed(realName, labels.release(label));
+        events.add(new OwnerOfLabelsChanged(Set.of(label)));
         events.add(new AuthorChanged(id));
     }
 

@@ -30,7 +30,7 @@ class PermissionsTest {
     void whoeverAddedAnEntryChangesIt() {
         assertThat(new AddedBy(ZED).isBy(MEMBER_ZED)).isTrue();
         assertThat(new AddedBy(ZED).isBy(MEMBER_AMY)).isFalse();
-        assertThat(AddedBy.NOBODY.isBy(Actor.anonymous())).isFalse();
+        assertThat(AddedBy.ACCOUNT_DELETED.isBy(Actor.anonymous())).isFalse();
         assertThatCode(() -> new AddedBy(ZED).requireChangeableBy(MEMBER_ZED)).doesNotThrowAnyException();
     }
 
@@ -52,12 +52,13 @@ class PermissionsTest {
         assertThat(ADMIN_AMY.isAdministrator()).isTrue();
         assertThat(MEMBER_AMY.isAdministrator()).isFalse();
         assertThatCode(() -> new AddedBy(ZED).requireChangeableBy(ADMIN_AMY)).doesNotThrowAnyException();
-        assertThatCode(() -> AddedBy.NOBODY.requireChangeableBy(ADMIN_AMY)).doesNotThrowAnyException();
+        assertThatCode(() -> AddedBy.ACCOUNT_DELETED.requireChangeableBy(ADMIN_AMY))
+                .doesNotThrowAnyException();
     }
 
     @Test
-    void anEntryOfNobodyIsForAdministratorsOnly() {
-        assertThatThrownBy(() -> AddedBy.NOBODY.requireChangeableBy(MEMBER_ZED))
+    void anEntryWhoseAdderAccountIsDeletedIsForAdministratorsOnly() {
+        assertThatThrownBy(() -> AddedBy.ACCOUNT_DELETED.requireChangeableBy(MEMBER_ZED))
                 .isInstanceOf(ChangeForbiddenException.class);
     }
 
@@ -83,8 +84,8 @@ class PermissionsTest {
         assertThat(new AddedBy(ZED).mayBeChangedBy(ADMIN_AMY)).isTrue();
         assertThat(new AddedBy(ZED).mayBeChangedBy(MEMBER_AMY)).isFalse();
         assertThat(new AddedBy(ZED).mayBeChangedBy(Actor.anonymous())).isFalse();
-        assertThat(AddedBy.NOBODY.mayBeChangedBy(MEMBER_ZED)).isFalse();
-        assertThat(AddedBy.NOBODY.mayBeChangedBy(ADMIN_AMY)).isTrue();
+        assertThat(AddedBy.ACCOUNT_DELETED.mayBeChangedBy(MEMBER_ZED)).isFalse();
+        assertThat(AddedBy.ACCOUNT_DELETED.mayBeChangedBy(ADMIN_AMY)).isTrue();
     }
 
     @Test
@@ -93,9 +94,11 @@ class PermissionsTest {
                 .isTrue();
         assertThat(new AddedBy(ZED).mayBeChangedBy(MEMBER_ZED, new AddedBy(AMY)))
                 .isTrue();
-        assertThat(new AddedBy(AMY).mayBeChangedBy(MEMBER_ZED, AddedBy.NOBODY)).isFalse();
-        assertThat(AddedBy.NOBODY.mayBeChangedBy(ADMIN_AMY, AddedBy.NOBODY)).isTrue();
-        assertThat(AddedBy.NOBODY.mayBeChangedBy(Actor.anonymous(), AddedBy.NOBODY))
+        assertThat(new AddedBy(AMY).mayBeChangedBy(MEMBER_ZED, AddedBy.ACCOUNT_DELETED))
+                .isFalse();
+        assertThat(AddedBy.ACCOUNT_DELETED.mayBeChangedBy(ADMIN_AMY, AddedBy.ACCOUNT_DELETED))
+                .isTrue();
+        assertThat(AddedBy.ACCOUNT_DELETED.mayBeChangedBy(Actor.anonymous(), AddedBy.ACCOUNT_DELETED))
                 .isFalse();
     }
 

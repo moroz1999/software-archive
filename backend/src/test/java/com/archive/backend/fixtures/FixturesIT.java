@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -47,6 +48,22 @@ class FixturesIT {
 
     @Autowired
     private MockMvc mvc;
+
+    @Autowired
+    private JdbcTemplate jdbc;
+
+    @Test
+    void everyFixtureEntryIsAddedByTheFixtureAdministrator() {
+        for (String table : List.of("software", "software_release", "person", "\"group\"")) {
+            List<Object> adders = jdbc.queryForList(
+                    "SELECT DISTINCT added_by FROM " + table + " WHERE id::text LIKE '00000000-0000-0000-000%'",
+                    Object.class);
+            assertThat(adders)
+                    .as(table)
+                    .extracting(String::valueOf)
+                    .containsExactly("00000000-0000-0000-0009-000000000001");
+        }
+    }
 
     @Test
     void fixtureSoftwareIsServedByTheApi() throws Exception {

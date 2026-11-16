@@ -5,6 +5,7 @@ import {groupPath, toGroupId} from '@/entities/groups';
 import {type LabelDetails, LabelDetailsProvider, type LabelId, type LabelOwner, useLabelDetails} from '@/entities/labels';
 import {CreditedSoftwareList} from '@/entities/software';
 import {AttachLabelButton} from '@/features/label/attach';
+import {MakeAuthorButton, MakeGroupButton} from '@/features/label/make-owner';
 import {useSkeleton} from '@/shared/lib/loading';
 import {Inline} from '@/shared/ui/inline';
 import {PageLayout} from '@/shared/ui/page-layout';
@@ -19,7 +20,8 @@ export interface LabelViewProps {
 
 /**
  * The page of a label: its name, whose it is when known, the groups it was a member of and the software it is credited
- * on; a label of nobody waits there for a person who knows whose it is to attach it to its owner.
+ * on; a label of nobody waits there for a person who knows whose it is to attach it to its owner, and any label can
+ * become a new person or group of its own.
  */
 export function LabelView({id}: LabelViewProps) {
     return (
@@ -55,13 +57,22 @@ function LoadedView() {
         return null;
     }
     const label = query.data;
+    const openOwner = (owner: LabelOwner) => {
+        void navigate(ownerPath(owner));
+    };
     return (
         <PageLayout
             title={label.name}
-            actions={label.canChange && (
-                <AttachLabelButton label={{id: label.id, name: label.name}} onAttached={(owner) => {
-                    void navigate(ownerPath(owner));
-                }}/>
+            actions={(label.canChange || label.canMakeOwner) && (
+                <Inline gap="sm" wrap>
+                    {label.canChange && <AttachLabelButton label={{id: label.id, name: label.name}} onAttached={openOwner}/>}
+                    {label.canMakeOwner && (
+                        <>
+                            <MakeAuthorButton label={label} onMade={openOwner}/>
+                            <MakeGroupButton label={label} onMade={openOwner}/>
+                        </>
+                    )}
+                </Inline>
             )}
         >
             <Stack gap="xl">

@@ -23,7 +23,7 @@ What a user may do comes from their groups, and for the entries of the archive a
 | Moderator | Given on purpose | Delete comments |
 | Administrator | Given on purpose | Everything |
 
-A member adds releases to any software. A release can be edited and deleted by whoever added it and by whoever added its software. Categories are kept by administrators only. Entries added before accounts existed belong to nobody: only administrators change them. Labels of nobody are such entries: only administrators attach them to their owners.
+A member adds releases to any software. A release can be edited and deleted by whoever added it and by whoever added its software. Categories are kept by administrators only. Every entry is added by a signed-in user, who is remembered as its adder. An entry whose adder's account was deleted keeps no adder: only administrators change it. Only administrators attach labels of nobody to existing owners. Any member makes a new person or group of a label; one taken away from an owner only by whoever may change that owner.
 
 The first confirmed account of the archive becomes an administrator.
 

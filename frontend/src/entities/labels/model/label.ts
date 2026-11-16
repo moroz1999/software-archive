@@ -26,6 +26,8 @@ export interface LabelDetails {
     readonly groups: readonly LabelGroup[];
     /** The reader may attach the label to its owner. */
     readonly canChange: boolean;
+    /** The reader may make a new person or group of the label, taking it away from whoever has it. */
+    readonly canMakeOwner: boolean;
 }
 
 /** A person or a group a label of nobody can be attached to, as the lookup finds them. */

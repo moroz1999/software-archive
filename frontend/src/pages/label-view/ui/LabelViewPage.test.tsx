@@ -6,7 +6,7 @@ import {json, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
 import {loadLabelViewPage, preloadLabelViewPage} from '../index';
 
 const ID = '00000000-0000-0000-0004-000000000001';
-const GHOST = {id: ID, name: 'Ghost', owner: null, groups: [], canChange: false};
+const GHOST = {id: ID, name: 'Ghost', owner: null, groups: [], canChange: false, canMakeOwner: false};
 
 describe('LabelViewPage', () => {
     afterEach(() => {

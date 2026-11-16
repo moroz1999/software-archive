@@ -5,12 +5,13 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Who added an entry of the archive; nobody for an entry added before accounts existed (docs/domain/users.md).
+ * Who added an entry of the archive. A new or changed entry always has its adder signed in; an entry whose adder's
+ * account was deleted is only read without one (docs/domain/users.md).
  */
 @ValueObject
 public record AddedBy(@Nullable UserId user) {
 
-    public static final AddedBy NOBODY = new AddedBy(null);
+    public static final AddedBy ACCOUNT_DELETED = new AddedBy(null);
 
     /**
      * The adder of an entry being added now: only a signed-in user adds entries.
@@ -20,10 +21,10 @@ public record AddedBy(@Nullable UserId user) {
     }
 
     /**
-     * Who added an entry, as the read side tells it: by the id of their account, or nobody.
+     * Who added an entry, as the read side tells it: by the id of their account, or none once it was deleted.
      */
     public static AddedBy of(@Nullable UUID user) {
-        return user == null ? NOBODY : new AddedBy(new UserId(user));
+        return user == null ? ACCOUNT_DELETED : new AddedBy(new UserId(user));
     }
 
     /**
@@ -49,7 +50,7 @@ public record AddedBy(@Nullable UserId user) {
     }
 
     /**
-     * Whoever added the entry may change it, and administrators may change any; an entry of nobody only they.
+     * Whoever added the entry may change it, and administrators may change any; an entry whose adder's account was deleted only they.
      */
     public void requireChangeableBy(Actor actor) {
         actor.requireAllowed(mayBeChangedBy(actor));

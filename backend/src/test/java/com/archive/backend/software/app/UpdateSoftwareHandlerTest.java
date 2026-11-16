@@ -15,6 +15,7 @@ import static com.archive.backend.software.app.ReleaseFixtures.hardwareSets;
 import static com.archive.backend.software.app.ReleaseFixtures.in;
 import static com.archive.backend.software.app.ReleaseFixtures.vector;
 import static com.archive.backend.user.TestActors.ADMIN;
+import static com.archive.backend.user.TestActors.BY_OTHER;
 import static com.archive.backend.user.TestActors.MEMBER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -28,6 +29,7 @@ import com.archive.backend.shared.domain.error.RuleViolationException;
 import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.Software;
 import com.archive.backend.software.domain.SoftwareCreditSets;
+import com.archive.backend.software.domain.SoftwareCredits;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareTitle;
 import com.archive.backend.user.domain.ChangeForbiddenException;
@@ -103,7 +105,15 @@ class UpdateSoftwareHandlerTest {
 
     @Test
     void changesThePlatformTogetherWithHardwareOfTheNewPlatform() {
-        repository.save(Software.create(ELITE, new SoftwareTitle("Elite"), null, null, vector(AY), CategorySet.EMPTY));
+        repository.save(Software.create(
+                ELITE,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                vector(AY),
+                CategorySet.EMPTY,
+                SoftwareCredits.EMPTY,
+                BY_OTHER));
 
         handler.handle(new UpdateSoftwareCommand(
                 ADMIN, ELITE, new SoftwareTitle("Elite"), null, null, BK, Set.of(BK0011M), Set.of()));
@@ -127,7 +137,15 @@ class UpdateSoftwareHandlerTest {
 
     @Test
     void refusesHardwareOfAnotherPlatformAndKeepsTheHardware() {
-        repository.save(Software.create(ELITE, new SoftwareTitle("Elite"), null, null, vector(AY), CategorySet.EMPTY));
+        repository.save(Software.create(
+                ELITE,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                vector(AY),
+                CategorySet.EMPTY,
+                SoftwareCredits.EMPTY,
+                BY_OTHER));
 
         assertThatThrownBy(() -> handler.handle(new UpdateSoftwareCommand(
                         ADMIN, ELITE, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(BK0011M), Set.of())))
@@ -140,7 +158,8 @@ class UpdateSoftwareHandlerTest {
 
     @Test
     void replacesTheCategoriesOfTheSoftware() {
-        repository.save(Software.create(ELITE, new SoftwareTitle("Elite"), null, null, vector(), in(GAMES)));
+        repository.save(Software.create(
+                ELITE, new SoftwareTitle("Elite"), null, null, vector(), in(GAMES), SoftwareCredits.EMPTY, BY_OTHER));
 
         handler.handle(new UpdateSoftwareCommand(
                 ADMIN, ELITE, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of(ARCADE)));
@@ -152,7 +171,8 @@ class UpdateSoftwareHandlerTest {
 
     @Test
     void takesTheSoftwareOutOfACategoryAboveAnotherOfIts() {
-        repository.save(Software.create(ELITE, new SoftwareTitle("Elite"), null, null, vector(), in(GAMES)));
+        repository.save(Software.create(
+                ELITE, new SoftwareTitle("Elite"), null, null, vector(), in(GAMES), SoftwareCredits.EMPTY, BY_OTHER));
 
         handler.handle(new UpdateSoftwareCommand(
                 ADMIN, ELITE, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of(GAMES, ARCADE)));
@@ -164,7 +184,8 @@ class UpdateSoftwareHandlerTest {
 
     @Test
     void takesTheSoftwareOutOfEveryCategory() {
-        repository.save(Software.create(ELITE, new SoftwareTitle("Elite"), null, null, vector(), in(GAMES)));
+        repository.save(Software.create(
+                ELITE, new SoftwareTitle("Elite"), null, null, vector(), in(GAMES), SoftwareCredits.EMPTY, BY_OTHER));
 
         handler.handle(new UpdateSoftwareCommand(
                 ADMIN, ELITE, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of()));
@@ -176,7 +197,8 @@ class UpdateSoftwareHandlerTest {
 
     @Test
     void refusesACategoryNotInTheArchiveAndKeepsTheOldOnes() {
-        repository.save(Software.create(ELITE, new SoftwareTitle("Elite"), null, null, vector(), in(GAMES)));
+        repository.save(Software.create(
+                ELITE, new SoftwareTitle("Elite"), null, null, vector(), in(GAMES), SoftwareCredits.EMPTY, BY_OTHER));
 
         assertThatThrownBy(() -> handler.handle(new UpdateSoftwareCommand(
                         ADMIN, ELITE, new SoftwareTitle("Elite"), null, null, VECTOR, Set.of(), Set.of(GONE))))

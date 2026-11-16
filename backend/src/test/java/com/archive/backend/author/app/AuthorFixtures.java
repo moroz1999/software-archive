@@ -1,5 +1,7 @@
 package com.archive.backend.author.app;
 
+import static com.archive.backend.user.TestActors.BY_OTHER;
+
 import com.archive.backend.author.domain.Author;
 import com.archive.backend.author.domain.AuthorId;
 import com.archive.backend.geo.domain.CityId;
@@ -33,7 +35,8 @@ final class AuthorFixtures {
                 null,
                 null,
                 OwnLabels.restore(List.of(new OwnLabel(ZED_LABEL, new LabelName("Zed"))), ZED_LABEL),
-                new Locations(List.of()));
+                new Locations(List.of()),
+                BY_OTHER);
     }
 
     /** Finland with Helsinki, Norway without cities. */

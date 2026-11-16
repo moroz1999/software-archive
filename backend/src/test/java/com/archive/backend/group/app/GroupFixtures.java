@@ -1,5 +1,7 @@
 package com.archive.backend.group.app;
 
+import static com.archive.backend.user.TestActors.BY_OTHER;
+
 import com.archive.backend.geo.domain.CityId;
 import com.archive.backend.geo.domain.CountryId;
 import com.archive.backend.geo.domain.GeoCatalog;
@@ -7,6 +9,7 @@ import com.archive.backend.geo.domain.Locations;
 import com.archive.backend.geo.domain.Places;
 import com.archive.backend.group.domain.Group;
 import com.archive.backend.group.domain.GroupId;
+import com.archive.backend.group.domain.GroupMembers;
 import com.archive.backend.group.domain.GroupName;
 import com.archive.backend.group.domain.GroupTypeCode;
 import com.archive.backend.group.domain.GroupTypeSet;
@@ -39,7 +42,9 @@ final class GroupFixtures {
                 null,
                 GroupTypeSet.restore(Set.of(DEMOGROUP)),
                 UnmarkedLabels.restore(List.of(new OwnLabel(CRW, new LabelName("CRW")))),
-                new Locations(List.of()));
+                new Locations(List.of()),
+                GroupMembers.EMPTY,
+                BY_OTHER);
     }
 
     /** Demogroup and label. */

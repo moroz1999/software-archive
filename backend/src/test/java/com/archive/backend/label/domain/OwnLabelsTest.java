@@ -126,4 +126,28 @@ class OwnLabelsTest {
         assertThat(OwnLabels.of(List.of()).isEmpty()).isTrue();
         assertThat(ZED_AND_AXE.isEmpty()).isFalse();
     }
+
+    @Test
+    void releasesALabelBesideTheDisplayName() {
+        OwnLabels labels = ZED_AND_AXE.release(AXE);
+
+        assertThat(labels.all()).containsExactly(new OwnLabel(ZED, new LabelName("Zed")));
+        assertThat(labels.display()).isEqualTo(ZED);
+    }
+
+    @Test
+    void releasesItsOnlyLabelLeavingNoDisplayName() {
+        OwnLabels labels = OwnLabels.restore(List.of(new OwnLabel(ZED, new LabelName("Zed"))), ZED)
+                .release(ZED);
+
+        assertThat(labels.isEmpty()).isTrue();
+        assertThat(labels.display()).isNull();
+    }
+
+    @Test
+    void keepsItsDisplayNameWhileOtherLabelsStay() {
+        assertThatThrownBy(() -> ZED_AND_AXE.release(ZED))
+                .isInstanceOfSatisfying(
+                        RuleViolationException.class, e -> assertThat(e.code()).isEqualTo("label.display-one"));
+    }
 }

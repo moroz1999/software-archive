@@ -13,7 +13,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.archive.backend.TestcontainersConfiguration;
 import com.archive.backend.TypesenseTestConfiguration;
 import com.archive.backend.user.TestActors;
+import com.archive.backend.user.domain.Actor;
 import com.archive.backend.user.domain.session.AccessTokens;
+import com.jayway.jsonpath.JsonPath;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,6 +42,8 @@ class LabelIT {
     private static final UUID CREW = id(3);
     private static final UUID GHOST = id(4);
     private static final UUID ELITE = id(5);
+    private static final UUID JAY = id(6);
+    private static final UUID CRW = id(7);
 
     @Autowired
     private MockMvc mvc;
@@ -197,6 +201,152 @@ class LabelIT {
     @Test
     void refusesAnOwnerOfAnotherKind() throws Exception {
         attach(GHOST, "author-label", JANE).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void offersMakingAnOwnerToWhoeverMayTakeTheLabel() throws Exception {
+        mvc.perform(get("/api/labels/{id}", GHOST))
+                .andExpect(jsonPath("$.canMakeOwner").value(false));
+        mvc.perform(get("/api/labels/{id}", GHOST).cookie(TestActors.accessCookie(accessTokens, MEMBER)))
+                .andExpect(jsonPath("$.canMakeOwner").value(true));
+        mvc.perform(get("/api/labels/{id}", JD).cookie(TestActors.accessCookie(accessTokens, MEMBER)))
+                .andExpect(jsonPath("$.canMakeOwner").value(false));
+        mvc.perform(get("/api/labels/{id}", JD).cookie(TestActors.accessCookie(accessTokens, ADMIN)))
+                .andExpect(jsonPath("$.canMakeOwner").value(true));
+    }
+
+    @Test
+    void makesAPersonOfALabelOfNobodyWithItsCreditsAndMemberships() throws Exception {
+        String id = idOf(makeAuthor(GHOST, MEMBER).andExpect(status().isCreated()));
+
+        mvc.perform(get("/api/authors/{id}", id).cookie(TestActors.accessCookie(accessTokens, MEMBER)))
+                .andExpect(jsonPath("$.name").value("Ghost"))
+                .andExpect(jsonPath("$.realName").value(nullValue()))
+                .andExpect(jsonPath("$.labels[*].name").value(contains("Ghost")))
+                .andExpect(jsonPath("$.labels[0].display").value(true))
+                .andExpect(jsonPath("$.groups[*].name").value(contains("Crew")))
+                .andExpect(jsonPath("$.canChange").value(true));
+        mvc.perform(get("/api/authors/{id}/software", id))
+                .andExpect(jsonPath("$[*].title").value(contains("Elite")))
+                .andExpect(jsonPath("$[0].credits[0].as").value(nullValue()));
+        mvc.perform(get("/api/labels/{id}", GHOST))
+                .andExpect(jsonPath("$.owner.id").value(id));
+    }
+
+    @Test
+    void makesAGroupOfALabelOfNobodyUnderItsNameWithItsCreditsAndMemberships() throws Exception {
+        String id = idOf(makeGroup(GHOST, MEMBER, "[\"demogroup\"]").andExpect(status().isCreated()));
+
+        mvc.perform(get("/api/groups/{id}", id).cookie(TestActors.accessCookie(accessTokens, MEMBER)))
+                .andExpect(jsonPath("$.name").value("Ghost"))
+                .andExpect(jsonPath("$.types").value(contains("demogroup")))
+                .andExpect(jsonPath("$.labels[*].name").value(contains("Ghost")))
+                .andExpect(jsonPath("$.canChange").value(true));
+        mvc.perform(get("/api/groups/{id}/software", id))
+                .andExpect(jsonPath("$[*].title").value(contains("Elite")));
+        mvc.perform(get("/api/groups/{id}", CREW))
+                .andExpect(jsonPath("$.members[*].name").value(contains("Ghost")));
+        mvc.perform(get("/api/labels/{id}", GHOST))
+                .andExpect(jsonPath("$.owner.type").value("group"))
+                .andExpect(jsonPath("$.owner.id").value(id));
+    }
+
+    @Test
+    void takesTheLabelAwayFromThePersonItWasAttachedTo() throws Exception {
+        jdbc.update("INSERT INTO label (id, name, person_id, is_display_name) VALUES (?, 'Jay', ?, false)", JAY, JANE);
+
+        String id = idOf(makeAuthor(JAY, ADMIN).andExpect(status().isCreated()));
+
+        mvc.perform(get("/api/authors/{id}", JANE))
+                .andExpect(jsonPath("$.labels[*].name").value(contains("JD")));
+        mvc.perform(get("/api/labels/{id}", JAY))
+                .andExpect(jsonPath("$.owner.id").value(id));
+    }
+
+    @Test
+    void takesTheLabelAwayFromTheGroupItWasAttachedTo() throws Exception {
+        jdbc.update("INSERT INTO label (id, name, group_id, is_display_name) VALUES (?, 'CRW', ?, false)", CRW, CREW);
+
+        String id = idOf(makeGroup(CRW, ADMIN, "[\"label\"]").andExpect(status().isCreated()));
+
+        mvc.perform(get("/api/groups/{id}", CREW))
+                .andExpect(jsonPath("$.labels").isEmpty());
+        mvc.perform(get("/api/groups/{id}", id)).andExpect(jsonPath("$.name").value("CRW"));
+    }
+
+    @Test
+    void keepsTheDisplayNameOfAPersonWithOtherLabels() throws Exception {
+        jdbc.update("INSERT INTO label (id, name, person_id, is_display_name) VALUES (?, 'Jay', ?, false)", JAY, JANE);
+
+        makeAuthor(JD, ADMIN)
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code").value("label.display-one"));
+        mvc.perform(get("/api/authors/{id}", JANE))
+                .andExpect(jsonPath("$.labels[*].name").value(contains("Jay", "JD")));
+    }
+
+    @Test
+    void keepsTheOnlyLabelOfAPersonWithoutARealName() throws Exception {
+        jdbc.update("UPDATE person SET real_name = NULL WHERE id = ?", JANE);
+
+        makeGroup(JD, ADMIN, "[\"demogroup\"]")
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code").value("author.nameless"));
+    }
+
+    @Test
+    void refusesTakingALabelFromAnOwnerTheUserMayNotChange() throws Exception {
+        jdbc.update("INSERT INTO label (id, name, person_id, is_display_name) VALUES (?, 'Jay', ?, false)", JAY, JANE);
+
+        makeAuthor(JAY, MEMBER).andExpect(status().isForbidden());
+        mvc.perform(get("/api/labels/{id}", JAY))
+                .andExpect(jsonPath("$.owner.id").value(JANE.toString()));
+    }
+
+    @Test
+    void makesNoOwnerForAPublicVisitor() throws Exception {
+        mvc.perform(post("/api/labels/{id}/author", GHOST)).andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/labels/{id}/group", GHOST)
+                        .contentType("application/json")
+                        .content("{\"types\": [\"demogroup\"]}"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void makesNoOwnerOfALabelNotInTheArchive() throws Exception {
+        makeAuthor(id(99), MEMBER)
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("label.not-found"));
+        makeGroup(id(99), MEMBER, "[\"demogroup\"]")
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("label.not-found"));
+    }
+
+    @Test
+    void makesNoGroupWithoutAKnownType() throws Exception {
+        makeGroup(GHOST, MEMBER, "[]")
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code").value("group.types-required"));
+        makeGroup(GHOST, MEMBER, "[\"nonsense\"]")
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code").value("group.type-unknown"));
+        mvc.perform(get("/api/labels/{id}", GHOST))
+                .andExpect(jsonPath("$.owner").value(nullValue()));
+    }
+
+    private ResultActions makeAuthor(UUID label, Actor actor) throws Exception {
+        return mvc.perform(post("/api/labels/{id}/author", label).cookie(TestActors.accessCookie(accessTokens, actor)));
+    }
+
+    private ResultActions makeGroup(UUID label, Actor actor, String types) throws Exception {
+        return mvc.perform(post("/api/labels/{id}/group", label)
+                .cookie(TestActors.accessCookie(accessTokens, actor))
+                .contentType("application/json")
+                .content("{\"types\": %s}".formatted(types)));
+    }
+
+    private static String idOf(ResultActions result) throws Exception {
+        return JsonPath.read(result.andReturn().getResponse().getContentAsString(), "$.id");
     }
 
     private ResultActions attach(UUID label, String type, UUID owner) throws Exception {

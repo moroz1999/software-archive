@@ -47,8 +47,8 @@ class AuthorPermissionsTest {
     }
 
     @Test
-    void ofNobodyIsChangedByAdministratorsOnly() {
-        assertThatThrownBy(() -> addedBy(AddedBy.NOBODY).requireChangeableBy(MEMBER))
+    void whoseAdderAccountIsDeletedIsChangedByAdministratorsOnly() {
+        assertThatThrownBy(() -> addedBy(AddedBy.ACCOUNT_DELETED).requireChangeableBy(MEMBER))
                 .isInstanceOf(ChangeForbiddenException.class);
     }
 }

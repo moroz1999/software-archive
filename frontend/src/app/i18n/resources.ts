@@ -139,6 +139,14 @@ export const resources = {
                 ownerUnknown: 'That person or group is no longer in the archive.',
                 displayOne: 'They have no labels yet: this one can only be their display name.',
             },
+            makeAuthor: 'Make author', makeGroup: 'Make group',
+            makeAuthorQuestion: 'Make a person known as “{{name}}”?', makeGroupQuestion: 'Make a group named “{{name}}”?',
+            takenAway: 'It will no longer be a label of {{owner}}.',
+            makeErrors: {
+                displayName: 'This label is the display name of its owner: choose another display name for them first.',
+                onlyName: 'This label is the only name of its owner: it cannot be taken away from them.',
+                typeUnknown: 'A type chosen is no longer in the archive. Reload the page.',
+            },
         },
         location: {
             locations: 'Locations', country: 'Country {{n}}', city: 'City {{n}}', chooseCountry: 'Choose a country', noCity: 'No city',
@@ -330,6 +338,14 @@ export const resources = {
                 owned: 'Кто-то уже указал, чей это псевдоним. Обновите страницу.',
                 ownerUnknown: 'Этого человека или группы уже нет в архиве.',
                 displayOne: 'У них ещё нет псевдонимов: этот может быть только отображаемым именем.',
+            },
+            makeAuthor: 'Сделать автора', makeGroup: 'Сделать группу',
+            makeAuthorQuestion: 'Сделать человека, известного как «{{name}}»?', makeGroupQuestion: 'Сделать группу с названием «{{name}}»?',
+            takenAway: 'Он больше не будет псевдонимом {{owner}}.',
+            makeErrors: {
+                displayName: 'Это основной псевдоним владельца: сначала выберите ему другой основной.',
+                onlyName: 'Это единственное имя владельца: его нельзя у него забрать.',
+                typeUnknown: 'Выбранного типа уже нет в архиве. Обновите страницу.',
             },
         },
         location: {

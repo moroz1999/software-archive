@@ -42,10 +42,6 @@ public final class Release {
         this(id, content, hardware, addedBy, Screenshots.EMPTY);
     }
 
-    public Release(ReleaseId id, ReleaseContent content, HardwareSet hardware) {
-        this(id, content, hardware, AddedBy.NOBODY);
-    }
-
     public ReleaseId id() {
         return id;
     }
