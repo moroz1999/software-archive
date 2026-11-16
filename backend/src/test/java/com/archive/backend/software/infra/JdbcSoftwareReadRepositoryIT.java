@@ -195,7 +195,7 @@ class JdbcSoftwareReadRepositoryIT {
         jdbc.update("INSERT INTO person (id, real_name) VALUES (?, 'John Doe')", john);
         jdbc.update("""
                 INSERT INTO label (id, name, person_id, group_id, is_display_name) VALUES
-                    (?, 'The Crew', NULL, ?, true),
+                    (?, 'The Crew', NULL, ?, false),
                     (?, 'zeta', NULL, ?, false),
                     (?, 'JD', ?, NULL, true),
                     (?, 'Ace', NULL, NULL, false)
@@ -210,7 +210,7 @@ class JdbcSoftwareReadRepositoryIT {
                     (?, NULL, ?, NULL, ARRAY['publisher'])
                 """, ELITE, crew, ELITE, id(32), ELITE, john, TETRIS, john, TETRIS, id(34), TETRIS, crew);
 
-        assertThat(madeByOf(ELITE)).containsExactly("The Crew", "zeta");
+        assertThat(madeByOf(ELITE)).containsExactly("Crew", "zeta");
         assertThat(madeByOf(TETRIS)).containsExactly("Ace", "JD");
         assertThat(madeByOf(NEWEST)).isEmpty();
     }
@@ -223,7 +223,7 @@ class JdbcSoftwareReadRepositoryIT {
         jdbc.update("INSERT INTO person (id, real_name) VALUES (?, 'John Doe')", john);
         jdbc.update("""
                 INSERT INTO label (id, name, person_id, group_id, is_display_name) VALUES
-                    (?, 'The Crew', NULL, ?, true),
+                    (?, 'The Crew', NULL, ?, false),
                     (?, 'CRW', NULL, ?, false)
                 """, id(31), crew, id(32), crew);
         jdbc.update("""
@@ -235,9 +235,9 @@ class JdbcSoftwareReadRepositoryIT {
 
         assertThat(reads.findById(ELITE).orElseThrow().credits())
                 .containsExactly(
+                        new SoftwareCredit(crew, crew, "group", "Crew Ltd", List.of("developer")),
                         new SoftwareCredit(id(32), crew, "group-label", "CRW — Crew Ltd", List.of("publisher")),
-                        new SoftwareCredit(john, john, "author", "John Doe", List.of("code")),
-                        new SoftwareCredit(crew, crew, "group", "The Crew", List.of("developer")));
+                        new SoftwareCredit(john, john, "author", "John Doe", List.of("code")));
     }
 
     @Test

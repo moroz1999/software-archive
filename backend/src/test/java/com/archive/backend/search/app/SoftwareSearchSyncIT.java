@@ -438,15 +438,22 @@ class SoftwareSearchSyncIT {
                 List.of()));
     }
 
+    /** The labels of the group as they are, for an update that changes something else. */
+    private List<UnmarkedLabelDraft> keptLabels(GroupId group) {
+        return jdbc.query(
+                "SELECT id, name FROM label WHERE group_id = ? ORDER BY name",
+                (rs, row) -> new UnmarkedLabelDraft(
+                        new LabelId(rs.getObject("id", UUID.class)), new LabelName(rs.getString("name"))),
+                group.value());
+    }
+
     private void updateZedSquad(GroupId group, List<UnmarkedLabelDraft> labels) {
+        updateZedSquad(group, new GroupName("Zed Squad"), labels);
+    }
+
+    private void updateZedSquad(GroupId group, GroupName name, List<UnmarkedLabelDraft> labels) {
         updateGroup.handle(new UpdateGroupCommand(
-                ADMIN,
-                group,
-                new GroupName("Zed Squad"),
-                null,
-                Set.of(new GroupTypeCode("demogroup")),
-                labels,
-                List.of()));
+                ADMIN, group, name, null, Set.of(new GroupTypeCode("demogroup")), labels, List.of()));
     }
 
     @Test
@@ -470,12 +477,12 @@ class SoftwareSearchSyncIT {
                 elite.value(),
                 group.value());
         worker.handle();
-        assertThat(listIn(document(elite), "made_by")).containsExactly("ZS");
+        assertThat(listIn(document(elite), "made_by")).containsExactly("Zed Squad");
 
-        updateZedSquad(group, List.of());
+        updateZedSquad(group, new GroupName("Zed Crew"), keptLabels(group));
         worker.handle();
 
-        assertThat(listIn(document(elite), "made_by")).containsExactly("Zed Squad");
+        assertThat(listIn(document(elite), "made_by")).containsExactly("Zed Crew");
     }
 
     @Test
