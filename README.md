@@ -60,7 +60,7 @@ From the root of the repository:
 # once: asks the domain, generates the passwords and the secret into .env.prod
 ./scripts/init-env-prod.sh
 docker compose --env-file .env.prod -f compose.prod.yaml build
-# once, on the empty database: asks the user name, email and password of the first administrator
+# once, on the empty database: asks the user name, email and password of the first administrator, then to confirm them
 docker compose --env-file .env.prod -f compose.prod.yaml run --rm backend create-admin
 docker compose --env-file .env.prod -f compose.prod.yaml up -d --build
 docker compose --env-file .env.prod -f compose.prod.yaml logs -f backend   # Flyway migrations, then "Started"

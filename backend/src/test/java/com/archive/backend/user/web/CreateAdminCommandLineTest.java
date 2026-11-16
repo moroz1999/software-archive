@@ -26,17 +26,43 @@ class CreateAdminCommandLineTest {
     private final CreateAdminCommandLine command = new CreateAdminCommandLine(handler);
 
     @Test
-    void createsTheAdministratorItWasTold() {
-        ScriptedTerminal terminal = new ScriptedTerminal("Zed", "zed@example.com", "password1", "password1");
+    void createsTheAdministratorItWasToldOnceConfirmed() {
+        ScriptedTerminal terminal = new ScriptedTerminal("Zed", "zed@example.com", "password1", "password1", "y");
 
         assertThat(command.run(terminal)).isZero();
 
         verify(handler)
                 .handle(new CreateAdministratorCommand(
                         new UserName("Zed"), new Email("zed@example.com"), new Password("password1")));
-        assertThat(terminal.prompts).containsExactly("User name: ", "Email: ", "Password: ", "Repeat the password: ");
+        assertThat(terminal.prompts)
+                .containsExactly(
+                        "User name: ",
+                        "Email: ",
+                        "Password: ",
+                        "Repeat the password: ",
+                        "Create the administrator? [y/N] ");
         assertThat(terminal.passwordPrompts).containsExactly("Password: ", "Repeat the password: ");
-        assertThat(terminal.output).containsExactly("Administrator Zed created.");
+        assertThat(terminal.output)
+                .containsExactly("User name: Zed", "Email: zed@example.com", "Administrator Zed created.");
+    }
+
+    @Test
+    void createsNothingUnlessConfirmed() {
+        ScriptedTerminal terminal = new ScriptedTerminal("Zed", "zed@example.com", "password1", "password1", "");
+
+        assertThat(command.run(terminal)).isOne();
+
+        verify(handler, never()).handle(any());
+        assertThat(terminal.output).containsExactly("User name: Zed", "Email: zed@example.com", "Nothing created.");
+    }
+
+    @Test
+    void showsTheEmailAsItIsKept() {
+        ScriptedTerminal terminal = new ScriptedTerminal("Zed", " ZED@Example.com ", "password1", "password1", "n");
+
+        assertThat(command.run(terminal)).isOne();
+
+        assertThat(terminal.output).contains("Email: zed@example.com");
     }
 
     @Test
@@ -63,20 +89,20 @@ class CreateAdminCommandLineTest {
     void tellsWhyTheArchiveRefused() {
         doThrow(new AdministratorExistsException()).when(handler).handle(any());
 
-        ScriptedTerminal terminal = new ScriptedTerminal("Zed", "zed@example.com", "password1", "password1");
+        ScriptedTerminal terminal = new ScriptedTerminal("Zed", "zed@example.com", "password1", "password1", "y");
 
         assertThat(command.run(terminal)).isOne();
-        assertThat(terminal.output).containsExactly("The archive already has an administrator.");
+        assertThat(terminal.output).last().isEqualTo("The archive already has an administrator.");
     }
 
     @Test
     void tellsATakenEmail() {
         doThrow(new UserEmailTakenException()).when(handler).handle(any());
 
-        ScriptedTerminal terminal = new ScriptedTerminal("Zed", "zed@example.com", "password1", "password1");
+        ScriptedTerminal terminal = new ScriptedTerminal("Zed", "zed@example.com", "password1", "password1", "y");
 
         assertThat(command.run(terminal)).isOne();
-        assertThat(terminal.output).containsExactly(new UserEmailTakenException().getMessage());
+        assertThat(terminal.output).last().isEqualTo(new UserEmailTakenException().getMessage());
     }
 
     /** Answers the prompts in order and records what the command printed. */

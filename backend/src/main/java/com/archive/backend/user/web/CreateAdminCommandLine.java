@@ -41,9 +41,17 @@ public class CreateAdminCommandLine {
             return 1;
         }
         try {
-            UserName userName = new UserName(name);
-            handler.handle(new CreateAdministratorCommand(userName, new Email(email), new Password(password)));
-            terminal.println("Administrator " + userName.value() + " created.");
+            CreateAdministratorCommand command =
+                    new CreateAdministratorCommand(new UserName(name), new Email(email), new Password(password));
+            // Shown as they will be kept, so a mistyped or garbled answer is caught before it is stored.
+            terminal.println("User name: " + command.name().value());
+            terminal.println("Email: " + command.email().value());
+            if (!terminal.readLine("Create the administrator? [y/N] ").strip().equalsIgnoreCase("y")) {
+                terminal.println("Nothing created.");
+                return 1;
+            }
+            handler.handle(command);
+            terminal.println("Administrator " + command.name().value() + " created.");
             return 0;
         } catch (BusinessException e) {
             terminal.println(Objects.requireNonNullElse(e.getMessage(), e.code()));

@@ -9,7 +9,10 @@ COPY src src
 RUN ./mvnw -B -q package -DskipTests && cp target/backend-*.jar /build/app.jar
 
 FROM eclipse-temurin:21-jre
+# The create-admin command reads names typed in any script.
+ENV LANG=C.UTF-8
 WORKDIR /app
 COPY --from=build /build/app.jar app.jar
+COPY --chmod=755 docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["docker-entrypoint.sh"]
