@@ -185,13 +185,14 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
      */
     private List<AuthorGroup> groups(UUID personId) {
         return jdbc.sql("WITH " + MainNameSql.PEOPLE + ", " + MainNameSql.GROUPS + """
-                        SELECT g.group_id, g.main_name, CASE WHEN l.name = p.main_name THEN NULL ELSE l.name END AS member_as
+                        SELECT g.group_id, g.main_name,
+                               CASE WHEN gm.person_id IS NOT NULL OR l.name = p.main_name THEN NULL ELSE l.name END AS member_as
                         FROM group_member gm
-                        JOIN label l ON l.id = gm.label_id
-                        JOIN named_person p ON p.person_id = l.person_id
+                        LEFT JOIN label l ON l.id = gm.label_id
+                        JOIN named_person p ON p.person_id = COALESCE(gm.person_id, l.person_id)
                         JOIN named_group g ON g.group_id = gm.group_id
-                        WHERE l.person_id = :id
-                        ORDER BY lower(g.main_name), g.group_id, lower(l.name), l.id
+                        WHERE COALESCE(gm.person_id, l.person_id) = :id
+                        ORDER BY lower(g.main_name), g.group_id, lower(l.name) NULLS FIRST, l.id
                         """)
                 .param("id", personId)
                 .query((rs, row) -> new AuthorGroup(

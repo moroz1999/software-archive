@@ -20,7 +20,7 @@ A backend command that takes the software of vektor-06c.ru into the archive ([do
 
 ## Rerunning
 
-- Every added program and every label created for an author name is remembered in `external_origin` by (archive, kind, external id): the site id for software, the name for a label. A program also keeps the address of its page (`url`, `V19`), which the software page links to as its source; the address cannot be built from the id, so it is taken from the list it was found in. A program found there is not read again; a name found there credits the label it gave before, wherever the label went since.
+- Every added program and every label created for an author name is remembered in `external_origin` by (archive, kind, external id): the site id for software, the name for a label. A program also keeps the address of its page (`url`, `V19`), which the software page links to as its source; the address cannot be built from the id, so it is taken from the list it was found in. A program found there is not read again. A known name credits its label until that label is made into a person; its origin then points to the person and later imports credit the person directly.
 - Deleting software forgets its origin in the same transaction (`SoftwareDeleted`, answered by `importer/app/ForgetDeletedSoftwareHandler`), so the next run adds the program again; `V20` forgot the origins of software deleted before.
 - Each program is added in a transaction of its own: its labels, software, release with the archive, screenshot and origin commit together or not at all, so a failed program leaves no trace and is tried again by the next run.
 - The importer's account is created by the schema (`V18`); nobody can sign in with it.

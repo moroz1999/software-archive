@@ -13,8 +13,8 @@ import com.archive.backend.user.domain.Actor;
 import org.springframework.context.ApplicationEventPublisher;
 
 /**
- * Takes a label away from whoever has it, so that a new owner made of it gets it with its works; only someone who may
- * change that owner takes it away (docs/domain/authors.md#label).
+ * Takes a label away from whoever has it before the label is made into an owner; only someone who may change that
+ * owner takes it away (docs/domain/authors.md#label).
  */
 final class LabelHandOver {
 

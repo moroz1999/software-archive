@@ -2,6 +2,7 @@ package com.archive.backend.label.web;
 
 import static com.archive.backend.user.TestActors.ADMIN;
 import static com.archive.backend.user.TestActors.MEMBER;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.nullValue;
@@ -68,6 +69,9 @@ class LabelIT {
         jdbc.update(
                 "INSERT INTO software_contribution (software_id, label_id, role_codes) VALUES (?, ?, ARRAY['code'])",
                 ELITE,
+                GHOST);
+        jdbc.update(
+                "INSERT INTO external_origin (origin, kind, external_id, entity_id) VALUES ('vektor-06c.ru', 'LABEL', 'Ghost', ?)",
                 GHOST);
     }
 
@@ -216,21 +220,30 @@ class LabelIT {
     }
 
     @Test
-    void makesAPersonOfALabelOfNobodyWithItsCreditsAndMemberships() throws Exception {
+    void replacesALabelOfNobodyWithAPersonKeepingItsExternalOriginCreditsAndMemberships() throws Exception {
         String id = idOf(makeAuthor(GHOST, MEMBER).andExpect(status().isCreated()));
 
         mvc.perform(get("/api/authors/{id}", id).cookie(TestActors.accessCookie(accessTokens, MEMBER)))
                 .andExpect(jsonPath("$.name").value("Ghost"))
-                .andExpect(jsonPath("$.realName").value(nullValue()))
-                .andExpect(jsonPath("$.labels[*].name").value(contains("Ghost")))
-                .andExpect(jsonPath("$.labels[0].display").value(true))
+                .andExpect(jsonPath("$.realName").value("Ghost"))
+                .andExpect(jsonPath("$.labels").isEmpty())
                 .andExpect(jsonPath("$.groups[*].name").value(contains("Crew")))
                 .andExpect(jsonPath("$.canChange").value(true));
-        mvc.perform(get("/api/authors/{id}/software", id))
-                .andExpect(jsonPath("$[*].title").value(contains("Elite")))
-                .andExpect(jsonPath("$[0].credits[0].as").value(nullValue()));
-        mvc.perform(get("/api/labels/{id}", GHOST))
-                .andExpect(jsonPath("$.owner.id").value(id));
+        mvc.perform(get("/api/software/{id}", ELITE))
+                .andExpect(jsonPath("$.credits[0].id").value(id))
+                .andExpect(jsonPath("$.credits[0].type").value("author"));
+        mvc.perform(get("/api/groups/{id}", CREW))
+                .andExpect(jsonPath("$.members[0].id").value(id))
+                .andExpect(jsonPath("$.members[0].type").value("author"));
+        mvc.perform(get("/api/labels/{id}", GHOST)).andExpect(status().isNotFound());
+        assertThat(jdbc.queryForObject(
+                        "SELECT kind FROM external_origin WHERE origin = 'vektor-06c.ru' AND external_id = 'Ghost'",
+                        String.class))
+                .isEqualTo("AUTHOR");
+        assertThat(jdbc.queryForObject(
+                        "SELECT entity_id FROM external_origin WHERE origin = 'vektor-06c.ru' AND external_id = 'Ghost'",
+                        UUID.class))
+                .isEqualTo(UUID.fromString(id));
     }
 
     @Test
@@ -252,15 +265,17 @@ class LabelIT {
     }
 
     @Test
-    void takesTheLabelAwayFromThePersonItWasAttachedTo() throws Exception {
+    void replacesALabelTakenAwayFromItsPerson() throws Exception {
         jdbc.update("INSERT INTO label (id, name, person_id, is_display_name) VALUES (?, 'Jay', ?, false)", JAY, JANE);
 
         String id = idOf(makeAuthor(JAY, ADMIN).andExpect(status().isCreated()));
 
         mvc.perform(get("/api/authors/{id}", JANE))
                 .andExpect(jsonPath("$.labels[*].name").value(contains("JD")));
-        mvc.perform(get("/api/labels/{id}", JAY))
-                .andExpect(jsonPath("$.owner.id").value(id));
+        mvc.perform(get("/api/authors/{id}", id))
+                .andExpect(jsonPath("$.realName").value("Jay"))
+                .andExpect(jsonPath("$.labels").isEmpty());
+        mvc.perform(get("/api/labels/{id}", JAY)).andExpect(status().isNotFound());
     }
 
     @Test

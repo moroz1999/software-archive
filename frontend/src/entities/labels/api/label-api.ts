@@ -43,7 +43,7 @@ export async function attachLabel(id: LabelId, owner: LabelOwner, display: boole
     await postNoContent(`/api${labelPath(id)}/owner`, {type: owner.type, id: owner.id, display});
 }
 
-/** Makes a new person known by the label, taking it from whoever had it: `POST /api/labels/{id}/author`. */
+/** Replaces the label with a new person of the same name: `POST /api/labels/{id}/author`. */
 export async function makeAuthorOfLabel(id: LabelId): Promise<LabelOwner> {
     const json = await postJson(`/api${labelPath(id)}/author`, {});
     return mapResponse(() => ({type: 'author', id: readString(readObject(json, 'made person'), 'id')}));

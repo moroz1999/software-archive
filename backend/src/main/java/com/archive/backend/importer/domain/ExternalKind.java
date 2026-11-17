@@ -8,5 +8,6 @@ import com.archive.backend.shared.domain.ddd.ValueObject;
 @ValueObject
 public enum ExternalKind {
     SOFTWARE,
+    AUTHOR,
     LABEL
 }

@@ -55,6 +55,7 @@ class ImportVektorIT {
     private static final String CPM_ARCHIVE_PAGE = "https://vektor-06c.ru" + CPM;
 
     private static final UUID ARCADE = UUID.fromString("8536e450-1fc7-5985-9cd2-97b499713a67");
+    private static final UUID KNOWN_AUTHOR = UUID.fromString("00000000-0000-0000-00ee-000000000001");
 
     @TestConfiguration(proxyBeanMethods = false)
     static class Site {
@@ -88,6 +89,7 @@ class ImportVektorIT {
         jdbc.update("DELETE FROM software WHERE added_by = ?", Importer.ID.value());
         jdbc.update("DELETE FROM label WHERE id IN (SELECT entity_id FROM external_origin WHERE kind = 'LABEL')");
         jdbc.update("DELETE FROM external_origin");
+        jdbc.update("DELETE FROM person WHERE id = ?", KNOWN_AUTHOR);
         jdbc.update("DELETE FROM import_run");
         http.clear();
     }
@@ -148,6 +150,31 @@ class ImportVektorIT {
                                 + " WHERE o.kind = 'LABEL' AND l.person_id IS NULL AND l.group_id IS NULL",
                         Integer.class))
                 .isEqualTo(2);
+    }
+
+    @Test
+    void creditsAnImportedNameDirectlyToThePersonItBecame() {
+        jdbc.update(
+                "INSERT INTO person (id, real_name, added_by) VALUES (?, 'Colin Swinbourne / Никита Зимин', ?)",
+                KNOWN_AUTHOR,
+                Importer.ID.value());
+        jdbc.update(
+                "INSERT INTO external_origin (origin, kind, external_id, entity_id)"
+                        + " VALUES ('vektor-06c.ru', 'AUTHOR', 'Colin Swinbourne / Никита Зимин', ?)",
+                KNOWN_AUTHOR);
+        servePrograms();
+        http.serve(WHOLE, list("892", JOE_BLADE));
+
+        run(null);
+
+        assertThat(jdbc.queryForObject(
+                        "SELECT c.person_id FROM software_contribution c"
+                                + " JOIN software s ON s.id = c.software_id WHERE s.title = 'Joe Blade'",
+                        UUID.class))
+                .isEqualTo(KNOWN_AUTHOR);
+        assertThat(jdbc.queryForObject(
+                        "SELECT count(*) FROM label WHERE name = 'Colin Swinbourne / Никита Зимин'", Integer.class))
+                .isZero();
     }
 
     @Test

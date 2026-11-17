@@ -21,7 +21,7 @@ describe(MakeAuthorButton, () => {
         vi.unstubAllGlobals();
     });
 
-    it('makes a person known by the label and hands over the new person', async () => {
+    it('replaces the label with a person and hands over the new person', async () => {
         const fetchMock = stubFetch(json({id: MADE}, 201));
         const onMade = vi.fn<(owner: LabelOwner) => void>();
         renderWithQueries(<MakeAuthorButton label={GHOST} onMade={onMade}/>);

@@ -24,4 +24,8 @@ public record ExternalOrigin(String archive, ExternalKind kind, String externalI
     public static ExternalOrigin label(String archive, LabelName name) {
         return new ExternalOrigin(archive, ExternalKind.LABEL, name.value());
     }
+
+    public static ExternalOrigin author(String archive, LabelName name) {
+        return new ExternalOrigin(archive, ExternalKind.AUTHOR, name.value());
+    }
 }

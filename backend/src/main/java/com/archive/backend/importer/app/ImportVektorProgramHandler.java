@@ -76,10 +76,7 @@ public class ImportVektorProgramHandler {
         VektorYears years = VektorYears.parse(program.year());
         CategoryId category = VektorSections.placementOf(program.section()).category();
         List<SoftwareCreditDraft> credits = VektorAuthors.labels(program.authors()).stream()
-                .map(name -> new SoftwareCreditDraft(
-                        new SoftwareReference(
-                                SoftwareReferenceType.AUTHOR_LABEL, new SoftwareReferenceId(labelOf(name))),
-                        List.of()))
+                .map(name -> new SoftwareCreditDraft(referenceOf(name), List.of()))
                 .toList();
         String description = program.description();
         SoftwareId software = createSoftware.handle(new CreateSoftwareCommand(
@@ -133,6 +130,16 @@ public class ImportVektorProgramHandler {
                     entries.save(new ImportedEntry(origin, new ImportedEntryId(id)));
                     return id;
                 });
+    }
+
+    /** The person made of this imported name, or the label still standing for it. */
+    private SoftwareReference referenceOf(LabelName name) {
+        return entries.findByOrigin(ExternalOrigin.author(VektorSite.ARCHIVE, name))
+                .map(entry -> new SoftwareReference(
+                        SoftwareReferenceType.AUTHOR,
+                        new SoftwareReferenceId(entry.getEntry().value())))
+                .orElseGet(() -> new SoftwareReference(
+                        SoftwareReferenceType.AUTHOR_LABEL, new SoftwareReferenceId(labelOf(name))));
     }
 
     private @Nullable ReleaseArchiveUpload archiveOf(VektorProgram program) {

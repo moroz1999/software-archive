@@ -17,6 +17,7 @@ The page of a label at `/labels/{id}` ([domain/authors.md](../domain/authors.md#
 
 - "Make author" and "Make group" next to the heading, for whoever may take the label: any signed-in user on a label of nobody, whoever may change its owner otherwise.
 - "Make author" asks "Make a person known as “{name}”?"; "Make group" asks "Make a group named “{name}”?" with the group types to choose, its button locked until one is chosen. The name is the label's, not editable. A label with an owner adds "It will no longer be a label of {owner}."
+- Making a person replaces the label: the person gets its name, external origin, software credits and group memberships directly, and the label no longer exists. Making a group keeps the label as one of the new group's names.
 - After making, the page of the new person or group opens; the old owner, the catalogs and the lists of software read again.
 - Refusals show inside the dialog: the label being the display name of a person with other labels, or the only name of a person without a real name; a type gone from the archive; no right to change the owner; a missing sign-in. System errors go to the error dialog.
 

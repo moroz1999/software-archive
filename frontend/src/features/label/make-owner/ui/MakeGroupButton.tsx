@@ -81,7 +81,7 @@ function TypeChoices({types, disabled, onChange}: TypeChoicesProps) {
                         {codes.data.map((code) => (
                             <Checkbox
                                 key={code}
-                                label={code}
+                                label={t(`group.typeNames.${code}`, {defaultValue: code})}
                                 checked={types.includes(code)}
                                 onChange={(checked) => {
                                     onChange(checked ? [...types, code] : types.filter((type) => type !== code));

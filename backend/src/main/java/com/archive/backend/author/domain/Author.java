@@ -100,13 +100,15 @@ public final class Author {
         events.add(new AuthorChanged(id));
     }
 
-    /**
-     * A new person known only by a label, which becomes their display name as their only label; it goes over with its
-     * works.
-     */
-    public static Author knownAs(AuthorId id, Label label, AddedBy addedBy) {
-        OwnLabels labels = OwnLabels.of(List.of()).adopt(new OwnLabel(label.getId(), label.getName()), true);
-        Author author = new Author(id, null, null, labels, new Locations(List.of()), addedBy);
+    /** A new person replacing a label under the same name. */
+    public static Author replacing(AuthorId id, Label label, AddedBy addedBy) {
+        Author author = new Author(
+                id,
+                new RealName(label.getName().value()),
+                null,
+                OwnLabels.of(List.of()),
+                new Locations(List.of()),
+                addedBy);
         author.events.add(new OwnerOfLabelsChanged(Set.of(label.getId())));
         author.events.add(new AuthorChanged(id));
         return author;

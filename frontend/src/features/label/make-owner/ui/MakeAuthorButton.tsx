@@ -11,7 +11,7 @@ export interface MakeAuthorButtonProps {
     readonly onMade: (owner: LabelOwner) => void;
 }
 
-/** Makes a new person known by the label, which becomes their display name, after asking. */
+/** Replaces the label with a new person of the same name after asking. */
 export function MakeAuthorButton({label, onMade}: MakeAuthorButtonProps) {
     return (
         <MakeOwnerProvider label={label} onMade={onMade}>

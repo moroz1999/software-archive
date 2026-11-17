@@ -1,6 +1,7 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import i18n from 'i18next';
 import {type LabelOwner, toLabelId} from '@/entities/labels';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
@@ -14,7 +15,7 @@ const TYPES = new Map([['/api/group-types', json(['demogroup', 'label'])]]);
 
 async function makeDemogroup() {
     await userEvent.click(screen.getByRole('button', {name: 'Make group'}));
-    await userEvent.click(await screen.findByRole('checkbox', {name: 'demogroup'}));
+    await userEvent.click(await screen.findByRole('checkbox', {name: 'Demo group'}));
     await userEvent.click(within(screen.getByRole('dialog', {name: 'Make group'})).getByRole('button', {name: 'Make group'}));
 }
 
@@ -46,8 +47,22 @@ describe(MakeGroupButton, () => {
         await userEvent.click(screen.getByRole('button', {name: 'Make group'}));
 
         expect(screen.getByRole('dialog', {name: 'Make group'})).toHaveTextContent('Make a group named “Ghost”?');
-        await expect(screen.findByRole('checkbox', {name: 'label'})).resolves.not.toBeChecked();
+        await expect(screen.findByRole('checkbox', {name: 'Label'})).resolves.not.toBeChecked();
         expect(within(screen.getByRole('dialog', {name: 'Make group'})).getByRole('button', {name: 'Make group'})).toBeDisabled();
+    });
+
+    it('shows group types in the UI language and sends their stable codes', async () => {
+        await i18n.changeLanguage('ru');
+        const fetchMock = stubFetchAround(TYPES, json({id: MADE}, 201));
+        renderWithQueries(<MakeGroupButton label={GHOST} onMade={vi.fn<(owner: LabelOwner) => void>()}/>);
+
+        await userEvent.click(screen.getByRole('button', {name: 'Сделать группу'}));
+        await userEvent.click(await screen.findByRole('checkbox', {name: 'Демо-группа'}));
+        await userEvent.click(within(screen.getByRole('dialog', {name: 'Сделать группу'})).getByRole('button', {name: 'Сделать группу'}));
+
+        const call = fetchMock.mock.calls.find(([url]) => url === `/api/labels/${ID}/group`);
+
+        expect(call?.[1]).toMatchObject({method: 'POST', body: JSON.stringify({types: ['demogroup']})});
     });
 
     it('says the label is taken away from whoever has it', async () => {

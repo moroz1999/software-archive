@@ -156,6 +156,7 @@ export const resources = {
             name: 'Name', types: 'Types', labels: 'Labels', locations: 'Locations', members: 'Members', notes: 'Notes',
             memberGroups: 'Member groups', memberOf: 'Member of', delete: 'Delete group',
             deleteQuestion: 'Delete “{{name}}” from the archive? Its labels stay in the archive as labels of nobody, with their credits.',
+            typeNames: {demogroup: 'Demo group', 'crack group': 'Crack group', 'game studio': 'Game studio', label: 'Label'},
         },
         release: {
             add: 'Add release', addTo: 'Add release to {{title}}', edit: 'Edit release', editOf: 'Edit release of {{title}}',
@@ -356,6 +357,7 @@ export const resources = {
             name: 'Название', types: 'Типы', labels: 'Псевдонимы', locations: 'Места', members: 'Участники', notes: 'Заметки',
             memberGroups: 'Группы-участники', memberOf: 'Входит в группы', delete: 'Удалить группу',
             deleteQuestion: 'Удалить «{{name}}» из архива? Её псевдонимы останутся в архиве ничьими, вместе с участием в работах.',
+            typeNames: {demogroup: 'Демо-группа', 'crack group': 'Крэк-группа', 'game studio': 'Игровая студия', label: 'Лейбл'},
         },
         release: {
             add: 'Добавить релиз', addTo: 'Добавить релиз для {{title}}', edit: 'Редактировать релиз',
