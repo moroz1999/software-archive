@@ -8,9 +8,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.archive.backend.TestcontainersConfiguration;
 import com.archive.backend.TypesenseTestConfiguration;
-import jakarta.servlet.http.Cookie;
+import com.jayway.jsonpath.JsonPath;
 import java.util.List;
-import java.util.Objects;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -48,13 +47,15 @@ class UserFixturesIT {
     }
 
     private void assertGroups(String login, List<String> groups) throws Exception {
-        Cookie access = Objects.requireNonNull(logIn(login)
-                .andExpect(status().isNoContent())
-                .andReturn()
-                .getResponse()
-                .getCookie("access_token"));
+        String access = JsonPath.read(
+                logIn(login)
+                        .andExpect(status().isOk())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString(),
+                "$.accessToken");
 
-        mvc.perform(get("/api/auth/me").cookie(access))
+        mvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + access))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.groups", contains(groups.toArray())));
     }

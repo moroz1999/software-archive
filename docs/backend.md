@@ -60,7 +60,7 @@ Use cases and the domain signal failures by throwing business exceptions; one `@
 - `shared/domain` — the shared kernel: concepts of the archive used by several domains, such as `Title`, the abstract value object of every title.
 - `shared/domain/error` — the taxonomy of business errors: `BusinessException` and its kinds (`NotFoundException`, `ConflictException`, `RuleViolationException`, `InvalidValueException`, `AuthenticationRequiredException`), mapped as a whole by `ApiExceptionHandler`.
 - `shared/domain/ddd` — DDD building blocks: the `@ValueObject` marker and the `DomainEvent` interface of what an aggregate tells happened.
-- `shared/web` — `ApiExceptionHandler`, the only exception → REST status mapping. A change that lost to another running at the same time (a deadlock, a lock not acquired) answers `409 conflict.concurrent`. `AccessTokenCookieFilter` signs a request in by its access token and `ActorArgumentResolver` gives controllers its `Actor` ([features/accounts.md](features/accounts.md)).
+- `shared/web` — `ApiExceptionHandler`, the only exception → REST status mapping. A change that lost to another running at the same time (a deadlock, a lock not acquired) answers `409 conflict.concurrent`. `AccessTokenBearerFilter` signs a request in by its Bearer access token and `ActorArgumentResolver` gives controllers its `Actor` ([features/accounts.md](features/accounts.md)).
 - `shared/config` — `SecurityConfig` (every request passes; access is decided by the use cases), `AuthProperties`, `ClockConfig` (use cases take the time from a `Clock`); `DomainServicesConfig` registers the domain services; `WebConfig` fixes the page JSON contract: `{content: [...], page: {size, number, totalElements, totalPages}}`.
 
 ## Mapping

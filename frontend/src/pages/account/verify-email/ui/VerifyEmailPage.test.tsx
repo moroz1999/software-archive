@@ -2,7 +2,7 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import {createMemoryRouter, RouterProvider} from 'react-router';
 import {CurrentUserProvider} from '@/entities/users';
-import {noContent, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
+import {json, noContent, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {loadVerifyEmailPage} from '../index';
 
 describe('VerifyEmailPage', () => {
@@ -13,7 +13,7 @@ describe('VerifyEmailPage', () => {
     it('confirms the account of the token in its address', async () => {
         const fetchMock = stubFetchRoutes(new Map([
             ['/api/auth/me', noContent()],
-            ['/api/auth/confirm', noContent()],
+            ['/api/auth/confirm', json({accessToken: 'access-jwt'})],
         ]));
         const router = createMemoryRouter([
             {path: '/verify-email', lazy: {Component: loadVerifyEmailPage}, HydrateFallback: () => null},

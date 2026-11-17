@@ -57,7 +57,7 @@ class PeopleRolesIT {
     @Test
     void storesGroupMemberRolesAndDatesUnderTheChosenAlias() throws Exception {
         String created = mvc.perform(post("/api/groups")
-                        .cookie(TestActors.accessCookie(accessTokens, MEMBER))
+                        .with(TestActors.bearer(accessTokens, MEMBER))
                         .contentType("application/json")
                         .content("""
                                 {
@@ -92,7 +92,7 @@ class PeopleRolesIT {
     @Test
     void storesSeveralSoftwareRolesForAPerson() throws Exception {
         String created = mvc.perform(post("/api/software")
-                        .cookie(TestActors.accessCookie(accessTokens, MEMBER))
+                        .with(TestActors.bearer(accessTokens, MEMBER))
                         .contentType("application/json")
                         .content("""
                                 {
@@ -123,7 +123,7 @@ class PeopleRolesIT {
     @Test
     void softwareCreditUnderAnAliasNamesItsAuthor() throws Exception {
         String created = mvc.perform(post("/api/software")
-                        .cookie(TestActors.accessCookie(accessTokens, MEMBER))
+                        .with(TestActors.bearer(accessTokens, MEMBER))
                         .contentType("application/json")
                         .content("""
                                 {

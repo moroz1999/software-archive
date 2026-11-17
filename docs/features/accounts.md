@@ -13,15 +13,12 @@ The `user` module. `User` and `Session` are aggregates; `Registrations` keeps a 
 
 ### Sessions
 
-| Cookie | Holds | Path | Lifetime |
-|---|---|---|---|
-| `access_token` | JWT (HS256): subject = user id, `groups` = group codes | `/api` | `auth.access-lifetime` (15 min) |
-| `refresh_token` | Random refresh secret | `/api/auth` | 30 days; without "remember me" until the browser closes |
+The access token is a JWT (HS256): its subject is the user id and `groups` holds the group codes. Login, confirmation and refresh return it in the response; the frontend keeps it only in memory and sends it as `Authorization: Bearer`. It works for `auth.access-lifetime` (15 minutes).
 
-Both are `HttpOnly`, `Secure` and `SameSite=Strict`: no script reads them and no other site sends them, so there are no CSRF tokens. Browsers accept `Secure` cookies on `http://localhost`.
+The random refresh secret is the only session cookie. Its path is `/api/auth`; it lasts for 30 days, or until the browser closes without "remember me". It is `HttpOnly`, `Secure` and `SameSite=Strict`: scripts cannot read it and no other site sends it. Browsers accept `Secure` cookies on `http://localhost`.
 
 - A refresh secret works once: refreshing deletes its session and opens a new one, whose access token carries the groups the user has by then.
-- Spring Security decides nothing about access: every request passes, `AccessTokenCookieFilter` only signs it in by its access token. A missing, expired or forged token leaves the request anonymous; what needs a user answers `401` and the frontend refreshes the session then.
+- Spring Security decides nothing about access: every request without authentication passes, and `AccessTokenBearerFilter` signs it in by its access token. A missing token is a public visitor; a presented expired or forged token answers `401`, so the frontend can refresh instead of silently reading as a visitor.
 - A controller takes the `Actor` of the request as an argument (`ActorArgumentResolver`): the user and their groups, or a public visitor.
 
 ### Permissions
@@ -39,12 +36,12 @@ Who may change what ([domain/users.md](../domain/users.md#user-groups)) is decid
 | Endpoint | Body | Answer |
 |---|---|---|
 | `POST /api/auth/register` | `name`, `email`, `password`, `language` | `204`; `422 user.name-taken` / `user.email-taken` on the field |
-| `POST /api/auth/confirm` | `token` | `204` with session cookies; `422 user.confirmation-invalid` / `user.confirmation-expired` |
+| `POST /api/auth/confirm` | `token` | `200 {accessToken}` with refresh cookie; `422 user.confirmation-invalid` / `user.confirmation-expired` |
 | `POST /api/auth/resend-confirmation` | `login`, `password`, `language` | `204`; `422 user.credentials-invalid` / `user.already-confirmed` |
-| `POST /api/auth/login` | `login` (name or email), `password`, `remember` | `204` with session cookies; `422 user.credentials-invalid` / `user.unconfirmed` |
-| `POST /api/auth/refresh` | refresh cookie | `204` with new session cookies; `401 auth.session-expired` |
-| `POST /api/auth/logout` | refresh cookie | `204`, cookies cleared, also without a session |
-| `GET /api/auth/me` | access cookie | `{id, name, email, groups, abilities}`; `204` for a visitor; `401 auth.required` when the browser holds a refresh cookie, so the session is to be refreshed first |
+| `POST /api/auth/login` | `login` (name or email), `password`, `remember` | `200 {accessToken}` with refresh cookie; `422 user.credentials-invalid` / `user.unconfirmed` |
+| `POST /api/auth/refresh` | refresh cookie | `200 {accessToken}` with rotated refresh cookie; `401 auth.session-expired` |
+| `POST /api/auth/logout` | refresh cookie | `204`, cookie cleared, also without a session |
+| `GET /api/auth/me` | Bearer access token | `{id, name, email, groups, abilities}`; `204` for a visitor; `401 auth.required` when the browser holds a refresh cookie, so the session is to be restored first |
 
 Wrong credentials are `422`, not `401`: they are a mistake in the form, shown in it, while `401` tells the frontend the session needs refreshing.
 
@@ -69,12 +66,12 @@ Wrong credentials are `422`, not `401`: they are a mistake in the form, shown in
 
 ### The session of the browser
 
-The cookies are `HttpOnly`: the frontend never sees a token, it learns of the session only from the answers. One module, `shared/api/session`, owns what the browser is — not known yet, a visitor or a signed-in user — and only it changes that.
+The frontend sees only the short-lived access token and keeps it in module memory, never persistent browser storage. The refresh secret remains in its `HttpOnly` cookie. One module, `shared/api/session`, owns both the access token and what the browser is — not known yet, a visitor or a signed-in user — and only it changes them.
 
 - Everything that changes the session runs one after another: asking who is signed in, signing in, confirming, refreshing, signing out. Each sets the session once, when it is done, so an answer of an earlier session never lands after a later one; signing in and confirming ask who signed in as their last step.
-- A request answered `401` (other than the calls that make or end sessions) waits its turn for a refresh, shared by all requests refused meanwhile, and is repeated. A session that cannot be refreshed is over: the browser becomes a visitor and the request fails with `AuthenticationRequiredError`.
-- The session is refreshed only when a request needs it. Tabs refresh at once only when they load at once (a browser restoring its tabs); a tab whose refresh lost to another's is a visitor until the winner's change reaches it through the channel below.
+- Every API request sends the in-memory access token as Bearer. A request answered `401` (other than the calls that make or end sessions) waits its turn for a refresh, shared by all requests refused meanwhile in the tab, and is repeated once with the replacement token. A session that cannot be refreshed is over: the browser becomes a visitor and the request fails with `AuthenticationRequiredError`.
+- The session is refreshed only when a request needs it. A refreshed access token is sent to the other open tabs through the channel below, so an inactive tab does not need its own refresh when it next makes a request.
 - Who is signed in is asked once per page load, before the first route preloads (`main.tsx`). Every request waits for that answer, so it goes out with the session the answer refreshed and reads what the user may see; it goes out also when the question failed.
 - What the page shows depends on who reads it: once the session changes after it was known (signing in or out, here or in another tab, a session that ends), `CurrentUserProvider` has every query read again.
-- Every change is told to the other tabs of the browser (`BroadcastChannel`), which take it as theirs: signing in or out in one tab shows in all.
-- A failed refresh does not clear the cookies: the answer of a tab that lost a refresh could arrive after the winner's and clear its fresh ones. Only signing out clears them.
+- Every change is told to the other tabs of the browser (`BroadcastChannel`), including the in-memory access token: signing in, refreshing or signing out in one tab takes effect in all.
+- A failed refresh does not clear the refresh cookie. Only signing out clears it.

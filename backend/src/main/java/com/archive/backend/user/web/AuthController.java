@@ -14,6 +14,7 @@ import com.archive.backend.user.web.dto.CurrentUserDto;
 import com.archive.backend.user.web.dto.LogInRequestDto;
 import com.archive.backend.user.web.dto.RegisterRequestDto;
 import com.archive.backend.user.web.dto.ResendConfirmationRequestDto;
+import com.archive.backend.user.web.dto.SessionDto;
 import com.archive.backend.user.web.mapper.AuthWebMapper;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
@@ -47,9 +48,9 @@ public class AuthController {
     }
 
     @PostMapping("/confirm")
-    public ResponseEntity<Void> confirm(@RequestBody ConfirmRequestDto request) {
+    public ResponseEntity<SessionDto> confirm(@RequestBody ConfirmRequestDto request) {
         IssuedSession session = confirmHandler.handle(webMapper.toConfirm(request));
-        return ResponseEntity.noContent().headers(cookies.issue(session)).build();
+        return ResponseEntity.ok().headers(cookies.issue(session)).body(webMapper.toSessionDto(session));
     }
 
     @PostMapping("/resend-confirmation")
@@ -59,23 +60,21 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Void> logIn(@RequestBody LogInRequestDto request) {
+    public ResponseEntity<SessionDto> logIn(@RequestBody LogInRequestDto request) {
         IssuedSession session = logInHandler.handle(webMapper.toLogIn(request));
-        return ResponseEntity.noContent().headers(cookies.issue(session)).build();
+        return ResponseEntity.ok().headers(cookies.issue(session)).body(webMapper.toSessionDto(session));
     }
 
-    /**
-     * Replaces the session cookies with new ones; without a session cookie there is nothing to refresh.
-     */
+    /** Replaces the refresh cookie and returns a new access token; without the cookie there is nothing to refresh. */
     @PostMapping("/refresh")
-    public ResponseEntity<Void> refresh(
+    public ResponseEntity<SessionDto> refresh(
             @CookieValue(name = SessionCookies.REFRESH_COOKIE, required = false) @Nullable String secret) {
         IssuedSession session = refreshHandler.handle(webMapper.toRefresh(secret));
-        return ResponseEntity.noContent().headers(cookies.issue(session)).build();
+        return ResponseEntity.ok().headers(cookies.issue(session)).body(webMapper.toSessionDto(session));
     }
 
     /**
-     * Ends the session and clears its cookies, also when the browser holds no session any more.
+     * Ends the session and clears its refresh cookie, also when the browser holds no session any more.
      */
     @PostMapping("/logout")
     public ResponseEntity<Void> logOut(

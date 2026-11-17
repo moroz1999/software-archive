@@ -60,7 +60,7 @@ describe(AccountMenu, () => {
     });
 
     it('signs in and then shows who is signed in', async () => {
-        const routes = visitor([['/api/auth/login', noContent()]]);
+        const routes = visitor([['/api/auth/login', json({accessToken: 'access-jwt'})]]);
         const fetchMock = show(routes);
         await open();
         routes.set('/api/auth/me', json(ZED));

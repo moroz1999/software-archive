@@ -1,6 +1,6 @@
 package com.archive.backend.shared.config;
 
-import com.archive.backend.shared.web.AccessTokenCookieFilter;
+import com.archive.backend.shared.web.AccessTokenBearerFilter;
 import java.nio.charset.StandardCharsets;
 import javax.crypto.spec.SecretKeySpec;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -17,8 +17,8 @@ import org.springframework.security.web.authentication.AnonymousAuthenticationFi
 
 /**
  * Every request passes: who may do what is decided by the use cases (docs/features/accounts.md). Spring Security only
- * signs the request in by its access token cookie. Cookies are {@code SameSite=Strict}, so no other site can send a
- * request with them, and CSRF tokens are not needed.
+ * signs the request in by its Bearer access token. The refresh cookie is {@code SameSite=Strict} and only accepted by
+ * session endpoints, so no other site can use it to make an authenticated API request.
  */
 @Configuration
 @EnableConfigurationProperties(AuthProperties.class)
@@ -31,7 +31,7 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-                .addFilterBefore(new AccessTokenCookieFilter(decoder), AnonymousAuthenticationFilter.class)
+                .addFilterBefore(new AccessTokenBearerFilter(decoder), AnonymousAuthenticationFilter.class)
                 .formLogin(login -> login.disable())
                 .httpBasic(basic -> basic.disable());
 

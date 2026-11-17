@@ -89,9 +89,9 @@ class LabelIT {
 
     @Test
     void offersTheAttachingToAdministratorsOnly() throws Exception {
-        mvc.perform(get("/api/labels/{id}", GHOST).cookie(TestActors.accessCookie(accessTokens, MEMBER)))
+        mvc.perform(get("/api/labels/{id}", GHOST).with(TestActors.bearer(accessTokens, MEMBER)))
                 .andExpect(jsonPath("$.canChange").value(false));
-        mvc.perform(get("/api/labels/{id}", GHOST).cookie(TestActors.accessCookie(accessTokens, ADMIN)))
+        mvc.perform(get("/api/labels/{id}", GHOST).with(TestActors.bearer(accessTokens, ADMIN)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.canChange").value(true));
     }
@@ -188,7 +188,7 @@ class LabelIT {
     @Test
     void refusesWhoeverMayNotChangeTheOwner() throws Exception {
         mvc.perform(post("/api/labels/{id}/owner", GHOST)
-                        .cookie(TestActors.accessCookie(accessTokens, MEMBER))
+                        .with(TestActors.bearer(accessTokens, MEMBER))
                         .contentType("application/json")
                         .content("{\"type\": \"author\", \"id\": \"%s\", \"display\": false}".formatted(JANE)))
                 .andExpect(status().isForbidden());
@@ -211,11 +211,11 @@ class LabelIT {
     void offersMakingAnOwnerToWhoeverMayTakeTheLabel() throws Exception {
         mvc.perform(get("/api/labels/{id}", GHOST))
                 .andExpect(jsonPath("$.canMakeOwner").value(false));
-        mvc.perform(get("/api/labels/{id}", GHOST).cookie(TestActors.accessCookie(accessTokens, MEMBER)))
+        mvc.perform(get("/api/labels/{id}", GHOST).with(TestActors.bearer(accessTokens, MEMBER)))
                 .andExpect(jsonPath("$.canMakeOwner").value(true));
-        mvc.perform(get("/api/labels/{id}", JD).cookie(TestActors.accessCookie(accessTokens, MEMBER)))
+        mvc.perform(get("/api/labels/{id}", JD).with(TestActors.bearer(accessTokens, MEMBER)))
                 .andExpect(jsonPath("$.canMakeOwner").value(false));
-        mvc.perform(get("/api/labels/{id}", JD).cookie(TestActors.accessCookie(accessTokens, ADMIN)))
+        mvc.perform(get("/api/labels/{id}", JD).with(TestActors.bearer(accessTokens, ADMIN)))
                 .andExpect(jsonPath("$.canMakeOwner").value(true));
     }
 
@@ -223,7 +223,7 @@ class LabelIT {
     void replacesALabelOfNobodyWithAPersonKeepingItsExternalOriginCreditsAndMemberships() throws Exception {
         String id = idOf(makeAuthor(GHOST, MEMBER).andExpect(status().isCreated()));
 
-        mvc.perform(get("/api/authors/{id}", id).cookie(TestActors.accessCookie(accessTokens, MEMBER)))
+        mvc.perform(get("/api/authors/{id}", id).with(TestActors.bearer(accessTokens, MEMBER)))
                 .andExpect(jsonPath("$.name").value("Ghost"))
                 .andExpect(jsonPath("$.realName").value("Ghost"))
                 .andExpect(jsonPath("$.labels").isEmpty())
@@ -250,7 +250,7 @@ class LabelIT {
     void makesAGroupOfALabelOfNobodyUnderItsNameWithItsCreditsAndMemberships() throws Exception {
         String id = idOf(makeGroup(GHOST, MEMBER, "[\"demogroup\"]").andExpect(status().isCreated()));
 
-        mvc.perform(get("/api/groups/{id}", id).cookie(TestActors.accessCookie(accessTokens, MEMBER)))
+        mvc.perform(get("/api/groups/{id}", id).with(TestActors.bearer(accessTokens, MEMBER)))
                 .andExpect(jsonPath("$.name").value("Ghost"))
                 .andExpect(jsonPath("$.types").value(contains("demogroup")))
                 .andExpect(jsonPath("$.labels[*].name").value(contains("Ghost")))
@@ -350,12 +350,12 @@ class LabelIT {
     }
 
     private ResultActions makeAuthor(UUID label, Actor actor) throws Exception {
-        return mvc.perform(post("/api/labels/{id}/author", label).cookie(TestActors.accessCookie(accessTokens, actor)));
+        return mvc.perform(post("/api/labels/{id}/author", label).with(TestActors.bearer(accessTokens, actor)));
     }
 
     private ResultActions makeGroup(UUID label, Actor actor, String types) throws Exception {
         return mvc.perform(post("/api/labels/{id}/group", label)
-                .cookie(TestActors.accessCookie(accessTokens, actor))
+                .with(TestActors.bearer(accessTokens, actor))
                 .contentType("application/json")
                 .content("{\"types\": %s}".formatted(types)));
     }
@@ -370,7 +370,7 @@ class LabelIT {
 
     private ResultActions attach(UUID label, String type, UUID owner, boolean display) throws Exception {
         return mvc.perform(post("/api/labels/{id}/owner", label)
-                .cookie(TestActors.accessCookie(accessTokens, ADMIN))
+                .with(TestActors.bearer(accessTokens, ADMIN))
                 .contentType("application/json")
                 .content("{\"type\": \"%s\", \"id\": \"%s\", \"display\": %s}".formatted(type, owner, display)));
     }

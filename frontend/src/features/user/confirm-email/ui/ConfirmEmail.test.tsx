@@ -39,7 +39,7 @@ describe(ConfirmEmail, () => {
     });
 
     it('confirms the account and signs its user in', async () => {
-        show('secret', noContent());
+        show('secret', json({accessToken: 'access-jwt'}));
 
         expect(screen.getByText('Confirming your registration…')).toBeInTheDocument();
         await expect(screen.findByText('Your account is confirmed, and you are signed in.')).resolves.toBeInTheDocument();
@@ -48,7 +48,7 @@ describe(ConfirmEmail, () => {
     });
 
     it('sends the token of the link once', async () => {
-        const fetchMock = show('secret', noContent());
+        const fetchMock = show('secret', json({accessToken: 'access-jwt'}));
 
         await screen.findByText('Your account is confirmed, and you are signed in.');
 

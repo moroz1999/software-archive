@@ -10,7 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @param accessLifetime how long an access token works
  * @param publicUrl the address of the frontend, which confirmation links lead to
  * @param mailFrom the sender of letters to users
- * @param secureCookies whether session cookies go over HTTPS only
+ * @param secureCookies whether the refresh cookie goes over HTTPS only
  */
 @ConfigurationProperties("auth")
 public record AuthProperties(

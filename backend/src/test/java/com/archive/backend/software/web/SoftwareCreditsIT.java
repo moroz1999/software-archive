@@ -73,7 +73,7 @@ class SoftwareCreditsIT {
     @Test
     void creditsPeopleGroupsAndTheirLabelsUnderTheChosenNamesWithTheirRoles() throws Exception {
         String created = mvc.perform(post("/api/software")
-                        .cookie(TestActors.accessCookie(accessTokens, MEMBER))
+                        .with(TestActors.bearer(accessTokens, MEMBER))
                         .contentType("application/json")
                         .content("""
                                 {
@@ -149,7 +149,7 @@ class SoftwareCreditsIT {
     @Test
     void refusesACreditedGroupThatIsNotInTheArchive() throws Exception {
         mvc.perform(post("/api/software")
-                        .cookie(TestActors.accessCookie(accessTokens, MEMBER))
+                        .with(TestActors.bearer(accessTokens, MEMBER))
                         .contentType("application/json")
                         .content("""
                                 {
@@ -166,7 +166,7 @@ class SoftwareCreditsIT {
     @Test
     void refusesAGroupCreditedTwice() throws Exception {
         mvc.perform(post("/api/software")
-                        .cookie(TestActors.accessCookie(accessTokens, MEMBER))
+                        .with(TestActors.bearer(accessTokens, MEMBER))
                         .contentType("application/json")
                         .content("""
                                 {

@@ -14,6 +14,7 @@ import com.archive.backend.user.domain.ConfirmationToken;
 import com.archive.backend.user.domain.Email;
 import com.archive.backend.user.domain.InterfaceLanguage;
 import com.archive.backend.user.domain.UserName;
+import com.jayway.jsonpath.JsonPath;
 import jakarta.servlet.http.Cookie;
 import java.util.Map;
 import java.util.Objects;
@@ -56,22 +57,21 @@ class AuthFlowIT {
         MvcResult confirmed = mvc.perform(post("/api/auth/confirm")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"token\": \"" + token.value() + "\"}"))
-                .andExpect(status().isNoContent())
+                .andExpect(status().isOk())
                 .andReturn();
-        Cookie access = cookie(confirmed, "access_token");
         Cookie refresh = cookie(confirmed, "refresh_token");
 
-        mvc.perform(get("/api/auth/me").cookie(access))
+        mvc.perform(get("/api/auth/me").header("Authorization", bearer(confirmed)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("FlowUser"))
                 .andExpect(jsonPath("$.email").value("flow@example.com"))
                 .andExpect(jsonPath("$.groups").isArray());
 
         MvcResult refreshed = mvc.perform(post("/api/auth/refresh").cookie(refresh))
-                .andExpect(status().isNoContent())
+                .andExpect(status().isOk())
                 .andReturn();
         Cookie newRefresh = cookie(refreshed, "refresh_token");
-        mvc.perform(get("/api/auth/me").cookie(cookie(refreshed, "access_token")))
+        mvc.perform(get("/api/auth/me").header("Authorization", bearer(refreshed)))
                 .andExpect(status().isOk());
         mvc.perform(post("/api/auth/refresh").cookie(refresh))
                 .andExpect(status().isUnauthorized())
@@ -91,10 +91,10 @@ class AuthFlowIT {
         MvcResult signedIn = mvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"login\": \"LATER@example.com\", \"password\": \"password1\"}"))
-                .andExpect(status().isNoContent())
+                .andExpect(status().isOk())
                 .andReturn();
 
-        mvc.perform(get("/api/auth/me").cookie(cookie(signedIn, "access_token")))
+        mvc.perform(get("/api/auth/me").header("Authorization", bearer(signedIn)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.groups", contains("member")));
     }
@@ -117,7 +117,7 @@ class AuthFlowIT {
         mvc.perform(post("/api/auth/confirm")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"token\": \"" + letters.tokenOf(email).value() + "\"}"))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk());
     }
 
     private static org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder login(String login) {
@@ -130,6 +130,11 @@ class AuthFlowIT {
         Cookie cookie = result.getResponse().getCookie(name);
         assertThat(cookie).as(name).isNotNull();
         return Objects.requireNonNull(cookie);
+    }
+
+    private static String bearer(MvcResult result) throws java.io.UnsupportedEncodingException {
+        String accessToken = JsonPath.read(result.getResponse().getContentAsString(), "$.accessToken");
+        return "Bearer " + accessToken;
     }
 
     /** Keeps the letters instead of mailing them. */

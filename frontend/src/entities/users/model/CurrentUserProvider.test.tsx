@@ -96,7 +96,7 @@ describe(CurrentUserProvider, () => {
     });
 
     it('reads again what the page shows once someone signs in', async () => {
-        const routes = new Map([['/api/auth/me', noContent()], ['/api/x', json({})], ['/api/auth/login', noContent()]]);
+        const routes = new Map([['/api/auth/me', noContent()], ['/api/x', json({})], ['/api/auth/login', json({accessToken: 'access-jwt'})]]);
         const fetchMock = stubFetchRoutes(routes);
         renderWithQueries(<CurrentUserProvider><Who/><Shown/></CurrentUserProvider>);
         await screen.findByText('Visitor');

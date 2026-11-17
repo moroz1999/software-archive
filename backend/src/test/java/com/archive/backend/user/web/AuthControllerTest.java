@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -173,21 +174,13 @@ class AuthControllerTest {
     }
 
     @Test
-    void confirmingSignsInWithHttpOnlyCookies() throws Exception {
+    void confirmingReturnsTheAccessTokenAndKeepsOnlyTheRefreshTokenInACookie() throws Exception {
         when(confirmHandler.handle(new ConfirmEmailCommand(new ConfirmationToken("token"))))
                 .thenReturn(REMEMBERED);
 
         mvc.perform(json(post("/api/auth/confirm"), "{\"token\": \"token\"}"))
-                .andExpect(status().isNoContent())
-                .andExpect(header().stringValues(
-                                HttpHeaders.SET_COOKIE,
-                                hasItem(allOf(
-                                        containsString("access_token=access-jwt"),
-                                        containsString("Path=/api"),
-                                        containsString("Max-Age=900"),
-                                        containsString("HttpOnly"),
-                                        containsString("Secure"),
-                                        containsString("SameSite=Strict")))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").value("access-jwt"))
                 .andExpect(header().stringValues(
                                 HttpHeaders.SET_COOKIE,
                                 hasItem(allOf(
@@ -196,7 +189,9 @@ class AuthControllerTest {
                                         containsString("Max-Age=2592000"),
                                         containsString("HttpOnly"),
                                         containsString("Secure"),
-                                        containsString("SameSite=Strict")))));
+                                        containsString("SameSite=Strict")))))
+                .andExpect(
+                        header().stringValues(HttpHeaders.SET_COOKIE, not(hasItem(containsString("access_token=")))));
     }
 
     @Test
@@ -226,7 +221,8 @@ class AuthControllerTest {
 
         mvc.perform(json(post("/api/auth/login"), """
                         {"login": "Zed", "password": "password1", "remember": true}"""))
-                .andExpect(status().isNoContent())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").value("access-jwt"))
                 .andExpect(header().stringValues(HttpHeaders.SET_COOKIE, hasItem(containsString("Max-Age=2592000"))));
     }
 
@@ -236,7 +232,7 @@ class AuthControllerTest {
                 .thenReturn(FORGOTTEN);
 
         mvc.perform(json(post("/api/auth/login"), "{\"login\": \"Zed\", \"password\": \"password1\"}"))
-                .andExpect(status().isNoContent())
+                .andExpect(status().isOk())
                 .andExpect(header().stringValues(
                                 HttpHeaders.SET_COOKIE,
                                 hasItem(allOf(
@@ -275,11 +271,12 @@ class AuthControllerTest {
                 .thenReturn(REMEMBERED);
 
         mvc.perform(post("/api/auth/refresh").cookie(new Cookie("refresh_token", "old-secret")))
-                .andExpect(status().isNoContent())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").value("access-jwt"))
                 .andExpect(header().stringValues(
                                 HttpHeaders.SET_COOKIE, hasItem(containsString("refresh_token=refresh-secret"))))
-                .andExpect(header().stringValues(
-                                HttpHeaders.SET_COOKIE, hasItem(containsString("access_token=access-jwt"))));
+                .andExpect(
+                        header().stringValues(HttpHeaders.SET_COOKIE, not(hasItem(containsString("access_token=")))));
     }
 
     @Test
@@ -303,9 +300,6 @@ class AuthControllerTest {
     void signingOutEndsTheSessionAndClearsTheCookies() throws Exception {
         mvc.perform(post("/api/auth/logout").cookie(new Cookie("refresh_token", "old-secret")))
                 .andExpect(status().isNoContent())
-                .andExpect(header().stringValues(
-                                HttpHeaders.SET_COOKIE,
-                                hasItem(allOf(containsString("access_token=;"), containsString("Max-Age=0")))))
                 .andExpect(header().stringValues(
                                 HttpHeaders.SET_COOKIE,
                                 hasItem(allOf(
@@ -333,7 +327,7 @@ class AuthControllerTest {
                         ID, "Zed", "zed@example.com", List.of("admin", "member"), List.of("add-entries"))));
 
         mvc.perform(get("/api/auth/me")
-                        .cookie(new Cookie("access_token", accessToken(Instant.now(), "admin", "member"))))
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken(Instant.now(), "admin", "member")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(ID.toString()))
                 .andExpect(jsonPath("$.name").value("Zed"))
@@ -352,23 +346,26 @@ class AuthControllerTest {
     }
 
     @Test
-    void anExpiredAccessTokenIsAPublicVisitor() throws Exception {
-        when(currentUserHandler.handle(new GetCurrentUserQuery(Actor.anonymous(), null)))
-                .thenReturn(Optional.empty());
-
+    void answers401ForAnExpiredBearerToken() throws Exception {
         mvc.perform(get("/api/auth/me")
-                        .cookie(new Cookie(
-                                "access_token", accessToken(Instant.now().minus(1, ChronoUnit.HOURS), "admin"))))
-                .andExpect(status().isNoContent());
+                        .header(
+                                HttpHeaders.AUTHORIZATION,
+                                "Bearer " + accessToken(Instant.now().minus(1, ChronoUnit.HOURS), "admin")))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().string(HttpHeaders.WWW_AUTHENTICATE, containsString("invalid_token")))
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.code").value("auth.access-token-invalid"));
+        verify(currentUserHandler, never()).handle(any());
     }
 
     @Test
-    void aForgedAccessTokenIsAPublicVisitor() throws Exception {
-        when(currentUserHandler.handle(new GetCurrentUserQuery(Actor.anonymous(), null)))
-                .thenReturn(Optional.empty());
-
-        mvc.perform(get("/api/auth/me").cookie(new Cookie("access_token", "forged")))
-                .andExpect(status().isNoContent());
+    void answers401ForAForgedBearerToken() throws Exception {
+        mvc.perform(get("/api/auth/me").header(HttpHeaders.AUTHORIZATION, "Bearer forged"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().string(HttpHeaders.WWW_AUTHENTICATE, containsString("invalid_token")))
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.code").value("auth.access-token-invalid"));
+        verify(currentUserHandler, never()).handle(any());
     }
 
     @Test

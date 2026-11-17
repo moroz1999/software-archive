@@ -15,6 +15,7 @@ import com.archive.backend.user.domain.InterfaceLanguage;
 import com.archive.backend.user.domain.Login;
 import com.archive.backend.user.domain.Password;
 import com.archive.backend.user.domain.UserName;
+import com.archive.backend.user.domain.session.IssuedSession;
 import com.archive.backend.user.domain.session.RefreshSecret;
 import com.archive.backend.user.domain.session.RememberMe;
 import com.archive.backend.user.domain.session.SessionExpiredException;
@@ -24,6 +25,7 @@ import com.archive.backend.user.web.dto.CurrentUserDto;
 import com.archive.backend.user.web.dto.LogInRequestDto;
 import com.archive.backend.user.web.dto.RegisterRequestDto;
 import com.archive.backend.user.web.dto.ResendConfirmationRequestDto;
+import com.archive.backend.user.web.dto.SessionDto;
 import org.jspecify.annotations.Nullable;
 import org.mapstruct.Mapper;
 
@@ -31,6 +33,10 @@ import org.mapstruct.Mapper;
 public interface AuthWebMapper {
 
     CurrentUserDto toCurrentUser(CurrentUser user);
+
+    default SessionDto toSessionDto(IssuedSession session) {
+        return new SessionDto(session.access().value());
+    }
 
     default RegisterUserCommand toRegister(RegisterRequestDto request) {
         return new RegisterUserCommand(

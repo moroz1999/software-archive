@@ -18,7 +18,7 @@ function later() {
 function respond(answers: Readonly<Record<string, readonly (Answer | Promise<Answer>)[]>>) {
     const calls = new Map<string, number>();
     const fetchMock = vi.fn<typeof fetch>(async (input) => {
-        const path = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+        const path = pathOf(input);
         const list = answers[path];
         if (list === undefined) {
             throw new TypeError(`Unexpected fetch: ${path}`);
@@ -35,8 +35,17 @@ function respond(answers: Readonly<Record<string, readonly (Answer | Promise<Ans
     return fetchMock;
 }
 
+function pathOf(input: string | URL | Request): string {
+    return typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+}
+
 function paths(fetchMock: ReturnType<typeof respond>): string[] {
-    return fetchMock.mock.calls.map(([input]) => (typeof input === 'string' ? input : input instanceof URL ? input.href : input.url));
+    return fetchMock.mock.calls.map(([input]) => pathOf(input));
+}
+
+function authorization(fetchMock: ReturnType<typeof respond>, path: string, occurrence = 0): string | null {
+    const call = fetchMock.mock.calls.filter(([input]) => pathOf(input) === path)[occurrence];
+    return new Headers(call?.[1]?.headers).get('Authorization');
 }
 
 const ZED = {id: '00000000-0000-0000-0009-000000000001', name: 'Zed'};
@@ -44,6 +53,8 @@ const GUEST: Answer = [204];
 const SIGNED_IN: Answer = [200, ZED];
 const REQUIRED: Answer = [401, {status: 401, code: 'auth.required'}];
 const EXPIRED: Answer = [401, {status: 401, code: 'auth.session-expired'}];
+const ACCESS: Answer = [200, {accessToken: 'access-jwt'}];
+const NEW_ACCESS: Answer = [200, {accessToken: 'new-access-jwt'}];
 
 /** Another tab of the archive in the same browser. */
 function otherTab() {
@@ -79,26 +90,22 @@ describe('the session of the browser', () => {
         expect(paths(fetchMock)).toStrictEqual(['/api/auth/me']);
     });
 
-    it('is the signed-in user', async () => {
-        respond({'/api/auth/me': [SIGNED_IN]});
-
-        await loadSession();
-
-        expect(getSession()).toStrictEqual({status: 'signed-in', user: ZED});
-    });
-
-    it('is refreshed when the browser holds a session to refresh', async () => {
-        const fetchMock = respond({'/api/auth/me': [REQUIRED, SIGNED_IN], '/api/auth/refresh': [[204]]});
+    it('restores a browser session into memory through the refresh cookie', async () => {
+        const fetchMock = respond({'/api/auth/me': [REQUIRED, SIGNED_IN], '/api/auth/refresh': [ACCESS]});
 
         await loadSession();
 
         expect(getSession()).toStrictEqual({status: 'signed-in', user: ZED});
         expect(paths(fetchMock)).toStrictEqual(['/api/auth/me', '/api/auth/refresh', '/api/auth/me']);
+        expect(authorization(fetchMock, '/api/auth/me', 0)).toBeNull();
+        expect(authorization(fetchMock, '/api/auth/me', 1)).toBe('Bearer access-jwt');
     });
 
-    it('holds what the page reads until it is known who reads it, with the session refreshed by then', async () => {
+    it('holds page reads until the restored access token is in memory', async () => {
         const first = later();
-        const fetchMock = respond({'/api/auth/me': [first.answer, SIGNED_IN], '/api/auth/refresh': [[204]], '/api/x': [[200, {}]]});
+        const fetchMock = respond({
+            '/api/auth/me': [first.answer, SIGNED_IN], '/api/auth/refresh': [ACCESS], '/api/x': [[200, {}]],
+        });
 
         const loaded = loadSession();
         const read = getJson('/api/x');
@@ -111,9 +118,10 @@ describe('the session of the browser', () => {
         await read;
 
         expect(paths(fetchMock)).toStrictEqual(['/api/auth/me', '/api/auth/refresh', '/api/auth/me', '/api/x']);
+        expect(authorization(fetchMock, '/api/x')).toBe('Bearer access-jwt');
     });
 
-    it('lets what the page reads go once the question of who reads it failed', async () => {
+    it('lets page reads go once asking who reads them failed', async () => {
         const fetchMock = respond({'/api/auth/me': [[500]], '/api/x': [[200, {}]]});
 
         const loaded = loadSession().catch(() => undefined);
@@ -121,9 +129,10 @@ describe('the session of the browser', () => {
         await loaded;
 
         expect(paths(fetchMock)).toStrictEqual(['/api/auth/me', '/api/x']);
+        expect(authorization(fetchMock, '/api/x')).toBeNull();
     });
 
-    it('is a guest once the session it holds cannot be refreshed', async () => {
+    it('is a guest once the session in its refresh cookie is over', async () => {
         respond({'/api/auth/me': [REQUIRED], '/api/auth/refresh': [EXPIRED]});
 
         await loadSession();
@@ -131,7 +140,7 @@ describe('the session of the browser', () => {
         expect(getSession()).toStrictEqual({status: 'guest'});
     });
 
-    it('is asked once, however many ask', async () => {
+    it('asks who is signed in once, however many ask', async () => {
         const fetchMock = respond({'/api/auth/me': [GUEST]});
 
         await Promise.all([loadSession(), loadSession()]);
@@ -140,19 +149,20 @@ describe('the session of the browser', () => {
         expect(paths(fetchMock)).toStrictEqual(['/api/auth/me']);
     });
 
-    it('starts by signing in, telling who signed in only once it is done', async () => {
-        const fetchMock = respond({'/api/auth/me': [GUEST, SIGNED_IN], '/api/auth/login': [[204]]});
+    it('starts a session with its returned access token', async () => {
+        const fetchMock = respond({'/api/auth/me': [GUEST, SIGNED_IN], '/api/auth/login': [ACCESS]});
         await loadSession();
 
         await startSession('/api/auth/login', {login: 'Zed'});
 
         expect(getSession()).toStrictEqual({status: 'signed-in', user: ZED});
         expect(paths(fetchMock)).toStrictEqual(['/api/auth/me', '/api/auth/login', '/api/auth/me']);
+        expect(authorization(fetchMock, '/api/auth/me', 1)).toBe('Bearer access-jwt');
     });
 
-    it('starts after the question of who is signed in still running, whose answer does not undo it', async () => {
+    it('starts after the initial session question without letting its earlier answer undo it', async () => {
         const first = later();
-        const fetchMock = respond({'/api/auth/me': [first.answer, SIGNED_IN], '/api/auth/confirm': [[204]]});
+        const fetchMock = respond({'/api/auth/me': [first.answer, SIGNED_IN], '/api/auth/confirm': [ACCESS]});
         const loading = loadSession();
 
         const confirming = startSession('/api/auth/confirm', {token: 'secret'});
@@ -161,9 +171,10 @@ describe('the session of the browser', () => {
 
         expect(getSession()).toStrictEqual({status: 'signed-in', user: ZED});
         expect(paths(fetchMock)).toStrictEqual(['/api/auth/me', '/api/auth/confirm', '/api/auth/me']);
+        expect(authorization(fetchMock, '/api/auth/me', 1)).toBe('Bearer access-jwt');
     });
 
-    it('does not start when the call is refused, and keeps what it was', async () => {
+    it('keeps its current session when signing in is refused', async () => {
         respond({'/api/auth/me': [GUEST], '/api/auth/login': [[422, {status: 422, code: 'user.credentials-invalid'}]]});
         await loadSession();
 
@@ -171,66 +182,70 @@ describe('the session of the browser', () => {
         expect(getSession()).toStrictEqual({status: 'guest'});
     });
 
-    it('ends by signing out', async () => {
-        const fetchMock = respond({'/api/auth/me': [SIGNED_IN], '/api/auth/logout': [[204]]});
+    it('removes the access token from memory when signing out', async () => {
+        const fetchMock = respond({
+            '/api/auth/me': [GUEST, SIGNED_IN], '/api/auth/login': [ACCESS], '/api/auth/logout': [[204]], '/api/x': [[200, 'public']],
+        });
         await loadSession();
+        await startSession('/api/auth/login', {login: 'Zed'});
 
         await endSession();
+        await getJson('/api/x');
 
         expect(getSession()).toStrictEqual({status: 'guest'});
-        expect(paths(fetchMock)).toContain('/api/auth/logout');
+        expect(authorization(fetchMock, '/api/x')).toBeNull();
     });
 
-    it('is refreshed once a request needs it, and the request is repeated', async () => {
-        const fetchMock = respond({'/api/x': [REQUIRED, [200, {ok: true}]], '/api/auth/refresh': [[204]]});
+    it('refreshes an expired access token once and repeats the request with the replacement', async () => {
+        const fetchMock = respond({
+            '/api/auth/me': [GUEST, SIGNED_IN],
+            '/api/auth/login': [ACCESS],
+            '/api/x': [REQUIRED, [200, {ok: true}]],
+            '/api/auth/refresh': [NEW_ACCESS],
+        });
+        await loadSession();
+        await startSession('/api/auth/login', {login: 'Zed'});
 
         await expect(getJson('/api/x')).resolves.toStrictEqual({ok: true});
-        expect(paths(fetchMock)).toStrictEqual(['/api/x', '/api/auth/refresh', '/api/x']);
-        expect(fetchMock.mock.calls[1]?.[1]?.method).toBe('POST');
-    });
 
-    it('is refreshed once for requests needing it at the same time', async () => {
-        const fetchMock = respond({'/api/a': [REQUIRED, [200, 'a']], '/api/b': [REQUIRED, [200, 'b']], '/api/auth/refresh': [[204]]});
-
-        await expect(Promise.all([getJson('/api/a'), getJson('/api/b')])).resolves.toStrictEqual(['a', 'b']);
+        expect(authorization(fetchMock, '/api/x', 0)).toBe('Bearer access-jwt');
+        expect(authorization(fetchMock, '/api/x', 1)).toBe('Bearer new-access-jwt');
         expect(paths(fetchMock).filter((path) => path === '/api/auth/refresh')).toHaveLength(1);
     });
 
-    it('is refreshed for a request only after a sign-in running meanwhile, with the session it made', async () => {
-        const login = later();
+    it('shares one refresh between requests refused at the same time in one tab', async () => {
         const fetchMock = respond({
-            '/api/auth/me': [GUEST, SIGNED_IN], '/api/auth/login': [login.answer], '/api/x': [REQUIRED, [200, 'x']], '/api/auth/refresh': [[204]],
+            '/api/auth/me': [GUEST, SIGNED_IN],
+            '/api/auth/login': [ACCESS],
+            '/api/a': [REQUIRED, [200, 'a']],
+            '/api/b': [REQUIRED, [200, 'b']],
+            '/api/auth/refresh': [NEW_ACCESS],
         });
         await loadSession();
-        const signingIn = startSession('/api/auth/login', {login: 'Zed'});
-        await vi.waitFor(() => {
-            expect(paths(fetchMock)).toContain('/api/auth/login');
-        });
+        await startSession('/api/auth/login', {login: 'Zed'});
 
-        const request = getJson('/api/x');
-        await vi.waitFor(() => {
-            expect(paths(fetchMock)).toContain('/api/x');
-        });
-        login.give([204]);
+        await expect(Promise.all([getJson('/api/a'), getJson('/api/b')])).resolves.toStrictEqual(['a', 'b']);
 
-        await expect(request).resolves.toBe('x');
-
-        await signingIn;
-
-        expect(paths(fetchMock)).toStrictEqual(['/api/auth/me', '/api/auth/login', '/api/x', '/api/auth/me', '/api/auth/refresh', '/api/x']);
-        expect(getSession()).toStrictEqual({status: 'signed-in', user: ZED});
+        expect(paths(fetchMock).filter((path) => path === '/api/auth/refresh')).toHaveLength(1);
+        expect(authorization(fetchMock, '/api/a', 1)).toBe('Bearer new-access-jwt');
+        expect(authorization(fetchMock, '/api/b', 1)).toBe('Bearer new-access-jwt');
     });
 
-    it('becomes a guest when it cannot be refreshed: the request fails as needing a signed-in user', async () => {
-        respond({'/api/auth/me': [SIGNED_IN], '/api/x': [REQUIRED], '/api/auth/refresh': [EXPIRED]});
+    it('becomes a guest when its access token cannot be refreshed', async () => {
+        const fetchMock = respond({
+            '/api/auth/me': [GUEST, SIGNED_IN], '/api/auth/login': [ACCESS], '/api/x': [REQUIRED], '/api/auth/refresh': [EXPIRED],
+        });
         await loadSession();
+        await startSession('/api/auth/login', {login: 'Zed'});
 
         await expect(getJson('/api/x')).rejects.toStrictEqual(new AuthenticationRequiredError('auth.required'));
+
         expect(getSession()).toStrictEqual({status: 'guest'});
+        expect(authorization(fetchMock, '/api/x')).toBe('Bearer access-jwt');
     });
 
     it.each(['/api/auth/login', '/api/auth/logout', '/api/auth/register', '/api/auth/confirm', '/api/auth/resend-confirmation'])(
-        'is never refreshed for %s, which makes or ends sessions itself',
+        'never refreshes for %s, which makes or ends sessions itself',
         async (path) => {
             const fetchMock = respond({[path]: [EXPIRED]});
 
@@ -239,29 +254,51 @@ describe('the session of the browser', () => {
         },
     );
 
-    it('tells the other tabs what it became', async () => {
+    it('tells other tabs the signed-in user and their in-memory access token', async () => {
         const tab = otherTab();
         channels.push(tab.channel);
-        respond({'/api/auth/me': [GUEST, SIGNED_IN], '/api/auth/login': [[204]]});
+        respond({'/api/auth/me': [GUEST, SIGNED_IN], '/api/auth/login': [ACCESS]});
         await loadSession();
 
         await startSession('/api/auth/login', {login: 'Zed'});
 
         await vi.waitFor(() => {
-            expect(tab.heard.at(-1)).toStrictEqual({status: 'signed-in', user: ZED});
+            expect(tab.heard.at(-1)).toStrictEqual({status: 'signed-in', user: ZED, accessToken: 'access-jwt'});
         });
     });
 
-    it('becomes what another tab tells', async () => {
+    it('uses the access token received from another tab', async () => {
         const tab = otherTab();
         channels.push(tab.channel);
-        respond({'/api/auth/me': [SIGNED_IN]});
+        const fetchMock = respond({'/api/auth/me': [GUEST], '/api/x': [[200, 'x']]});
         await loadSession();
 
-        tab.channel.postMessage({status: 'guest'});
+        tab.channel.postMessage({status: 'signed-in', user: ZED, accessToken: 'other-tab-access'});
+        await vi.waitFor(() => {
+            expect(getSession()).toStrictEqual({status: 'signed-in', user: ZED});
+        });
 
+        await getJson('/api/x');
+
+        expect(authorization(fetchMock, '/api/x')).toBe('Bearer other-tab-access');
+    });
+
+    it('removes its access token when another tab signs out', async () => {
+        const tab = otherTab();
+        channels.push(tab.channel);
+        const fetchMock = respond({
+            '/api/auth/me': [GUEST, SIGNED_IN], '/api/auth/login': [ACCESS], '/api/x': [[200, 'public']],
+        });
+        await loadSession();
+        await startSession('/api/auth/login', {login: 'Zed'});
+
+        tab.channel.postMessage({status: 'guest'});
         await vi.waitFor(() => {
             expect(getSession()).toStrictEqual({status: 'guest'});
         });
+
+        await getJson('/api/x');
+
+        expect(authorization(fetchMock, '/api/x')).toBeNull();
     });
 });

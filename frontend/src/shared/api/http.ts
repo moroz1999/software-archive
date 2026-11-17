@@ -1,4 +1,4 @@
-import {refreshSession, SESSION_CALLS, sessionSettled} from './session';
+import {refreshSession, SESSION_CALLS, sessionSettled, withAccessToken} from './session';
 import {fetchOrFail, readJson, toError} from './transport';
 
 /**
@@ -7,13 +7,13 @@ import {fetchOrFail, readJson, toError} from './transport';
  */
 async function send(path: string, init: RequestInit): Promise<Response> {
     await sessionSettled();
-    let response = await fetchOrFail(path, init);
+    let response = await fetchOrFail(path, withAccessToken(init));
     if (response.status === 401 && !SESSION_CALLS.includes(path)) {
         const refused = await toError(response);
         if (!await refreshSession()) {
             throw refused;
         }
-        response = await fetchOrFail(path, init);
+        response = await fetchOrFail(path, withAccessToken(init));
     }
     if (!response.ok) {
         throw await toError(response);

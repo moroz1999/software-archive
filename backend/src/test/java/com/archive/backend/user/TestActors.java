@@ -1,6 +1,5 @@
 package com.archive.backend.user;
 
-import com.archive.backend.shared.web.AccessTokenCookieFilter;
 import com.archive.backend.user.domain.Actor;
 import com.archive.backend.user.domain.AddedBy;
 import com.archive.backend.user.domain.ConfirmationToken;
@@ -12,12 +11,12 @@ import com.archive.backend.user.domain.UserGroup;
 import com.archive.backend.user.domain.UserId;
 import com.archive.backend.user.domain.UserName;
 import com.archive.backend.user.domain.session.AccessTokens;
-import jakarta.servlet.http.Cookie;
 import java.time.Instant;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 /** Who acts in tests: an administrator, who may change everything, and two members. */
 public final class TestActors {
@@ -42,8 +41,8 @@ public final class TestActors {
         store(jdbc, OTHER_ID, "TestOther");
     }
 
-    /** The access cookie of a signed-in actor, for requests through the web layer. */
-    public static Cookie accessCookie(AccessTokens tokens, Actor actor) {
+    /** The Bearer access token of a signed-in actor, for requests through the web layer. */
+    public static RequestPostProcessor bearer(AccessTokens tokens, Actor actor) {
         UserId id = actor.signedIn();
         ConfirmationToken token = new ConfirmationToken("test-" + id.value());
         Instant now = Instant.now();
@@ -57,8 +56,11 @@ public final class TestActors {
                 InterfaceLanguage.EN);
         user.confirm(token, now);
         actor.groups().forEach(user::grant);
-        return new Cookie(
-                AccessTokenCookieFilter.COOKIE, tokens.issue(user, now).value());
+        String accessToken = tokens.issue(user, now).value();
+        return request -> {
+            request.addHeader("Authorization", "Bearer " + accessToken);
+            return request;
+        };
     }
 
     /** Removes their accounts, for tests that commit for real. */
