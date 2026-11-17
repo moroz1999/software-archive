@@ -4,9 +4,11 @@ import static com.archive.backend.group.app.GroupFixtures.CREW;
 import static com.archive.backend.group.app.GroupFixtures.CRW;
 import static com.archive.backend.group.app.GroupFixtures.crew;
 import static com.archive.backend.user.TestActors.ADMIN;
+import static com.archive.backend.user.TestActors.BY_OTHER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.archive.backend.geo.domain.Locations;
 import com.archive.backend.group.domain.GroupChanged;
 import com.archive.backend.group.domain.GroupId;
 import com.archive.backend.label.app.InMemoryLabelRepository;
@@ -36,7 +38,7 @@ class AttachLabelToGroupHandlerTest {
     @BeforeEach
     void storeCrewAndALabelOfNobody() {
         groups.save(crew());
-        labels.save(Label.restore(SOL, new LabelName("Sol")));
+        labels.save(Label.restore(SOL, new LabelName("Sol"), new Locations(List.of()), BY_OTHER));
     }
 
     @Test
@@ -46,7 +48,8 @@ class AttachLabelToGroupHandlerTest {
         assertThat(groups.findById(CREW))
                 .hasValueSatisfying(group -> assertThat(group.getLabels().all())
                         .containsExactly(
-                                new OwnLabel(CRW, new LabelName("CRW")), new OwnLabel(SOL, new LabelName("Sol"))));
+                                new OwnLabel(CRW, new LabelName("CRW"), BY_OTHER),
+                                new OwnLabel(SOL, new LabelName("Sol"), BY_OTHER)));
         assertThat(events).containsExactlyInAnyOrder(new OwnerOfLabelsChanged(Set.of(SOL)), new GroupChanged(CREW));
     }
 

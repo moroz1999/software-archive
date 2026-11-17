@@ -1,5 +1,6 @@
 package com.archive.backend.label.domain;
 
+import static com.archive.backend.user.TestActors.BY_OTHER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -15,14 +16,16 @@ class UnmarkedLabelsTest {
     private static final LabelId CRW = new LabelId(UUID.fromString("00000000-0000-0000-0000-000000000002"));
     private static final LabelId SOL = new LabelId(UUID.fromString("00000000-0000-0000-0000-000000000003"));
 
-    private static final UnmarkedLabels CREW_AND_CRW = UnmarkedLabels.restore(
-            List.of(new OwnLabel(CREW, new LabelName("Crew")), new OwnLabel(CRW, new LabelName("CRW"))));
+    private static final UnmarkedLabels CREW_AND_CRW = UnmarkedLabels.restore(List.of(
+            new OwnLabel(CREW, new LabelName("Crew"), BY_OTHER), new OwnLabel(CRW, new LabelName("CRW"), BY_OTHER)));
 
     @Test
     void givesNewLabelsIdsOfTheirOwn() {
-        UnmarkedLabels labels = UnmarkedLabels.of(List.of(
-                new UnmarkedLabelDraft(null, new LabelName("Crew")),
-                new UnmarkedLabelDraft(null, new LabelName("CRW"))));
+        UnmarkedLabels labels = UnmarkedLabels.of(
+                List.of(
+                        new UnmarkedLabelDraft(null, new LabelName("Crew")),
+                        new UnmarkedLabelDraft(null, new LabelName("CRW"))),
+                BY_OTHER);
 
         assertThat(labels.all())
                 .extracting(OwnLabel::name)
@@ -32,15 +35,17 @@ class UnmarkedLabelsTest {
 
     @Test
     void renamesItsOwnLabelsAndDropsTheOnesTheDraftsNoLongerHave() {
-        UnmarkedLabels labels = CREW_AND_CRW.replace(List.of(new UnmarkedLabelDraft(CRW, new LabelName("CRW!"))));
+        UnmarkedLabels labels =
+                CREW_AND_CRW.replace(List.of(new UnmarkedLabelDraft(CRW, new LabelName("CRW!"))), BY_OTHER);
 
-        assertThat(labels.all()).containsExactly(new OwnLabel(CRW, new LabelName("CRW!")));
+        assertThat(labels.all()).containsExactly(new OwnLabel(CRW, new LabelName("CRW!"), BY_OTHER));
     }
 
     @Test
     void refusesALabelThatIsNotItsOwn() {
         assertThatThrownBy(() -> CREW_AND_CRW.replace(
-                        List.of(new UnmarkedLabelDraft(new LabelId(UUID.randomUUID()), new LabelName("Bob")))))
+                        List.of(new UnmarkedLabelDraft(new LabelId(UUID.randomUUID()), new LabelName("Bob"))),
+                        BY_OTHER))
                 .isInstanceOfSatisfying(RuleViolationException.class, e -> {
                     assertThat(e.code()).isEqualTo("label.not-own");
                     assertThat(e.field()).isEqualTo("labels");
@@ -49,19 +54,20 @@ class UnmarkedLabelsTest {
 
     @Test
     void adoptsALabelOfNobodyEvenAsTheFirstOne() {
-        UnmarkedLabels labels = UnmarkedLabels.of(List.of()).adopt(new OwnLabel(SOL, new LabelName("Sol")));
+        UnmarkedLabels labels =
+                UnmarkedLabels.of(List.of(), BY_OTHER).adopt(new OwnLabel(SOL, new LabelName("Sol"), BY_OTHER));
 
-        assertThat(labels.all()).containsExactly(new OwnLabel(SOL, new LabelName("Sol")));
+        assertThat(labels.all()).containsExactly(new OwnLabel(SOL, new LabelName("Sol"), BY_OTHER));
     }
 
     @Test
     void knowsWhetherItHasAnyLabel() {
-        assertThat(UnmarkedLabels.of(List.of()).isEmpty()).isTrue();
+        assertThat(UnmarkedLabels.of(List.of(), BY_OTHER).isEmpty()).isTrue();
         assertThat(CREW_AND_CRW.isEmpty()).isFalse();
     }
 
     @Test
     void releasesALabel() {
-        assertThat(CREW_AND_CRW.release(CREW).all()).containsExactly(new OwnLabel(CRW, new LabelName("CRW")));
+        assertThat(CREW_AND_CRW.release(CREW).all()).containsExactly(new OwnLabel(CRW, new LabelName("CRW"), BY_OTHER));
     }
 }

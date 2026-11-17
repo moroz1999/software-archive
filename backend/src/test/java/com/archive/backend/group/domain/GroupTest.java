@@ -36,7 +36,7 @@ class GroupTest {
                 new GroupName("Crew Ltd"),
                 null,
                 DEMOGROUP,
-                UnmarkedLabels.restore(List.of(new OwnLabel(CRW, new LabelName("CRW")))),
+                UnmarkedLabels.restore(List.of(new OwnLabel(CRW, new LabelName("CRW"), BY_OTHER))),
                 NOWHERE,
                 GroupMembers.EMPTY,
                 BY_OTHER);
@@ -87,12 +87,13 @@ class GroupTest {
                 new GroupNotes("Disbanded"),
                 LABEL,
                 List.of(new UnmarkedLabelDraft(CRW, new LabelName("CRW!"))),
-                NORWAY);
+                NORWAY,
+                BY_OTHER);
 
         assertThat(group.getName()).isEqualTo(new GroupName("Crew"));
         assertThat(group.getNotes()).isEqualTo(new GroupNotes("Disbanded"));
         assertThat(group.getTypes()).isEqualTo(LABEL);
-        assertThat(group.getLabels().all()).containsExactly(new OwnLabel(CRW, new LabelName("CRW!")));
+        assertThat(group.getLabels().all()).containsExactly(new OwnLabel(CRW, new LabelName("CRW!"), BY_OTHER));
         assertThat(group.getLocations()).isEqualTo(NORWAY);
     }
 
@@ -105,7 +106,8 @@ class GroupTest {
                         null,
                         LABEL,
                         List.of(new UnmarkedLabelDraft(new LabelId(UUID.randomUUID()), new LabelName("Bob"))),
-                        NORWAY))
+                        NORWAY,
+                        BY_OTHER))
                 .isInstanceOfSatisfying(
                         RuleViolationException.class, e -> assertThat(e.code()).isEqualTo("label.not-own"));
         assertThat(group.getName()).isEqualTo(new GroupName("Crew Ltd"));
@@ -132,7 +134,7 @@ class GroupTest {
     void tellsItWasEdited() {
         Group group = crew();
 
-        group.edit(new GroupName("Crew Two"), null, DEMOGROUP, List.of(), NOWHERE);
+        group.edit(new GroupName("Crew Two"), null, DEMOGROUP, List.of(), NOWHERE, BY_OTHER);
 
         assertThat(group.pullEvents()).contains(new GroupChanged(ID));
     }

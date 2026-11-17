@@ -5,6 +5,7 @@ import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.label.domain.OwnLabel;
 import com.archive.backend.label.domain.OwnLabels;
 import com.archive.backend.label.domain.UnmarkedLabels;
+import com.archive.backend.user.infra.AddedByRows;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -32,11 +33,7 @@ public final class LabelRows {
                                 .thenComparing(LabelEntity::getId)))
                 .map(label -> new LabelId(label.getId()))
                 .orElse(null);
-        return OwnLabels.restore(
-                rows.stream()
-                        .map(label -> new OwnLabel(new LabelId(label.getId()), new LabelName(label.getName())))
-                        .toList(),
-                display);
+        return OwnLabels.restore(rows.stream().map(LabelRows::toLabel).toList(), display);
     }
 
     public static List<LabelEntity> fromLabels(OwnLabels labels) {
@@ -47,6 +44,7 @@ public final class LabelRows {
                     row.setId(label.id().value());
                     row.setName(label.name().value());
                     row.setDisplay(label.id().equals(display));
+                    row.setAddedBy(AddedByRows.fromAddedBy(label.addedBy()));
                     return row;
                 })
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -54,9 +52,12 @@ public final class LabelRows {
 
     /** The labels of a group: whatever is marked on them, a group has no display name. */
     public static UnmarkedLabels toUnmarked(List<LabelEntity> rows) {
-        return UnmarkedLabels.restore(rows.stream()
-                .map(label -> new OwnLabel(new LabelId(label.getId()), new LabelName(label.getName())))
-                .toList());
+        return UnmarkedLabels.restore(rows.stream().map(LabelRows::toLabel).toList());
+    }
+
+    private static OwnLabel toLabel(LabelEntity row) {
+        return new OwnLabel(
+                new LabelId(row.getId()), new LabelName(row.getName()), AddedByRows.toAddedBy(row.getAddedBy()));
     }
 
     public static List<LabelEntity> fromUnmarked(UnmarkedLabels labels) {
@@ -66,6 +67,7 @@ public final class LabelRows {
                     row.setId(label.id().value());
                     row.setName(label.name().value());
                     row.setDisplay(false);
+                    row.setAddedBy(AddedByRows.fromAddedBy(label.addedBy()));
                     return row;
                 })
                 .collect(Collectors.toCollection(ArrayList::new));

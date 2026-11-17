@@ -143,7 +143,8 @@ class JpaAuthorRepositoryIT {
                 List.of(
                         new LabelDraft(zed, new LabelName("Zed II"), false),
                         new LabelDraft(null, new LabelName("Bob"), true)),
-                new Locations(List.of(new Location(Place.restore(NORWAY, null), true))));
+                new Locations(List.of(new Location(Place.restore(NORWAY, null), true))),
+                BY_OTHER);
         repository.save(author);
         Author edited = reload();
 
@@ -165,7 +166,8 @@ class JpaAuthorRepositoryIT {
                 author.getRealName(),
                 null,
                 List.of(new LabelDraft(label(author, "Zed"), new LabelName("Zed"), true)),
-                HELSINKI_AND_NORWAY);
+                HELSINKI_AND_NORWAY,
+                BY_OTHER);
         repository.save(author);
         reload();
 

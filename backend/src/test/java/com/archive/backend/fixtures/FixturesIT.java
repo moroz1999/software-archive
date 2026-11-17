@@ -66,6 +66,18 @@ class FixturesIT {
     }
 
     @Test
+    void everyFixtureLabelIsAddedByAFixtureUserTheLabelsOfNobodyByTheMember() {
+        assertThat(jdbc.queryForList(
+                        "SELECT DISTINCT added_by::text FROM label WHERE id::text LIKE '00000000-0000-0000-0004-%' AND person_id IS NULL AND group_id IS NULL",
+                        String.class))
+                .containsExactly("00000000-0000-0000-0009-000000000003");
+        assertThat(jdbc.queryForList(
+                        "SELECT DISTINCT added_by::text FROM label WHERE id::text LIKE '00000000-0000-0000-0004-%' AND (person_id IS NOT NULL OR group_id IS NOT NULL)",
+                        String.class))
+                .containsExactly("00000000-0000-0000-0009-000000000001");
+    }
+
+    @Test
     void fixtureSoftwareIsServedByTheApi() throws Exception {
         mvc.perform(get("/api/software").param("size", "100"))
                 .andExpect(status().isOk())

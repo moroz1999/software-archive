@@ -29,6 +29,13 @@ public class LabelEntity {
     private @Nullable Boolean display;
 
     /**
+     * Who added it; written with a new row only, as the owners' mappings save rows they did not add, and the database
+     * forgets the adder once their account is gone.
+     */
+    @Column(name = "added_by", updatable = false)
+    private @Nullable UUID addedBy;
+
+    /**
      * Set by the database default.
      */
     @Column(name = "created_at", columnDefinition = "timestamptz", insertable = false, updatable = false)

@@ -152,14 +152,15 @@ class JpaGroupRepositoryIT {
                 null,
                 GroupTypeSet.restore(Set.of(new GroupTypeCode("crack group"))),
                 List.of(new UnmarkedLabelDraft(crw, new LabelName("CRW!"))),
-                new Locations(List.of()));
+                new Locations(List.of()),
+                BY_OTHER);
         repository.save(group);
         Group edited = reload();
 
         assertThat(edited.getName()).isEqualTo(new GroupName("Crew"));
         assertThat(edited.getNotes()).isNull();
         assertThat(edited.getTypes().codes()).containsExactly(new GroupTypeCode("crack group"));
-        assertThat(edited.getLabels().all()).containsExactly(new OwnLabel(crw, new LabelName("CRW!")));
+        assertThat(edited.getLabels().all()).containsExactly(new OwnLabel(crw, new LabelName("CRW!"), BY_OTHER));
         assertThat(edited.getLocations().all()).isEmpty();
     }
 
@@ -193,7 +194,8 @@ class JpaGroupRepositoryIT {
                 null,
                 group.getTypes(),
                 List.of(new UnmarkedLabelDraft(label(group, "Crew"), new LabelName("Crew"))),
-                IN_NORWAY);
+                IN_NORWAY,
+                BY_OTHER);
         repository.save(group);
         reload();
 

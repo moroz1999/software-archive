@@ -37,7 +37,7 @@ class AuthorTest {
                 ID,
                 null,
                 null,
-                OwnLabels.restore(List.of(new OwnLabel(ZED, new LabelName("Zed"))), ZED),
+                OwnLabels.restore(List.of(new OwnLabel(ZED, new LabelName("Zed"), BY_OTHER)), ZED),
                 NOWHERE,
                 BY_OTHER);
     }
@@ -86,7 +86,8 @@ class AuthorTest {
                 new RealName("John Doe"),
                 new AuthorNotes("Retired"),
                 List.of(new LabelDraft(null, new LabelName("Axe"), true)),
-                NORWAY);
+                NORWAY,
+                BY_OTHER);
 
         assertThat(author.getRealName()).isEqualTo(new RealName("John Doe"));
         assertThat(author.getNotes()).isEqualTo(new AuthorNotes("Retired"));
@@ -100,9 +101,9 @@ class AuthorTest {
     void keepsTheIdsOfTheLabelsItRenames() {
         Author author = zed();
 
-        author.edit(null, null, List.of(new LabelDraft(ZED, new LabelName("Zed II"), true)), NOWHERE);
+        author.edit(null, null, List.of(new LabelDraft(ZED, new LabelName("Zed II"), true)), NOWHERE, BY_OTHER);
 
-        assertThat(author.getLabels().all()).containsExactly(new OwnLabel(ZED, new LabelName("Zed II")));
+        assertThat(author.getLabels().all()).containsExactly(new OwnLabel(ZED, new LabelName("Zed II"), BY_OTHER));
     }
 
     @Test
@@ -113,7 +114,8 @@ class AuthorTest {
                         null,
                         null,
                         List.of(new LabelDraft(new LabelId(UUID.randomUUID()), new LabelName("Bob"), true)),
-                        NOWHERE))
+                        NOWHERE,
+                        BY_OTHER))
                 .isInstanceOfSatisfying(
                         RuleViolationException.class, e -> assertThat(e.code()).isEqualTo("label.not-own"));
         assertThat(author.getLabels().all()).extracting(OwnLabel::id).containsExactly(ZED);
@@ -123,7 +125,7 @@ class AuthorTest {
     void cannotBeEditedIntoHavingNoName() {
         Author author = zed();
 
-        assertThatThrownBy(() -> author.edit(null, new AuthorNotes("Gone"), List.of(), NORWAY))
+        assertThatThrownBy(() -> author.edit(null, new AuthorNotes("Gone"), List.of(), NORWAY, BY_OTHER))
                 .isInstanceOfSatisfying(
                         RuleViolationException.class, e -> assertThat(e.code()).isEqualTo("author.nameless"));
         assertThat(author.getLabels().all()).extracting(OwnLabel::id).containsExactly(ZED);
@@ -140,7 +142,7 @@ class AuthorTest {
     void tellsItWasEdited() {
         Author author = zed();
 
-        author.edit(new RealName("John Doe"), null, List.of(), NOWHERE);
+        author.edit(new RealName("John Doe"), null, List.of(), NOWHERE, BY_OTHER);
 
         assertThat(author.pullEvents()).contains(new AuthorChanged(ID));
     }
@@ -160,7 +162,7 @@ class AuthorTest {
                 ID,
                 new RealName("John Doe"),
                 null,
-                OwnLabels.restore(List.of(new OwnLabel(ZED, new LabelName("Zed"))), ZED),
+                OwnLabels.restore(List.of(new OwnLabel(ZED, new LabelName("Zed"), BY_OTHER)), ZED),
                 NOWHERE,
                 BY_OTHER);
 

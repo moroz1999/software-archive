@@ -42,4 +42,15 @@ public class InMemoryLabelRepository implements LabelRepository {
     public boolean exists(LabelId id) {
         return items.containsKey(id) || owned.contains(id);
     }
+
+    @Override
+    public Optional<Label> lock(LabelId id) {
+        return Optional.ofNullable(items.get(id));
+    }
+
+    @Override
+    public void delete(Label label) {
+        items.remove(label.getId());
+        owned.remove(label.getId());
+    }
 }

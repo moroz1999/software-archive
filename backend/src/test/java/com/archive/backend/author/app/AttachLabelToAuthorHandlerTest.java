@@ -4,12 +4,14 @@ import static com.archive.backend.author.app.AuthorFixtures.ZED;
 import static com.archive.backend.author.app.AuthorFixtures.ZED_LABEL;
 import static com.archive.backend.author.app.AuthorFixtures.zed;
 import static com.archive.backend.user.TestActors.ADMIN;
+import static com.archive.backend.user.TestActors.BY_OTHER;
 import static com.archive.backend.user.TestActors.MEMBER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.archive.backend.author.domain.AuthorChanged;
 import com.archive.backend.author.domain.AuthorId;
+import com.archive.backend.geo.domain.Locations;
 import com.archive.backend.label.app.InMemoryLabelRepository;
 import com.archive.backend.label.domain.Label;
 import com.archive.backend.label.domain.LabelAttachment;
@@ -40,7 +42,7 @@ class AttachLabelToAuthorHandlerTest {
     @BeforeEach
     void storeZedAndALabelOfNobody() {
         authors.save(zed());
-        labels.save(Label.restore(BOB, new LabelName("Bob")));
+        labels.save(Label.restore(BOB, new LabelName("Bob"), new Locations(List.of()), BY_OTHER));
     }
 
     @Test
@@ -50,7 +52,8 @@ class AttachLabelToAuthorHandlerTest {
         assertThat(authors.findById(ZED)).hasValueSatisfying(author -> {
             assertThat(author.getLabels().all())
                     .containsExactly(
-                            new OwnLabel(ZED_LABEL, new LabelName("Zed")), new OwnLabel(BOB, new LabelName("Bob")));
+                            new OwnLabel(ZED_LABEL, new LabelName("Zed"), BY_OTHER),
+                            new OwnLabel(BOB, new LabelName("Bob"), BY_OTHER));
             assertThat(author.getLabels().display()).isEqualTo(ZED_LABEL);
         });
     }

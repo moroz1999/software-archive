@@ -20,7 +20,7 @@ public class JdbcLabelReadRepository implements LabelReadRepository {
     @Override
     public Optional<LabelDetails> findById(UUID id) {
         return jdbc.sql("WITH " + MainNameSql.PEOPLE + ", " + MainNameSql.GROUPS + """
-                        SELECT l.name, l.person_id, l.group_id,
+                        SELECT l.name, l.person_id, l.group_id, l.added_by,
                                COALESCE(p.real_name, p.main_name, g.main_name) AS owner_name,
                                CASE WHEN p.real_name IS NOT NULL AND p.main_label_id IS NOT NULL THEN p.main_name END
                                    AS owner_note,
@@ -41,9 +41,53 @@ public class JdbcLabelReadRepository implements LabelReadRepository {
                     LabelDetails.Owner owner = person != null
                             ? new LabelDetails.Owner("author", person, ownerName, rs.getString("owner_note"), addedBy)
                             : group != null ? new LabelDetails.Owner("group", group, ownerName, null, addedBy) : null;
-                    return new LabelDetails(id, rs.getString("name"), owner, groups(id), false, false);
+                    return new LabelDetails(
+                            id,
+                            rs.getString("name"),
+                            owner,
+                            groups(id),
+                            locations(id),
+                            origins(id),
+                            rs.getObject("added_by", UUID.class),
+                            LabelDetails.Rights.NONE);
                 })
                 .optional();
+    }
+
+    /**
+     * The primary location first; of a record from before the rule with none or several marked, the first of them.
+     */
+    private List<LabelDetails.Location> locations(UUID labelId) {
+        return jdbc.sql("""
+                        SELECT co.id AS country_id, co.name AS country, ci.id AS city_id, ci.name AS city,
+                               ROW_NUMBER() OVER (ORDER BY COALESCE(l.is_primary, FALSE) DESC, co.name, ci.name) = 1 AS is_primary
+                        FROM entity_location l
+                        LEFT JOIN city ci ON ci.id = l.city_id
+                        LEFT JOIN country co ON co.id = COALESCE(l.country_id, ci.country_id)
+                        WHERE l.entity_type = 'LABEL' AND l.entity_id = :id
+                        ORDER BY COALESCE(l.is_primary, FALSE) DESC, co.name, ci.name
+                        """)
+                .param("id", labelId)
+                .query((rs, row) -> new LabelDetails.Location(
+                        rs.getObject("country_id", UUID.class),
+                        rs.getString("country"),
+                        rs.getObject("city_id", UUID.class),
+                        rs.getString("city"),
+                        rs.getBoolean("is_primary")))
+                .list();
+    }
+
+    /** The imports the label came from, by the source archive. */
+    private List<LabelDetails.Origin> origins(UUID labelId) {
+        return jdbc.sql("""
+                        SELECT origin, external_id, url FROM external_origin
+                        WHERE kind = 'LABEL' AND entity_id = :id
+                        ORDER BY origin, external_id
+                        """)
+                .param("id", labelId)
+                .query((rs, row) -> new LabelDetails.Origin(
+                        rs.getString("origin"), rs.getString("external_id"), rs.getString("url")))
+                .list();
     }
 
     /** The groups the label was a member of, under their main names. */

@@ -8,7 +8,7 @@ export const resources = {
         actions: {
             addSoftware: 'Add software', editSoftware: 'Edit software', save: 'Save', edit: 'Edit', delete: 'Delete',
             deleteForGood: 'Delete for good', cancel: 'Cancel', close: 'Close', retry: 'Retry', addRelease: 'Add release',
-            addAuthor: 'Add author', editAuthor: 'Edit author', remove: 'Remove', addGroup: 'Add group', editGroup: 'Edit group',
+            addAuthor: 'Add author', editAuthor: 'Edit author', remove: 'Remove', addGroup: 'Add group', editGroup: 'Edit group', editLabel: 'Edit label',
             addCategory: 'Add category', editCategory: 'Edit category', editUser: 'Edit user',
         },
         pages: {recentlyAdded: 'Recently added', software: 'Software', authors: 'Authors', groups: 'Groups', categories: 'Categories', search: 'Search', users: 'Users', imports: 'Imports'},
@@ -32,7 +32,7 @@ export const resources = {
             search: 'Search', year: 'Year', anyYear: 'Any year', allCategories: 'All categories',
             withCount: '{{label}} ({{count}})',
         },
-        formSections: {main: 'Main', classification: 'Classification', credits: 'Credits', hardwareAndArchive: 'Hardware and archive', names: 'Names', geography: 'Geography', members: 'Members', account: 'Account', groups: 'Groups'},
+        formSections: {main: 'Main', classification: 'Classification', credits: 'Credits', hardwareAndArchive: 'Hardware and archive', names: 'Names', geography: 'Geography', members: 'Members', account: 'Account', groups: 'Groups', sources: 'Sources'},
         fields: {
             title: 'Title', platform: 'Platform', description: 'Description', releaseDate: 'Release date', releaseDateHint: 'A year, such as 1987, or a day, such as 12.05.1987.', version: 'Version',
             type: 'Type', hardware: 'Hardware', categories: 'Categories', credits: 'Credits', participant: 'Person or group',
@@ -142,6 +142,8 @@ export const resources = {
             makeAuthor: 'Make author', makeGroup: 'Make group',
             makeAuthorQuestion: 'Make a person known as “{{name}}”?', makeGroupQuestion: 'Make a group named “{{name}}”?',
             takenAway: 'It will no longer be a label of {{owner}}.',
+            nameField: 'Name', delete: 'Delete label', deleteQuestion: 'Delete “{{name}}” from the archive? Its credits and memberships go with it.',
+            noSources: 'None',
             makeErrors: {
                 displayName: 'This label is the display name of its owner: choose another display name for them first.',
                 onlyName: 'This label is the only name of its owner: it cannot be taken away from them.',
@@ -205,7 +207,7 @@ export const resources = {
         actions: {
             addSoftware: 'Добавить программу', editSoftware: 'Редактировать программу', save: 'Сохранить', edit: 'Редактировать',
             delete: 'Удалить', deleteForGood: 'Удалить навсегда', cancel: 'Отмена', close: 'Закрыть', retry: 'Повторить',
-            addRelease: 'Добавить релиз', addAuthor: 'Добавить автора', editAuthor: 'Редактировать автора', remove: 'Убрать', addGroup: 'Добавить группу', editGroup: 'Редактировать группу',
+            addRelease: 'Добавить релиз', addAuthor: 'Добавить автора', editAuthor: 'Редактировать автора', remove: 'Убрать', addGroup: 'Добавить группу', editGroup: 'Редактировать группу', editLabel: 'Редактировать псевдоним',
             addCategory: 'Добавить категорию', editCategory: 'Редактировать категорию', editUser: 'Редактировать пользователя',
         },
         pages: {recentlyAdded: 'Недавно добавленное', software: 'Программы', authors: 'Авторы', groups: 'Группы', categories: 'Категории', search: 'Поиск', users: 'Пользователи', imports: 'Импорт'},
@@ -229,7 +231,7 @@ export const resources = {
             search: 'Поиск', year: 'Год', anyYear: 'Любой год', allCategories: 'Все категории',
             withCount: '{{label}} ({{count}})',
         },
-        formSections: {main: 'Основное', classification: 'Классификация', credits: 'Титры', hardwareAndArchive: 'Оборудование и архив', names: 'Имена', geography: 'География', members: 'Участники', account: 'Учётная запись', groups: 'Группы'},
+        formSections: {main: 'Основное', classification: 'Классификация', credits: 'Титры', hardwareAndArchive: 'Оборудование и архив', names: 'Имена', geography: 'География', members: 'Участники', account: 'Учётная запись', groups: 'Группы', sources: 'Источники'},
         fields: {
             title: 'Название', platform: 'Платформа', description: 'Описание', releaseDate: 'Дата выпуска', releaseDateHint: 'Год, например 1987, или день, например 12.05.1987.', version: 'Версия',
             type: 'Тип', hardware: 'Оборудование', categories: 'Категории', credits: 'Титры', participant: 'Человек или группа',
@@ -343,6 +345,8 @@ export const resources = {
             makeAuthor: 'Сделать автора', makeGroup: 'Сделать группу',
             makeAuthorQuestion: 'Сделать человека, известного как «{{name}}»?', makeGroupQuestion: 'Сделать группу с названием «{{name}}»?',
             takenAway: 'Он больше не будет псевдонимом {{owner}}.',
+            nameField: 'Имя', delete: 'Удалить псевдоним', deleteQuestion: 'Удалить «{{name}}» из архива? Его участие в работах и группах удалится вместе с ним.',
+            noSources: 'Нет',
             makeErrors: {
                 displayName: 'Это основной псевдоним владельца: сначала выберите ему другой основной.',
                 onlyName: 'Это единственное имя владельца: его нельзя у него забрать.',

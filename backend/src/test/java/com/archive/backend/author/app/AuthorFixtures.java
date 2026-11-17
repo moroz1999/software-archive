@@ -34,7 +34,7 @@ final class AuthorFixtures {
                 ZED,
                 null,
                 null,
-                OwnLabels.restore(List.of(new OwnLabel(ZED_LABEL, new LabelName("Zed"))), ZED_LABEL),
+                OwnLabels.restore(List.of(new OwnLabel(ZED_LABEL, new LabelName("Zed"), BY_OTHER)), ZED_LABEL),
                 new Locations(List.of()),
                 BY_OTHER);
     }

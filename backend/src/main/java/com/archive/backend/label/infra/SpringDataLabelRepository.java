@@ -8,6 +8,10 @@ import org.springframework.data.repository.query.Param;
 
 public interface SpringDataLabelRepository extends JpaRepository<LabelEntity, UUID> {
 
+    /** The label, its row locked until the transaction ends (docs/backend.md). */
+    @Query(value = "SELECT * FROM label WHERE id = :id FOR NO KEY UPDATE", nativeQuery = true)
+    Optional<LabelEntity> lock(@Param("id") UUID id);
+
     /** The label while it is of nobody, its row locked until the transaction ends (docs/backend.md). */
     @Query(
             value = "SELECT * FROM label WHERE id = :id AND person_id IS NULL AND group_id IS NULL FOR NO KEY UPDATE",

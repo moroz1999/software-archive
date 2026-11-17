@@ -7,6 +7,9 @@ import com.archive.backend.group.app.AttachLabelToGroupCommand;
 import com.archive.backend.group.app.AttachLabelToGroupHandler;
 import com.archive.backend.group.domain.GroupId;
 import com.archive.backend.group.domain.GroupTypeCode;
+import com.archive.backend.label.app.DeleteLabelCommand;
+import com.archive.backend.label.app.DeleteLabelHandler;
+import com.archive.backend.label.app.EditLabelHandler;
 import com.archive.backend.label.app.GetLabelHandler;
 import com.archive.backend.label.app.GetLabelQuery;
 import com.archive.backend.label.app.MakeAuthorOfLabelCommand;
@@ -19,6 +22,7 @@ import com.archive.backend.label.web.dto.LabelDetailsDto;
 import com.archive.backend.label.web.dto.LabelGroupRequestDto;
 import com.archive.backend.label.web.dto.LabelMadeOwnerDto;
 import com.archive.backend.label.web.dto.LabelOwnerRequestDto;
+import com.archive.backend.label.web.dto.LabelRequestDto;
 import com.archive.backend.label.web.mapper.LabelWebMapper;
 import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.user.domain.Actor;
@@ -30,17 +34,19 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * The page of a label, attaching a label of nobody to its owner, and making a new person or group of a label
- * (docs/features/label-view.md).
+ * The page of a label, attaching a label of nobody to its owner, making a new person or group of a label
+ * (docs/features/label-view.md), and editing and deleting it (docs/features/label-editing.md).
  */
 @RestController
 @RequestMapping("/api/labels")
@@ -48,6 +54,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class LabelController {
 
     private final GetLabelHandler getHandler;
+    private final EditLabelHandler editHandler;
+    private final DeleteLabelHandler deleteHandler;
     private final AttachLabelToAuthorHandler attachToAuthorHandler;
     private final AttachLabelToGroupHandler attachToGroupHandler;
     private final MakeAuthorOfLabelHandler makeAuthorHandler;
@@ -57,6 +65,18 @@ public class LabelController {
     @GetMapping("/{id}")
     public LabelDetailsDto get(Actor actor, @PathVariable UUID id) {
         return webMapper.toDetails(getHandler.handle(new GetLabelQuery(actor, new LabelId(id))));
+    }
+
+    @PutMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void edit(Actor actor, @PathVariable UUID id, @RequestBody LabelRequestDto request) {
+        editHandler.handle(webMapper.toEdit(actor, id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(Actor actor, @PathVariable UUID id) {
+        deleteHandler.handle(new DeleteLabelCommand(actor, new LabelId(id)));
     }
 
     @PostMapping("/{id}/owner")

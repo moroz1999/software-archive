@@ -4,6 +4,7 @@ import com.archive.backend.author.domain.Author;
 import com.archive.backend.author.domain.AuthorNotFoundException;
 import com.archive.backend.author.domain.AuthorRepository;
 import com.archive.backend.geo.domain.Places;
+import com.archive.backend.user.domain.AddedBy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -21,7 +22,7 @@ public class UpdateAuthorHandler {
     public void handle(UpdateAuthorCommand c) {
         Author author = repository.findById(c.id()).orElseThrow(AuthorNotFoundException::new);
         author.requireChangeableBy(c.actor());
-        author.edit(c.realName(), c.notes(), c.labels(), places.locations(c.locations()));
+        author.edit(c.realName(), c.notes(), c.labels(), places.locations(c.locations()), AddedBy.of(c.actor()));
         repository.save(author);
         author.pullEvents().forEach(events::publishEvent);
     }

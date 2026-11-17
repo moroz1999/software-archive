@@ -4,7 +4,9 @@ import com.archive.backend.author.domain.AuthorChanged;
 import com.archive.backend.category.domain.CategoryDeleted;
 import com.archive.backend.category.domain.CategoryMoved;
 import com.archive.backend.group.domain.GroupChanged;
+import com.archive.backend.label.domain.LabelChanged;
 import com.archive.backend.label.domain.LabelCreated;
+import com.archive.backend.label.domain.LabelDeleted;
 import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.OwnerOfLabelsChanged;
 import com.archive.backend.search.domain.AffectedOwners;
@@ -46,6 +48,28 @@ public class EnqueueSearchDocumentsHandler {
     @EventListener
     public void on(LabelCreated event) {
         enqueue(SearchEntityType.AUTHOR, List.of(event.label().value()));
+    }
+
+    /**
+     * The software credited on the label, which its card names, the label itself and its owner: a renamed label is
+     * found under its new name.
+     */
+    @EventListener
+    public void on(LabelChanged event) {
+        enqueueLabel(event.label().value());
+    }
+
+    /** Told while its credits are still there: what they reach is found before they go. */
+    @EventListener
+    public void on(LabelDeleted event) {
+        enqueueLabel(event.label().value());
+    }
+
+    private void enqueueLabel(UUID label) {
+        enqueueSoftware(affected.creditedOn(List.of(label)));
+        enqueue(SearchEntityType.AUTHOR, List.of(label));
+        enqueue(SearchEntityType.AUTHOR, owners.peopleOwning(label));
+        enqueue(SearchEntityType.GROUP, owners.groupsOwning(label));
     }
 
     /** The person, and the software crediting them by themselves: its card names them. */

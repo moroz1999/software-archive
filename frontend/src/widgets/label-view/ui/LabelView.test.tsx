@@ -11,7 +11,7 @@ const ID = '00000000-0000-0000-0004-000000000001';
 const CREW = '00000000-0000-0000-0005-000000000001';
 const JANE = '00000000-0000-0000-0003-000000000001';
 const ELITE = '00000000-0000-0000-0001-000000000001';
-const GHOST = {id: ID, name: 'Ghost', owner: null, groups: [{id: CREW, name: 'Crew'}], canChange: true, canMakeOwner: true};
+const GHOST = {id: ID, name: 'Ghost', owner: null, groups: [{id: CREW, name: 'Crew'}], locations: [], origins: [], canChange: true, canMakeOwner: true, canEdit: false, canChangeOwner: false};
 
 const SOFTWARE_URL = `/api/labels/${ID}/software`;
 const NO_SOFTWARE = new Map([[SOFTWARE_URL, json([])]]);

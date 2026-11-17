@@ -9,9 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * The page of a label. Labels of nobody were taken from imports, entries of nobody: only administrators attach them
- * to existing owners. Any user may make a new owner of a label, taking it away from an owner only when they may change
- * that owner (docs/domain/users.md).
+ * The page of a label, with what the reader may do with it: whoever added the label, and administrators, edit it and
+ * make a new owner of it, taking it away from an owner only when they may change that owner; only administrators say
+ * whose it is (docs/domain/users.md).
  */
 @Service
 @RequiredArgsConstructor
@@ -23,8 +23,11 @@ public class GetLabelHandler {
     public LabelDetails handle(GetLabelQuery q) {
         LabelDetails label = reads.findById(q.id().value()).orElseThrow(LabelNotFoundException::new);
         LabelDetails.Owner owner = label.owner();
-        boolean canMakeOwner = q.actor().mayAddEntries()
-                && (owner == null || AddedBy.of(owner.addedBy()).mayBeChangedBy(q.actor()));
-        return label.withRights(owner == null && q.actor().isAdministrator(), canMakeOwner);
+        boolean administrator = q.actor().isAdministrator();
+        boolean canEdit = AddedBy.of(label.addedBy()).mayBeChangedBy(q.actor());
+        boolean canMakeOwner =
+                canEdit && (owner == null || AddedBy.of(owner.addedBy()).mayBeChangedBy(q.actor()));
+        return label.withRights(
+                new LabelDetails.Rights(owner == null && administrator, canMakeOwner, canEdit, administrator));
     }
 }

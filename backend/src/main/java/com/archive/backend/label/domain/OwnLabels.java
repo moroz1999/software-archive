@@ -1,6 +1,7 @@
 package com.archive.backend.label.domain;
 
 import com.archive.backend.shared.domain.ddd.ValueObject;
+import com.archive.backend.user.domain.AddedBy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,10 +28,10 @@ public final class OwnLabels {
     }
 
     /**
-     * The labels of a new owner.
+     * The labels of a new owner, the new ones added by {@code adder}.
      */
-    public static OwnLabels of(List<LabelDraft> drafts) {
-        return new OwnLabels(List.of(), null).replace(drafts);
+    public static OwnLabels of(List<LabelDraft> drafts, AddedBy adder) {
+        return new OwnLabels(List.of(), null).replace(drafts, adder);
     }
 
     /**
@@ -47,14 +48,13 @@ public final class OwnLabels {
     }
 
     /**
-     * The labels the drafts give: drafted labels of its own are renamed and marked, new ones are added, the rest are
-     * dropped.
+     * The labels the drafts give: drafted labels of its own are renamed and marked, new ones are added by
+     * {@code adder}, the rest are dropped.
      */
-    public OwnLabels replace(List<LabelDraft> drafts) {
+    public OwnLabels replace(List<LabelDraft> drafts, AddedBy adder) {
         Map<LabelId, OwnLabel> own = all.stream().collect(Collectors.toMap(OwnLabel::id, Function.identity()));
-        List<OwnLabel> labels = drafts.stream()
-                .map(draft -> new OwnLabel(idOf(draft, own), draft.name()))
-                .toList();
+        List<OwnLabel> labels =
+                drafts.stream().map(draft -> renamed(draft, own, adder)).toList();
         if (!drafts.isEmpty() && drafts.stream().filter(LabelDraft::display).count() != 1) {
             throw new LabelDisplayNameException();
         }
@@ -67,15 +67,16 @@ public final class OwnLabels {
         return new OwnLabels(labels, marked);
     }
 
-    private static LabelId idOf(LabelDraft draft, Map<LabelId, OwnLabel> own) {
+    private static OwnLabel renamed(LabelDraft draft, Map<LabelId, OwnLabel> own, AddedBy adder) {
         LabelId id = draft.id();
         if (id == null) {
-            return new LabelId(UUID.randomUUID());
+            return new OwnLabel(new LabelId(UUID.randomUUID()), draft.name(), adder);
         }
-        if (!own.containsKey(id)) {
+        OwnLabel label = own.get(id);
+        if (label == null) {
             throw new LabelNotOwnException();
         }
-        return id;
+        return new OwnLabel(id, draft.name(), label.addedBy());
     }
 
     /**

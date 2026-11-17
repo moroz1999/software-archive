@@ -14,4 +14,10 @@ public interface AffectedOwners {
     List<UUID> groupsCreditedOn(UUID software);
 
     List<UUID> labelsOfNobodyCreditedOn(UUID software);
+
+    /** The person the label belongs to, if any: their document names their labels. */
+    List<UUID> peopleOwning(UUID label);
+
+    /** The group the label belongs to, if any: its document names its labels. */
+    List<UUID> groupsOwning(UUID label);
 }

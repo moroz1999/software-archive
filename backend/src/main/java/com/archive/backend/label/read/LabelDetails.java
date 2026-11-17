@@ -5,11 +5,19 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The page of a label: its name, its owner once it is found out, and the groups it was a member of under their main
- * names (docs/domain/authors.md#label).
+ * The page of a label: its name, its owner once it is found out, the groups it was a member of under their main
+ * names, its locations and where imports took it from (docs/domain/authors.md#label). {@code addedBy} is whoever
+ * added the label, {@code null} once their account was deleted.
  */
 public record LabelDetails(
-        UUID id, String name, @Nullable Owner owner, List<MemberOf> groups, boolean canChange, boolean canMakeOwner) {
+        UUID id,
+        String name,
+        @Nullable Owner owner,
+        List<MemberOf> groups,
+        List<Location> locations,
+        List<Origin> origins,
+        @Nullable UUID addedBy,
+        Rights rights) {
 
     /**
      * The person ({@code author}) or the group the label belongs to: a person by the real name with the main name
@@ -25,8 +33,28 @@ public record LabelDetails(
 
     public record MemberOf(UUID id, String name) {}
 
-    /** The label with what the reader may do with it: attach it to an owner, and make a new owner of it. */
-    public LabelDetails withRights(boolean canChange, boolean canMakeOwner) {
-        return new LabelDetails(id, name, owner, groups, canChange, canMakeOwner);
+    /** A place the label is located in; {@code countryId} of a city given alone is its country's. */
+    public record Location(
+            UUID countryId,
+            String country,
+            @Nullable UUID cityId,
+            @Nullable String city,
+            boolean primary) {}
+
+    /** An import the label came from: the source archive, the id there and its page there, if it has one. */
+    public record Origin(
+            String origin, String externalId, @Nullable String url) {}
+
+    /**
+     * What the reader may do with the label: attach it to an owner ({@code canChange}), make a new owner of it, edit
+     * and delete it, and say whose it is in its form.
+     */
+    public record Rights(boolean canChange, boolean canMakeOwner, boolean canEdit, boolean canChangeOwner) {
+
+        public static final Rights NONE = new Rights(false, false, false, false);
+    }
+
+    public LabelDetails withRights(Rights rights) {
+        return new LabelDetails(id, name, owner, groups, locations, origins, addedBy, rights);
     }
 }

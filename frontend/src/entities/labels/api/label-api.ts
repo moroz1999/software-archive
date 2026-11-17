@@ -1,6 +1,6 @@
-import {getJson, mapResponse, postJson, postNoContent, readArray, readBoolean, readNullableString, readObject, readString, type JsonObject} from '@/shared/api';
+import {deleteResource, getJson, mapResponse, postJson, postNoContent, putJson, readArray, readBoolean, readNullableString, readObject, readString, type JsonObject} from '@/shared/api';
 import {labelPath} from '../config/paths';
-import type {LabelDetails, LabelOwner, LabelOwnerOption, NamedLabelOwner} from '../model/label';
+import type {LabelDetails, LabelDraft, LabelLocation, LabelOrigin, LabelOwner, LabelOwnerOption, NamedLabelOwner} from '../model/label';
 import {type LabelId, toLabelId} from '../model/label-id';
 
 function readOwnerType(dto: JsonObject, name: string): LabelOwner['type'] {
@@ -19,6 +19,22 @@ function parseOwner(raw: unknown): NamedLabelOwner | null {
     return {type: readOwnerType(dto, 'type'), id: readString(dto, 'id'), name: readString(dto, 'name'), note: readNullableString(dto, 'note')};
 }
 
+function parseLocation(item: unknown): LabelLocation {
+    const dto = readObject(item, 'location');
+    return {
+        countryId: readString(dto, 'countryId'),
+        country: readString(dto, 'country'),
+        cityId: readNullableString(dto, 'cityId'),
+        city: readNullableString(dto, 'city'),
+        primary: readBoolean(dto, 'primary'),
+    };
+}
+
+function parseOrigin(item: unknown): LabelOrigin {
+    const dto = readObject(item, 'origin');
+    return {origin: readString(dto, 'origin'), externalId: readString(dto, 'externalId'), url: readNullableString(dto, 'url')};
+}
+
 /** The page of a label: `GET /api/labels/{id}`. */
 export async function fetchLabel(id: LabelId, signal: AbortSignal): Promise<LabelDetails> {
     const json = await getJson(`/api${labelPath(id)}`, signal);
@@ -32,10 +48,28 @@ export async function fetchLabel(id: LabelId, signal: AbortSignal): Promise<Labe
                 const group = readObject(item, 'group');
                 return {id: readString(group, 'id'), name: readString(group, 'name')};
             }),
+            locations: readArray(dto['locations'], 'locations').map(parseLocation),
+            origins: readArray(dto['origins'], 'origins').map(parseOrigin),
             canChange: readBoolean(dto, 'canChange'),
             canMakeOwner: readBoolean(dto, 'canMakeOwner'),
+            canEdit: readBoolean(dto, 'canEdit'),
+            canChangeOwner: readBoolean(dto, 'canChangeOwner'),
         };
     });
+}
+
+/** Gives the label its name, whose it is and its locations: `PUT /api/labels/{id}`. */
+export async function updateLabel(id: LabelId, draft: LabelDraft): Promise<void> {
+    await putJson(`/api${labelPath(id)}`, {
+        name: draft.name,
+        owner: draft.owner === null ? null : {type: draft.owner.type, id: draft.owner.id, display: draft.owner.display},
+        locations: draft.locations.map((location) => ({country: location.country, city: location.city, primary: location.primary})),
+    });
+}
+
+/** Deletes the label with its credits and memberships: `DELETE /api/labels/{id}`. */
+export async function deleteLabel(id: LabelId): Promise<void> {
+    await deleteResource(`/api${labelPath(id)}`);
 }
 
 /** Attaches a label of nobody to its owner, as the owner's display name when told to: `POST /api/labels/{id}/owner`. */

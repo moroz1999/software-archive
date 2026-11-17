@@ -1,0 +1,18 @@
+.form {
+    max-width: var(--edit-label-form-skeleton-max-width);
+}
+
+.label {
+    width: var(--edit-label-form-skeleton-label-width);
+    height: var(--edit-label-form-skeleton-label-height);
+}
+
+.input {
+    width: 100%;
+    height: var(--edit-label-form-skeleton-input-height);
+}
+
+.button {
+    width: var(--edit-label-form-skeleton-button-width);
+    height: var(--edit-label-form-skeleton-button-height);
+}

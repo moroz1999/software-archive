@@ -41,7 +41,7 @@ final class GroupFixtures {
                 new GroupName("Crew Ltd"),
                 null,
                 GroupTypeSet.restore(Set.of(DEMOGROUP)),
-                UnmarkedLabels.restore(List.of(new OwnLabel(CRW, new LabelName("CRW")))),
+                UnmarkedLabels.restore(List.of(new OwnLabel(CRW, new LabelName("CRW"), BY_OTHER))),
                 new Locations(List.of()),
                 GroupMembers.EMPTY,
                 BY_OTHER);

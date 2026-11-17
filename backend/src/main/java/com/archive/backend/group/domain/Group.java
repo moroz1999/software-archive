@@ -68,7 +68,8 @@ public final class Group {
             Locations locations,
             GroupMembers members,
             AddedBy addedBy) {
-        Group group = new Group(id, name, notes, types, UnmarkedLabels.of(labels), locations, members, addedBy);
+        Group group =
+                new Group(id, name, notes, types, UnmarkedLabels.of(labels, addedBy), locations, members, addedBy);
         group.markChanged();
         return group;
     }
@@ -79,15 +80,16 @@ public final class Group {
     }
 
     /**
-     * Replaces the details; labels left out are dropped, not deleted.
+     * Replaces the details; labels left out are dropped, not deleted, and new ones are added by {@code editor}.
      */
     public void edit(
             GroupName name,
             @Nullable GroupNotes notes,
             GroupTypeSet types,
             List<UnmarkedLabelDraft> labels,
-            Locations locations) {
-        UnmarkedLabels edited = this.labels.replace(labels);
+            Locations locations,
+            AddedBy editor) {
+        UnmarkedLabels edited = this.labels.replace(labels, editor);
         events.add(labelsChanged());
         markChanged();
         this.name = Objects.requireNonNull(name, "name");
@@ -105,7 +107,7 @@ public final class Group {
 
     /** Takes a label of nobody found out to be the group's; only its works change their owner. */
     public void adopt(Label label) {
-        labels = labels.adopt(new OwnLabel(label.getId(), label.getName()));
+        labels = labels.adopt(new OwnLabel(label.getId(), label.getName(), label.getAddedBy()));
         events.add(new OwnerOfLabelsChanged(Set.of(label.getId())));
         markChanged();
     }
@@ -114,7 +116,8 @@ public final class Group {
      * A new group under the name of a label, which becomes one of its names; it goes over with its works.
      */
     public static Group namedAfter(GroupId id, Label label, GroupTypeSet types, AddedBy addedBy) {
-        UnmarkedLabels labels = UnmarkedLabels.of(List.of()).adopt(new OwnLabel(label.getId(), label.getName()));
+        UnmarkedLabels labels = UnmarkedLabels.of(List.of(), addedBy)
+                .adopt(new OwnLabel(label.getId(), label.getName(), label.getAddedBy()));
         Group group = new Group(
                 id,
                 new GroupName(label.getName().value()),

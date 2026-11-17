@@ -32,6 +32,23 @@ public class JdbcAffectedOwners implements AffectedOwners {
                         """).param("software", software).query(UUID.class).list();
     }
 
+    @Override
+    public List<UUID> peopleOwning(UUID label) {
+        return owning(label, "person_id");
+    }
+
+    @Override
+    public List<UUID> groupsOwning(UUID label) {
+        return owning(label, "group_id");
+    }
+
+    private List<UUID> owning(UUID label, String ownerColumn) {
+        return jdbc.sql("SELECT %1$s FROM label WHERE id = :label AND %1$s IS NOT NULL".formatted(ownerColumn))
+                .param("label", label)
+                .query(UUID.class)
+                .list();
+    }
+
     /** The owners credited by themselves or by a label, by the owner column of the credits and of the labels. */
     private List<UUID> creditedOn(UUID software, String ownerColumn) {
         return jdbc.sql("""

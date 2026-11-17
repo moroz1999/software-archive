@@ -2,11 +2,12 @@ import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router';
 import {authorPath, toAuthorId} from '@/entities/authors';
 import {groupPath, toGroupId} from '@/entities/groups';
-import {type LabelDetails, LabelDetailsProvider, type LabelId, type LabelOwner, useLabelDetails} from '@/entities/labels';
+import {type LabelDetails, LabelDetailsProvider, labelEditPath, type LabelId, type LabelOwner, useLabelDetails} from '@/entities/labels';
 import {CreditedSoftwareList} from '@/entities/software';
 import {AttachLabelButton} from '@/features/label/attach';
 import {MakeAuthorButton, MakeGroupButton} from '@/features/label/make-owner';
 import {useSkeleton} from '@/shared/lib/loading';
+import {Button} from '@/shared/ui/button';
 import {Inline} from '@/shared/ui/inline';
 import {PageLayout} from '@/shared/ui/page-layout';
 import {Skeleton} from '@/shared/ui/skeleton';
@@ -21,7 +22,7 @@ export interface LabelViewProps {
 /**
  * The page of a label: its name, whose it is when known, the groups it was a member of and the software it is credited
  * on; a label of nobody waits there for a person who knows whose it is to attach it to its owner, and any label can
- * become a new person or group of its own.
+ * become a new person or group of its own, or be edited by whoever may.
  */
 export function LabelView({id}: LabelViewProps) {
     return (
@@ -36,6 +37,7 @@ function ownerPath(owner: LabelOwner): string {
 }
 
 function LoadedView() {
+    const {t} = useTranslation();
     const navigate = useNavigate();
     const query = useLabelDetails();
     const skeleton = useSkeleton(query);
@@ -63,8 +65,9 @@ function LoadedView() {
     return (
         <PageLayout
             title={label.name}
-            actions={(label.canChange || label.canMakeOwner) && (
+            actions={(label.canEdit || label.canChange || label.canMakeOwner) && (
                 <Inline gap="sm" wrap>
+                    {label.canEdit && <Button href={labelEditPath(label.id)} color="secondary">{t('actions.edit')}</Button>}
                     {label.canChange && <AttachLabelButton label={{id: label.id, name: label.name}} onAttached={openOwner}/>}
                     {label.canMakeOwner && (
                         <>

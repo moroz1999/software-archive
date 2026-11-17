@@ -59,7 +59,7 @@ public final class Author {
             List<LabelDraft> labels,
             Locations locations,
             AddedBy addedBy) {
-        Author author = new Author(id, realName, notes, OwnLabels.of(labels), locations, addedBy);
+        Author author = new Author(id, realName, notes, OwnLabels.of(labels, addedBy), locations, addedBy);
         author.events.add(new AuthorChanged(id));
         return author;
     }
@@ -70,11 +70,15 @@ public final class Author {
     }
 
     /**
-     * Replaces everything; labels left out are dropped, not deleted.
+     * Replaces everything; labels left out are dropped, not deleted, and new ones are added by {@code editor}.
      */
     public void edit(
-            @Nullable RealName realName, @Nullable AuthorNotes notes, List<LabelDraft> labels, Locations locations) {
-        OwnLabels edited = requireNamed(realName, this.labels.replace(labels));
+            @Nullable RealName realName,
+            @Nullable AuthorNotes notes,
+            List<LabelDraft> labels,
+            Locations locations,
+            AddedBy editor) {
+        OwnLabels edited = requireNamed(realName, this.labels.replace(labels, editor));
         events.add(labelsChanged());
         events.add(new AuthorChanged(id));
         this.realName = realName;
@@ -95,7 +99,7 @@ public final class Author {
      * so; only its works change their owner.
      */
     public void adopt(Label label, boolean display) {
-        labels = labels.adopt(new OwnLabel(label.getId(), label.getName()), display);
+        labels = labels.adopt(new OwnLabel(label.getId(), label.getName(), label.getAddedBy()), display);
         events.add(new OwnerOfLabelsChanged(Set.of(label.getId())));
         events.add(new AuthorChanged(id));
     }
@@ -106,7 +110,7 @@ public final class Author {
                 id,
                 new RealName(label.getName().value()),
                 null,
-                OwnLabels.of(List.of()),
+                OwnLabels.of(List.of(), addedBy),
                 new Locations(List.of()),
                 addedBy);
         author.events.add(new OwnerOfLabelsChanged(Set.of(label.getId())));

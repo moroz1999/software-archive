@@ -13,13 +13,17 @@ import com.archive.backend.user.domain.Actor;
 import org.springframework.context.ApplicationEventPublisher;
 
 /**
- * Takes a label away from whoever has it before the label is made into an owner; only someone who may change that
- * owner takes it away (docs/domain/authors.md#label).
+ * Takes a label away from whoever has it; only someone who may change that owner takes it away
+ * (docs/domain/authors.md#label).
  */
 final class LabelHandOver {
 
     private LabelHandOver() {}
 
+    /**
+     * The label, taken away from whoever has it, to be made into an owner: only whoever added the label, and
+     * administrators, make one of it.
+     */
     static Label takeAway(
             LabelId id,
             Actor actor,
@@ -27,12 +31,20 @@ final class LabelHandOver {
             GroupRepository groups,
             LabelRepository labels,
             ApplicationEventPublisher events) {
-        if (!labels.exists(id)) {
-            throw new LabelNotFoundException();
-        }
+        labels.lock(id).orElseThrow(LabelNotFoundException::new).requireChangeableBy(actor);
+        release(id, actor, authors, groups, events);
+        return labels.lockOfNobody(id).orElseThrow(LabelOwnedException::new);
+    }
+
+    /** Leaves the label to nobody, if somebody has it. */
+    static void release(
+            LabelId id,
+            Actor actor,
+            AuthorRepository authors,
+            GroupRepository groups,
+            ApplicationEventPublisher events) {
         authors.findByLabel(id).ifPresent(author -> release(author, id, actor, authors, events));
         groups.findByLabel(id).ifPresent(group -> release(group, id, actor, groups, events));
-        return labels.lockOfNobody(id).orElseThrow(LabelOwnedException::new);
     }
 
     private static void release(

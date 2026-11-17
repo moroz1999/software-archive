@@ -1,5 +1,6 @@
 package com.archive.backend.label.domain;
 
+import static com.archive.backend.user.TestActors.BY_OTHER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -15,12 +16,18 @@ class OwnLabelsTest {
     private static final LabelId BOB = new LabelId(UUID.fromString("00000000-0000-0000-0000-000000000003"));
 
     private static final OwnLabels ZED_AND_AXE = OwnLabels.restore(
-            List.of(new OwnLabel(ZED, new LabelName("Zed")), new OwnLabel(AXE, new LabelName("Axe"))), ZED);
+            List.of(
+                    new OwnLabel(ZED, new LabelName("Zed"), BY_OTHER),
+                    new OwnLabel(AXE, new LabelName("Axe"), BY_OTHER)),
+            ZED);
 
     @Test
     void givesNewLabelsIdsOfTheirOwn() {
-        OwnLabels labels = OwnLabels.of(List.of(
-                new LabelDraft(null, new LabelName("Zed"), true), new LabelDraft(null, new LabelName("Axe"), false)));
+        OwnLabels labels = OwnLabels.of(
+                List.of(
+                        new LabelDraft(null, new LabelName("Zed"), true),
+                        new LabelDraft(null, new LabelName("Axe"), false)),
+                BY_OTHER);
 
         assertThat(labels.all()).extracting(OwnLabel::name).containsExactly(new LabelName("Zed"), new LabelName("Axe"));
         assertThat(labels.all().get(0).id()).isNotEqualTo(labels.all().get(1).id());
@@ -29,12 +36,12 @@ class OwnLabelsTest {
 
     @Test
     void hasADisplayNameOnlyWithLabels() {
-        assertThat(OwnLabels.of(List.of()).display()).isNull();
+        assertThat(OwnLabels.of(List.of(), BY_OTHER).display()).isNull();
     }
 
     @Test
     void needsADisplayName() {
-        assertThatThrownBy(() -> OwnLabels.of(List.of(new LabelDraft(null, new LabelName("Zed"), false))))
+        assertThatThrownBy(() -> OwnLabels.of(List.of(new LabelDraft(null, new LabelName("Zed"), false)), BY_OTHER))
                 .isInstanceOfSatisfying(RuleViolationException.class, e -> {
                     assertThat(e.code()).isEqualTo("label.display-one");
                     assertThat(e.field()).isEqualTo("labels");
@@ -43,26 +50,31 @@ class OwnLabelsTest {
 
     @Test
     void renamesAndMarksItsOwnLabels() {
-        OwnLabels labels = ZED_AND_AXE.replace(List.of(
-                new LabelDraft(ZED, new LabelName("Zed II"), false), new LabelDraft(AXE, new LabelName("Axe"), true)));
+        OwnLabels labels = ZED_AND_AXE.replace(
+                List.of(
+                        new LabelDraft(ZED, new LabelName("Zed II"), false),
+                        new LabelDraft(AXE, new LabelName("Axe"), true)),
+                BY_OTHER);
 
         assertThat(labels.all())
-                .containsExactly(new OwnLabel(ZED, new LabelName("Zed II")), new OwnLabel(AXE, new LabelName("Axe")));
+                .containsExactly(
+                        new OwnLabel(ZED, new LabelName("Zed II"), BY_OTHER),
+                        new OwnLabel(AXE, new LabelName("Axe"), BY_OTHER));
         assertThat(labels.display()).isEqualTo(AXE);
     }
 
     @Test
     void dropsTheLabelsTheDraftsNoLongerHave() {
-        OwnLabels labels = ZED_AND_AXE.replace(List.of(new LabelDraft(AXE, new LabelName("Axe"), true)));
+        OwnLabels labels = ZED_AND_AXE.replace(List.of(new LabelDraft(AXE, new LabelName("Axe"), true)), BY_OTHER);
 
-        assertThat(labels.all()).containsExactly(new OwnLabel(AXE, new LabelName("Axe")));
+        assertThat(labels.all()).containsExactly(new OwnLabel(AXE, new LabelName("Axe"), BY_OTHER));
         assertThat(labels.display()).isEqualTo(AXE);
     }
 
     @Test
     void refusesALabelThatIsNotItsOwn() {
         assertThatThrownBy(() -> ZED_AND_AXE.replace(
-                        List.of(new LabelDraft(new LabelId(UUID.randomUUID()), new LabelName("Bob"), true))))
+                        List.of(new LabelDraft(new LabelId(UUID.randomUUID()), new LabelName("Bob"), true)), BY_OTHER))
                 .isInstanceOfSatisfying(RuleViolationException.class, e -> {
                     assertThat(e.code()).isEqualTo("label.not-own");
                     assertThat(e.field()).isEqualTo("labels");
@@ -71,9 +83,11 @@ class OwnLabelsTest {
 
     @Test
     void hasOneDisplayNameOnly() {
-        assertThatThrownBy(() -> OwnLabels.of(List.of(
-                        new LabelDraft(null, new LabelName("Zed"), true),
-                        new LabelDraft(null, new LabelName("Axe"), true))))
+        assertThatThrownBy(() -> OwnLabels.of(
+                        List.of(
+                                new LabelDraft(null, new LabelName("Zed"), true),
+                                new LabelDraft(null, new LabelName("Axe"), true)),
+                        BY_OTHER))
                 .isInstanceOfSatisfying(RuleViolationException.class, e -> {
                     assertThat(e.code()).isEqualTo("label.display-one");
                     assertThat(e.field()).isEqualTo("labels");
@@ -82,30 +96,33 @@ class OwnLabelsTest {
 
     @Test
     void cannotMarkALabelItDoesNotHave() {
-        assertThatThrownBy(() -> OwnLabels.restore(List.of(new OwnLabel(ZED, new LabelName("Zed"))), AXE))
+        assertThatThrownBy(() -> OwnLabels.restore(List.of(new OwnLabel(ZED, new LabelName("Zed"), BY_OTHER)), AXE))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void cannotBeRestoredWithoutTheDisplayName() {
-        assertThatThrownBy(() -> OwnLabels.restore(List.of(new OwnLabel(ZED, new LabelName("Zed"))), null))
+        assertThatThrownBy(() -> OwnLabels.restore(List.of(new OwnLabel(ZED, new LabelName("Zed"), BY_OTHER)), null))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void adoptsALabelOfNobodyBesideItsDisplayName() {
-        OwnLabel bob = new OwnLabel(BOB, new LabelName("Bob"));
+        OwnLabel bob = new OwnLabel(BOB, new LabelName("Bob"), BY_OTHER);
 
         OwnLabels labels = ZED_AND_AXE.adopt(bob, false);
 
         assertThat(labels.all())
-                .containsExactly(new OwnLabel(ZED, new LabelName("Zed")), new OwnLabel(AXE, new LabelName("Axe")), bob);
+                .containsExactly(
+                        new OwnLabel(ZED, new LabelName("Zed"), BY_OTHER),
+                        new OwnLabel(AXE, new LabelName("Axe"), BY_OTHER),
+                        bob);
         assertThat(labels.display()).isEqualTo(ZED);
     }
 
     @Test
     void adoptsALabelOfNobodyAsItsDisplayNameWhenToldTo() {
-        OwnLabels labels = ZED_AND_AXE.adopt(new OwnLabel(BOB, new LabelName("Bob")), true);
+        OwnLabels labels = ZED_AND_AXE.adopt(new OwnLabel(BOB, new LabelName("Bob"), BY_OTHER), true);
 
         assertThat(labels.all()).hasSize(3);
         assertThat(labels.display()).isEqualTo(BOB);
@@ -113,17 +130,17 @@ class OwnLabelsTest {
 
     @Test
     void needsTheFirstLabelItAdoptsMarkedAsTheDisplayName() {
-        OwnLabel bob = new OwnLabel(BOB, new LabelName("Bob"));
+        OwnLabel bob = new OwnLabel(BOB, new LabelName("Bob"), BY_OTHER);
 
-        assertThatThrownBy(() -> OwnLabels.of(List.of()).adopt(bob, false))
+        assertThatThrownBy(() -> OwnLabels.of(List.of(), BY_OTHER).adopt(bob, false))
                 .isInstanceOfSatisfying(
                         RuleViolationException.class, e -> assertThat(e.code()).isEqualTo("label.display-one"));
-        assertThat(OwnLabels.of(List.of()).adopt(bob, true).display()).isEqualTo(BOB);
+        assertThat(OwnLabels.of(List.of(), BY_OTHER).adopt(bob, true).display()).isEqualTo(BOB);
     }
 
     @Test
     void knowsWhetherItHasAnyLabel() {
-        assertThat(OwnLabels.of(List.of()).isEmpty()).isTrue();
+        assertThat(OwnLabels.of(List.of(), BY_OTHER).isEmpty()).isTrue();
         assertThat(ZED_AND_AXE.isEmpty()).isFalse();
     }
 
@@ -131,13 +148,13 @@ class OwnLabelsTest {
     void releasesALabelBesideTheDisplayName() {
         OwnLabels labels = ZED_AND_AXE.release(AXE);
 
-        assertThat(labels.all()).containsExactly(new OwnLabel(ZED, new LabelName("Zed")));
+        assertThat(labels.all()).containsExactly(new OwnLabel(ZED, new LabelName("Zed"), BY_OTHER));
         assertThat(labels.display()).isEqualTo(ZED);
     }
 
     @Test
     void releasesItsOnlyLabelLeavingNoDisplayName() {
-        OwnLabels labels = OwnLabels.restore(List.of(new OwnLabel(ZED, new LabelName("Zed"))), ZED)
+        OwnLabels labels = OwnLabels.restore(List.of(new OwnLabel(ZED, new LabelName("Zed"), BY_OTHER)), ZED)
                 .release(ZED);
 
         assertThat(labels.isEmpty()).isTrue();

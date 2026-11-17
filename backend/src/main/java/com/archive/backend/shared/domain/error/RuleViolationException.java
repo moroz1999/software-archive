@@ -1,5 +1,6 @@
 package com.archive.backend.shared.domain.error;
 
+import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -23,5 +24,13 @@ public class RuleViolationException extends BusinessException {
 
     public @Nullable String field() {
         return field;
+    }
+
+    /**
+     * The same refusal under another field, for a form that asks the rule through a field of its own: a label's
+     * owner refusing to give it up is a refusal of the label form's owner.
+     */
+    public RuleViolationException onField(String other) {
+        return new RuleViolationException(code(), Objects.requireNonNullElse(getMessage(), code()), other);
     }
 }

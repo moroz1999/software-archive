@@ -7,8 +7,10 @@ import com.archive.backend.TestcontainersConfiguration;
 import com.archive.backend.label.domain.Label;
 import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.LabelName;
+import com.archive.backend.user.TestActors;
 import java.util.Map;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -28,6 +30,11 @@ class JpaLabelRepositoryIT {
 
     @Autowired
     private JdbcTemplate jdbc;
+
+    @BeforeEach
+    void storeActors() {
+        TestActors.store(jdbc);
+    }
 
     @Test
     void storesALabelOfNobodyAtOnceForPlainSqlInTheSameTransaction() {

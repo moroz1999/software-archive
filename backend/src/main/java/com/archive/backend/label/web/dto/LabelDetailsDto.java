@@ -9,11 +9,25 @@ public record LabelDetailsDto(
         String name,
         @Nullable OwnerDto owner,
         List<MemberOfDto> groups,
+        List<LocationDto> locations,
+        List<OriginDto> origins,
         boolean canChange,
-        boolean canMakeOwner) {
+        boolean canMakeOwner,
+        boolean canEdit,
+        boolean canChangeOwner) {
 
     public record OwnerDto(
             String type, UUID id, String name, @Nullable String note) {}
 
     public record MemberOfDto(UUID id, String name) {}
+
+    public record LocationDto(
+            UUID countryId,
+            String country,
+            @Nullable UUID cityId,
+            @Nullable String city,
+            boolean primary) {}
+
+    public record OriginDto(
+            String origin, String externalId, @Nullable String url) {}
 }
