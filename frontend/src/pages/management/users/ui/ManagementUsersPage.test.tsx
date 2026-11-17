@@ -1,10 +1,9 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen, within} from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import {createMemoryRouter, RouterProvider} from 'react-router';
 import {createQueryClient} from '@/shared/api';
 import {CurrentUserProvider} from '@/entities/users';
-import {json, noContent, pageResponse, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
+import {json, pageResponse, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {loadManagementUsersPage, preloadManagementUsersPage, shouldPreloadManagementUsersPage} from '../index';
 
 const ADMIN = {id: '00000000-0000-0000-0009-000000000001', name: 'Zed', email: 'zed@example.com', groups: ['admin', 'member'], abilities: ['add-entries', 'keep-categories']};
@@ -74,39 +73,15 @@ describe('ManagementUsersPage', () => {
         expect(management.getAllByRole('link')).toHaveLength(3);
     });
 
-    it('offers to change the groups of every confirmed user', async () => {
+    it('leads to the editing of every user, confirmed or not', async () => {
         stubFetchRoutes(new Map([[ALL, usersPage(USERS)], ['/api/auth/me', json(ADMIN)]]));
 
         renderRoute();
         await screen.findByRole('table', {name: 'Users'});
 
-        expect(screen.getByRole('button', {name: 'Change groups of Bob'})).toBeInTheDocument();
-        expect(screen.getByRole('button', {name: 'Change groups of Zed'})).toBeInTheDocument();
-        expect(screen.queryByRole('button', {name: 'Change groups of Axe'})).not.toBeInTheDocument();
-    });
-
-    it('shows the groups given once they are saved', async () => {
-        let listed = 0;
-        stubFetchRoutes(new Map([
-            [ALL, () => {
-                listed += 1;
-                return usersPage(listed === 1 ? USERS : USERS.map((user) => (user.id === BOB ? {...user, groups: ['member', 'moderator']} : user)))();
-            }],
-            [`/api/users/${BOB}/groups`, noContent()],
-            ['/api/auth/me', json(ADMIN)],
-        ]));
-
-        renderRoute();
-        await screen.findByRole('table', {name: 'Users'});
-
-        await userEvent.click(screen.getByRole('button', {name: 'Change groups of Bob'}));
-        const dialog = screen.getByRole('dialog', {name: 'Groups of Bob'});
-        await userEvent.click(within(dialog).getByRole('checkbox', {name: 'Moderator'}));
-        await userEvent.click(within(dialog).getByRole('button', {name: 'Save'}));
-
-        const table = screen.getByRole('table', {name: 'Users'});
-        await vi.waitFor(() => {
-            expect(within(table).getByRole('row', {name: /Bob/u})).toHaveTextContent('Moderator');
-        });
+        expect(screen.getByRole('link', {name: 'Edit user Axe'})).toHaveAttribute('href', `/management/users/${AXE}/edit`);
+        expect(screen.getByRole('link', {name: 'Edit user Bob'})).toHaveAttribute('href', `/management/users/${BOB}/edit`);
+        expect(screen.getByRole('link', {name: 'Edit user Zed'})).toHaveAttribute('href', `/management/users/${ADMIN.id}/edit`);
+        expect(screen.queryByRole('button', {name: /groups/u})).not.toBeInTheDocument();
     });
 });

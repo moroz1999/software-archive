@@ -25,8 +25,8 @@ public final class User {
     public static final Duration CONFIRMATION_LIFETIME = Duration.ofDays(7);
 
     private final UserId id;
-    private final UserName name;
-    private final Email email;
+    private UserName name;
+    private Email email;
     private final PasswordHash passwordHash;
     private final Instant registeredAt;
     private UserStatus status;
@@ -106,14 +106,27 @@ public final class User {
         confirmation = null;
     }
 
+    /**
+     * Gives the account a new user name and email, checked to be free by whoever changes them; a link waiting to be
+     * opened keeps working.
+     */
+    public void rename(UserName name, Email email) {
+        this.name = Objects.requireNonNull(name, "name");
+        this.email = Objects.requireNonNull(email, "email");
+    }
+
     public void grant(UserGroup group) {
         groups.add(group);
     }
 
     /**
-     * Gives a confirmed user the groups an administrator chose; every confirmed user stays a member.
+     * Gives a confirmed user the groups an administrator chose; every confirmed user stays a member. An unconfirmed
+     * account has no groups to choose.
      */
     public void changeGroups(GrantedGroups granted) {
+        if (status != UserStatus.CONFIRMED && granted.groups().isEmpty()) {
+            return;
+        }
         if (status != UserStatus.CONFIRMED) {
             throw new UnconfirmedUserGroupsException();
         }

@@ -34,6 +34,11 @@ class GetCurrentUserHandlerTest {
         }
 
         @Override
+        public Optional<UserEntry> findEntry(UUID userId) {
+            return Optional.empty();
+        }
+
+        @Override
         public Page<UserEntry> findPage(@Nullable String search, Pageable pageable) {
             return Page.empty(pageable);
         }

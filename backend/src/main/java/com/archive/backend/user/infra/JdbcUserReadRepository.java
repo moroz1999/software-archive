@@ -3,6 +3,8 @@ package com.archive.backend.user.infra;
 import com.archive.backend.user.read.CurrentUser;
 import com.archive.backend.user.read.UserEntry;
 import com.archive.backend.user.read.UserReadRepository;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,6 +19,16 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class JdbcUserReadRepository implements UserReadRepository {
+
+    /**
+     * An account with its groups, followed by a condition.
+     */
+    private static final String ENTRY_SELECT = """
+            SELECT u.id, u.name, u.email, u.status, u.registered_at,
+                   ARRAY(SELECT g.user_group FROM app_user_group g
+                         WHERE g.user_id = u.id ORDER BY g.user_group) AS groups
+            FROM app_user u
+            """;
 
     private final JdbcClient jdbc;
 
@@ -34,6 +46,14 @@ public class JdbcUserReadRepository implements UserReadRepository {
     }
 
     @Override
+    public Optional<UserEntry> findEntry(UUID id) {
+        return jdbc.sql(ENTRY_SELECT + "WHERE u.id = :id")
+                .param("id", id)
+                .query(JdbcUserReadRepository::toEntry)
+                .optional();
+    }
+
+    @Override
     public Page<UserEntry> findPage(@Nullable String search, Pageable pageable) {
         // strpos takes the search as text: % and _ are not wildcards.
         String where = search == null
@@ -42,26 +62,25 @@ public class JdbcUserReadRepository implements UserReadRepository {
         long total = withSearch(jdbc.sql("SELECT count(*) FROM app_user u " + where), search)
                 .query(Long.class)
                 .single();
-        List<UserEntry> entries = withSearch(jdbc.sql("""
-                SELECT u.id, u.name, u.email, u.status, u.registered_at,
-                       ARRAY(SELECT g.user_group FROM app_user_group g
-                             WHERE g.user_id = u.id ORDER BY g.user_group) AS groups
-                FROM app_user u
-                """ + where + """
+        List<UserEntry> entries = withSearch(jdbc.sql(ENTRY_SELECT + where + """
 
                 ORDER BY lower(u.name), u.id
                 LIMIT :limit OFFSET :offset"""), search)
                 .param("limit", pageable.getPageSize())
                 .param("offset", pageable.getOffset())
-                .query((row, n) -> new UserEntry(
-                        row.getObject("id", UUID.class),
-                        row.getString("name"),
-                        row.getString("email"),
-                        "CONFIRMED".equals(row.getString("status")),
-                        row.getTimestamp("registered_at").toInstant(),
-                        List.of((String[]) row.getArray("groups").getArray())))
+                .query(JdbcUserReadRepository::toEntry)
                 .list();
         return new PageImpl<>(entries, pageable, total);
+    }
+
+    private static UserEntry toEntry(ResultSet row, int n) throws SQLException {
+        return new UserEntry(
+                row.getObject("id", UUID.class),
+                row.getString("name"),
+                row.getString("email"),
+                "CONFIRMED".equals(row.getString("status")),
+                row.getTimestamp("registered_at").toInstant(),
+                List.of((String[]) row.getArray("groups").getArray()));
     }
 
     private static JdbcClient.StatementSpec withSearch(JdbcClient.StatementSpec statement, @Nullable String search) {

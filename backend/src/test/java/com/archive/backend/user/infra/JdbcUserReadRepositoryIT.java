@@ -59,6 +59,23 @@ class JdbcUserReadRepositoryIT {
     }
 
     @Test
+    void findsAnAccountWithItsGroups() {
+        assertThat(repository.findEntry(ZED))
+                .contains(new UserEntry(ZED, "Zed", "zed@example.com", true, REGISTERED, List.of("admin", "member")));
+    }
+
+    @Test
+    void findsAnUnconfirmedAccount() {
+        assertThat(repository.findEntry(AXE))
+                .contains(new UserEntry(AXE, "Axe", "axe@example.com", false, REGISTERED, List.of()));
+    }
+
+    @Test
+    void findsNoUnknownAccount() {
+        assertThat(repository.findEntry(BOB)).isEmpty();
+    }
+
+    @Test
     void listsEveryAccountByItsNameWhateverTheCaseWithItsGroups() {
         insertBob();
 

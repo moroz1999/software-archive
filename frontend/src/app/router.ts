@@ -4,7 +4,7 @@ import {AUTHOR_EDIT_ROUTE, AUTHOR_NEW_PATH, AUTHOR_ROUTE, AUTHORS_PATH} from '@/
 import {CATEGORIES_PATH, CATEGORY_EDIT_ROUTE, CATEGORY_NEW_PATH} from '@/entities/categories';
 import {GROUP_EDIT_ROUTE, GROUP_NEW_PATH, GROUP_ROUTE, GROUPS_PATH} from '@/entities/groups';
 import {LABEL_ROUTE} from '@/entities/labels';
-import {MANAGEMENT_USERS_PATH, REGISTER_PATH, VERIFY_EMAIL_PATH} from '@/entities/users';
+import {MANAGEMENT_USER_EDIT_ROUTE, MANAGEMENT_USERS_PATH, REGISTER_PATH, VERIFY_EMAIL_PATH} from '@/entities/users';
 import {RELEASE_EDIT_ROUTE, RELEASE_NEW_ROUTE, RELEASE_ROUTE, SOFTWARE_EDIT_ROUTE, SOFTWARE_LIST_PATH, SOFTWARE_NEW_PATH, SOFTWARE_ROUTE} from '@/entities/software';
 import {loadAuthorEditPage, preloadAuthorEditPage} from '@/pages/author-edit';
 import {loadAuthorNewPage, preloadAuthorNewPage} from '@/pages/author-new';
@@ -14,6 +14,7 @@ import {loadCategoriesPage, preloadCategoriesPage} from '@/pages/categories';
 import {loadCategoryEditPage, preloadCategoryEditPage} from '@/pages/category-edit';
 import {loadCategoryNewPage, preloadCategoryNewPage} from '@/pages/category-new';
 import {loadManagementImportsPage, preloadManagementImportsPage} from '@/pages/management/imports';
+import {loadManagementUserEditPage, preloadManagementUserEditPage} from '@/pages/management/user-edit';
 import {loadManagementUsersPage, preloadManagementUsersPage, shouldPreloadManagementUsersPage} from '@/pages/management/users';
 import {loadGroupEditPage, preloadGroupEditPage} from '@/pages/group-edit';
 import {loadGroupNewPage, preloadGroupNewPage} from '@/pages/group-new';
@@ -101,6 +102,7 @@ const routes = (queryClient: QueryClient): RouteObject[] => [{Component: AppLayo
                 lazy: {Component: loadManagementUsersPage},
                 HydrateFallback: nothing,
             },
+            {path: MANAGEMENT_USER_EDIT_ROUTE, loader: preloadManagementUserEditPage(queryClient), lazy: {Component: loadManagementUserEditPage}, HydrateFallback: nothing},
             {path: MANAGEMENT_IMPORTS_PATH, loader: preloadManagementImportsPage(queryClient), lazy: {Component: loadManagementImportsPage}, HydrateFallback: nothing},
         ]},
         {

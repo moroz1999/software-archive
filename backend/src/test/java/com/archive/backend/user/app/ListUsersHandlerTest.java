@@ -74,6 +74,11 @@ class ListUsersHandlerTest {
         }
 
         @Override
+        public Optional<UserEntry> findEntry(UUID id) {
+            return Optional.empty();
+        }
+
+        @Override
         public Page<UserEntry> findPage(@Nullable String search, Pageable pageable) {
             asked.add(search + " @ " + pageable);
             return new PageImpl<>(List.of(ZED), pageable, 1);

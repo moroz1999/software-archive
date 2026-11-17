@@ -7,6 +7,7 @@ import {type AppRouter, createAppRouter} from './router';
 
 const MEMBER = {id: '00000000-0000-0000-0009-000000000001', name: 'Zed', email: 'zed@example.com', groups: ['member'], abilities: ['add-entries']};
 const ADMIN = {...MEMBER, groups: ['admin', 'member'], abilities: ['add-entries', 'keep-categories']};
+const BOB = '00000000-0000-0000-0009-000000000003';
 
 describe('management routes', () => {
     let router: AppRouter | undefined;
@@ -26,6 +27,7 @@ describe('management routes', () => {
             ['/api/imports/vektor/sections', json(['zagruzchiki'])],
             ['/api/imports/last-run', json({run: null})],
             ['/api/users?page=0&size=50', json({content: [], page: {size: 50, number: 0, totalElements: 0, totalPages: 0}})],
+            [`/api/users/${BOB}`, json({id: BOB, name: 'Bob', email: 'bob@example.com', confirmed: true, registeredAt: '2026-01-15T10:00:00Z', groups: ['member']})],
         ]));
         window.history.replaceState(null, '', path);
         const queryClient = createQueryClient();
@@ -61,6 +63,19 @@ describe('management routes', () => {
 
     it('hides user management from a member', async () => {
         renderAt('/management/users', MEMBER);
+
+        await expect(screen.findByRole('heading', {level: 1, name: 'Not found'})).resolves.toBeInTheDocument();
+    });
+
+    it('opens the editing of a user for an administrator', async () => {
+        renderAt(`/management/users/${BOB}/edit`, ADMIN);
+
+        await expect(screen.findByRole('heading', {level: 1, name: 'Edit user'})).resolves.toBeInTheDocument();
+        await expect(screen.findByRole('textbox', {name: 'User name'})).resolves.toHaveValue('Bob');
+    });
+
+    it('hides the editing of a user from a member', async () => {
+        renderAt(`/management/users/${BOB}/edit`, MEMBER);
 
         await expect(screen.findByRole('heading', {level: 1, name: 'Not found'})).resolves.toBeInTheDocument();
     });

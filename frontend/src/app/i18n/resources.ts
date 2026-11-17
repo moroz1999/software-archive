@@ -9,7 +9,7 @@ export const resources = {
             addSoftware: 'Add software', editSoftware: 'Edit software', save: 'Save', edit: 'Edit', delete: 'Delete',
             deleteForGood: 'Delete for good', cancel: 'Cancel', close: 'Close', retry: 'Retry', addRelease: 'Add release',
             addAuthor: 'Add author', editAuthor: 'Edit author', remove: 'Remove', addGroup: 'Add group', editGroup: 'Edit group',
-            addCategory: 'Add category', editCategory: 'Edit category',
+            addCategory: 'Add category', editCategory: 'Edit category', editUser: 'Edit user',
         },
         pages: {recentlyAdded: 'Recently added', software: 'Software', authors: 'Authors', groups: 'Groups', categories: 'Categories', search: 'Search', users: 'Users', imports: 'Imports'},
         imports: {
@@ -32,7 +32,7 @@ export const resources = {
             search: 'Search', year: 'Year', anyYear: 'Any year', allCategories: 'All categories',
             withCount: '{{label}} ({{count}})',
         },
-        formSections: {main: 'Main', classification: 'Classification', credits: 'Credits', hardwareAndArchive: 'Hardware and archive', names: 'Names', geography: 'Geography', members: 'Members'},
+        formSections: {main: 'Main', classification: 'Classification', credits: 'Credits', hardwareAndArchive: 'Hardware and archive', names: 'Names', geography: 'Geography', members: 'Members', account: 'Account', groups: 'Groups'},
         fields: {
             title: 'Title', platform: 'Platform', description: 'Description', releaseDate: 'Release date', releaseDateHint: 'A year, such as 1987, or a day, such as 12.05.1987.', version: 'Version',
             type: 'Type', hardware: 'Hardware', categories: 'Categories', credits: 'Credits', participant: 'Person or group',
@@ -100,8 +100,8 @@ export const resources = {
             search: 'Find a user', searchPlaceholder: 'User name or email', find: 'Find', unconfirmed: 'Awaiting confirmation',
             columns: {name: 'User name', email: 'Email', registered: 'Registered', groups: 'Groups'},
             groups: {admin: 'Administrator', moderator: 'Moderator', member: 'Member'},
-            changeGroups: 'Groups', changeGroupsOf: 'Change groups of {{name}}', groupsOf: 'Groups of {{name}}',
-            memberNote: 'Every confirmed user is a member.',
+            editOf: 'Edit user {{name}}',
+            memberNote: 'Every confirmed user is a member.', unconfirmedNote: 'An account gets its groups once it is confirmed.',
             errors: {
                 lastAdmin: 'The archive keeps at least one administrator.', unconfirmed: 'An unconfirmed account gets no groups.',
                 forbidden: 'Only administrators manage users.',
@@ -205,7 +205,7 @@ export const resources = {
             addSoftware: 'Добавить программу', editSoftware: 'Редактировать программу', save: 'Сохранить', edit: 'Редактировать',
             delete: 'Удалить', deleteForGood: 'Удалить навсегда', cancel: 'Отмена', close: 'Закрыть', retry: 'Повторить',
             addRelease: 'Добавить релиз', addAuthor: 'Добавить автора', editAuthor: 'Редактировать автора', remove: 'Убрать', addGroup: 'Добавить группу', editGroup: 'Редактировать группу',
-            addCategory: 'Добавить категорию', editCategory: 'Редактировать категорию',
+            addCategory: 'Добавить категорию', editCategory: 'Редактировать категорию', editUser: 'Редактировать пользователя',
         },
         pages: {recentlyAdded: 'Недавно добавленное', software: 'Программы', authors: 'Авторы', groups: 'Группы', categories: 'Категории', search: 'Поиск', users: 'Пользователи', imports: 'Импорт'},
         imports: {
@@ -228,7 +228,7 @@ export const resources = {
             search: 'Поиск', year: 'Год', anyYear: 'Любой год', allCategories: 'Все категории',
             withCount: '{{label}} ({{count}})',
         },
-        formSections: {main: 'Основное', classification: 'Классификация', credits: 'Титры', hardwareAndArchive: 'Оборудование и архив', names: 'Имена', geography: 'География', members: 'Участники'},
+        formSections: {main: 'Основное', classification: 'Классификация', credits: 'Титры', hardwareAndArchive: 'Оборудование и архив', names: 'Имена', geography: 'География', members: 'Участники', account: 'Учётная запись', groups: 'Группы'},
         fields: {
             title: 'Название', platform: 'Платформа', description: 'Описание', releaseDate: 'Дата выпуска', releaseDateHint: 'Год, например 1987, или день, например 12.05.1987.', version: 'Версия',
             type: 'Тип', hardware: 'Оборудование', categories: 'Категории', credits: 'Титры', participant: 'Человек или группа',
@@ -297,8 +297,8 @@ export const resources = {
             search: 'Найти пользователя', searchPlaceholder: 'Имя пользователя или email', find: 'Найти', unconfirmed: 'Ждёт подтверждения',
             columns: {name: 'Имя пользователя', email: 'Email', registered: 'Зарегистрирован', groups: 'Группы'},
             groups: {admin: 'Администратор', moderator: 'Модератор', member: 'Участник'},
-            changeGroups: 'Группы', changeGroupsOf: 'Изменить группы пользователя {{name}}', groupsOf: 'Группы пользователя {{name}}',
-            memberNote: 'Каждый подтверждённый пользователь — участник.',
+            editOf: 'Редактировать пользователя {{name}}',
+            memberNote: 'Каждый подтверждённый пользователь — участник.', unconfirmedNote: 'Группы выдаются аккаунту после подтверждения.',
             errors: {
                 lastAdmin: 'В архиве должен остаться хотя бы один администратор.', unconfirmed: 'Неподтверждённому аккаунту группы не выдаются.',
                 forbidden: 'Пользователями управляют только администраторы.',

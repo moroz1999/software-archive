@@ -31,6 +31,8 @@ A new archive gets its first administrator from the server it runs on, without a
 
 ## Managing users
 Administrators see every account of the archive — confirmed or still waiting for its link — with its email, the day it registered and its groups, and find one by a part of its user name or email.
-An administrator gives a confirmed user the groups given on purpose: administrator and moderator. Being a member comes with confirmation and is not given or taken away; an unconfirmed account gets no groups.
+An administrator edits any account, confirmed or not: its user name, its email and, for a confirmed user, the groups given on purpose — administrator and moderator. Being a member comes with confirmation and is not given or taken away; an unconfirmed account gets no groups.
+A new user name and email obey the rules of registration: they must not belong to another account, whatever the letter case, and an abandoned account gives them up. A new email is taken at once, with no letter: the administrator answers for it. An account still waiting for its link keeps the link, which goes on working.
+The password is not edited by an administrator.
 The archive keeps at least one administrator: the last one cannot lose the group, not even by their own hand.
 A user's new groups take effect once their session renews itself, within a quarter of an hour, without signing them out.

@@ -1,3 +1,4 @@
+import {NotFoundError} from '@/shared/api';
 import type {Brand} from '@/shared/lib/brand';
 import {isUuid} from '@/shared/lib/uuid';
 
@@ -39,6 +40,20 @@ export function toUserId(raw: string): UserId {
         throw new TypeError(`Invalid user id: ${raw}`);
     }
     return raw as UserId;
+}
+
+/** The id in a raw value from outside (a URL), or null when it cannot be one. */
+export function parseUserId(raw: string | undefined): UserId | null {
+    return raw !== undefined && isUuid(raw) ? toUserId(raw) : null;
+}
+
+/** The id of a page's user from its URL; one that cannot be an id means the page does not exist. */
+export function requireUserId(raw: string | undefined): UserId {
+    const id = parseUserId(raw);
+    if (id === null) {
+        throw new NotFoundError('user.not-found');
+    }
+    return id;
 }
 
 const USER_GROUPS: readonly string[] = ['admin', 'moderator', 'member'] satisfies UserGroup[];

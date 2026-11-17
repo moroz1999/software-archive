@@ -15,9 +15,9 @@ import com.archive.backend.hardware.domain.HardwareSets;
 import com.archive.backend.software.domain.SoftwareCreditSets;
 import com.archive.backend.software.domain.SoftwareReferenceCatalog;
 import com.archive.backend.user.domain.AccountConfirmation;
-import com.archive.backend.user.domain.GroupAssignment;
 import com.archive.backend.user.domain.PasswordHasher;
 import com.archive.backend.user.domain.Registrations;
+import com.archive.backend.user.domain.UserEditing;
 import com.archive.backend.user.domain.UserRepository;
 import com.archive.backend.user.domain.session.AccessTokens;
 import com.archive.backend.user.domain.session.SessionRepository;
@@ -77,8 +77,8 @@ public class DomainServicesConfig {
     }
 
     @Bean
-    public GroupAssignment groupAssignment(UserRepository users) {
-        return new GroupAssignment(users);
+    public UserEditing userEditing(UserRepository users) {
+        return new UserEditing(users);
     }
 
     @Bean

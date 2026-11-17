@@ -1,10 +1,11 @@
 package com.archive.backend.user.web;
 
-import com.archive.backend.user.app.ChangeUserGroupsHandler;
+import com.archive.backend.user.app.EditUserHandler;
+import com.archive.backend.user.app.GetUserHandler;
 import com.archive.backend.user.app.ListUsersHandler;
 import com.archive.backend.user.domain.Actor;
 import com.archive.backend.user.web.dto.UserEntryDto;
-import com.archive.backend.user.web.dto.UserGroupsRequestDto;
+import com.archive.backend.user.web.dto.UserRequestDto;
 import com.archive.backend.user.web.mapper.UserManagementWebMapper;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final ListUsersHandler listHandler;
-    private final ChangeUserGroupsHandler changeGroupsHandler;
+    private final GetUserHandler getHandler;
+    private final EditUserHandler editHandler;
     private final UserManagementWebMapper webMapper;
 
     @GetMapping
@@ -39,9 +41,14 @@ public class UserController {
         return listHandler.handle(webMapper.toListQuery(actor, query, pageable)).map(webMapper::toDto);
     }
 
-    @PutMapping("/{id}/groups")
+    @GetMapping("/{id}")
+    public UserEntryDto get(Actor actor, @PathVariable UUID id) {
+        return webMapper.toDto(getHandler.handle(webMapper.toGetQuery(actor, id)));
+    }
+
+    @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void changeGroups(Actor actor, @PathVariable UUID id, @RequestBody UserGroupsRequestDto request) {
-        changeGroupsHandler.handle(webMapper.toChangeGroups(actor, id, request));
+    public void edit(Actor actor, @PathVariable UUID id, @RequestBody UserRequestDto request) {
+        editHandler.handle(webMapper.toEdit(actor, id, request));
     }
 }

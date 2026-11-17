@@ -142,6 +142,37 @@ class UserTest {
     }
 
     @Test
+    void anUnconfirmedAccountKeepsNoGroupsWhenNoneAreChosen() {
+        User user = registered();
+
+        user.changeGroups(new GrantedGroups(Set.of()));
+
+        assertThat(user.getGroups()).isEmpty();
+        assertThat(user.getStatus()).isEqualTo(UserStatus.UNCONFIRMED);
+    }
+
+    @Test
+    void anAccountGetsANewNameAndEmail() {
+        User user = confirmed();
+
+        user.rename(new UserName("Axe"), new Email("axe@example.com"));
+
+        assertThat(user.getName()).isEqualTo(new UserName("Axe"));
+        assertThat(user.getEmail()).isEqualTo(new Email("axe@example.com"));
+    }
+
+    @Test
+    void anUnconfirmedAccountRenamedKeepsItsLink() {
+        User user = registered();
+
+        user.rename(new UserName("Axe"), new Email("axe@example.com"));
+
+        assertThat(user.getStatus()).isEqualTo(UserStatus.UNCONFIRMED);
+        assertThat(user.getConfirmation())
+                .isEqualTo(new PendingConfirmation(TOKEN.digest(), NOW.plus(Duration.ofDays(7))));
+    }
+
+    @Test
     void aConfirmedUserSignsInWithTheirPassword() {
         assertThatCode(() -> confirmed().authenticate(new Password("password1"), HASHER))
                 .doesNotThrowAnyException();
