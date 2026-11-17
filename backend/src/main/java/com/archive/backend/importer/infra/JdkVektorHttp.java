@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 /**
@@ -14,6 +15,10 @@ import java.time.Duration;
 public class JdkVektorHttp implements VektorHttp {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(60);
+    /** The punctuation an address may hold as it is, besides ASCII letters and digits. */
+    private static final String ALLOWED = "-._~:/?#[]@!$&'()*+,;=%";
+
+    private static final char[] HEX = "0123456789ABCDEF".toCharArray();
 
     private final HttpClient client = HttpClient.newBuilder()
             .connectTimeout(TIMEOUT)
@@ -34,7 +39,7 @@ public class JdkVektorHttp implements VektorHttp {
             rest(pause.multipliedBy(attempt));
             try {
                 HttpResponse<byte[]> response = client.send(
-                        HttpRequest.newBuilder(URI.create(url))
+                        HttpRequest.newBuilder(URI.create(encoded(url)))
                                 .timeout(TIMEOUT)
                                 .GET()
                                 .build(),
@@ -55,6 +60,23 @@ public class JdkVektorHttp implements VektorHttp {
             }
         }
         throw new IllegalStateException("Could not fetch " + url + ": " + failure);
+    }
+
+    /**
+     * The site writes file addresses as they are named, with spaces and Cyrillic: every character an address may not
+     * hold is percent-encoded, while the escapes already there are kept.
+     */
+    private static String encoded(String url) {
+        StringBuilder address = new StringBuilder();
+        for (byte b : url.getBytes(StandardCharsets.UTF_8)) {
+            int c = b & 0xFF;
+            if (c < 0x7F && (Character.isLetterOrDigit(c) || ALLOWED.indexOf(c) >= 0)) {
+                address.append((char) c);
+            } else {
+                address.append('%').append(HEX[c >> 4]).append(HEX[c & 0xF]);
+            }
+        }
+        return address.toString();
     }
 
     private static void rest(Duration duration) {
