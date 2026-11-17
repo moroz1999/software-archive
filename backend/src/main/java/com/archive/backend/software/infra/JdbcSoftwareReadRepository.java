@@ -18,6 +18,7 @@ import com.archive.backend.software.read.SoftwareRelease;
 import com.archive.backend.software.read.SoftwareScreenshot;
 import com.archive.backend.software.read.SoftwareSource;
 import com.archive.backend.software.read.SoftwareSummary;
+import com.archive.backend.user.read.AdditionSql;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -88,11 +89,11 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     @Override
     public Optional<SoftwareDetails> findById(UUID id) {
         return jdbc.sql("""
-                        SELECT s.title, s.description, %s AS release_date, p.code, p.name, s.added_by
+                        SELECT s.title, s.description, %s AS release_date, p.code, p.name, s.added_by, %s
                         FROM software s
                         JOIN platform p ON p.code = s.platform_code
                         WHERE s.id = :id
-                        """.formatted(ReleaseDateSql.of("s")))
+                        """.formatted(ReleaseDateSql.of("s"), AdditionSql.columns("s")))
                 .param("id", id)
                 .query((rs, row) -> new SoftwareDetails(
                         id,
@@ -104,6 +105,7 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                         categories(id),
                         credits(id),
                         sources(id),
+                        AdditionSql.of(rs),
                         rs.getObject("added_by", UUID.class),
                         false))
                 .optional();
@@ -237,12 +239,13 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     public List<SoftwareRelease> findReleases(UUID softwareId) {
         return jdbc.sql("""
                         SELECT r.id, COALESCE(r.title, s.title) AS title, r.version, r.type, %s AS release_date,
-                               r.description, r.archive_id, r.archive_file_name, r.archive_size, r.added_by
+                               r.description, r.archive_id, r.archive_file_name, r.archive_size, r.added_by,
+                               %s
                         FROM software_release r
                         JOIN software s ON s.id = r.software_id
                         WHERE r.software_id = :id
                         ORDER BY %s, lower(COALESCE(r.title, s.title)), r.id
-                        """.formatted(ReleaseDateSql.of("r"), ReleaseDateSql.order("r")))
+                        """.formatted(ReleaseDateSql.of("r"), AdditionSql.columns("r"), ReleaseDateSql.order("r")))
                 .param("id", softwareId)
                 .query((rs, row) -> {
                     UUID id = rs.getObject("id", UUID.class);
@@ -256,6 +259,7 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                             hardware("software_release_hardware", "release_id", id),
                             findReleaseScreenshots(id),
                             archive(rs),
+                            AdditionSql.of(rs),
                             rs.getObject("added_by", UUID.class),
                             false);
                 })

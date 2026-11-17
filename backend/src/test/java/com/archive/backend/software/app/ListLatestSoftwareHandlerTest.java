@@ -1,5 +1,6 @@
 package com.archive.backend.software.app;
 
+import static com.archive.backend.user.TestActors.ADDED;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.archive.backend.hardware.domain.PlatformCode;
@@ -37,6 +38,13 @@ class ListLatestSoftwareHandlerTest {
 
     private static SoftwareDetails details(String title) {
         return new SoftwareDetails(
-                UUID.randomUUID(), title, null, null, new SoftwarePlatform("vector", "Vector"), List.of(), List.of());
+                UUID.randomUUID(),
+                title,
+                null,
+                null,
+                new SoftwarePlatform("vector", "Vector"),
+                List.of(),
+                List.of(),
+                ADDED);
     }
 }

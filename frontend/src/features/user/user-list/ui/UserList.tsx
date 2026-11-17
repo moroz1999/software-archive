@@ -1,6 +1,7 @@
 import {type ReactNode, type SyntheticEvent, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import type {UserEntry, UserGroup} from '@/entities/users';
+import {dayText} from '@/shared/lib/i18n';
 import {useSkeleton} from '@/shared/lib/loading';
 import {Badge} from '@/shared/ui/badge';
 import {Button} from '@/shared/ui/button';
@@ -13,7 +14,6 @@ import {Skeleton} from '@/shared/ui/skeleton';
 import {Stack} from '@/shared/ui/stack';
 import {Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow} from '@/shared/ui/table';
 import {Text} from '@/shared/ui/typography';
-import {registeredDayText} from '../lib/registered-day';
 import {useUserList} from '../model/user-list-context';
 import {userListHref} from '../model/user-list-filter';
 import styles from './UserList.module.css';
@@ -114,7 +114,7 @@ function Users({actions}: {readonly actions: UserListProps['actions']}) {
                                     </Inline>
                                 </TableCell>
                                 <TableCell>{user.email}</TableCell>
-                                <TableCell>{registeredDayText(user.registeredAt, i18n.language)}</TableCell>
+                                <TableCell>{dayText(user.registeredAt, i18n.language)}</TableCell>
                                 <TableCell>
                                     <Inline gap="xs" wrap>
                                         {user.groups.flatMap((group) => [' ', <Badge key={group}>{t(GROUP_KEYS[group])}</Badge>])}

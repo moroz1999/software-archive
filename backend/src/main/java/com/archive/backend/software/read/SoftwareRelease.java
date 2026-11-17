@@ -1,5 +1,6 @@
 package com.archive.backend.software.read;
 
+import com.archive.backend.user.read.Addition;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -21,6 +22,7 @@ public record SoftwareRelease(
         List<SoftwareHardware> hardware,
         List<SoftwareScreenshot> screenshots,
         @Nullable ReleaseArchiveDetails archive,
+        Addition added,
         @Nullable UUID addedBy,
         boolean canChange) {
 
@@ -32,8 +34,9 @@ public record SoftwareRelease(
             String type,
             @Nullable String releaseDate,
             @Nullable String description,
-            List<SoftwareHardware> hardware) {
-        this(id, title, version, type, releaseDate, description, hardware, List.of(), null, null, false);
+            List<SoftwareHardware> hardware,
+            Addition added) {
+        this(id, title, version, type, releaseDate, description, hardware, List.of(), null, added, null, false);
     }
 
     public SoftwareRelease(
@@ -45,15 +48,39 @@ public record SoftwareRelease(
             @Nullable String description,
             List<SoftwareHardware> hardware,
             List<SoftwareScreenshot> screenshots,
+            Addition added,
             @Nullable UUID addedBy,
             boolean canChange) {
-        this(id, title, version, type, releaseDate, description, hardware, screenshots, null, addedBy, canChange);
+        this(
+                id,
+                title,
+                version,
+                type,
+                releaseDate,
+                description,
+                hardware,
+                screenshots,
+                null,
+                added,
+                addedBy,
+                canChange);
     }
 
     /** The same release, telling whether the actor may change it. */
     public SoftwareRelease withCanChange(boolean canChange) {
         return new SoftwareRelease(
-                id, title, version, type, releaseDate, description, hardware, screenshots, archive, addedBy, canChange);
+                id,
+                title,
+                version,
+                type,
+                releaseDate,
+                description,
+                hardware,
+                screenshots,
+                archive,
+                added,
+                addedBy,
+                canChange);
     }
 
     /**
@@ -67,6 +94,17 @@ public record SoftwareRelease(
                 .sorted(Comparator.comparingInt(SoftwareHardware::groupOrder))
                 .toList();
         return new SoftwareRelease(
-                id, title, version, type, releaseDate, description, shown, screenshots, archive, addedBy, canChange);
+                id,
+                title,
+                version,
+                type,
+                releaseDate,
+                description,
+                shown,
+                screenshots,
+                archive,
+                added,
+                addedBy,
+                canChange);
     }
 }

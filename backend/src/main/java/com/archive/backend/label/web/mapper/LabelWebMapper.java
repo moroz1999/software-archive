@@ -3,6 +3,7 @@ package com.archive.backend.label.web.mapper;
 import com.archive.backend.geo.domain.CityId;
 import com.archive.backend.geo.domain.CountryId;
 import com.archive.backend.geo.domain.LocationDraft;
+import com.archive.backend.label.app.CreateLabelCommand;
 import com.archive.backend.label.app.EditLabelCommand;
 import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.LabelName;
@@ -12,6 +13,7 @@ import com.archive.backend.label.read.LabelDetails;
 import com.archive.backend.label.web.dto.LabelDetailsDto;
 import com.archive.backend.label.web.dto.LabelOwnerRequestDto;
 import com.archive.backend.label.web.dto.LabelRequestDto;
+import com.archive.backend.label.web.dto.NewLabelRequestDto;
 import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.user.domain.Actor;
 import java.util.List;
@@ -45,10 +47,19 @@ public interface LabelWebMapper {
                         .map(origin ->
                                 new LabelDetailsDto.OriginDto(origin.origin(), origin.externalId(), origin.url()))
                         .toList(),
+                new LabelDetailsDto.AddedDto(label.added().by(), label.added().at()),
                 label.rights().canChange(),
                 label.rights().canMakeOwner(),
                 label.rights().canEdit(),
                 label.rights().canChangeOwner());
+    }
+
+    default CreateLabelCommand toCreate(Actor actor, NewLabelRequestDto request) {
+        String name = request.name();
+        if (name == null) {
+            throw new InvalidValueException("title.required", "A label needs a name.");
+        }
+        return new CreateLabelCommand(actor, new LabelName(name), toLocations(request.locations()));
     }
 
     default EditLabelCommand toEdit(Actor actor, UUID id, LabelRequestDto request) {

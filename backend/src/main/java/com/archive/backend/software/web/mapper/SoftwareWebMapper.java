@@ -65,6 +65,8 @@ public interface SoftwareWebMapper {
                 toHardwareDtos(release.hardware()),
                 release.screenshots().stream().map(this::toScreenshot).toList(),
                 toArchive(softwareId, release.id(), release.archive()),
+                new SoftwareReleaseDto.AddedDto(
+                        release.added().by(), release.added().at()),
                 release.canChange());
     }
 

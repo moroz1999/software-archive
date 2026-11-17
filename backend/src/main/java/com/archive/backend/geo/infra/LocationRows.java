@@ -43,6 +43,8 @@ public final class LocationRows {
                     CityId city = location.place().city();
                     T row = newRow.get();
                     row.setCountryId(location.place().country().value());
+                    // Read back in the same transaction before the formula runs: the country is known already.
+                    row.setPlaceCountryId(location.place().country().value());
                     row.setCityId(city == null ? null : city.value());
                     row.setPrimary(location.primary());
                     return row;

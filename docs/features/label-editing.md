@@ -1,11 +1,13 @@
 # Label Editing
 
-Editing and deleting a label on a page of its own: its name, whose it is, its locations, and where an import took it from ([domain/authors.md](../domain/authors.md#editing-a-label)).
+Adding a label of nobody, and editing and deleting a label on a page of its own: its name, whose it is, its locations, and where an import took it from ([domain/authors.md](../domain/authors.md#editing-a-label)).
 
 ## Pages
 
 | Page | Path | Content |
 |---|---|---|
+| Authors | `/authors` | "Add label" next to the page title, for signed-in users ([author-catalog.md](author-catalog.md)) |
+| Add label | `/labels/new` | Empty form of Main (Name) and Geography (Locations), with no Whose label and no Sources; Cancel returns to the author catalog, "Add label" adds a label of nobody and opens its page |
 | Label | `/labels/{id}` | "Edit" next to the heading, for whoever may edit the label ([label-view.md](label-view.md)) |
 | Edit label | `/labels/{id}/edit` | "Delete" next to the page title; the form with the label's values, Cancel and "Save" back to the label's page; the author catalog after deleting |
 
@@ -17,6 +19,12 @@ Editing and deleting a label on a page of its own: its name, whose it is, its lo
 - Sources: for every import the label came from, the source archive and the id there, the id leading to the source page when the source has one; "None" when it was not imported. Not editable.
 - Format rules are checked before sending; errors appear under their fields on submit and clear when the field is edited.
 - While saving, the fields and the buttons are locked.
+
+## Adding
+
+- The new label belongs to nobody and is added by whoever adds it; an administrator says whose it is afterwards, from its page ([label-view.md](label-view.md#attaching-to-the-owner)).
+- A name equal to another label's is not checked: it makes a label of its own.
+- The form checks and locks as in editing; a place that is not in the archive is refused under Locations, anything else at the top of the form; system errors go to the error dialog, keeping what was typed. The page preloads the countries.
 
 ## Deleting
 
@@ -41,6 +49,7 @@ Editing and deleting a label on a page of its own: its name, whose it is, its lo
 - `pages/label/label-edit` — the page; its loader preloads the label's details and the countries. Saving returns to the label's page, deleting opens the author catalog.
 - `widgets/label-editor` — the page title with Delete, the form skeleton while the label loads, the form with Cancel.
 - `features/label/label-edit` — `EditLabelProvider` holds the form and saves it, `EditLabelForm` shows it; a refusal naming `owner` or `locations` shows under it until edited, the others at the top of the form.
+- `pages/label/label-new`, `widgets/label-editor` `LabelCreator` and `features/label/create` — the page of adding a label of nobody, its loader preloading the countries; `CreateLabelProvider` holds and sends the form, `CreateLabelForm` shows it.
 - `features/label/delete` — `DeleteLabelButton`, the button and its confirmation.
 - The label pages are grouped under `pages/label`.
 
@@ -48,6 +57,7 @@ Editing and deleting a label on a page of its own: its name, whose it is, its lo
 
 | Call | Answer | Errors |
 |---|---|---|
+| `POST /api/labels` `{name, locations: [{country, city, primary}]}` | `201`, `Location: /api/labels/{id}`, `{id}` | `400 title.required` / `400 title.too-long`, `400 location.empty`, `400` for malformed JSON or ids; `422 location.unknown`, `422 location.primary-one` (field `locations`); `401` |
 | `GET /api/labels/{id}` | as on the page ([label-view.md](label-view.md#rest)), with `locations: [{countryId, country, cityId, city, primary}]` as for authors, `origins: [{origin, externalId, url}]` (`url` `null` without a source page), `canEdit` for whoever added the label and administrators, `canChangeOwner` for administrators | as on the page |
 | `PUT /api/labels/{id}` `{name, owner: {type, id, display} \| null, locations: [{country, city, primary}]}` | `204` | `404 label.not-found`; `400 title.required` / `400 title.too-long`, `400 location.empty`, `400` for malformed JSON, ids or another `type`; `422 label.owner-unknown`, `422 label.display-one`, `422 author.nameless` (field `owner`); `422 location.unknown`, `422 location.primary-one` (field `locations`); `401`, `403` |
 | `DELETE /api/labels/{id}` | `204` | `404 label.not-found`; `422 label.display-one`, `422 author.nameless`; `401`, `403` |

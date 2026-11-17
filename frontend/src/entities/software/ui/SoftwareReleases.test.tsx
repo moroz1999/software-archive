@@ -16,6 +16,7 @@ const AY_MOD = {
     releaseDate: '1990-03-01',
     description: 'With AY music',
     hardware: [{code: 'vector06c', name: 'Vector-06C', group: 'computers'}, {code: 'ay8910', name: 'AY-3-8910', group: 'sound'}],
+    added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
     canChange: true,
 };
 const FIX = {...AY_MOD, id: '00000000-0000-0000-0007-000000000002', title: 'Elite Fix', version: null, type: 'bugfix', releaseDate: '1988-05-01', description: null};

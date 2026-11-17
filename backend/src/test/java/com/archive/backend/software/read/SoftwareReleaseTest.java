@@ -1,5 +1,6 @@
 package com.archive.backend.software.read;
 
+import static com.archive.backend.user.TestActors.ADDED;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
@@ -45,6 +46,6 @@ class SoftwareReleaseTest {
     }
 
     private static SoftwareRelease release(List<SoftwareHardware> own) {
-        return new SoftwareRelease(UUID.randomUUID(), "Elite", "1.1", "mod", null, null, own);
+        return new SoftwareRelease(UUID.randomUUID(), "Elite", "1.1", "mod", null, null, own, ADDED);
     }
 }

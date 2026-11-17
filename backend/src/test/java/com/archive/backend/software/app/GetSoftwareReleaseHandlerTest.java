@@ -1,5 +1,6 @@
 package com.archive.backend.software.app;
 
+import static com.archive.backend.user.TestActors.ADDED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -26,7 +27,7 @@ class GetSoftwareReleaseHandlerTest {
 
     private void eliteWithAyMod() {
         reads.add(new SoftwareDetails(
-                ELITE, "Elite", null, null, new SoftwarePlatform("vector", "Vector"), List.of(), List.of()));
+                ELITE, "Elite", null, null, new SoftwarePlatform("vector", "Vector"), List.of(), List.of(), ADDED));
         reads.addRelease(ELITE, AY_MOD_DETAILS);
     }
 

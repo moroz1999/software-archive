@@ -8,15 +8,16 @@ import {App} from './App';
 import {type AppRouter, createAppRouter} from './router';
 
 const ALPHA = {id: '00000000-0000-0000-0001-000000000001', title: 'Fixture Software Alpha', releaseDate: '1985-03-02'};
-const ALPHA_DETAILS = {...ALPHA, description: null, platform: {code: 'vector', name: 'Vector'}, hardware: [], categories: [], credits: [], sources: [], canChange: true};
+const ALPHA_DETAILS = {...ALPHA, description: null, platform: {code: 'vector', name: 'Vector'}, hardware: [], categories: [], credits: [], sources: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true};
 const AY_MOD = '00000000-0000-0000-0007-000000000002';
-const AY_MOD_DETAILS = {id: AY_MOD, title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: null, description: null, hardware: [], canChange: true};
+const AY_MOD_DETAILS = {id: AY_MOD, title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: null, description: null, hardware: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true};
 const ZED = '00000000-0000-0000-0003-000000000001';
 const CREW = '00000000-0000-0000-0005-000000000001';
-const ZED_DETAILS = {id: ZED, name: 'Zed', realName: null, notes: null, labels: [], locations: [], groups: [{id: CREW, name: 'Crew Ltd', as: null}], canChange: true};
+const ZED_DETAILS = {id: ZED, name: 'Zed', realName: null, notes: null, labels: [], locations: [], groups: [{id: CREW, name: 'Crew Ltd', as: null}], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true};
 const CREW_DETAILS = {
     id: CREW, name: 'Crew Ltd', notes: null, types: [], labels: [], locations: [],
     members: [{id: ZED, type: 'author', title: 'Zed', name: 'Zed', personId: ZED, personName: null, roles: [], startDate: null, endDate: null}], memberGroups: [], groups: [],
+    added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
     canChange: true,
 };
 

@@ -1,3 +1,4 @@
+import type {Addition} from '@/shared/api';
 import type {LabelId} from './label-id';
 
 /** Whom a label belongs to once a person attaching it has said so: a person or a group. */
@@ -42,6 +43,8 @@ export interface LabelDetails {
     readonly groups: readonly LabelGroup[];
     readonly locations: readonly LabelLocation[];
     readonly origins: readonly LabelOrigin[];
+    /** Who added it and when. */
+    readonly added: Addition;
     /** The reader may attach the label to its owner. */
     readonly canChange: boolean;
     /** The reader may make a new person or group of the label, taking it away from whoever has it. */
@@ -58,6 +61,9 @@ export interface LabelOwnerOption extends LabelOwner {
 }
 
 /** A label to be saved, as its form produced it: whose it is after saving, or nobody's. */
+/** A label of nobody to add: its name and its locations. */
+export type NewLabelDraft = Omit<LabelDraft, 'owner'>;
+
 export interface LabelDraft {
     readonly name: string;
     readonly owner: (LabelOwner & {readonly display: boolean}) | null;

@@ -1,5 +1,6 @@
 package com.archive.backend.author.web.dto;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -12,6 +13,7 @@ public record AuthorDetailsDto(
         List<LabelDto> labels,
         List<LocationDto> locations,
         List<GroupDto> groups,
+        AddedDto added,
         boolean canChange) {
 
     public record LabelDto(UUID id, String name, boolean display) {}
@@ -24,4 +26,7 @@ public record AuthorDetailsDto(
             boolean primary) {}
 
     public record GroupDto(UUID id, String name, @Nullable String as) {}
+
+    /** Who added the entry, {@code null} once their account was deleted, and when. */
+    public record AddedDto(@Nullable String by, Instant at) {}
 }

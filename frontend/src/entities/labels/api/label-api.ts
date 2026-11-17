@@ -1,6 +1,6 @@
-import {deleteResource, getJson, mapResponse, postJson, postNoContent, putJson, readArray, readBoolean, readNullableString, readObject, readString, type JsonObject} from '@/shared/api';
+import {deleteResource, getJson, type JsonObject, mapResponse, postJson, postNoContent, putJson, readAddition, readArray, readBoolean, readNullableString, readObject, readString} from '@/shared/api';
 import {labelPath} from '../config/paths';
-import type {LabelDetails, LabelDraft, LabelLocation, LabelOrigin, LabelOwner, LabelOwnerOption, NamedLabelOwner} from '../model/label';
+import type {LabelDetails, LabelDraft, LabelLocation, LabelOrigin, LabelOwner, LabelOwnerOption, NamedLabelOwner, NewLabelDraft} from '../model/label';
 import {type LabelId, toLabelId} from '../model/label-id';
 
 function readOwnerType(dto: JsonObject, name: string): LabelOwner['type'] {
@@ -50,12 +50,22 @@ export async function fetchLabel(id: LabelId, signal: AbortSignal): Promise<Labe
             }),
             locations: readArray(dto['locations'], 'locations').map(parseLocation),
             origins: readArray(dto['origins'], 'origins').map(parseOrigin),
+            added: readAddition(dto['added']),
             canChange: readBoolean(dto, 'canChange'),
             canMakeOwner: readBoolean(dto, 'canMakeOwner'),
             canEdit: readBoolean(dto, 'canEdit'),
             canChangeOwner: readBoolean(dto, 'canChangeOwner'),
         };
     });
+}
+
+/** Adds a label of nobody with its locations and returns its id: `POST /api/labels`. */
+export async function createLabel(draft: NewLabelDraft): Promise<LabelId> {
+    const json = await postJson('/api/labels', {
+        name: draft.name,
+        locations: draft.locations.map((location) => ({country: location.country, city: location.city, primary: location.primary})),
+    });
+    return mapResponse(() => toLabelId(readString(readObject(json, 'created label'), 'id')));
 }
 
 /** Gives the label its name, whose it is and its locations: `PUT /api/labels/{id}`. */

@@ -19,7 +19,7 @@ What a user may do comes from their groups, and for the entries of the archive a
 | Group | Who | May |
 |---|---|---|
 | Public visitor | Everyone not signed in | Read the archive |
-| Member | Every confirmed account | Add software, releases, people and groups; edit and delete what they added |
+| Member | Every confirmed account | Add software, releases, people, groups and labels; edit and delete what they added |
 | Moderator | Given on purpose | Delete comments |
 | Administrator | Given on purpose | Everything |
 
@@ -28,6 +28,9 @@ A member adds releases to any software. A release can be edited and deleted by w
 The first confirmed account of the archive becomes an administrator.
 
 A new archive gets its first administrator from the server it runs on, without a letter: whoever runs the archive gives the user name, email and password, and the account is confirmed at once. This works only while the archive has no administrator; the user name and email obey the same rules as in registration.
+
+## Who added an entry
+Every person, group, label, software and release remembers who added it and when, and its page shows both: "Added by Zork on 4 March 2026". An import is shown as the importer. Once the account of whoever added it is deleted, the page shows only the day. A release added before the archive remembered the moment counts as added when it began to.
 
 ## Managing users
 Administrators see every account of the archive — confirmed or still waiting for its link — with its email, the day it registered and its groups, and find one by a part of its user name or email.

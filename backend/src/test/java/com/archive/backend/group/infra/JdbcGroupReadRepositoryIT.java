@@ -1,5 +1,6 @@
 package com.archive.backend.group.infra;
 
+import static com.archive.backend.user.TestActors.ADDED;
 import static com.archive.backend.user.TestActors.MEMBER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -228,7 +229,10 @@ class JdbcGroupReadRepositoryIT {
     @Test
     void readsTheDetailsOfAGroup() {
         assertThat(reads.findById(CREW))
-                .contains(new GroupDetails(
+                .get()
+                .usingRecursiveComparison()
+                .ignoringFields("added")
+                .isEqualTo(new GroupDetails(
                         CREW,
                         "Crew Ltd",
                         "Since 1990",
@@ -242,13 +246,17 @@ class JdbcGroupReadRepositoryIT {
                                 labelMember(id(213), "Zed", "Zed", ZED, null),
                                 labelMember(id(212), "хакер федя — MASTERSOFT", "хакер федя", FEDYA, "MASTERSOFT")),
                         List.of(new RelatedGroup(BAND, "Band")),
-                        List.of(new RelatedGroup(OLDIES, "Oldies"))));
+                        List.of(new RelatedGroup(OLDIES, "Oldies")),
+                        ADDED));
     }
 
     @Test
     void readsAGroupKnownOnlyByItsName() {
         assertThat(reads.findById(BAND))
-                .contains(new GroupDetails(
+                .get()
+                .usingRecursiveComparison()
+                .ignoringFields("added")
+                .isEqualTo(new GroupDetails(
                         BAND,
                         "Band",
                         null,
@@ -257,7 +265,8 @@ class JdbcGroupReadRepositoryIT {
                         List.of(new GroupLocation(FINLAND, "Finland", TAMPERE, "Tampere", true)),
                         List.of(),
                         List.of(),
-                        List.of(new RelatedGroup(CREW, "Crew Ltd"))));
+                        List.of(new RelatedGroup(CREW, "Crew Ltd")),
+                        ADDED));
     }
 
     @Test

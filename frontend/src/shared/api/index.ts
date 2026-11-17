@@ -3,6 +3,7 @@ export {deleteResource, getJson, postForm, postJson, postNoContent, putForm, put
 export {endSession, getSession, loadSession, resetSessionForTests, type Session, startSession, subscribeSession} from './session';
 export {businessErrorMessage, type BusinessMessages} from './messages';
 export {type FieldRefusals, type FormRefusal, splitRefusal, unedited} from './form-refusal';
+export {type Addition, readAddition} from './addition';
 export {mapResponse, readArray, readBoolean, readNullableString, readNumber, readObject, readString, readStringArray, type JsonObject} from './parse';
 export {parsePage, type Page} from './page';
 export {reportSystemError, subscribeSystemErrors, type SystemErrorReport} from './system-errors';

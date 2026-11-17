@@ -1,5 +1,6 @@
 package com.archive.backend.group.read;
 
+import com.archive.backend.user.read.Addition;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -17,6 +18,7 @@ public record GroupDetails(
         List<GroupMember> members,
         List<RelatedGroup> memberGroups,
         List<RelatedGroup> groups,
+        Addition added,
         @Nullable UUID addedBy,
         boolean canChange) {
     /** As read, before the handler tells whether the actor may change it. */
@@ -29,13 +31,14 @@ public record GroupDetails(
             List<GroupLocation> locations,
             List<GroupMember> members,
             List<RelatedGroup> memberGroups,
-            List<RelatedGroup> groups) {
-        this(id, name, notes, types, labels, locations, members, memberGroups, groups, null, false);
+            List<RelatedGroup> groups,
+            Addition added) {
+        this(id, name, notes, types, labels, locations, members, memberGroups, groups, added, null, false);
     }
 
     /** The same group, telling whether the actor may change it. */
     public GroupDetails withCanChange(boolean canChange) {
         return new GroupDetails(
-                id, name, notes, types, labels, locations, members, memberGroups, groups, addedBy, canChange);
+                id, name, notes, types, labels, locations, members, memberGroups, groups, added, addedBy, canChange);
     }
 }

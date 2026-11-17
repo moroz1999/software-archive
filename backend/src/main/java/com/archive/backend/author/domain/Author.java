@@ -104,15 +104,16 @@ public final class Author {
         events.add(new AuthorChanged(id));
     }
 
-    /** A new person replacing a label under the same name. */
+    /** A new person replacing a label under the same name, located where the label was. */
     public static Author replacing(AuthorId id, Label label, AddedBy addedBy) {
         Author author = new Author(
                 id,
                 new RealName(label.getName().value()),
                 null,
                 OwnLabels.of(List.of(), addedBy),
-                new Locations(List.of()),
+                label.getLocations(),
                 addedBy);
+        author.events.add(new LabelReplacedByAuthor(label.getId(), id));
         author.events.add(new OwnerOfLabelsChanged(Set.of(label.getId())));
         author.events.add(new AuthorChanged(id));
         return author;

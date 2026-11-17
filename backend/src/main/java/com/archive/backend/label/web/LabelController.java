@@ -7,6 +7,7 @@ import com.archive.backend.group.app.AttachLabelToGroupCommand;
 import com.archive.backend.group.app.AttachLabelToGroupHandler;
 import com.archive.backend.group.domain.GroupId;
 import com.archive.backend.group.domain.GroupTypeCode;
+import com.archive.backend.label.app.CreateLabelHandler;
 import com.archive.backend.label.app.DeleteLabelCommand;
 import com.archive.backend.label.app.DeleteLabelHandler;
 import com.archive.backend.label.app.EditLabelHandler;
@@ -18,11 +19,13 @@ import com.archive.backend.label.app.MakeGroupOfLabelCommand;
 import com.archive.backend.label.app.MakeGroupOfLabelHandler;
 import com.archive.backend.label.domain.LabelAttachment;
 import com.archive.backend.label.domain.LabelId;
+import com.archive.backend.label.web.dto.LabelCreatedDto;
 import com.archive.backend.label.web.dto.LabelDetailsDto;
 import com.archive.backend.label.web.dto.LabelGroupRequestDto;
 import com.archive.backend.label.web.dto.LabelMadeOwnerDto;
 import com.archive.backend.label.web.dto.LabelOwnerRequestDto;
 import com.archive.backend.label.web.dto.LabelRequestDto;
+import com.archive.backend.label.web.dto.NewLabelRequestDto;
 import com.archive.backend.label.web.mapper.LabelWebMapper;
 import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.user.domain.Actor;
@@ -45,7 +48,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * The page of a label, attaching a label of nobody to its owner, making a new person or group of a label
+ * Adding a label of nobody, the page of a label, attaching a label of nobody to its owner, making a new person or group of a label
  * (docs/features/label-view.md), and editing and deleting it (docs/features/label-editing.md).
  */
 @RestController
@@ -53,6 +56,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class LabelController {
 
+    private final CreateLabelHandler createHandler;
     private final GetLabelHandler getHandler;
     private final EditLabelHandler editHandler;
     private final DeleteLabelHandler deleteHandler;
@@ -61,6 +65,12 @@ public class LabelController {
     private final MakeAuthorOfLabelHandler makeAuthorHandler;
     private final MakeGroupOfLabelHandler makeGroupHandler;
     private final LabelWebMapper webMapper;
+
+    @PostMapping
+    public ResponseEntity<LabelCreatedDto> create(Actor actor, @RequestBody NewLabelRequestDto request) {
+        LabelId id = createHandler.handle(webMapper.toCreate(actor, request));
+        return ResponseEntity.created(URI.create("/api/labels/" + id.value())).body(new LabelCreatedDto(id.value()));
+    }
 
     @GetMapping("/{id}")
     public LabelDetailsDto get(Actor actor, @PathVariable UUID id) {

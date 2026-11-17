@@ -36,7 +36,7 @@ Adding, editing and deleting software ([domain/software.md](../domain/software.m
 
 | Call | Answer | Errors |
 |---|---|---|
-| `GET /api/software/{id}` | `200` software details, including the credits with the nullable owner id used by the view, and the pages of the archives it was imported from | `404 software.not-found`; `400` for a malformed id |
+| `GET /api/software/{id}` | `200` software details, including the credits with the nullable owner id used by the view, the pages of the archives it was imported from, and `added: {by, at}`: who added it (their user name, `null` once the account is gone) and when | `404 software.not-found`; `400` for a malformed id |
 | `POST /api/software` with the form values; credits are `{id, type, roles}`, the type `author`, `author-label`, `group` or `group-label` | `201`, `Location: /api/software/{id}`, `{id}` | Format errors (`400 software.reference-type-invalid`, `software.reference-id-required`, `software.credit-role-invalid`, `software.credit-duplicate`); `422` for an unknown hardware or category, `422 software.credit-unknown` (field `credits`) for anyone credited not in the archive |
 | `PUT /api/software/{id}` (same body) | `204` | `404 software.not-found`; `422 software.platform-locked` (field `platform`) when the platform changes while a release has hardware; the errors of `POST` |
 | `DELETE /api/software/{id}` | `204` | `404 software.not-found` |

@@ -44,6 +44,11 @@ public class JpaImportedEntryRepository implements ImportedEntryRepository {
         springDataExternalOriginRepository.deleteByKeyKindAndEntityId(kind.name(), entry.value());
     }
 
+    @Override
+    public void transfer(ExternalKind kind, ImportedEntryId entry, ExternalKind toKind, ImportedEntryId to) {
+        springDataExternalOriginRepository.transfer(kind.name(), entry.value(), toKind.name(), to.value());
+    }
+
     private static ExternalOriginKey keyOf(ExternalOrigin origin) {
         ExternalOriginKey key = new ExternalOriginKey();
         key.setOrigin(origin.archive());

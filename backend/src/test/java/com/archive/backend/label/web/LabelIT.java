@@ -290,6 +290,26 @@ class LabelIT {
     }
 
     @Test
+    void replacesALabelWithAPersonLocatedWhereTheLabelWas() throws Exception {
+        insertGeo();
+        edit(GHOST, ADMIN, """
+                        {"name": "Ghost", "owner": null,
+                         "locations": [{"country": "%s", "city": "%s", "primary": true}]}
+                        """.formatted(FINLAND, HELSINKI)).andExpect(status().isNoContent());
+
+        String id = idOf(makeAuthor(GHOST, ADMIN).andExpect(status().isCreated()));
+
+        mvc.perform(get("/api/authors/{id}", id))
+                .andExpect(jsonPath("$.locations[*].city").value(contains("Helsinki")))
+                .andExpect(jsonPath("$.locations[0].primary").value(true));
+        assertThat(jdbc.queryForObject(
+                        "SELECT count(*) FROM entity_location WHERE entity_type = 'LABEL' AND entity_id = ?",
+                        Integer.class,
+                        GHOST))
+                .isZero();
+    }
+
+    @Test
     void makesAGroupOfALabelOfNobodyUnderItsNameWithItsCreditsAndMemberships() throws Exception {
         String id = idOf(makeGroup(GHOST, ADMIN, "[\"demogroup\"]").andExpect(status().isCreated()));
 

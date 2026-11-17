@@ -11,7 +11,7 @@ const ID = '00000000-0000-0000-0004-000000000001';
 const CREW = '00000000-0000-0000-0005-000000000001';
 const JANE = '00000000-0000-0000-0003-000000000001';
 const ELITE = '00000000-0000-0000-0001-000000000001';
-const GHOST = {id: ID, name: 'Ghost', owner: null, groups: [{id: CREW, name: 'Crew'}], locations: [], origins: [], canChange: true, canMakeOwner: true, canEdit: false, canChangeOwner: false};
+const GHOST = {id: ID, name: 'Ghost', owner: null, groups: [{id: CREW, name: 'Crew'}], locations: [], origins: [], canChange: true, canMakeOwner: true, canEdit: false, canChangeOwner: false, added: {by: 'Zork', at: '2026-03-04T05:06:07Z'}};
 
 const SOFTWARE_URL = `/api/labels/${ID}/software`;
 const NO_SOFTWARE = new Map([[SOFTWARE_URL, json([])]]);
@@ -138,5 +138,19 @@ describe(LabelView, () => {
         expect(screen.queryByRole('heading', {level: 1})).not.toBeInTheDocument();
 
         unsubscribe();
+    });
+
+    it('tells who added the label and when', async () => {
+        stubFetchAround(NO_SOFTWARE, json(GHOST));
+        openLabel();
+
+        await expect(screen.findByText('Added by Zork on 4 March 2026')).resolves.toBeInTheDocument();
+    });
+
+    it('tells only when the label was added once the account of whoever added it is gone', async () => {
+        stubFetchAround(NO_SOFTWARE, json({...GHOST, added: {by: null, at: '2026-03-04T05:06:07Z'}}));
+        openLabel();
+
+        await expect(screen.findByText('Added on 4 March 2026')).resolves.toBeInTheDocument();
     });
 });

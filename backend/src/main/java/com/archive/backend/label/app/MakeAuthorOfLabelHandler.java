@@ -2,7 +2,6 @@ package com.archive.backend.label.app;
 
 import com.archive.backend.author.domain.Author;
 import com.archive.backend.author.domain.AuthorId;
-import com.archive.backend.author.domain.AuthorReferences;
 import com.archive.backend.author.domain.AuthorRepository;
 import com.archive.backend.group.domain.GroupRepository;
 import com.archive.backend.label.domain.Label;
@@ -20,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class MakeAuthorOfLabelHandler {
 
     private final AuthorRepository authors;
-    private final AuthorReferences references;
     private final GroupRepository groups;
     private final LabelRepository labels;
     private final ApplicationEventPublisher events;
@@ -32,8 +30,9 @@ public class MakeAuthorOfLabelHandler {
         AuthorId id = new AuthorId(UUID.randomUUID());
         Author author = Author.replacing(id, label, addedBy);
         authors.save(author);
-        references.replaceLabel(label.getId(), id);
+        // The answers move the label's credits, memberships and origin to the person before the label goes.
         author.pullEvents().forEach(events::publishEvent);
+        labels.delete(label);
         return id;
     }
 }

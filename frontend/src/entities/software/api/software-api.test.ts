@@ -46,6 +46,7 @@ describe(fetchSoftware, () => {
                 {id: DEVELOPER, type: GROUP, title: 'Nebula Studio', ownerId: DEVELOPER, roles: ['developer']},
             ],
             sources: [{archive: 'vektor-06c.ru', url: 'https://vektor-06c.ru/programmnoe-obespechenie/arkadnye-igry/joe-blade-/'}],
+            added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
             canChange: true,
         }));
 
@@ -57,6 +58,7 @@ describe(fetchSoftware, () => {
                 {id: DEVELOPER, type: GROUP, title: 'Nebula Studio', ownerId: DEVELOPER, roles: ['developer'], startDate: '', endDate: ''},
             ],
             sources: [{archive: 'vektor-06c.ru', url: 'https://vektor-06c.ru/programmnoe-obespechenie/arkadnye-igry/joe-blade-/'}],
+            added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
             canChange: true,
         });
         expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/software/${ID}`);
@@ -106,7 +108,7 @@ describe(fetchSoftwareReleases, () => {
 
     it('reads the releases of one software with their screenshots', async () => {
         const release = {
-            id: RELEASE, title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: '1990-03-01', description: null, hardware: [AY], canChange: true,
+            id: RELEASE, title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: '1990-03-01', description: null, hardware: [AY], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true,
             screenshots: [{id: SHOT, url: `/api/screenshots/${SHOT}`}],
             archive: ARCHIVE,
         };
@@ -117,7 +119,7 @@ describe(fetchSoftwareReleases, () => {
     });
 
     it('reads a release without screenshots as having none', async () => {
-        stubFetch(json([{id: RELEASE, title: 'Elite', version: null, type: 'original', releaseDate: null, description: null, hardware: [], canChange: false}]));
+        stubFetch(json([{id: RELEASE, title: 'Elite', version: null, type: 'original', releaseDate: null, description: null, hardware: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: false}]));
 
         await expect(fetchSoftwareReleases(ID, new AbortController().signal)).resolves.toMatchObject([{screenshots: []}]);
     });

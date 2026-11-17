@@ -53,6 +53,18 @@ describe('AuthorsPage', () => {
         await expect(screen.findByRole('link', {name: 'Add author'})).resolves.toHaveAttribute('href', '/authors/new');
     });
 
+    it('leads to adding a label', async () => {
+        stubFetchRoutes(new Map([
+            ['/api/auth/me', json(MEMBER)],
+            ['/api/authors?page=0&size=100', json(pageResponse([], {size: 100}))],
+            ['/api/countries', json([])],
+        ]));
+
+        renderRoute('/authors');
+
+        await expect(screen.findByRole('link', {name: 'Add label'})).resolves.toHaveAttribute('href', '/labels/new');
+    });
+
     it('offers a public visitor no adding', async () => {
         stubFetchRoutes(new Map([
             ['/api/auth/me', noContent()],
@@ -67,5 +79,7 @@ describe('AuthorsPage', () => {
         await vi.waitFor(() => {
             expect(screen.queryByRole('link', {name: 'Add author'})).not.toBeInTheDocument();
         });
+
+        expect(screen.queryByRole('link', {name: 'Add label'})).not.toBeInTheDocument();
     });
 });

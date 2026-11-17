@@ -25,6 +25,7 @@ const GHOST = {
         {origin: 'vektor-06c.ru', externalId: 'Ghost', url: null},
         {origin: 'zx.example', externalId: '42', url: 'https://zx.example/42'},
     ],
+    added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
     canChange: false,
     canMakeOwner: true,
     canEdit: true,

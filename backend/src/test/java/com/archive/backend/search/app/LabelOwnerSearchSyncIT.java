@@ -327,7 +327,7 @@ class LabelOwnerSearchSyncIT {
     }
 
     private LabelId ghostZed() {
-        return createLabel.handle(new CreateLabelCommand(ADMIN, new LabelName("Ghost Zed")));
+        return createLabel.handle(new CreateLabelCommand(ADMIN, new LabelName("Ghost Zed"), List.of()));
     }
 
     @Test

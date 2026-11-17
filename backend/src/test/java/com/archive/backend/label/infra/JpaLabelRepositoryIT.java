@@ -4,10 +4,12 @@ import static com.archive.backend.user.TestActors.MEMBER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.geo.domain.Locations;
 import com.archive.backend.label.domain.Label;
 import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.user.TestActors;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,7 +40,7 @@ class JpaLabelRepositoryIT {
 
     @Test
     void storesALabelOfNobodyAtOnceForPlainSqlInTheSameTransaction() {
-        repository.save(Label.create(new LabelId(ID), new LabelName("Графов А."), MEMBER));
+        repository.save(Label.create(new LabelId(ID), new LabelName("Графов А."), new Locations(List.of()), MEMBER));
 
         Map<String, Object> row = jdbc.queryForMap("SELECT name, person_id, group_id FROM label WHERE id = ?", ID);
         assertThat(row.get("name")).isEqualTo("Графов А.");

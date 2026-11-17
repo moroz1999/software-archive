@@ -1,13 +1,14 @@
 package com.archive.backend.label.read;
 
+import com.archive.backend.user.read.Addition;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 /**
  * The page of a label: its name, its owner once it is found out, the groups it was a member of under their main
- * names, its locations and where imports took it from (docs/domain/authors.md#label). {@code addedBy} is whoever
- * added the label, {@code null} once their account was deleted.
+ * names, its locations and where imports took it from (docs/domain/authors.md#label). {@code added} tells who added the
+ * label and when; {@code addedBy} is whoever added it, {@code null} once their account was deleted.
  */
 public record LabelDetails(
         UUID id,
@@ -16,6 +17,7 @@ public record LabelDetails(
         List<MemberOf> groups,
         List<Location> locations,
         List<Origin> origins,
+        Addition added,
         @Nullable UUID addedBy,
         Rights rights) {
 
@@ -55,6 +57,6 @@ public record LabelDetails(
     }
 
     public LabelDetails withRights(Rights rights) {
-        return new LabelDetails(id, name, owner, groups, locations, origins, addedBy, rights);
+        return new LabelDetails(id, name, owner, groups, locations, origins, added, addedBy, rights);
     }
 }

@@ -69,7 +69,7 @@ describe(toSoftwareFormValues, () => {
 
     it('holds the values of existing software, unknown ones empty', () => {
         expect(toSoftwareFormValues({
-            canChange: true,
+            added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true,
             id: toSoftwareId('00000000-0000-0000-0001-000000000001'),
             title: toSoftwareTitle('Elite'),
             description: null,
@@ -82,7 +82,7 @@ describe(toSoftwareFormValues, () => {
 
     it('holds the codes of the hardware of the software', () => {
         expect(toSoftwareFormValues({
-            canChange: true,
+            added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true,
             id: toSoftwareId('00000000-0000-0000-0001-000000000001'),
             title: toSoftwareTitle('Elite'),
             description: null,
@@ -95,7 +95,7 @@ describe(toSoftwareFormValues, () => {
 
     it('holds the ids of the categories of the software', () => {
         expect(toSoftwareFormValues({
-            canChange: true,
+            added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true,
             id: toSoftwareId('00000000-0000-0000-0001-000000000001'),
             title: toSoftwareTitle('Elite'),
             description: null,

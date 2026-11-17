@@ -1,5 +1,6 @@
 package com.archive.backend.software.infra;
 
+import static com.archive.backend.user.TestActors.ADDED;
 import static com.archive.backend.user.TestActors.MEMBER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -243,14 +244,18 @@ class JdbcSoftwareReadRepositoryIT {
     @Test
     void readsTheDetailsWithThePlatformAndTheHardwareInTheOrderOfTheGroups() {
         assertThat(reads.findById(ELITE))
-                .contains(new SoftwareDetails(
+                .get()
+                .usingRecursiveComparison()
+                .ignoringFields("added")
+                .isEqualTo(new SoftwareDetails(
                         ELITE,
                         "Elite",
                         "Space trading",
                         "1985-09-20",
                         new SoftwarePlatform("vector", "Vector"),
                         List.of(VECTOR06C, TAPE, BEEPER, JOYSTICK),
-                        List.of()));
+                        List.of(),
+                        ADDED));
     }
 
     @Test
@@ -291,12 +296,14 @@ class JdbcSoftwareReadRepositoryIT {
     @Test
     void readsTheReleasesOldestFirstWithOnlyTheirOwnHardware() {
         assertThat(reads.findReleases(ELITE))
+                .usingRecursiveFieldByFieldElementComparatorIgnoringFields("added")
                 .containsExactly(
-                        new SoftwareRelease(FIRST, "Elite Beta", "0.9", "demoversion", "1985-01-01", null, List.of()),
-                        new SoftwareRelease(DISK, "Elite Disk", null, "rerelease", "1990", null, List.of()),
                         new SoftwareRelease(
-                                AY_MOD, "Elite AY", "1.1", "mod", "1990-03-01", "With AY music", List.of(AY)),
-                        new SoftwareRelease(ORIGINAL, "Elite", null, "original", null, null, List.of()));
+                                FIRST, "Elite Beta", "0.9", "demoversion", "1985-01-01", null, List.of(), ADDED),
+                        new SoftwareRelease(DISK, "Elite Disk", null, "rerelease", "1990", null, List.of(), ADDED),
+                        new SoftwareRelease(
+                                AY_MOD, "Elite AY", "1.1", "mod", "1990-03-01", "With AY music", List.of(AY), ADDED),
+                        new SoftwareRelease(ORIGINAL, "Elite", null, "original", null, null, List.of(), ADDED));
     }
 
     @Test

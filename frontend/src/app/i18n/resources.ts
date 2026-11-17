@@ -8,9 +8,10 @@ export const resources = {
         actions: {
             addSoftware: 'Add software', editSoftware: 'Edit software', save: 'Save', edit: 'Edit', delete: 'Delete',
             deleteForGood: 'Delete for good', cancel: 'Cancel', close: 'Close', retry: 'Retry', addRelease: 'Add release',
-            addAuthor: 'Add author', editAuthor: 'Edit author', remove: 'Remove', addGroup: 'Add group', editGroup: 'Edit group', editLabel: 'Edit label',
+            addAuthor: 'Add author', editAuthor: 'Edit author', remove: 'Remove', addGroup: 'Add group', editGroup: 'Edit group', addLabel: 'Add label', editLabel: 'Edit label',
             addCategory: 'Add category', editCategory: 'Edit category', editUser: 'Edit user',
         },
+        addition: {byOn: 'Added by {{by}} on {{day}}', on: 'Added on {{day}}'},
         pages: {recentlyAdded: 'Recently added', software: 'Software', authors: 'Authors', groups: 'Groups', categories: 'Categories', search: 'Search', users: 'Users', imports: 'Imports'},
         imports: {
             vektor: 'vektor-06c.ru', section: 'Section', wholeSite: 'Whole site', start: 'Start',
@@ -207,9 +208,10 @@ export const resources = {
         actions: {
             addSoftware: 'Добавить программу', editSoftware: 'Редактировать программу', save: 'Сохранить', edit: 'Редактировать',
             delete: 'Удалить', deleteForGood: 'Удалить навсегда', cancel: 'Отмена', close: 'Закрыть', retry: 'Повторить',
-            addRelease: 'Добавить релиз', addAuthor: 'Добавить автора', editAuthor: 'Редактировать автора', remove: 'Убрать', addGroup: 'Добавить группу', editGroup: 'Редактировать группу', editLabel: 'Редактировать псевдоним',
+            addRelease: 'Добавить релиз', addAuthor: 'Добавить автора', editAuthor: 'Редактировать автора', remove: 'Убрать', addGroup: 'Добавить группу', editGroup: 'Редактировать группу', addLabel: 'Добавить псевдоним', editLabel: 'Редактировать псевдоним',
             addCategory: 'Добавить категорию', editCategory: 'Редактировать категорию', editUser: 'Редактировать пользователя',
         },
+        addition: {byOn: 'Добавил(а) {{by}} {{day}}', on: 'Добавлено {{day}}'},
         pages: {recentlyAdded: 'Недавно добавленное', software: 'Программы', authors: 'Авторы', groups: 'Группы', categories: 'Категории', search: 'Поиск', users: 'Пользователи', imports: 'Импорт'},
         imports: {
             vektor: 'vektor-06c.ru', section: 'Раздел', wholeSite: 'Весь сайт', start: 'Запустить',

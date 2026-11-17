@@ -1,4 +1,4 @@
-import {NotFoundError} from '@/shared/api';
+import {type Addition, NotFoundError} from '@/shared/api';
 import type {Brand} from '@/shared/lib/brand';
 import {isUuid} from '@/shared/lib/uuid';
 import type {Screenshot} from './screenshot';
@@ -37,6 +37,8 @@ export interface SoftwareRelease {
     readonly hardware: readonly Hardware[];
     readonly screenshots: readonly Screenshot[];
     readonly archive?: ReleaseArchive | null;
+    /** Who added it and when. */
+    readonly added: Addition;
     /** Whether whoever reads it may change it, as the archive tells. */
     readonly canChange: boolean;
 }

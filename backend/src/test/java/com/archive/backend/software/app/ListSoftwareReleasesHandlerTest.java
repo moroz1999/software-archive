@@ -1,5 +1,6 @@
 package com.archive.backend.software.app;
 
+import static com.archive.backend.user.TestActors.ADDED;
 import static com.archive.backend.user.TestActors.ADMIN;
 import static com.archive.backend.user.TestActors.MEMBER;
 import static com.archive.backend.user.TestActors.MEMBER_ID;
@@ -32,7 +33,14 @@ class ListSoftwareReleasesHandlerTest {
     @Test
     void returnsTheReleasesWithTheHardwareTheyShowOverTheSoftware() {
         reads.add(new SoftwareDetails(
-                ID, "Elite", null, null, new SoftwarePlatform("vector", "Vector"), List.of(VECTOR, BEEPER), List.of()));
+                ID,
+                "Elite",
+                null,
+                null,
+                new SoftwarePlatform("vector", "Vector"),
+                List.of(VECTOR, BEEPER),
+                List.of(),
+                ADDED));
         reads.addReleases(ID, release("Elite", List.of()), release("Elite AY", List.of(AY)));
 
         assertThat(handler.handle(new ListSoftwareReleasesQuery(Actor.anonymous(), new SoftwareId(ID))))
@@ -48,7 +56,7 @@ class ListSoftwareReleasesHandlerTest {
     }
 
     private static SoftwareRelease release(String title, List<SoftwareHardware> own) {
-        return new SoftwareRelease(UUID.randomUUID(), title, null, "original", null, null, own);
+        return new SoftwareRelease(UUID.randomUUID(), title, null, "original", null, null, own, ADDED);
     }
 
     @Test
@@ -63,12 +71,23 @@ class ListSoftwareReleasesHandlerTest {
                 List.of(),
                 List.of(),
                 List.of(),
+                ADDED,
                 null,
                 false));
         reads.addReleases(
                 ID,
                 new SoftwareRelease(
-                        UUID.randomUUID(), "Elite", null, "original", null, null, List.of(), List.of(), null, false),
+                        UUID.randomUUID(),
+                        "Elite",
+                        null,
+                        "original",
+                        null,
+                        null,
+                        List.of(),
+                        List.of(),
+                        ADDED,
+                        null,
+                        false),
                 new SoftwareRelease(
                         UUID.randomUUID(),
                         "Elite AY",
@@ -78,6 +97,7 @@ class ListSoftwareReleasesHandlerTest {
                         null,
                         List.of(),
                         List.of(),
+                        ADDED,
                         MEMBER_ID.value(),
                         false));
 
@@ -104,12 +124,23 @@ class ListSoftwareReleasesHandlerTest {
                 List.of(),
                 List.of(),
                 List.of(),
+                ADDED,
                 MEMBER_ID.value(),
                 false));
         reads.addReleases(
                 ID,
                 new SoftwareRelease(
-                        UUID.randomUUID(), "Elite", null, "original", null, null, List.of(), List.of(), null, false));
+                        UUID.randomUUID(),
+                        "Elite",
+                        null,
+                        "original",
+                        null,
+                        null,
+                        List.of(),
+                        List.of(),
+                        ADDED,
+                        null,
+                        false));
 
         assertThat(handler.handle(new ListSoftwareReleasesQuery(MEMBER, new SoftwareId(ID))))
                 .extracting(SoftwareRelease::canChange)

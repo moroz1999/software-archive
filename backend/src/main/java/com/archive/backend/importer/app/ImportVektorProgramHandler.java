@@ -125,7 +125,7 @@ public class ImportVektorProgramHandler {
                 .map(entry -> entry.getEntry().value())
                 .orElseGet(() -> {
                     UUID id = createLabel
-                            .handle(new CreateLabelCommand(Importer.ACTOR, name))
+                            .handle(new CreateLabelCommand(Importer.ACTOR, name, List.of()))
                             .value();
                     entries.save(new ImportedEntry(origin, new ImportedEntryId(id)));
                     return id;

@@ -1,5 +1,6 @@
 package com.archive.backend.software.app;
 
+import static com.archive.backend.user.TestActors.ADDED;
 import static com.archive.backend.user.TestActors.ADMIN;
 import static com.archive.backend.user.TestActors.MEMBER;
 import static com.archive.backend.user.TestActors.MEMBER_ID;
@@ -33,7 +34,8 @@ class GetSoftwareHandlerTest {
                 "1985-09-20",
                 new SoftwarePlatform("vector", "Vector"),
                 List.of(new SoftwareHardware("vector06c", "Vector-06C", "computers")),
-                List.of());
+                List.of(),
+                ADDED);
         reads.add(details);
 
         assertThat(handler.handle(new GetSoftwareQuery(Actor.anonymous(), new SoftwareId(ID))))
@@ -59,6 +61,7 @@ class GetSoftwareHandlerTest {
                 List.of(),
                 List.of(),
                 List.of(),
+                ADDED,
                 MEMBER_ID.value(),
                 false));
 

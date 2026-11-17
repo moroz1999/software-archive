@@ -1,4 +1,4 @@
-import {NotFoundError} from '@/shared/api';
+import {type Addition, NotFoundError} from '@/shared/api';
 import {type Brand} from '@/shared/lib/brand';
 import {isUuid} from '@/shared/lib/uuid';
 
@@ -39,6 +39,8 @@ export interface AuthorDetails {
     /** The primary location first. */
     readonly locations: readonly AuthorLocation[];
     readonly groups: readonly AuthorGroup[];
+    /** Who added it and when. */
+    readonly added: Addition;
     /** Whether whoever reads it may change them, as the archive tells. */
     readonly canChange: boolean;
 }

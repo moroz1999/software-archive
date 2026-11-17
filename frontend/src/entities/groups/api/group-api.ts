@@ -1,16 +1,4 @@
-import {
-    deleteResource,
-    getJson,
-    mapResponse,
-    postJson,
-    putJson,
-    readArray,
-    readBoolean,
-    readNullableString,
-    readObject,
-    readString,
-    readStringArray,
-} from '@/shared/api';
+import {deleteResource, getJson, mapResponse, postJson, putJson, readAddition, readArray, readBoolean, readNullableString, readObject, readString, readStringArray} from '@/shared/api';
 import {type GroupDetails, type GroupId, type GroupLabel, type GroupLocation, type GroupMember, type RelatedGroup, toGroupId} from '../model/group';
 import type {GroupDraft} from '../model/group-form';
 import type {EntityAutocompleteOption} from '@/shared/ui/multi-entity-autocomplete';
@@ -83,6 +71,7 @@ export async function fetchGroup(id: GroupId, signal: AbortSignal): Promise<Grou
             members: readArray(dto['members'], 'members').map(parseMember),
             memberGroups: readArray(dto['memberGroups'], 'memberGroups').map(parseRelated),
             groups: readArray(dto['groups'], 'groups').map(parseRelated),
+            added: readAddition(dto['added']),
             canChange: readBoolean(dto, 'canChange'),
         };
     });

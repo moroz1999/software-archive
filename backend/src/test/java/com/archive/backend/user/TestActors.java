@@ -11,6 +11,7 @@ import com.archive.backend.user.domain.UserGroup;
 import com.archive.backend.user.domain.UserId;
 import com.archive.backend.user.domain.UserName;
 import com.archive.backend.user.domain.session.AccessTokens;
+import com.archive.backend.user.read.Addition;
 import java.time.Instant;
 import java.util.Locale;
 import java.util.Set;
@@ -28,6 +29,9 @@ public final class TestActors {
     public static final Actor ADMIN = new Actor(ADMIN_ID, Set.of(UserGroup.ADMIN, UserGroup.MEMBER));
     public static final Actor MEMBER = new Actor(MEMBER_ID, Set.of(UserGroup.MEMBER));
     public static final Actor OTHER = new Actor(OTHER_ID, Set.of(UserGroup.MEMBER));
+
+    /** When an entry of a read model was added, and by whom, where the test does not look at it. */
+    public static final Addition ADDED = new Addition("TestAdmin", Instant.parse("2026-01-01T00:00:00Z"));
 
     /** An entry added by the other member: changed only by them and administrators. */
     public static final AddedBy BY_OTHER = new AddedBy(OTHER_ID);

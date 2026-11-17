@@ -10,6 +10,7 @@ The page of one release ([domain/software.md](../domain/software.md#releases)) a
 - Type is always shown. Hardware is the effective hardware returned for the release, grouped in the archive's fixed hardware-group order.
 - When the release has an archive, its original file name and size are shown with a download action.
 - The release's screenshots appear in their gallery below the facts and are left out when there are none ([screenshots.md](screenshots.md#pages)).
+- Last: who added the release and on which day ("Added by Zork on 4 March 2026"), only the day once their account is gone ([domain/users.md](../domain/users.md#who-added-an-entry)).
 
 ## Loading and errors
 

@@ -1,5 +1,6 @@
 package com.archive.backend.software.web;
 
+import static com.archive.backend.user.TestActors.ADDED;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -149,6 +150,7 @@ class SoftwareControllerTest {
                         null,
                         List.of(),
                         List.of(new SoftwareScreenshot(shot)),
+                        ADDED,
                         null,
                         false)));
 
@@ -168,7 +170,8 @@ class SoftwareControllerTest {
                         "1985-09-20",
                         new SoftwarePlatform("vector", "Vector"),
                         List.of(new SoftwareHardware("vector06c", "Vector-06C", "computers")),
-                        List.of()));
+                        List.of(),
+                        ADDED));
 
         mvc.perform(get("/api/software/{id}", ID))
                 .andExpect(status().isOk())
@@ -195,6 +198,7 @@ class SoftwareControllerTest {
                         List.of(),
                         List.of(),
                         List.of(new SoftwareSource("vektor-06c.ru", page)),
+                        ADDED,
                         null,
                         false));
 
@@ -208,7 +212,14 @@ class SoftwareControllerTest {
     void tellsWhetherTheActorMayChangeTheSoftware() throws Exception {
         when(getHandler.handle(new GetSoftwareQuery(Actor.anonymous(), new SoftwareId(ID))))
                 .thenReturn(new SoftwareDetails(
-                                ID, "Elite", null, null, new SoftwarePlatform("vector", "Vector"), List.of(), List.of())
+                                ID,
+                                "Elite",
+                                null,
+                                null,
+                                new SoftwarePlatform("vector", "Vector"),
+                                List.of(),
+                                List.of(),
+                                ADDED)
                         .withCanChange(true));
 
         mvc.perform(get("/api/software/{id}", ID))
@@ -227,7 +238,8 @@ class SoftwareControllerTest {
                         null,
                         new SoftwarePlatform("vector", "Vector"),
                         List.of(new SoftwareHardware("vector06c", "Vector-06C", "computers")),
-                        List.of()));
+                        List.of(),
+                        ADDED));
 
         mvc.perform(get("/api/software/{id}", ID))
                 .andExpect(status().isOk())
@@ -248,7 +260,8 @@ class SoftwareControllerTest {
                         "mod",
                         "1990-03-01",
                         "With AY music",
-                        List.of(new SoftwareHardware("ay8910", "AY-3-8910", "sound")))));
+                        List.of(new SoftwareHardware("ay8910", "AY-3-8910", "sound")),
+                        ADDED)));
 
         mvc.perform(get("/api/software/{id}/releases", ID))
                 .andExpect(status().isOk())
@@ -269,7 +282,8 @@ class SoftwareControllerTest {
                         "mod",
                         null,
                         "With AY music",
-                        List.of(new SoftwareHardware("ay8910", "AY-3-8910", "sound")))));
+                        List.of(new SoftwareHardware("ay8910", "AY-3-8910", "sound")),
+                        ADDED)));
 
         mvc.perform(get("/api/software/{id}/releases", ID))
                 .andExpect(status().isOk())
@@ -555,7 +569,8 @@ class SoftwareControllerTest {
                                 "Trading",
                                 List.of(
                                         new SoftwareCategoryStep(GAMES, "Games"),
-                                        new SoftwareCategoryStep(CATEGORY, "Trading"))))));
+                                        new SoftwareCategoryStep(CATEGORY, "Trading")))),
+                        ADDED));
 
         mvc.perform(get("/api/software/{id}", ID))
                 .andExpect(status().isOk())

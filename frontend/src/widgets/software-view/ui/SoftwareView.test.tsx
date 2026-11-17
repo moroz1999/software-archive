@@ -37,6 +37,7 @@ const ELITE = {
     ],
     credits: [],
     sources: [],
+    added: {by: 'Zork', at: '2026-03-04T05:06:07Z'},
     canChange: true,
 };
 const AY_MOD = {
@@ -47,6 +48,7 @@ const AY_MOD = {
     releaseDate: null,
     description: null,
     hardware: [VECTOR06C, {code: 'ay8910', name: 'AY-3-8910', group: 'sound'}],
+    added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
     canChange: true,
 };
 
@@ -364,5 +366,19 @@ describe(SoftwareView, () => {
         await vi.waitFor(() => {
             expect(within(releases).queryByRole('link', {name: 'Add release'})).not.toBeInTheDocument();
         });
+    });
+
+    it('tells who added the software and when', async () => {
+        stubFetch(json(ELITE));
+        renderView(ID);
+
+        await expect(screen.findByText('Added by Zork on 4 March 2026')).resolves.toBeInTheDocument();
+    });
+
+    it('tells only when the software was added once the account of whoever added it is gone', async () => {
+        stubFetch(json({...ELITE, added: {by: null, at: '2026-03-04T05:06:07Z'}}));
+        renderView(ID);
+
+        await expect(screen.findByText('Added on 4 March 2026')).resolves.toBeInTheDocument();
     });
 });

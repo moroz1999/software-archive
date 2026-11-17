@@ -10,6 +10,7 @@ import com.archive.backend.group.read.RelatedGroup;
 import com.archive.backend.label.read.LetterFilterSql;
 import com.archive.backend.label.read.MainNameSql;
 import com.archive.backend.label.read.PlatformFilterSql;
+import com.archive.backend.user.read.AdditionSql;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -120,8 +121,8 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
     @Override
     public Optional<GroupDetails> findById(UUID id) {
         return jdbc.sql("WITH " + MainNameSql.GROUPS
-                        + "SELECT main_name, notes, (SELECT added_by FROM \"group\" WHERE id = :id) AS added_by"
-                        + " FROM named_group WHERE group_id = :id")
+                        + "SELECT n.main_name, g.notes, g.added_by, " + AdditionSql.columns("g")
+                        + " FROM named_group n JOIN \"group\" g ON g.id = n.group_id WHERE n.group_id = :id")
                 .param("id", id)
                 .query((rs, row) -> new GroupDetails(
                         id,
@@ -133,6 +134,7 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
                         members(id),
                         related(id, "member_group_id", "group_id"),
                         related(id, "group_id", "member_group_id"),
+                        AdditionSql.of(rs),
                         rs.getObject("added_by", UUID.class),
                         false))
                 .optional();

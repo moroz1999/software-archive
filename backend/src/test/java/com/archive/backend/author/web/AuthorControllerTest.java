@@ -1,5 +1,6 @@
 package com.archive.backend.author.web;
 
+import static com.archive.backend.user.TestActors.ADDED;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -197,7 +198,8 @@ class AuthorControllerTest {
                         List.of(
                                 new AuthorLocation(COUNTRY, "Finland", CITY, "Helsinki", true),
                                 new AuthorLocation(COUNTRY, "Norway", null, null, false)),
-                        List.of(new AuthorGroup(GROUP, "Crew", "Axe"))));
+                        List.of(new AuthorGroup(GROUP, "Crew", "Axe")),
+                        ADDED));
 
         mvc.perform(get("/api/authors/{id}", ID))
                 .andExpect(status().isOk())

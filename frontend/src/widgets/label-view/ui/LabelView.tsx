@@ -9,6 +9,7 @@ import {MakeAuthorButton, MakeGroupButton} from '@/features/label/make-owner';
 import {useSkeleton} from '@/shared/lib/loading';
 import {Button} from '@/shared/ui/button';
 import {Inline} from '@/shared/ui/inline';
+import {AdditionNote} from '@/shared/ui/addition-note';
 import {PageLayout} from '@/shared/ui/page-layout';
 import {Skeleton} from '@/shared/ui/skeleton';
 import {Stack} from '@/shared/ui/stack';
@@ -81,6 +82,7 @@ function LoadedView() {
             <Stack gap="xl">
                 <Details label={label}/>
                 <CreditedSoftwareList owner={{kind: 'labels', id: label.id}}/>
+                <AdditionNote addition={label.added}/>
             </Stack>
         </PageLayout>
     );

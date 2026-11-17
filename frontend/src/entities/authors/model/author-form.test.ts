@@ -66,7 +66,7 @@ describe(toAuthorFormValues, () => {
 
     it('holds the values of an existing author, unknown ones empty', () => {
         expect(toAuthorFormValues({
-            canChange: true,
+            added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true,
             id: toAuthorId('00000000-0000-0000-0003-000000000001'),
             name: 'Zed',
             realName: null,

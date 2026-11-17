@@ -1,5 +1,6 @@
 package com.archive.backend.label.web.dto;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -11,6 +12,7 @@ public record LabelDetailsDto(
         List<MemberOfDto> groups,
         List<LocationDto> locations,
         List<OriginDto> origins,
+        AddedDto added,
         boolean canChange,
         boolean canMakeOwner,
         boolean canEdit,
@@ -30,4 +32,7 @@ public record LabelDetailsDto(
 
     public record OriginDto(
             String origin, String externalId, @Nullable String url) {}
+
+    /** Who added the entry, {@code null} once their account was deleted, and when. */
+    public record AddedDto(@Nullable String by, Instant at) {}
 }

@@ -27,6 +27,7 @@ import {useInViewport} from '@/shared/lib/screen';
 import {Button} from '@/shared/ui/button';
 import {Chip} from '@/shared/ui/chip';
 import {Inline} from '@/shared/ui/inline';
+import {AdditionNote} from '@/shared/ui/addition-note';
 import {PageLayout} from '@/shared/ui/page-layout';
 import {Skeleton} from '@/shared/ui/skeleton';
 import {Stack} from '@/shared/ui/stack';
@@ -71,6 +72,7 @@ function LoadedView({id}: SoftwareViewProps) {
                 <Details software={query.data}/>
                 <Screenshots id={id} title={query.data.title}/>
                 <Releases id={id}/>
+                <AdditionNote addition={query.data.added}/>
             </Stack>
         </PageLayout>
     );

@@ -1,5 +1,6 @@
 package com.archive.backend.software.app;
 
+import static com.archive.backend.user.TestActors.ADDED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -35,7 +36,7 @@ class ScreenshotQueriesTest {
 
     private void elite() {
         reads.add(new SoftwareDetails(
-                ELITE, "Elite", null, null, new SoftwarePlatform("vector", "Vector"), List.of(), List.of()));
+                ELITE, "Elite", null, null, new SoftwarePlatform("vector", "Vector"), List.of(), List.of(), ADDED));
         reads.addRelease(ELITE, new ReleaseDetails(AY_MOD, null, null, "mod", null, null, List.of()));
         reads.addScreenshots(ELITE, TITLE, GAME);
         reads.addScreenshots(AY_MOD, AY);

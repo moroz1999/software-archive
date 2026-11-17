@@ -42,11 +42,11 @@ public final class Label {
     }
 
     /**
-     * A new label of nobody, added by the signed-in user who gives it.
+     * A new label of nobody with its locations, added by the signed-in user who gives it.
      */
-    public static Label create(LabelId id, LabelName name, Actor actor) {
+    public static Label create(LabelId id, LabelName name, Locations locations, Actor actor) {
         actor.requireAllowed(actor.mayAddEntries());
-        Label label = new Label(id, name, new Locations(List.of()), AddedBy.of(actor));
+        Label label = new Label(id, name, locations, AddedBy.of(actor));
         label.events.add(new LabelCreated(id));
         return label;
     }

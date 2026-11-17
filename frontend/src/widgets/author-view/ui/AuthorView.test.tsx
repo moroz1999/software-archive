@@ -20,6 +20,7 @@ const ZED = {
         {countryId: '00000000-0000-0000-0002-000000000001', country: 'Finland', cityId: '00000000-0000-0000-0002-000000000011', city: 'Helsinki', primary: true},
     ],
     groups: [{id: CREW, name: 'Crew', as: 'Axe'}, {id: BAND, name: 'Band', as: null}],
+    added: {by: 'Zork', at: '2026-03-04T05:06:07Z'},
     canChange: true,
 };
 
@@ -173,5 +174,19 @@ describe(AuthorView, () => {
         await screen.findByRole('heading', {level: 1, name: 'Zed'});
 
         expect(screen.queryByRole('link', {name: 'Edit'})).not.toBeInTheDocument();
+    });
+
+    it('tells who added the author and when', async () => {
+        stubFetchAround(NO_SOFTWARE, json(ZED));
+        renderView();
+
+        await expect(screen.findByText('Added by Zork on 4 March 2026')).resolves.toBeInTheDocument();
+    });
+
+    it('tells only when the author was added once the account of whoever added them is gone', async () => {
+        stubFetchAround(NO_SOFTWARE, json({...ZED, added: {by: null, at: '2026-03-04T05:06:07Z'}}));
+        renderView();
+
+        await expect(screen.findByText('Added on 4 March 2026')).resolves.toBeInTheDocument();
     });
 });

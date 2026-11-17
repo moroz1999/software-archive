@@ -1,5 +1,6 @@
 package com.archive.backend.author.app;
 
+import static com.archive.backend.user.TestActors.ADDED;
 import static com.archive.backend.user.TestActors.ADMIN;
 import static com.archive.backend.user.TestActors.MEMBER;
 import static com.archive.backend.user.TestActors.MEMBER_ID;
@@ -32,7 +33,8 @@ class GetAuthorHandlerTest {
                 null,
                 List.of(new AuthorLabel(UUID.randomUUID(), "Zed", true)),
                 List.of(),
-                List.of());
+                List.of(),
+                ADDED);
         reads.add(author);
 
         assertThat(handler.handle(new GetAuthorQuery(Actor.anonymous(), new AuthorId(ID))))
@@ -48,7 +50,8 @@ class GetAuthorHandlerTest {
 
     @Test
     void tellsWhetherTheActorMayChangeThePerson() {
-        reads.add(new AuthorDetails(ID, "Zed", null, null, List.of(), List.of(), List.of(), MEMBER_ID.value(), false));
+        reads.add(new AuthorDetails(
+                ID, "Zed", null, null, List.of(), List.of(), List.of(), ADDED, MEMBER_ID.value(), false));
 
         assertThat(handler.handle(new GetAuthorQuery(MEMBER, new AuthorId(ID))).canChange())
                 .isTrue();

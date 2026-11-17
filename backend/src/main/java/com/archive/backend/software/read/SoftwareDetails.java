@@ -1,5 +1,6 @@
 package com.archive.backend.software.read;
 
+import com.archive.backend.user.read.Addition;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -18,6 +19,7 @@ public record SoftwareDetails(
         List<SoftwareCategory> categories,
         List<SoftwareCredit> credits,
         List<SoftwareSource> sources,
+        Addition added,
         @Nullable UUID addedBy,
         boolean canChange) {
 
@@ -30,8 +32,21 @@ public record SoftwareDetails(
             SoftwarePlatform platform,
             List<SoftwareHardware> hardware,
             List<SoftwareCategory> categories,
-            List<SoftwareCredit> credits) {
-        this(id, title, description, releaseDate, platform, hardware, categories, credits, List.of(), null, false);
+            List<SoftwareCredit> credits,
+            Addition added) {
+        this(
+                id,
+                title,
+                description,
+                releaseDate,
+                platform,
+                hardware,
+                categories,
+                credits,
+                List.of(),
+                added,
+                null,
+                false);
     }
 
     public SoftwareDetails(
@@ -41,8 +56,9 @@ public record SoftwareDetails(
             @Nullable String releaseDate,
             SoftwarePlatform platform,
             List<SoftwareHardware> hardware,
-            List<SoftwareCategory> categories) {
-        this(id, title, description, releaseDate, platform, hardware, categories, List.of());
+            List<SoftwareCategory> categories,
+            Addition added) {
+        this(id, title, description, releaseDate, platform, hardware, categories, List.of(), added);
     }
 
     /** The same software, telling whether the actor may change it. */
@@ -57,6 +73,7 @@ public record SoftwareDetails(
                 categories,
                 credits,
                 sources,
+                added,
                 addedBy,
                 canChange);
     }

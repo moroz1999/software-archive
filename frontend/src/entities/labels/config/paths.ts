@@ -1,5 +1,8 @@
 import type {LabelId} from '../model/label-id';
 
+/** Adding a label of nobody. */
+export const LABEL_NEW_PATH = '/labels/new';
+
 /** The route pattern of a label's page; its parameter is `id`. */
 export const LABEL_ROUTE = '/labels/:id';
 

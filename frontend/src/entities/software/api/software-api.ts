@@ -1,4 +1,4 @@
-import {deleteResource, getJson, mapResponse, postJson, putJson, readArray, readBoolean, readNullableString, readObject, readString} from '@/shared/api';
+import {deleteResource, getJson, mapResponse, postJson, putJson, readAddition, readArray, readBoolean, readNullableString, readObject, readString} from '@/shared/api';
 import {type SoftwareRelease, toReleaseId, toReleaseType} from '../model/release';
 import {
     type Hardware,
@@ -85,6 +85,7 @@ export async function fetchSoftware(id: SoftwareId, signal: AbortSignal): Promis
                 const source = readObject(item, 'source');
                 return {archive: readString(source, 'archive'), url: readString(source, 'url')};
             }),
+            added: readAddition(dto['added']),
             canChange: readBoolean(dto, 'canChange'),
         };
     });
@@ -142,6 +143,7 @@ export async function fetchSoftwareReleases(id: SoftwareId, signal: AbortSignal)
             hardware: parseHardwareList(dto['hardware']),
             screenshots: parseScreenshots(dto['screenshots']),
             archive: parseReleaseArchive(dto['archive']),
+            added: readAddition(dto['added']),
             canChange: readBoolean(dto, 'canChange'),
         };
     }));

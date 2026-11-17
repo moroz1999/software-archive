@@ -1,5 +1,6 @@
 package com.archive.backend.group.web;
 
+import static com.archive.backend.user.TestActors.ADDED;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -180,7 +181,8 @@ class GroupControllerTest {
                                 new GroupMember("хакер федя", PERSON, "MASTERSOFT"),
                                 new GroupMember("Ghost", null, null)),
                         List.of(new RelatedGroup(INNER, "Band")),
-                        List.of(new RelatedGroup(OUTER, "Alpha"))));
+                        List.of(new RelatedGroup(OUTER, "Alpha")),
+                        ADDED));
 
         mvc.perform(get("/api/groups/{id}", ID))
                 .andExpect(status().isOk())

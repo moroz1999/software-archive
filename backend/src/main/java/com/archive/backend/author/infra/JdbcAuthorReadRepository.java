@@ -9,6 +9,7 @@ import com.archive.backend.author.read.AuthorReadRepository;
 import com.archive.backend.label.read.LetterFilterSql;
 import com.archive.backend.label.read.MainNameSql;
 import com.archive.backend.label.read.PlatformFilterSql;
+import com.archive.backend.user.read.AdditionSql;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -123,8 +124,9 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
     @Override
     public Optional<AuthorDetails> findById(UUID id) {
         return jdbc.sql("WITH " + MainNameSql.PEOPLE
-                        + "SELECT main_name, real_name, notes, (SELECT added_by FROM person WHERE id = :id) AS added_by"
-                        + " FROM named_person WHERE person_id = :id AND main_name IS NOT NULL")
+                        + "SELECT n.main_name, n.real_name, n.notes, p.added_by, " + AdditionSql.columns("p")
+                        + " FROM named_person n JOIN person p ON p.id = n.person_id"
+                        + " WHERE n.person_id = :id AND n.main_name IS NOT NULL")
                 .param("id", id)
                 .query((rs, row) -> new AuthorDetails(
                         id,
@@ -134,6 +136,7 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
                         labels(id),
                         locations(id),
                         groups(id),
+                        AdditionSql.of(rs),
                         rs.getObject("added_by", UUID.class),
                         false))
                 .optional();

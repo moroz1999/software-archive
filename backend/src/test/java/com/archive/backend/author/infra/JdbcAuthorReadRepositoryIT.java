@@ -1,5 +1,6 @@
 package com.archive.backend.author.infra;
 
+import static com.archive.backend.user.TestActors.ADDED;
 import static com.archive.backend.user.TestActors.MEMBER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -269,7 +270,10 @@ class JdbcAuthorReadRepositoryIT {
     @Test
     void readsTheDetailsOfAnAuthorWithTheGroupsUnderTheirMainNameAndTheLabelOfEveryMembership() {
         assertThat(reads.findById(ZED))
-                .contains(new AuthorDetails(
+                .get()
+                .usingRecursiveComparison()
+                .ignoringFields("added")
+                .isEqualTo(new AuthorDetails(
                         ZED,
                         "Zed",
                         "John Doe",
@@ -281,20 +285,25 @@ class JdbcAuthorReadRepositoryIT {
                         List.of(
                                 new AuthorGroup(BAND, "Band", null),
                                 new AuthorGroup(CREW, "Crew", "Axe"),
-                                new AuthorGroup(CREW, "Crew", null))));
+                                new AuthorGroup(CREW, "Crew", null)),
+                        ADDED));
     }
 
     @Test
     void readsAnAuthorKnownOnlyByTheRealName() {
         assertThat(reads.findById(CARL))
-                .contains(new AuthorDetails(
+                .get()
+                .usingRecursiveComparison()
+                .ignoringFields("added")
+                .isEqualTo(new AuthorDetails(
                         CARL,
                         "Carl Real",
                         "Carl Real",
                         null,
                         List.of(),
                         List.of(new AuthorLocation(FINLAND, "Finland", TAMPERE, "Tampere", true)),
-                        List.of()));
+                        List.of(),
+                        ADDED));
     }
 
     @Test

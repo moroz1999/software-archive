@@ -13,4 +13,7 @@ public interface ImportedEntryRepository {
 
     /** Forgets where the entry of this kind came from, so an import may take it again. */
     void forget(ExternalKind kind, ImportedEntryId entry);
+
+    /** Remembers what came as one entry as another, which replaced it. */
+    void transfer(ExternalKind kind, ImportedEntryId entry, ExternalKind toKind, ImportedEntryId to);
 }

@@ -34,6 +34,7 @@ const CREW = {
     ],
     memberGroups: [{id: BAND, name: 'Band'}],
     groups: [{id: OLDIES, name: 'Alpha'}],
+    added: {by: 'Zork', at: '2026-03-04T05:06:07Z'},
     canChange: true,
 };
 
@@ -205,5 +206,19 @@ describe(GroupView, () => {
         await screen.findByRole('heading', {level: 1, name: 'Crew Ltd'});
 
         expect(screen.queryByRole('link', {name: 'Edit'})).not.toBeInTheDocument();
+    });
+
+    it('tells who added the group and when', async () => {
+        stubFetchAround(NO_SOFTWARE, json(CREW));
+        renderView();
+
+        await expect(screen.findByText('Added by Zork on 4 March 2026')).resolves.toBeInTheDocument();
+    });
+
+    it('tells only when the group was added once the account of whoever added it is gone', async () => {
+        stubFetchAround(NO_SOFTWARE, json({...CREW, added: {by: null, at: '2026-03-04T05:06:07Z'}}));
+        renderView();
+
+        await expect(screen.findByText('Added on 4 March 2026')).resolves.toBeInTheDocument();
     });
 });

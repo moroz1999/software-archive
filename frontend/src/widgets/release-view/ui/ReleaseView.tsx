@@ -19,6 +19,7 @@ import {NotFoundError} from '@/shared/api';
 import {useSkeleton} from '@/shared/lib/loading';
 import {useInViewport} from '@/shared/lib/screen';
 import {Button} from '@/shared/ui/button';
+import {AdditionNote} from '@/shared/ui/addition-note';
 import {PageLayout} from '@/shared/ui/page-layout';
 import {Skeleton} from '@/shared/ui/skeleton';
 import {Stack} from '@/shared/ui/stack';
@@ -99,6 +100,7 @@ function LoadedView({softwareId, releaseId}: ReleaseViewProps) {
                     )}
                 </Stack>
                 <ReleaseScreenshots softwareId={softwareId} releaseId={releaseId} title={release.title}/>
+                <AdditionNote addition={release.added}/>
             </Stack>
         </PageLayout>
     );

@@ -21,6 +21,7 @@ const SOFTWARE = {
     categories: [],
     credits: [],
     sources: [],
+    added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
     canChange: true,
 };
 
@@ -37,6 +38,7 @@ const RELEASE = {
     ],
     screenshots: [{id: SCREENSHOT_ID, url: `/api/screenshots/${SCREENSHOT_ID}`}],
     archive: {fileName: 'elite-ay.zip', size: 1536, url: ARCHIVE_URL},
+    added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
     canChange: true,
 };
 

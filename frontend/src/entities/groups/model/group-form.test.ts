@@ -72,7 +72,7 @@ describe(toGroupFormValues, () => {
 
     it('holds the values of an existing group, unknown ones empty', () => {
         expect(toGroupFormValues({
-            canChange: true,
+            added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true,
             id: toGroupId('00000000-0000-0000-0005-000000000001'),
             name: 'Crew Ltd',
             notes: null,

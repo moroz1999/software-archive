@@ -1,5 +1,6 @@
 package com.archive.backend.group.app;
 
+import static com.archive.backend.user.TestActors.ADDED;
 import static com.archive.backend.user.TestActors.ADMIN;
 import static com.archive.backend.user.TestActors.MEMBER;
 import static com.archive.backend.user.TestActors.MEMBER_ID;
@@ -34,7 +35,8 @@ class GetGroupHandlerTest {
                 List.of(),
                 List.of(),
                 List.of(),
-                List.of());
+                List.of(),
+                ADDED);
         reads.add(group);
 
         assertThat(handler.handle(new GetGroupQuery(Actor.anonymous(), new GroupId(ID))))
@@ -60,6 +62,7 @@ class GetGroupHandlerTest {
                 List.of(),
                 List.of(),
                 List.of(),
+                ADDED,
                 MEMBER_ID.value(),
                 false));
 

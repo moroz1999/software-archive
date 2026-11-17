@@ -1,5 +1,6 @@
 package com.archive.backend.group.web.dto;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -15,6 +16,7 @@ public record GroupDetailsDto(
         List<MemberDto> members,
         List<RelatedGroupDto> memberGroups,
         List<RelatedGroupDto> groups,
+        AddedDto added,
         boolean canChange) {
 
     public record LabelDto(UUID id, String name) {}
@@ -38,4 +40,7 @@ public record GroupDetailsDto(
             @Nullable LocalDate endDate) {}
 
     public record RelatedGroupDto(UUID id, String name) {}
+
+    /** Who added the entry, {@code null} once their account was deleted, and when. */
+    public record AddedDto(@Nullable String by, Instant at) {}
 }
