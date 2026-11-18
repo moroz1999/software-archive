@@ -19,7 +19,7 @@
 
     /* Label font weight and line height. */
     --button-font-weight: var(--font-weight-regular);
-    --button-line-height: 1;
+    --button-line-height: var(--line-height-compact);
 
     /* Border width; the border is visible only in the outlined color. */
     --button-border-width: var(--border-width-thin);

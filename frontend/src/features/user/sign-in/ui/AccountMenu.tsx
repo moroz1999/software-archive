@@ -76,7 +76,7 @@ function SignInForm() {
             </FormField>
             <Checkbox label={t('account.remember')} checked={values.remember} onChange={changeRemember} disabled={busy}/>
             <FormActions align="between">
-                <Button href={REGISTER_PATH} color="transparent" size="sm">{t('account.register')}</Button>
+                <Button href={REGISTER_PATH} color="transparent">{t('account.register')}</Button>
                 <Button type="submit" loading={busy}>{t('account.signIn')}</Button>
             </FormActions>
         </Form>
