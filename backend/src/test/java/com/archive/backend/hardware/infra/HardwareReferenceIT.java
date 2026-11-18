@@ -26,6 +26,24 @@ class HardwareReferenceIT {
     }
 
     @Test
+    void namesEveryPlatformAndEveryItemInRussianAndInEnglish() {
+        assertThat(jdbc.queryForObject(
+                        "SELECT count(*) FROM platform p WHERE (SELECT count(*) FROM platform_name n"
+                                + " WHERE n.platform_code = p.code AND n.language IN ('ru', 'en')) <> 2",
+                        Integer.class))
+                .isZero();
+        assertThat(jdbc.queryForObject(
+                        "SELECT count(*) FROM hardware h WHERE (SELECT count(*) FROM hardware_name n"
+                                + " WHERE n.hardware_code = h.code AND n.language IN ('ru', 'en')) <> 2",
+                        Integer.class))
+                .isZero();
+        assertThat(jdbc.queryForObject(
+                        "SELECT name FROM hardware_name WHERE hardware_code = 'partner-mcpg' AND language = 'ru'",
+                        String.class))
+                .isEqualTo("Цветной модуль МЦПГ Партнёра");
+    }
+
+    @Test
     void letsOneItemBelongToSeveralPlatforms() {
         assertThat(jdbc.queryForList(
                         "SELECT platform_code FROM hardware_platform WHERE hardware_code = 'ay8910' ORDER BY 1",

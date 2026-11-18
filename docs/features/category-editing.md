@@ -11,13 +11,13 @@ Adding, editing and deleting categories of the tree ([domain/categories.md](../d
 
 ## Form
 
-- Title (required, at most 255 characters) and Parent, in one narrow column; Cancel and the submit button at its bottom right — the layout of the other forms.
+- Title in Russian (required), Title in English (optional), each at most 255 characters, and Parent, in one narrow column; Cancel and the submit button at its bottom right — the layout of the other forms.
 - Parent is a choice of every category in the order of the tree, each level indented, and "None, at the top"; the category being edited and its subcategories are not offered.
-- Format rules are checked before sending; the error appears under Title on submit and clears when it is edited. While saving, the fields and the buttons are locked.
+- Format rules are checked before sending; an error appears under its title on submit and clears when it is edited. While saving, the fields and the buttons are locked.
 
 ## Deleting
 
-"Delete" opens a confirmation naming the category and saying its subcategories go with it while their software stays in the archive; "Delete for good" deletes it, Cancel or Escape closes the dialog. A refusal shows inside the dialog.
+"Delete" opens a confirmation naming the category, by its title in the UI language or else the Russian one, and saying its subcategories go with it while their software stays in the archive; "Delete for good" deletes it, Cancel or Escape closes the dialog. A refusal shows inside the dialog.
 
 ## Loading and errors
 
@@ -30,8 +30,8 @@ Adding, editing and deleting categories of the tree ([domain/categories.md](../d
 
 | Call | Answer | Errors |
 |---|---|---|
-| `GET /api/categories/{id}` | `200`, `{id, title, parentId}`; `parentId` is `null` at the top | `404 category.not-found` |
-| `POST /api/categories` `{title, parentId}` | `201`, `Location: /api/categories/{id}`, `{id}` | `400 title.required` / `400 title.too-long`, `400` for malformed JSON or ids; `422 category.parent-unknown` (field `parentId`) |
+| `GET /api/categories/{id}` | `200`, `{id, titles, parentId}`: `titles` by language code (`{"ru": "Экшен", "en": "Action"}`), the Russian one always there; `parentId` is `null` at the top | `404 category.not-found` |
+| `POST /api/categories` `{titles, parentId}` | `201`, `Location: /api/categories/{id}`, `{id}` | `400 title.required` without a Russian title, `400 title.too-long`, `400 language.unknown` for a language the site does not speak, `400` for malformed JSON or ids; `422 category.parent-unknown` (field `parentId`) |
 | `PUT /api/categories/{id}` (same body) | `204` | `404 category.not-found`; the errors of `POST`; `422 category.parent-inside` (field `parentId`); `409 conflict.concurrent` when it lost to a change of the software it recategorizes |
 | `DELETE /api/categories/{id}` | `204` | `404 category.not-found` |
 

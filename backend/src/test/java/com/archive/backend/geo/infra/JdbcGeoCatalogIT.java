@@ -1,5 +1,7 @@
 package com.archive.backend.geo.infra;
 
+import static com.archive.backend.geo.GeoTestRows.city;
+import static com.archive.backend.geo.GeoTestRows.country;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.archive.backend.TestcontainersConfiguration;
@@ -30,9 +32,8 @@ class JdbcGeoCatalogIT {
 
     @BeforeEach
     void insert() {
-        jdbc.update("INSERT INTO country (id, name) VALUES (?, 'Finland')", FINLAND.value());
-        jdbc.update(
-                "INSERT INTO city (id, name, country_id) VALUES (?, 'Helsinki', ?)", HELSINKI.value(), FINLAND.value());
+        country(jdbc, FINLAND.value(), "Финляндия", "Finland");
+        city(jdbc, HELSINKI.value(), FINLAND.value(), "Хельсинки", "Helsinki");
     }
 
     @Test

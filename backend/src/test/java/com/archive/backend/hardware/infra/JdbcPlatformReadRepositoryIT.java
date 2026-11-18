@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /** The platforms are reference data: the schema itself holds them. */
 @JdbcTest
@@ -19,9 +20,12 @@ class JdbcPlatformReadRepositoryIT {
     @Autowired
     private JdbcPlatformReadRepository reads;
 
+    @Autowired
+    private JdbcTemplate jdbc;
+
     @Test
     void readsTheStartingPlatformsByName() {
-        assertThat(reads.findAll())
+        assertThat(reads.findAll("en"))
                 .containsExactly(
                         new PlatformItem("agat", "Agat"),
                         new PlatformItem("bashkiria", "Bashkiria"),
@@ -36,5 +40,32 @@ class JdbcPlatformReadRepositoryIT {
                         new PlatformItem("specialist", "Specialist"),
                         new PlatformItem("vector", "Vector"),
                         new PlatformItem("xt", "XT clones"));
+    }
+
+    @Test
+    void readsThePlatformsByNameInRussian() {
+        assertThat(reads.findAll("ru"))
+                .containsExactly(
+                        new PlatformItem("agat", "Агат"),
+                        new PlatformItem("bashkiria", "Башкирия"),
+                        new PlatformItem("bk", "БК"),
+                        new PlatformItem("vector", "Вектор"),
+                        new PlatformItem("xt", "Клоны XT"),
+                        new PlatformItem("korvet", "Корвет"),
+                        new PlatformItem("lviv", "Львов"),
+                        new PlatformItem("okean", "Океан"),
+                        new PlatformItem("orion", "Орион"),
+                        new PlatformItem("pk8000", "ПК8000"),
+                        new PlatformItem("rk", "РК-совместимые"),
+                        new PlatformItem("specialist", "Специалист"),
+                        new PlatformItem("msx", "Ямаха КУВТ"));
+    }
+
+    @Test
+    void namesAPlatformWithoutANameInTheLanguageAskedForInRussian() {
+        jdbc.update("INSERT INTO platform (code) VALUES ('zx')");
+        jdbc.update("INSERT INTO platform_name (platform_code, language, name) VALUES ('zx', 'ru', 'Спектрум')");
+
+        assertThat(reads.findAll("en")).last().isEqualTo(new PlatformItem("zx", "Спектрум"));
     }
 }

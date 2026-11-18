@@ -1,5 +1,6 @@
 package com.archive.backend.category.web;
 
+import static com.archive.backend.category.domain.CategoryTitleFixtures.titles;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -28,15 +29,16 @@ import com.archive.backend.category.domain.CategoryId;
 import com.archive.backend.category.domain.CategoryNotFoundException;
 import com.archive.backend.category.domain.CategoryParentInsideException;
 import com.archive.backend.category.domain.CategoryParentUnknownException;
-import com.archive.backend.category.domain.CategoryTitle;
 import com.archive.backend.category.read.CategoryDetails;
 import com.archive.backend.category.read.CategoryNode;
 import com.archive.backend.category.web.mapper.CategoryWebMapperImpl;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.shared.web.ApiExceptionHandler;
 import com.archive.backend.user.domain.Actor;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +76,7 @@ class CategoryControllerTest {
 
     @Test
     void returnsTheWholeTree() throws Exception {
-        when(listHandler.handle(new ListCategoriesQuery()))
+        when(listHandler.handle(new ListCategoriesQuery(Language.EN)))
                 .thenReturn(List.of(
                         new CategoryNode(
                                 GAMES,
@@ -94,21 +96,45 @@ class CategoryControllerTest {
     }
 
     @Test
-    void returnsOneCategory() throws Exception {
+    void returnsTheTreeInTheLanguageAskedFor() throws Exception {
+        when(listHandler.handle(new ListCategoriesQuery(Language.RU)))
+                .thenReturn(List.of(new CategoryNode(GAMES, "Игры", List.of())));
+
+        mvc.perform(get("/api/categories").header("Accept-Language", "ru"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title").value("Игры"));
+        mvc.perform(get("/api/categories").header("Accept-Language", "ru-RU,ru;q=0.9,en;q=0.8"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title").value("Игры"));
+    }
+
+    @Test
+    void returnsTheTreeInEnglishForALanguageTheArchiveDoesNotSpeak() throws Exception {
+        when(listHandler.handle(new ListCategoriesQuery(Language.EN)))
+                .thenReturn(List.of(new CategoryNode(GAMES, "Games", List.of())));
+
+        mvc.perform(get("/api/categories").header("Accept-Language", "de"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title").value("Games"));
+    }
+
+    @Test
+    void returnsOneCategoryWithItsTitlesInEveryLanguage() throws Exception {
         when(getHandler.handle(new GetCategoryQuery(new CategoryId(ID))))
-                .thenReturn(new CategoryDetails(ID, "Action", GAMES));
+                .thenReturn(new CategoryDetails(ID, Map.of("ru", "Экшен", "en", "Action"), GAMES));
 
         mvc.perform(get("/api/categories/{id}", ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(ID.toString()))
-                .andExpect(jsonPath("$.title").value("Action"))
+                .andExpect(jsonPath("$.titles.ru").value("Экшен"))
+                .andExpect(jsonPath("$.titles.en").value("Action"))
                 .andExpect(jsonPath("$.parentId").value(GAMES.toString()));
     }
 
     @Test
     void returnsACategoryAtTheTopWithoutAParent() throws Exception {
         when(getHandler.handle(new GetCategoryQuery(new CategoryId(GAMES))))
-                .thenReturn(new CategoryDetails(GAMES, "Games", null));
+                .thenReturn(new CategoryDetails(GAMES, Map.of("ru", "Игры"), null));
 
         mvc.perform(get("/api/categories/{id}", GAMES))
                 .andExpect(status().isOk())
@@ -131,13 +157,13 @@ class CategoryControllerTest {
 
     @Test
     void createsACategory() throws Exception {
-        when(createHandler.handle(new CreateCategoryCommand(
-                        Actor.anonymous(), new CategoryTitle("Action"), new CategoryId(GAMES))))
+        when(createHandler.handle(
+                        new CreateCategoryCommand(Actor.anonymous(), titles("Экшен", "Action"), new CategoryId(GAMES))))
                 .thenReturn(new CategoryId(ID));
 
         mvc.perform(post("/api/categories")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"title\":\"Action\",\"parentId\":\"" + GAMES + "\"}"))
+                        .content("{\"titles\":{\"ru\":\"Экшен\",\"en\":\"Action\"},\"parentId\":\"" + GAMES + "\"}"))
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", "/api/categories/" + ID))
                 .andExpect(jsonPath("$.id").value(ID.toString()));
@@ -145,12 +171,12 @@ class CategoryControllerTest {
 
     @Test
     void createsACategoryAtTheTop() throws Exception {
-        when(createHandler.handle(new CreateCategoryCommand(Actor.anonymous(), new CategoryTitle("Series"), null)))
+        when(createHandler.handle(new CreateCategoryCommand(Actor.anonymous(), titles("Сериалы"), null)))
                 .thenReturn(new CategoryId(ID));
 
         mvc.perform(post("/api/categories")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"title\":\"Series\",\"parentId\":null}"))
+                        .content("{\"titles\":{\"ru\":\"Сериалы\"},\"parentId\":null}"))
                 .andExpect(status().isCreated());
     }
 
@@ -165,10 +191,30 @@ class CategoryControllerTest {
     }
 
     @Test
+    void answers400ForACategoryWithoutARussianTitle() throws Exception {
+        mvc.perform(post("/api/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"titles\":{\"en\":\"Action\"}}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("title.required"));
+        verify(createHandler, never()).handle(any());
+    }
+
+    @Test
+    void answers400ForATitleInALanguageOfNoSite() throws Exception {
+        mvc.perform(post("/api/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"titles\":{\"ru\":\"Экшен\",\"de\":\"Aktion\"}}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("language.unknown"));
+        verify(createHandler, never()).handle(any());
+    }
+
+    @Test
     void answers400ForATooLongTitle() throws Exception {
         mvc.perform(post("/api/categories")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"title\":\"" + "a".repeat(256) + "\"}"))
+                        .content("{\"titles\":{\"ru\":\"" + "a".repeat(256) + "\"}}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("title.too-long"));
     }
@@ -177,7 +223,7 @@ class CategoryControllerTest {
     void answers400ForAMalformedParent() throws Exception {
         mvc.perform(post("/api/categories")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"title\":\"Action\",\"parentId\":\"games\"}"))
+                        .content("{\"titles\":{\"ru\":\"Action\"},\"parentId\":\"games\"}"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -187,7 +233,7 @@ class CategoryControllerTest {
 
         mvc.perform(post("/api/categories")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"title\":\"Action\",\"parentId\":\"" + GAMES + "\"}"))
+                        .content("{\"titles\":{\"ru\":\"Action\"},\"parentId\":\"" + GAMES + "\"}"))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.code").value("category.parent-unknown"))
                 .andExpect(jsonPath("$.errors[0].field").value("parentId"));
@@ -197,15 +243,12 @@ class CategoryControllerTest {
     void updatesACategory() throws Exception {
         mvc.perform(put("/api/categories/{id}", ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"title\":\"Action games\",\"parentId\":\"" + GAMES + "\"}"))
+                        .content("{\"titles\":{\"ru\":\"Action games\"},\"parentId\":\"" + GAMES + "\"}"))
                 .andExpect(status().isNoContent());
 
         verify(updateHandler)
                 .handle(new UpdateCategoryCommand(
-                        Actor.anonymous(),
-                        new CategoryId(ID),
-                        new CategoryTitle("Action games"),
-                        new CategoryId(GAMES)));
+                        Actor.anonymous(), new CategoryId(ID), titles("Action games"), new CategoryId(GAMES)));
     }
 
     @Test
@@ -214,7 +257,7 @@ class CategoryControllerTest {
 
         mvc.perform(put("/api/categories/{id}", ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"title\":\"Action\",\"parentId\":\"" + SHOOTERS + "\"}"))
+                        .content("{\"titles\":{\"ru\":\"Action\"},\"parentId\":\"" + SHOOTERS + "\"}"))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.code").value("category.parent-inside"))
                 .andExpect(jsonPath("$.errors[0].field").value("parentId"));
@@ -226,7 +269,7 @@ class CategoryControllerTest {
 
         mvc.perform(put("/api/categories/{id}", ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"title\":\"Action\"}"))
+                        .content("{\"titles\":{\"ru\":\"Action\"}}"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("category.not-found"));
     }

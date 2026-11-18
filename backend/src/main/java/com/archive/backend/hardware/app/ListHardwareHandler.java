@@ -18,6 +18,6 @@ public class ListHardwareHandler {
 
     @Transactional(readOnly = true)
     public List<HardwareItem> handle(ListHardwareQuery q) {
-        return reads.findByPlatform(q.platform().value());
+        return reads.findByPlatform(q.platform().value(), q.language().code());
     }
 }

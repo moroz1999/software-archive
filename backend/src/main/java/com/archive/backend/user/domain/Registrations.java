@@ -1,5 +1,6 @@
 package com.archive.backend.user.domain;
 
+import com.archive.backend.shared.domain.Language;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -21,7 +22,7 @@ public final class Registrations {
     /**
      * The new account, not stored yet; abandoned accounts in its way are deleted.
      */
-    public User register(UserName name, Email email, Password password, Instant now, InterfaceLanguage language) {
+    public User register(UserName name, Email email, Password password, Instant now, Language language) {
         names.claim(name, email, null, now);
         return User.register(
                 new UserId(UUID.randomUUID()),

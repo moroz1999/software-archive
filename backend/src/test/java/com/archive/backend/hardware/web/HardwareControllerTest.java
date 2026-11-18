@@ -15,6 +15,7 @@ import com.archive.backend.hardware.read.HardwareItem;
 import com.archive.backend.hardware.web.mapper.HardwareWebMapperImpl;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.shared.web.ApiExceptionHandler;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,7 @@ class HardwareControllerTest {
 
     @Test
     void listsTheHardwareOfAPlatform() throws Exception {
-        when(handler.handle(new ListHardwareQuery(new PlatformCode("vector"))))
+        when(handler.handle(new ListHardwareQuery(new PlatformCode("vector"), Language.EN)))
                 .thenReturn(List.of(new HardwareItem("ay8910", "AY-3-8910", "sound")));
 
         mvc.perform(get("/api/hardware").param("platform", "vector"))
@@ -44,6 +45,16 @@ class HardwareControllerTest {
                 .andExpect(jsonPath("$[0].code").value("ay8910"))
                 .andExpect(jsonPath("$[0].name").value("AY-3-8910"))
                 .andExpect(jsonPath("$[0].group").value("sound"));
+    }
+
+    @Test
+    void listsTheHardwareInTheLanguageAskedFor() throws Exception {
+        when(handler.handle(new ListHardwareQuery(new PlatformCode("vector"), Language.RU)))
+                .thenReturn(List.of(new HardwareItem("tape", "Магнитофон", "storage")));
+
+        mvc.perform(get("/api/hardware").param("platform", "vector").header("Accept-Language", "ru"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name").value("Магнитофон"));
     }
 
     @Test

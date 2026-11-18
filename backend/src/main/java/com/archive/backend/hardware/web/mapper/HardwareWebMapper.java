@@ -4,6 +4,7 @@ import com.archive.backend.hardware.app.ListHardwareQuery;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.hardware.read.HardwareItem;
 import com.archive.backend.hardware.web.dto.HardwareDto;
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.shared.domain.error.InvalidValueException;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
@@ -14,10 +15,10 @@ public interface HardwareWebMapper {
 
     List<HardwareDto> toDtos(List<HardwareItem> items);
 
-    default ListHardwareQuery toQuery(@Nullable String platform) {
+    default ListHardwareQuery toQuery(@Nullable String platform, Language language) {
         if (platform == null) {
             throw new InvalidValueException("platform.required", "A platform is required.");
         }
-        return new ListHardwareQuery(new PlatformCode(platform));
+        return new ListHardwareQuery(new PlatformCode(platform), language);
     }
 }

@@ -3,9 +3,9 @@ package com.archive.backend.user.infra;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.user.domain.ConfirmationToken;
 import com.archive.backend.user.domain.Email;
-import com.archive.backend.user.domain.InterfaceLanguage;
 import com.archive.backend.user.domain.PasswordHash;
 import com.archive.backend.user.domain.User;
 import com.archive.backend.user.domain.UserId;
@@ -55,7 +55,7 @@ class JpaSessionRepositoryIT {
                 new PasswordHash("hash"),
                 new ConfirmationToken("token"),
                 NOW,
-                InterfaceLanguage.EN));
+                Language.EN));
         entityManager.flush();
     }
 

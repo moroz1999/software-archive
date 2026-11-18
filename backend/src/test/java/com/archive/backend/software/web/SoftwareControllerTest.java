@@ -22,6 +22,7 @@ import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.hardware.domain.PlatformUnknownException;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.shared.web.ApiExceptionHandler;
 import com.archive.backend.software.app.CreateSoftwareCommand;
 import com.archive.backend.software.app.CreateSoftwareHandler;
@@ -140,7 +141,7 @@ class SoftwareControllerTest {
     @Test
     void sendsTheScreenshotsOfEachRelease() throws Exception {
         UUID shot = UUID.fromString("00000000-0000-0000-0055-000000000002");
-        when(releasesHandler.handle(new ListSoftwareReleasesQuery(Actor.anonymous(), new SoftwareId(ID))))
+        when(releasesHandler.handle(new ListSoftwareReleasesQuery(Actor.anonymous(), new SoftwareId(ID), Language.EN)))
                 .thenReturn(List.of(new SoftwareRelease(
                         RELEASE,
                         "Elite AY",
@@ -162,7 +163,7 @@ class SoftwareControllerTest {
 
     @Test
     void returnsOneSoftware() throws Exception {
-        when(getHandler.handle(new GetSoftwareQuery(Actor.anonymous(), new SoftwareId(ID))))
+        when(getHandler.handle(new GetSoftwareQuery(Actor.anonymous(), new SoftwareId(ID), Language.EN)))
                 .thenReturn(new SoftwareDetails(
                         ID,
                         "Elite",
@@ -187,7 +188,7 @@ class SoftwareControllerTest {
     @Test
     void returnsThePagesOfTheArchivesTheSoftwareWasImportedFrom() throws Exception {
         String page = "https://vektor-06c.ru/programmnoe-obespechenie/arkadnye-igry/elite/";
-        when(getHandler.handle(new GetSoftwareQuery(Actor.anonymous(), new SoftwareId(ID))))
+        when(getHandler.handle(new GetSoftwareQuery(Actor.anonymous(), new SoftwareId(ID), Language.EN)))
                 .thenReturn(new SoftwareDetails(
                         ID,
                         "Elite",
@@ -210,7 +211,7 @@ class SoftwareControllerTest {
 
     @Test
     void tellsWhetherTheActorMayChangeTheSoftware() throws Exception {
-        when(getHandler.handle(new GetSoftwareQuery(Actor.anonymous(), new SoftwareId(ID))))
+        when(getHandler.handle(new GetSoftwareQuery(Actor.anonymous(), new SoftwareId(ID), Language.EN)))
                 .thenReturn(new SoftwareDetails(
                                 ID,
                                 "Elite",
@@ -230,7 +231,7 @@ class SoftwareControllerTest {
 
     @Test
     void returnsThePlatformAndTheHardwareOfOneSoftware() throws Exception {
-        when(getHandler.handle(new GetSoftwareQuery(Actor.anonymous(), new SoftwareId(ID))))
+        when(getHandler.handle(new GetSoftwareQuery(Actor.anonymous(), new SoftwareId(ID), Language.EN)))
                 .thenReturn(new SoftwareDetails(
                         ID,
                         "Elite",
@@ -251,8 +252,40 @@ class SoftwareControllerTest {
     }
 
     @Test
+    void returnsSoftwareAndItsReleasesInTheLanguageAskedFor() throws Exception {
+        when(getHandler.handle(new GetSoftwareQuery(Actor.anonymous(), new SoftwareId(ID), Language.RU)))
+                .thenReturn(new SoftwareDetails(
+                        ID,
+                        "Elite",
+                        null,
+                        null,
+                        new SoftwarePlatform("vector", "Вектор"),
+                        List.of(new SoftwareHardware("tape", "Магнитофон", "storage")),
+                        List.of(),
+                        ADDED));
+        when(releasesHandler.handle(new ListSoftwareReleasesQuery(Actor.anonymous(), new SoftwareId(ID), Language.RU)))
+                .thenReturn(List.of(new SoftwareRelease(
+                        RELEASE,
+                        "Elite",
+                        null,
+                        "mod",
+                        null,
+                        null,
+                        List.of(new SoftwareHardware("floppy", "Дискета", "storage")),
+                        ADDED)));
+
+        mvc.perform(get("/api/software/{id}", ID).header("Accept-Language", "ru"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.platform.name").value("Вектор"))
+                .andExpect(jsonPath("$.hardware[0].name").value("Магнитофон"));
+        mvc.perform(get("/api/software/{id}/releases", ID).header("Accept-Language", "ru"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].hardware[0].name").value("Дискета"));
+    }
+
+    @Test
     void listsTheReleasesOfOneSoftware() throws Exception {
-        when(releasesHandler.handle(new ListSoftwareReleasesQuery(Actor.anonymous(), new SoftwareId(ID))))
+        when(releasesHandler.handle(new ListSoftwareReleasesQuery(Actor.anonymous(), new SoftwareId(ID), Language.EN)))
                 .thenReturn(List.of(new SoftwareRelease(
                         RELEASE,
                         "Elite AY",
@@ -274,7 +307,7 @@ class SoftwareControllerTest {
 
     @Test
     void sendsTheDescriptionAndTheHardwareOfARelease() throws Exception {
-        when(releasesHandler.handle(new ListSoftwareReleasesQuery(Actor.anonymous(), new SoftwareId(ID))))
+        when(releasesHandler.handle(new ListSoftwareReleasesQuery(Actor.anonymous(), new SoftwareId(ID), Language.EN)))
                 .thenReturn(List.of(new SoftwareRelease(
                         RELEASE,
                         "Elite AY",
@@ -556,7 +589,7 @@ class SoftwareControllerTest {
 
     @Test
     void returnsTheCategoriesOfOneSoftware() throws Exception {
-        when(getHandler.handle(new GetSoftwareQuery(Actor.anonymous(), new SoftwareId(ID))))
+        when(getHandler.handle(new GetSoftwareQuery(Actor.anonymous(), new SoftwareId(ID), Language.EN)))
                 .thenReturn(new SoftwareDetails(
                         ID,
                         "Elite",

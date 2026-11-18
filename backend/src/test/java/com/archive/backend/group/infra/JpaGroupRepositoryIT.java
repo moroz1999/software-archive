@@ -1,5 +1,6 @@
 package com.archive.backend.group.infra;
 
+import static com.archive.backend.geo.GeoTestRows.country;
 import static com.archive.backend.user.TestActors.BY_OTHER;
 import static com.archive.backend.user.TestActors.MEMBER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,7 +63,7 @@ class JpaGroupRepositoryIT {
     @BeforeEach
     void insertAround() {
         TestActors.store(jdbc);
-        jdbc.update("INSERT INTO country (id, name) VALUES (?, 'Norway')", NORWAY.value());
+        country(jdbc, NORWAY.value(), "Норвегия", "Norway");
         jdbc.update("INSERT INTO \"group\" (id, name) VALUES (?, 'Other')", OTHER);
         jdbc.update("INSERT INTO software (id, title, platform_code) VALUES (?, 'Elite', 'vector')", ELITE);
     }

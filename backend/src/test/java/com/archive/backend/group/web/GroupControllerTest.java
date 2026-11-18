@@ -49,6 +49,7 @@ import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.label.domain.UnmarkedLabelDraft;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.shared.web.ApiExceptionHandler;
 import com.archive.backend.user.domain.Actor;
 import java.util.List;
@@ -167,7 +168,7 @@ class GroupControllerTest {
 
     @Test
     void returnsOneGroup() throws Exception {
-        when(getHandler.handle(new GetGroupQuery(Actor.anonymous(), new GroupId(ID))))
+        when(getHandler.handle(new GetGroupQuery(Actor.anonymous(), new GroupId(ID), Language.RU)))
                 .thenReturn(new GroupDetails(
                         ID,
                         "Crew Ltd",
@@ -184,7 +185,7 @@ class GroupControllerTest {
                         List.of(new RelatedGroup(OUTER, "Alpha")),
                         ADDED));
 
-        mvc.perform(get("/api/groups/{id}", ID))
+        mvc.perform(get("/api/groups/{id}", ID).header("Accept-Language", "ru"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(ID.toString()))
                 .andExpect(jsonPath("$.name").value("Crew Ltd"))

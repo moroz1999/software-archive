@@ -1,5 +1,6 @@
 package com.archive.backend.label.infra;
 
+import com.archive.backend.geo.read.LocationsSql;
 import com.archive.backend.label.read.LabelDetails;
 import com.archive.backend.label.read.LabelReadRepository;
 import com.archive.backend.label.read.MainNameSql;
@@ -19,7 +20,7 @@ public class JdbcLabelReadRepository implements LabelReadRepository {
     private final JdbcClient jdbc;
 
     @Override
-    public Optional<LabelDetails> findById(UUID id) {
+    public Optional<LabelDetails> findById(UUID id, String language) {
         return jdbc.sql("WITH " + MainNameSql.PEOPLE + ", " + MainNameSql.GROUPS
                         + """
                         SELECT l.name, l.person_id, l.group_id, l.added_by, %s,
@@ -48,7 +49,7 @@ public class JdbcLabelReadRepository implements LabelReadRepository {
                             rs.getString("name"),
                             owner,
                             groups(id),
-                            locations(id),
+                            locations(id, language),
                             origins(id),
                             AdditionSql.of(rs),
                             rs.getObject("added_by", UUID.class),
@@ -57,20 +58,10 @@ public class JdbcLabelReadRepository implements LabelReadRepository {
                 .optional();
     }
 
-    /**
-     * The primary location first; of a record from before the rule with none or several marked, the first of them.
-     */
-    private List<LabelDetails.Location> locations(UUID labelId) {
-        return jdbc.sql("""
-                        SELECT co.id AS country_id, co.name AS country, ci.id AS city_id, ci.name AS city,
-                               ROW_NUMBER() OVER (ORDER BY COALESCE(l.is_primary, FALSE) DESC, co.name, ci.name) = 1 AS is_primary
-                        FROM entity_location l
-                        LEFT JOIN city ci ON ci.id = l.city_id
-                        LEFT JOIN country co ON co.id = COALESCE(l.country_id, ci.country_id)
-                        WHERE l.entity_type = 'LABEL' AND l.entity_id = :id
-                        ORDER BY COALESCE(l.is_primary, FALSE) DESC, co.name, ci.name
-                        """)
+    private List<LabelDetails.Location> locations(UUID labelId, String language) {
+        return jdbc.sql(LocationsSql.of("LABEL"))
                 .param("id", labelId)
+                .param("language", language)
                 .query((rs, row) -> new LabelDetails.Location(
                         rs.getObject("country_id", UUID.class),
                         rs.getString("country"),

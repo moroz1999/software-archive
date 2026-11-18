@@ -15,6 +15,6 @@ public class ListPlatformsHandler {
 
     @Transactional(readOnly = true)
     public List<PlatformItem> handle(ListPlatformsQuery q) {
-        return reads.findAll();
+        return reads.findAll(q.language().code());
     }
 }

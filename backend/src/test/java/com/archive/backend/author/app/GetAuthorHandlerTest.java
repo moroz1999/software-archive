@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.archive.backend.author.domain.AuthorId;
 import com.archive.backend.author.read.AuthorDetails;
 import com.archive.backend.author.read.AuthorLabel;
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.user.domain.Actor;
 import java.util.List;
@@ -37,13 +38,13 @@ class GetAuthorHandlerTest {
                 ADDED);
         reads.add(author);
 
-        assertThat(handler.handle(new GetAuthorQuery(Actor.anonymous(), new AuthorId(ID))))
+        assertThat(handler.handle(new GetAuthorQuery(Actor.anonymous(), new AuthorId(ID), Language.EN)))
                 .isEqualTo(author);
     }
 
     @Test
     void failsWhenTheAuthorDoesNotExist() {
-        assertThatThrownBy(() -> handler.handle(new GetAuthorQuery(Actor.anonymous(), new AuthorId(ID))))
+        assertThatThrownBy(() -> handler.handle(new GetAuthorQuery(Actor.anonymous(), new AuthorId(ID), Language.EN)))
                 .isInstanceOfSatisfying(
                         NotFoundException.class, e -> assertThat(e.code()).isEqualTo("author.not-found"));
     }
@@ -53,13 +54,16 @@ class GetAuthorHandlerTest {
         reads.add(new AuthorDetails(
                 ID, "Zed", null, null, List.of(), List.of(), List.of(), ADDED, MEMBER_ID.value(), false));
 
-        assertThat(handler.handle(new GetAuthorQuery(MEMBER, new AuthorId(ID))).canChange())
+        assertThat(handler.handle(new GetAuthorQuery(MEMBER, new AuthorId(ID), Language.EN))
+                        .canChange())
                 .isTrue();
-        assertThat(handler.handle(new GetAuthorQuery(ADMIN, new AuthorId(ID))).canChange())
+        assertThat(handler.handle(new GetAuthorQuery(ADMIN, new AuthorId(ID), Language.EN))
+                        .canChange())
                 .isTrue();
-        assertThat(handler.handle(new GetAuthorQuery(OTHER, new AuthorId(ID))).canChange())
+        assertThat(handler.handle(new GetAuthorQuery(OTHER, new AuthorId(ID), Language.EN))
+                        .canChange())
                 .isFalse();
-        assertThat(handler.handle(new GetAuthorQuery(Actor.anonymous(), new AuthorId(ID)))
+        assertThat(handler.handle(new GetAuthorQuery(Actor.anonymous(), new AuthorId(ID), Language.EN))
                         .canChange())
                 .isFalse();
     }

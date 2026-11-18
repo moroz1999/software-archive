@@ -13,6 +13,7 @@ import com.archive.backend.group.web.dto.GroupCreatedDto;
 import com.archive.backend.group.web.dto.GroupDetailsDto;
 import com.archive.backend.group.web.dto.GroupRequestDto;
 import com.archive.backend.group.web.mapper.GroupWebMapper;
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.user.domain.Actor;
 import java.net.URI;
 import java.util.UUID;
@@ -58,8 +59,8 @@ public class GroupController {
     }
 
     @GetMapping("/{id}")
-    public GroupDetailsDto get(Actor actor, @PathVariable UUID id) {
-        return webMapper.toDetails(getHandler.handle(new GetGroupQuery(actor, new GroupId(id))));
+    public GroupDetailsDto get(Actor actor, @PathVariable UUID id, Language language) {
+        return webMapper.toDetails(getHandler.handle(new GetGroupQuery(actor, new GroupId(id), language)));
     }
 
     @PostMapping

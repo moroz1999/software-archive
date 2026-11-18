@@ -113,6 +113,10 @@ class FixturesIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(20)))
                 .andExpect(jsonPath("$[*].name").value(hasItems("Helsinki", "Tampere")));
+
+        mvc.perform(get("/api/countries/{id}/cities", FINLAND).header("Accept-Language", "ru"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].name").value(hasItems("Хельсинки", "Тампере")));
     }
 
     @Test

@@ -4,7 +4,8 @@ Categories sort software by kind: games and their genres, demoscene productions,
 
 - The categories form one tree, the same for every platform. A category at the top of the tree has no parent; any other has exactly one.
 - The tree came over from zxart.ee as it was there, in English: its categories, their nesting and the order of the subcategories of each category.
-- A category has a title. It follows the common title rules (see the domain index). Two categories may share a title under different parents ("Misc", "Games").
+- A category has a title in Russian and may have one in every other language of the site; each follows the common title rules (see the domain index). Visitors see the title in their interface language, or the Russian one when there is none in it. Two categories may share a title under different parents ("Misc", "Games").
+- The Russian titles of the tree came over from zxart.ee too.
 - The subcategories of a category keep their order. A category added or moved under another parent goes last there.
 - Categories are added, edited and deleted by administrators. Editing changes the title and the parent: a category can go under any other category or to the top, but never under itself or one of its own subcategories.
 - Deleting a category deletes all its subcategories with it. Software in them stays in the archive and only leaves these categories.

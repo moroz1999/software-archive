@@ -1,5 +1,6 @@
 package com.archive.backend.group.infra;
 
+import com.archive.backend.geo.read.LocationsSql;
 import com.archive.backend.group.read.GroupCatalogEntry;
 import com.archive.backend.group.read.GroupDetails;
 import com.archive.backend.group.read.GroupLabel;
@@ -119,7 +120,7 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
     }
 
     @Override
-    public Optional<GroupDetails> findById(UUID id) {
+    public Optional<GroupDetails> findById(UUID id, String language) {
         return jdbc.sql("WITH " + MainNameSql.GROUPS
                         + "SELECT n.main_name, g.notes, g.added_by, " + AdditionSql.columns("g")
                         + " FROM named_group n JOIN \"group\" g ON g.id = n.group_id WHERE n.group_id = :id")
@@ -130,7 +131,7 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
                         rs.getString("notes"),
                         types(id),
                         labels(id),
-                        locations(id),
+                        locations(id, language),
                         members(id),
                         related(id, "member_group_id", "group_id"),
                         related(id, "group_id", "member_group_id"),
@@ -154,20 +155,10 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
                 .list();
     }
 
-    /**
-     * The primary location first; of a record from before the rule with none or several marked, the first of them.
-     */
-    private List<GroupLocation> locations(UUID groupId) {
-        return jdbc.sql("""
-                        SELECT co.id AS country_id, co.name AS country, ci.id AS city_id, ci.name AS city,
-                               ROW_NUMBER() OVER (ORDER BY COALESCE(l.is_primary, FALSE) DESC, co.name, ci.name) = 1 AS is_primary
-                        FROM entity_location l
-                        LEFT JOIN city ci ON ci.id = l.city_id
-                        LEFT JOIN country co ON co.id = COALESCE(l.country_id, ci.country_id)
-                        WHERE l.entity_type = 'GROUP' AND l.entity_id = :id
-                        ORDER BY COALESCE(l.is_primary, FALSE) DESC, co.name, ci.name
-                        """)
+    private List<GroupLocation> locations(UUID groupId, String language) {
+        return jdbc.sql(LocationsSql.of("GROUP"))
                 .param("id", groupId)
+                .param("language", language)
                 .query((rs, row) -> new GroupLocation(
                         rs.getObject("country_id", UUID.class),
                         rs.getString("country"),

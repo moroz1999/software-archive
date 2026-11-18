@@ -1,10 +1,10 @@
 package com.archive.backend.user.app;
 
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.user.domain.ConfirmationLinkIssued;
 import com.archive.backend.user.domain.ConfirmationMailer;
 import com.archive.backend.user.domain.ConfirmationToken;
 import com.archive.backend.user.domain.Email;
-import com.archive.backend.user.domain.InterfaceLanguage;
 import com.archive.backend.user.domain.Password;
 import com.archive.backend.user.domain.PasswordHash;
 import com.archive.backend.user.domain.PasswordHasher;
@@ -65,7 +65,7 @@ final class UserFixtures {
                 HASHER.hash(PASSWORD),
                 token,
                 registeredAt,
-                InterfaceLanguage.EN);
+                Language.EN);
         user.pullEvents();
         return user;
     }
@@ -80,14 +80,14 @@ final class UserFixtures {
         return user;
     }
 
-    record Letter(Email to, UserName name, ConfirmationToken token, InterfaceLanguage language) {}
+    record Letter(Email to, UserName name, ConfirmationToken token, Language language) {}
 
     static final class RecordingMailer implements ConfirmationMailer {
 
         final List<Letter> letters = new ArrayList<>();
 
         @Override
-        public void send(Email to, UserName name, ConfirmationToken token, InterfaceLanguage language) {
+        public void send(Email to, UserName name, ConfirmationToken token, Language language) {
             letters.add(new Letter(to, name, token, language));
         }
     }

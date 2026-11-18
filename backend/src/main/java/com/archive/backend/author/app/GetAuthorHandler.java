@@ -16,7 +16,8 @@ public class GetAuthorHandler {
 
     @Transactional(readOnly = true)
     public AuthorDetails handle(GetAuthorQuery q) {
-        AuthorDetails author = reads.findById(q.id().value()).orElseThrow(AuthorNotFoundException::new);
+        AuthorDetails author =
+                reads.findById(q.id().value(), q.language().code()).orElseThrow(AuthorNotFoundException::new);
         return author.withCanChange(AddedBy.of(author.addedBy()).mayBeChangedBy(q.actor()));
     }
 }

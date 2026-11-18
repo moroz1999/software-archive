@@ -1,5 +1,7 @@
 package com.archive.backend.search.app;
 
+import static com.archive.backend.category.domain.CategoryTitleFixtures.titles;
+import static com.archive.backend.geo.GeoTestRows.country;
 import static com.archive.backend.user.TestActors.ADMIN;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,7 +22,6 @@ import com.archive.backend.category.app.DeleteCategoryHandler;
 import com.archive.backend.category.app.UpdateCategoryCommand;
 import com.archive.backend.category.app.UpdateCategoryHandler;
 import com.archive.backend.category.domain.CategoryId;
-import com.archive.backend.category.domain.CategoryTitle;
 import com.archive.backend.geo.domain.CountryId;
 import com.archive.backend.geo.domain.LocationDraft;
 import com.archive.backend.group.app.CreateGroupCommand;
@@ -151,7 +152,8 @@ class SoftwareSearchSyncIT {
     void setUp() {
         probe = new TypesenseProbe(typesense);
         TestActors.store(jdbc);
-        jdbc.update("INSERT INTO country (id, name) VALUES (?, 'Finland'), (?, 'Latvia')", FINLAND, LATVIA);
+        country(jdbc, FINLAND, "Финляндия", "Finland");
+        country(jdbc, LATVIA, "Латвия", "Latvia");
     }
 
     /** Puts back what the tests committed. */
@@ -332,8 +334,8 @@ class SoftwareSearchSyncIT {
         SoftwareId elite = create("Elite", ReleaseDate.ofDay(LocalDate.of(1987, 5, 1)), Set.of(SHOOTERS));
         worker.handle();
 
-        updateCategory.handle(new UpdateCategoryCommand(
-                ADMIN, new CategoryId(ACTION), new CategoryTitle("Action"), new CategoryId(DEMOSCENE)));
+        updateCategory.handle(
+                new UpdateCategoryCommand(ADMIN, new CategoryId(ACTION), titles("Action"), new CategoryId(DEMOSCENE)));
         worker.handle();
 
         assertThat(listIn(document(elite), "categories"))
@@ -342,10 +344,9 @@ class SoftwareSearchSyncIT {
 
     @Test
     void deletingACategoryTakesItOutOfTheSoftwareInItsSubtree() throws Exception {
-        CategoryId space = createCategory.handle(
-                new CreateCategoryCommand(ADMIN, new CategoryTitle("Space"), new CategoryId(GAMES)));
-        CategoryId trading =
-                createCategory.handle(new CreateCategoryCommand(ADMIN, new CategoryTitle("Trading"), space));
+        CategoryId space =
+                createCategory.handle(new CreateCategoryCommand(ADMIN, titles("Space"), new CategoryId(GAMES)));
+        CategoryId trading = createCategory.handle(new CreateCategoryCommand(ADMIN, titles("Trading"), space));
         SoftwareId elite = create("Elite", ReleaseDate.ofDay(LocalDate.of(1987, 5, 1)), Set.of(trading.value()));
         worker.handle();
 

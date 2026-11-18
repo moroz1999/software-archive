@@ -4,14 +4,18 @@ import com.archive.backend.category.app.CreateCategoryCommand;
 import com.archive.backend.category.app.UpdateCategoryCommand;
 import com.archive.backend.category.domain.CategoryId;
 import com.archive.backend.category.domain.CategoryTitle;
+import com.archive.backend.category.domain.CategoryTitles;
 import com.archive.backend.category.read.CategoryDetails;
 import com.archive.backend.category.read.CategoryNode;
 import com.archive.backend.category.web.dto.CategoryCreatedDto;
 import com.archive.backend.category.web.dto.CategoryDetailsDto;
 import com.archive.backend.category.web.dto.CategoryNodeDto;
 import com.archive.backend.category.web.dto.CategoryRequestDto;
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.user.domain.Actor;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.mapstruct.Mapper;
@@ -28,19 +32,21 @@ public interface CategoryWebMapper {
     }
 
     default CreateCategoryCommand toCreate(Actor actor, CategoryRequestDto request) {
-        return new CreateCategoryCommand(actor, toTitle(request.title()), toParent(request.parentId()));
+        return new CreateCategoryCommand(actor, toTitles(request.titles()), toParent(request.parentId()));
     }
 
     default UpdateCategoryCommand toUpdate(Actor actor, UUID id, CategoryRequestDto request) {
         return new UpdateCategoryCommand(
-                actor, new CategoryId(id), toTitle(request.title()), toParent(request.parentId()));
+                actor, new CategoryId(id), toTitles(request.titles()), toParent(request.parentId()));
     }
 
-    private static CategoryTitle toTitle(@Nullable String value) {
-        if (value == null) {
+    private static CategoryTitles toTitles(@Nullable Map<String, String> values) {
+        if (values == null) {
             throw new InvalidValueException("title.required", "A category needs a title.");
         }
-        return new CategoryTitle(value);
+        Map<Language, CategoryTitle> titles = new HashMap<>();
+        values.forEach((code, title) -> titles.put(Language.known(code), new CategoryTitle(title)));
+        return new CategoryTitles(titles);
     }
 
     private static @Nullable CategoryId toParent(@Nullable UUID value) {

@@ -8,7 +8,8 @@ import java.util.List;
 public interface HardwareReadRepository {
 
     /**
-     * The hardware of the platform, by group in the order they are shown, then by name; none for an unknown one.
+     * The hardware of the platform, named as platforms are, by group in the order they are shown, then by that name;
+     * none for an unknown one.
      */
-    List<HardwareItem> findByPlatform(String platform);
+    List<HardwareItem> findByPlatform(String platform, String language);
 }

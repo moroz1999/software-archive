@@ -11,6 +11,7 @@ import com.archive.backend.hardware.read.PlatformItem;
 import com.archive.backend.hardware.web.mapper.PlatformWebMapperImpl;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.shared.web.ApiExceptionHandler;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -32,11 +33,22 @@ class PlatformControllerTest {
 
     @Test
     void listsThePlatforms() throws Exception {
-        when(handler.handle(new ListPlatformsQuery())).thenReturn(List.of(new PlatformItem("vector", "Vector")));
+        when(handler.handle(new ListPlatformsQuery(Language.EN)))
+                .thenReturn(List.of(new PlatformItem("vector", "Vector")));
 
         mvc.perform(get("/api/platforms"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].code").value("vector"))
                 .andExpect(jsonPath("$[0].name").value("Vector"));
+    }
+
+    @Test
+    void listsThePlatformsInTheLanguageAskedFor() throws Exception {
+        when(handler.handle(new ListPlatformsQuery(Language.RU)))
+                .thenReturn(List.of(new PlatformItem("msx", "Ямаха КУВТ")));
+
+        mvc.perform(get("/api/platforms").header("Accept-Language", "ru"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name").value("Ямаха КУВТ"));
     }
 }

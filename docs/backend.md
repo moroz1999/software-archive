@@ -13,6 +13,7 @@ Each domain is a package under `com.archive.backend`. A request passes four role
 - HTTP only: read the request, call exactly one use case, map the result to a DTO.
 - No business logic, no transactions, no repository access, no JPA entities.
 - DTOs are records in `web/dto`; domain → DTO mapping is a MapStruct mapper in `web/mapper`.
+- A controller that answers with names kept in several languages takes a `Language` argument: the language of the content asked for by `Accept-Language` ([features/localization.md](features/localization.md)).
 
 ### Use cases (`app`)
 - One use case per user action: an input record and its handler with a `handle` method. The input is either
@@ -35,7 +36,7 @@ Each domain is a package under `com.archive.backend`. A request passes four role
 ### Reads: a plain read model
 - Reading never loads domain entities. Entities exist to guard rules on change; a read changes nothing, so it gets a simple **read model**: records shaped for the response, with scalars.
 - The read side lives in the domain's `read` package: the read models and the read repository interface (`SoftwareReadRepository`). It is implemented in `infra` and does not depend on `domain`.
-- A read model that no single table holds (the author and group catalogs mix owners and their labels) is read with plain SQL through `JdbcClient`: the adapter is `Jdbc{X}ReadRepository`. SQL that several domains share lives in the read side of the domain it is about: `label/read` holds the main name of people and groups (`MainNameSql`) and the catalog letter condition (`LetterFilterSql`); `user/read` holds who added an entry and when (`AdditionSql`, read as an `Addition` by every entry page).
+- A read model that no single table holds (the author and group catalogs mix owners and their labels) is read with plain SQL through `JdbcClient`: the adapter is `Jdbc{X}ReadRepository`. SQL that several domains share lives in the read side of the domain it is about: `label/read` holds the main name of people and groups (`MainNameSql`) and the catalog letter condition (`LetterFilterSql`); `user/read` holds who added an entry and when (`AdditionSql`, read as an `Addition` by every entry page); `category/read`, `geo/read` and `hardware/read` hold the names of their own in a language (`CategoryTitleSql`, `GeoNameSql`, `HardwareNameSql`), and `geo/read` the locations of people, groups and labels (`LocationsSql`). `shared/read/NameInLanguageSql` is the one rule under them: the name in the `:language` parameter, else the Russian one. A read repository takes the language as its code.
 - A query (`GetSoftwareQuery` + `GetSoftwareHandler`) only asks the read repository and throws `NotFoundException` for a missing entity; the controller maps the read model to its DTO.
 - Domain entities and their repository serve only commands.
 
@@ -57,10 +58,10 @@ Use cases and the domain signal failures by throwing business exceptions; one `@
 
 ## Shared building blocks
 
-- `shared/domain` — the shared kernel: concepts of the archive used by several domains, such as `Title`, the abstract value object of every title.
+- `shared/domain` — the shared kernel: concepts of the archive used by several domains, such as `Title`, the abstract value object of every title, and `Language`, a language of the site: of its interface, of the letters to users and of the names kept in several languages.
 - `shared/domain/error` — the taxonomy of business errors: `BusinessException` and its kinds (`NotFoundException`, `ConflictException`, `RuleViolationException`, `InvalidValueException`, `AuthenticationRequiredException`), mapped as a whole by `ApiExceptionHandler`.
 - `shared/domain/ddd` — DDD building blocks: the `@ValueObject` marker and the `DomainEvent` interface of what an aggregate tells happened.
-- `shared/web` — `ApiExceptionHandler`, the only exception → REST status mapping. A change that lost to another running at the same time (a deadlock, a lock not acquired) answers `409 conflict.concurrent`. `AccessTokenBearerFilter` signs a request in by its Bearer access token and `ActorArgumentResolver` gives controllers its `Actor` ([features/accounts.md](features/accounts.md)).
+- `shared/web` — `ApiExceptionHandler`, the only exception → REST status mapping. A change that lost to another running at the same time (a deadlock, a lock not acquired) answers `409 conflict.concurrent`. `AccessTokenBearerFilter` signs a request in by its Bearer access token and `ActorArgumentResolver` gives controllers its `Actor` ([features/accounts.md](features/accounts.md)); `LanguageArgumentResolver` gives them the `Language` of the content.
 - `shared/config` — `SecurityConfig` (every request passes; access is decided by the use cases), `AuthProperties`, `ClockConfig` (use cases take the time from a `Clock`); `DomainServicesConfig` registers the domain services; `WebConfig` fixes the page JSON contract: `{content: [...], page: {size, number, totalElements, totalPages}}`.
 
 ## Mapping

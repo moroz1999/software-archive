@@ -23,7 +23,7 @@ public class UpdateCategoryHandler {
         Category.requireKeptBy(c.actor());
         Category category = repository.findById(c.id()).orElseThrow(CategoryNotFoundException::new);
         CategoryId parent = c.parent();
-        category.edit(c.title(), parent == null ? null : parents.of(c.id(), parent));
+        category.edit(c.titles(), parent == null ? null : parents.of(c.id(), parent));
         repository.save(category);
         // The software of the category answers within this transaction (docs/backend.md).
         category.pullEvents().forEach(events::publishEvent);

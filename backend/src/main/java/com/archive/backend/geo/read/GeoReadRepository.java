@@ -9,12 +9,13 @@ import java.util.UUID;
 public interface GeoReadRepository {
 
     /**
-     * All countries by name.
+     * All countries, each named in the language of the given code, or in Russian when it has no name in that one; by
+     * that name.
      */
-    List<CountryItem> findCountries();
+    List<CountryItem> findCountries(String language);
 
     /**
-     * The cities of a country by name; none for an unknown country.
+     * The cities of a country, named as countries are, by that name; none for an unknown country.
      */
-    List<CityItem> findCities(UUID countryId);
+    List<CityItem> findCities(UUID countryId, String language);
 }

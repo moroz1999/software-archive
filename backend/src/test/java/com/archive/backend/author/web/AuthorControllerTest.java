@@ -47,6 +47,7 @@ import com.archive.backend.label.domain.LabelLetter;
 import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.shared.web.ApiExceptionHandler;
 import com.archive.backend.user.domain.Actor;
 import java.util.List;
@@ -188,7 +189,7 @@ class AuthorControllerTest {
 
     @Test
     void returnsOneAuthor() throws Exception {
-        when(getHandler.handle(new GetAuthorQuery(Actor.anonymous(), new AuthorId(ID))))
+        when(getHandler.handle(new GetAuthorQuery(Actor.anonymous(), new AuthorId(ID), Language.RU)))
                 .thenReturn(new AuthorDetails(
                         ID,
                         "Zed",
@@ -196,12 +197,12 @@ class AuthorControllerTest {
                         "Coder since 1984",
                         List.of(new AuthorLabel(LABEL, "Zed", true)),
                         List.of(
-                                new AuthorLocation(COUNTRY, "Finland", CITY, "Helsinki", true),
-                                new AuthorLocation(COUNTRY, "Norway", null, null, false)),
+                                new AuthorLocation(COUNTRY, "Финляндия", CITY, "Хельсинки", true),
+                                new AuthorLocation(COUNTRY, "Норвегия", null, null, false)),
                         List.of(new AuthorGroup(GROUP, "Crew", "Axe")),
                         ADDED));
 
-        mvc.perform(get("/api/authors/{id}", ID))
+        mvc.perform(get("/api/authors/{id}", ID).header("Accept-Language", "ru"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(ID.toString()))
                 .andExpect(jsonPath("$.name").value("Zed"))
@@ -213,8 +214,8 @@ class AuthorControllerTest {
                 .andExpect(jsonPath("$.locations[0].countryId").value(COUNTRY.toString()))
                 .andExpect(jsonPath("$.locations[0].cityId").value(CITY.toString()))
                 .andExpect(jsonPath("$.locations[1].cityId").value(nullValue()))
-                .andExpect(jsonPath("$.locations[0].country").value("Finland"))
-                .andExpect(jsonPath("$.locations[0].city").value("Helsinki"))
+                .andExpect(jsonPath("$.locations[0].country").value("Финляндия"))
+                .andExpect(jsonPath("$.locations[0].city").value("Хельсинки"))
                 .andExpect(jsonPath("$.locations[0].primary").value(true))
                 .andExpect(jsonPath("$.locations[1].city").value(nullValue()))
                 .andExpect(jsonPath("$.groups[0].id").value(GROUP.toString()))

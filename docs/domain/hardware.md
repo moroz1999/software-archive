@@ -9,6 +9,9 @@ A family of computers: RK-compatible, Orion, Specialist, PK8000, Korvet, Vector,
 
 A platform holds all models and clones of its family. BK is one platform for every BK; a model or a clone is hardware inside it, not a platform of its own.
 
+## Names
+Every platform and every item of hardware is named in English and in Russian. Visitors see the name in their interface language, or the Russian one when there is none in it, and lists follow that name. In Russian the MSX platform is called «Ямаха КУВТ».
+
 ## The RK family
 Radio-86RK, Mikrosha, Apogey and Partner are one platform, RK-compatible, for finding things in the archive, and different machines for running them.
 - They share the KR580VM80A processor (a Soviet Intel 8080), related video circuits and part of the calls of their firmware, the Monitor. A program that uses only those calls runs as one binary on several machines; a game that works the screen, the keyboard or the sound directly depends on the machine.

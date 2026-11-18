@@ -1,5 +1,7 @@
 package com.archive.backend.author.infra;
 
+import static com.archive.backend.geo.GeoTestRows.city;
+import static com.archive.backend.geo.GeoTestRows.country;
 import static com.archive.backend.user.TestActors.ADDED;
 import static com.archive.backend.user.TestActors.MEMBER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -64,13 +66,10 @@ class JdbcAuthorReadRepositoryIT {
 
     @BeforeEach
     void insert() {
-        jdbc.update("INSERT INTO country (id, name) VALUES (?, 'Finland'), (?, 'Norway')", FINLAND, NORWAY);
-        jdbc.update(
-                "INSERT INTO city (id, name, country_id) VALUES (?, 'Helsinki', ?), (?, 'Tampere', ?)",
-                HELSINKI,
-                FINLAND,
-                TAMPERE,
-                FINLAND);
+        country(jdbc, FINLAND, "Финляндия", "Finland");
+        country(jdbc, NORWAY, "Норвегия", "Norway");
+        city(jdbc, HELSINKI, FINLAND, "Хельсинки", "Helsinki");
+        city(jdbc, TAMPERE, FINLAND, "Тампере", "Tampere");
 
         jdbc.update(
                 "INSERT INTO person (id, real_name, notes) VALUES (?, 'John Doe', 'Coder since 1984'), (?, NULL, NULL), (?, 'Carl Real', NULL), (?, NULL, NULL)",
@@ -269,7 +268,7 @@ class JdbcAuthorReadRepositoryIT {
 
     @Test
     void readsTheDetailsOfAnAuthorWithTheGroupsUnderTheirMainNameAndTheLabelOfEveryMembership() {
-        assertThat(reads.findById(ZED))
+        assertThat(reads.findById(ZED, "en"))
                 .get()
                 .usingRecursiveComparison()
                 .ignoringFields("added")
@@ -290,8 +289,16 @@ class JdbcAuthorReadRepositoryIT {
     }
 
     @Test
+    void namesTheLocationsOfAnAuthorInTheLanguageAskedFor() {
+        assertThat(reads.findById(ZED, "ru").orElseThrow().locations())
+                .containsExactly(
+                        new AuthorLocation(FINLAND, "Финляндия", HELSINKI, "Хельсинки", true),
+                        new AuthorLocation(NORWAY, "Норвегия", null, null, false));
+    }
+
+    @Test
     void readsAnAuthorKnownOnlyByTheRealName() {
-        assertThat(reads.findById(CARL))
+        assertThat(reads.findById(CARL, "en"))
                 .get()
                 .usingRecursiveComparison()
                 .ignoringFields("added")
@@ -308,12 +315,12 @@ class JdbcAuthorReadRepositoryIT {
 
     @Test
     void findsNothingForANamelessPerson() {
-        assertThat(reads.findById(NAMELESS)).isEmpty();
+        assertThat(reads.findById(NAMELESS, "en")).isEmpty();
     }
 
     @Test
     void findsNothingForAnUnknownId() {
-        assertThat(reads.findById(UUID.randomUUID())).isEmpty();
+        assertThat(reads.findById(UUID.randomUUID(), "en")).isEmpty();
     }
 
     /**
@@ -346,7 +353,7 @@ class JdbcAuthorReadRepositoryIT {
         TestActors.store(jdbc);
         jdbc.update("UPDATE person SET added_by = ? WHERE id = ?", MEMBER_ID.value(), ZED);
 
-        assertThat(reads.findById(ZED))
+        assertThat(reads.findById(ZED, "en"))
                 .hasValueSatisfying(author -> assertThat(author.addedBy()).isEqualTo(MEMBER_ID.value()));
     }
 }

@@ -3,6 +3,7 @@ package com.archive.backend.user.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.shared.domain.error.InvalidValueException;
 import java.util.List;
 import java.util.Set;
@@ -123,9 +124,9 @@ class UserValuesTest {
 
     @Test
     void lettersAreWrittenInRussianOrEnglish() {
-        assertThat(InterfaceLanguage.ofCode("ru")).isEqualTo(InterfaceLanguage.RU);
-        assertThat(InterfaceLanguage.ofCode("en")).isEqualTo(InterfaceLanguage.EN);
-        assertThat(InterfaceLanguage.ofCode("de")).isEqualTo(InterfaceLanguage.EN);
+        assertThat(Language.ofCode("ru")).isEqualTo(Language.RU);
+        assertThat(Language.ofCode("en")).isEqualTo(Language.EN);
+        assertThat(Language.ofCode("de")).isEqualTo(Language.EN);
     }
 
     private static void assertInvalid(ThrowingCallable creation, String code) {

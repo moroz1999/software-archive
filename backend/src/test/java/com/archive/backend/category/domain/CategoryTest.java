@@ -1,5 +1,6 @@
 package com.archive.backend.category.domain;
 
+import static com.archive.backend.category.domain.CategoryTitleFixtures.titles;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -15,19 +16,19 @@ class CategoryTest {
 
     @Test
     void editsTheTitleAndTheParent() {
-        Category action = Category.create(ACTION, new CategoryTitle("Action"), CategoryParent.restore(ACTION, GAMES));
+        Category action = Category.create(ACTION, titles("Action"), CategoryParent.restore(ACTION, GAMES));
 
-        action.edit(new CategoryTitle("Action games"), CategoryParent.restore(ACTION, DEMOSCENE));
+        action.edit(titles("Action games"), CategoryParent.restore(ACTION, DEMOSCENE));
 
-        assertThat(action.getTitle()).isEqualTo(new CategoryTitle("Action games"));
+        assertThat(action.getTitles()).isEqualTo(titles("Action games"));
         assertThat(action.getParent()).isEqualTo(CategoryParent.restore(ACTION, DEMOSCENE));
     }
 
     @Test
     void goesToTheTopOfTheTreeWithoutAParent() {
-        Category action = Category.create(ACTION, new CategoryTitle("Action"), CategoryParent.restore(ACTION, GAMES));
+        Category action = Category.create(ACTION, titles("Action"), CategoryParent.restore(ACTION, GAMES));
 
-        action.edit(new CategoryTitle("Action"), null);
+        action.edit(titles("Action"), null);
 
         assertThat(action.getParent()).isNull();
     }
@@ -36,11 +37,10 @@ class CategoryTest {
     void takesOnlyAParentCheckedForItself() {
         CategoryParent ofGames = CategoryParent.restore(GAMES, DEMOSCENE);
 
-        assertThatThrownBy(() -> Category.create(ACTION, new CategoryTitle("Action"), ofGames))
+        assertThatThrownBy(() -> Category.create(ACTION, titles("Action"), ofGames))
                 .isInstanceOf(IllegalArgumentException.class);
-        Category action = Category.create(ACTION, new CategoryTitle("Action"), null);
-        assertThatThrownBy(() -> action.edit(new CategoryTitle("Action"), ofGames))
-                .isInstanceOf(IllegalArgumentException.class);
+        Category action = Category.create(ACTION, titles("Action"), null);
+        assertThatThrownBy(() -> action.edit(titles("Action"), ofGames)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -55,9 +55,9 @@ class CategoryTest {
 
     @Test
     void tellsItMovedUnderAnotherParent() {
-        Category action = Category.create(ACTION, new CategoryTitle("Action"), CategoryParent.restore(ACTION, GAMES));
+        Category action = Category.create(ACTION, titles("Action"), CategoryParent.restore(ACTION, GAMES));
 
-        action.edit(new CategoryTitle("Action"), CategoryParent.restore(ACTION, DEMOSCENE));
+        action.edit(titles("Action"), CategoryParent.restore(ACTION, DEMOSCENE));
 
         assertThat(action.pullEvents()).containsExactly(new CategoryMoved(ACTION));
         assertThat(action.pullEvents()).isEmpty();
@@ -65,28 +65,27 @@ class CategoryTest {
 
     @Test
     void tellsItMovedToTheTopAndFromIt() {
-        Category action = Category.create(ACTION, new CategoryTitle("Action"), CategoryParent.restore(ACTION, GAMES));
-        action.edit(new CategoryTitle("Action"), null);
+        Category action = Category.create(ACTION, titles("Action"), CategoryParent.restore(ACTION, GAMES));
+        action.edit(titles("Action"), null);
 
         assertThat(action.pullEvents()).containsExactly(new CategoryMoved(ACTION));
 
-        action.edit(new CategoryTitle("Action"), CategoryParent.restore(ACTION, GAMES));
+        action.edit(titles("Action"), CategoryParent.restore(ACTION, GAMES));
 
         assertThat(action.pullEvents()).containsExactly(new CategoryMoved(ACTION));
     }
 
     @Test
     void tellsNothingWhenItStaysUnderItsParent() {
-        Category action = Category.create(ACTION, new CategoryTitle("Action"), CategoryParent.restore(ACTION, GAMES));
+        Category action = Category.create(ACTION, titles("Action"), CategoryParent.restore(ACTION, GAMES));
 
-        action.edit(new CategoryTitle("Action games"), CategoryParent.restore(ACTION, GAMES));
+        action.edit(titles("Action games"), CategoryParent.restore(ACTION, GAMES));
 
         assertThat(action.pullEvents()).isEmpty();
     }
 
     @Test
     void tellsNothingWhenCreated() {
-        assertThat(Category.create(ACTION, new CategoryTitle("Action"), null).pullEvents())
-                .isEmpty();
+        assertThat(Category.create(ACTION, titles("Action"), null).pullEvents()).isEmpty();
     }
 }

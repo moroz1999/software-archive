@@ -1,3 +1,5 @@
 package com.archive.backend.geo.app;
 
-public record ListCountriesQuery() {}
+import com.archive.backend.shared.domain.Language;
+
+public record ListCountriesQuery(Language language) {}

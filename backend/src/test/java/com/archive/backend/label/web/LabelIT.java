@@ -1,5 +1,7 @@
 package com.archive.backend.label.web;
 
+import static com.archive.backend.geo.GeoTestRows.city;
+import static com.archive.backend.geo.GeoTestRows.country;
 import static com.archive.backend.user.TestActors.ADMIN;
 import static com.archive.backend.user.TestActors.MEMBER;
 import static com.archive.backend.user.TestActors.MEMBER_ID;
@@ -440,6 +442,21 @@ class LabelIT {
     }
 
     @Test
+    void namesTheLocationsOfALabelInTheLanguageAskedFor() throws Exception {
+        insertGeo();
+        jdbc.update(
+                "INSERT INTO entity_location (entity_type, entity_id, country_id, city_id, is_primary) VALUES ('LABEL', ?, ?, ?, true)",
+                GHOST,
+                FINLAND,
+                HELSINKI);
+
+        mvc.perform(get("/api/labels/{id}", GHOST).header("Accept-Language", "ru"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.locations[0].country").value("Финляндия"))
+                .andExpect(jsonPath("$.locations[0].city").value("Хельсинки"));
+    }
+
+    @Test
     void offersEditingToWhoeverAddedTheLabelAndAdministrators() throws Exception {
         addedBy(GHOST, MEMBER_ID);
 
@@ -838,8 +855,8 @@ class LabelIT {
     }
 
     private void insertGeo() {
-        jdbc.update("INSERT INTO country (id, name) VALUES (?, 'Finland')", FINLAND);
-        jdbc.update("INSERT INTO city (id, name, country_id) VALUES (?, 'Helsinki', ?)", HELSINKI, FINLAND);
+        country(jdbc, FINLAND, "Финляндия", "Finland");
+        city(jdbc, HELSINKI, FINLAND, "Хельсинки", "Helsinki");
     }
 
     private ResultActions edit(UUID label, Actor actor, String body) throws Exception {

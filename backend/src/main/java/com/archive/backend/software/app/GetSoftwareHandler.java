@@ -16,7 +16,8 @@ public class GetSoftwareHandler {
 
     @Transactional(readOnly = true)
     public SoftwareDetails handle(GetSoftwareQuery q) {
-        SoftwareDetails software = reads.findById(q.id().value()).orElseThrow(SoftwareNotFoundException::new);
+        SoftwareDetails software =
+                reads.findById(q.id().value(), q.language().code()).orElseThrow(SoftwareNotFoundException::new);
         return software.withCanChange(AddedBy.of(software.addedBy()).mayBeChangedBy(q.actor()));
     }
 }

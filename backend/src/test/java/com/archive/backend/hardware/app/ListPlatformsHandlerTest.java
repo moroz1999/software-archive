@@ -3,6 +3,7 @@ package com.archive.backend.hardware.app;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.archive.backend.hardware.read.PlatformItem;
+import com.archive.backend.shared.domain.Language;
 import org.junit.jupiter.api.Test;
 
 class ListPlatformsHandlerTest {
@@ -11,11 +12,12 @@ class ListPlatformsHandlerTest {
     private final ListPlatformsHandler handler = new ListPlatformsHandler(reads);
 
     @Test
-    void returnsThePlatforms() {
-        reads.add(new PlatformItem("agat", "Agat"));
-        reads.add(new PlatformItem("bk", "BK"));
+    void returnsThePlatformsInTheLanguageAskedFor() {
+        reads.add("ru", new PlatformItem("agat", "Агат"));
+        reads.add("ru", new PlatformItem("bk", "БК"));
+        reads.add("en", new PlatformItem("agat", "Agat"));
 
-        assertThat(handler.handle(new ListPlatformsQuery()))
-                .containsExactly(new PlatformItem("agat", "Agat"), new PlatformItem("bk", "BK"));
+        assertThat(handler.handle(new ListPlatformsQuery(Language.RU)))
+                .containsExactly(new PlatformItem("agat", "Агат"), new PlatformItem("bk", "БК"));
     }
 }

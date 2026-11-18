@@ -6,6 +6,7 @@ import com.archive.backend.author.read.AuthorGroup;
 import com.archive.backend.author.read.AuthorLabel;
 import com.archive.backend.author.read.AuthorLocation;
 import com.archive.backend.author.read.AuthorReadRepository;
+import com.archive.backend.geo.read.LocationsSql;
 import com.archive.backend.label.read.LetterFilterSql;
 import com.archive.backend.label.read.MainNameSql;
 import com.archive.backend.label.read.PlatformFilterSql;
@@ -122,7 +123,7 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
     }
 
     @Override
-    public Optional<AuthorDetails> findById(UUID id) {
+    public Optional<AuthorDetails> findById(UUID id, String language) {
         return jdbc.sql("WITH " + MainNameSql.PEOPLE
                         + "SELECT n.main_name, n.real_name, n.notes, p.added_by, " + AdditionSql.columns("p")
                         + " FROM named_person n JOIN person p ON p.id = n.person_id"
@@ -134,7 +135,7 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
                         rs.getString("real_name"),
                         rs.getString("notes"),
                         labels(id),
-                        locations(id),
+                        locations(id, language),
                         groups(id),
                         AdditionSql.of(rs),
                         rs.getObject("added_by", UUID.class),
@@ -159,20 +160,10 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
                 .list();
     }
 
-    /**
-     * The primary location first; of a record from before the rule with none or several marked, the first of them.
-     */
-    private List<AuthorLocation> locations(UUID personId) {
-        return jdbc.sql("""
-                        SELECT co.id AS country_id, co.name AS country, ci.id AS city_id, ci.name AS city,
-                               ROW_NUMBER() OVER (ORDER BY COALESCE(l.is_primary, FALSE) DESC, co.name, ci.name) = 1 AS is_primary
-                        FROM entity_location l
-                        LEFT JOIN city ci ON ci.id = l.city_id
-                        LEFT JOIN country co ON co.id = COALESCE(l.country_id, ci.country_id)
-                        WHERE l.entity_type = 'PERSON' AND l.entity_id = :id
-                        ORDER BY COALESCE(l.is_primary, FALSE) DESC, co.name, ci.name
-                        """)
+    private List<AuthorLocation> locations(UUID personId, String language) {
+        return jdbc.sql(LocationsSql.of("PERSON"))
                 .param("id", personId)
+                .param("language", language)
                 .query((rs, row) -> new AuthorLocation(
                         rs.getObject("country_id", UUID.class),
                         rs.getString("country"),

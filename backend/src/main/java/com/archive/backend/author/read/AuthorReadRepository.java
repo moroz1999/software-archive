@@ -23,7 +23,8 @@ public interface AuthorReadRepository {
             Pageable pageable);
 
     /**
-     * A person who has a name; nothing for an unknown or nameless one.
+     * A person who has a name, their locations named in the language of the given code, or in Russian when they have no
+     * name in that one; nothing for an unknown or nameless person.
      */
-    Optional<AuthorDetails> findById(UUID id);
+    Optional<AuthorDetails> findById(UUID id, String language);
 }

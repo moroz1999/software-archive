@@ -4,18 +4,20 @@ import com.archive.backend.category.read.CategoryDetails;
 import com.archive.backend.category.read.CategoryNode;
 import com.archive.backend.category.read.CategoryReadRepository;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Serves what it was given: building the tree is the SQL's job. */
+/** Serves what it was given: building the tree and titling it in a language are the SQL's job. */
 class InMemoryCategoryReadRepository implements CategoryReadRepository {
 
-    private final List<CategoryNode> tree = new ArrayList<>();
+    private final Map<String, List<CategoryNode>> trees = new HashMap<>();
     private final List<CategoryDetails> details = new ArrayList<>();
 
-    void add(CategoryNode node) {
-        tree.add(node);
+    void add(String language, CategoryNode node) {
+        trees.computeIfAbsent(language, code -> new ArrayList<>()).add(node);
     }
 
     void add(CategoryDetails category) {
@@ -23,8 +25,8 @@ class InMemoryCategoryReadRepository implements CategoryReadRepository {
     }
 
     @Override
-    public List<CategoryNode> findTree() {
-        return List.copyOf(tree);
+    public List<CategoryNode> findTree(String language) {
+        return List.copyOf(trees.getOrDefault(language, List.of()));
     }
 
     @Override

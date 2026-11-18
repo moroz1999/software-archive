@@ -1,5 +1,6 @@
 package com.archive.backend.category.infra;
 
+import static com.archive.backend.category.domain.CategoryTitleFixtures.titles;
 import static com.archive.backend.category.infra.SeededTree.DEMOSCENE;
 import static com.archive.backend.category.infra.SeededTree.GAMES;
 import static com.archive.backend.category.infra.SeededTree.INTRO;
@@ -10,7 +11,6 @@ import com.archive.backend.TestcontainersConfiguration;
 import com.archive.backend.category.domain.Category;
 import com.archive.backend.category.domain.CategoryId;
 import com.archive.backend.category.domain.CategoryParent;
-import com.archive.backend.category.domain.CategoryTitle;
 import jakarta.persistence.EntityManager;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -59,7 +59,7 @@ class JpaCategoryRepositoryIT {
 
     @Test
     void writesAtOnceForPlainSqlInTheSameTransaction() {
-        repository.save(Category.create(NEW, new CategoryTitle("Hardware"), null));
+        repository.save(Category.create(NEW, titles("Hardware"), null));
         assertThat(count("SELECT count(*) FROM category WHERE id = ?", NEW.value()))
                 .isEqualTo(1);
 
@@ -70,19 +70,48 @@ class JpaCategoryRepositoryIT {
 
     @Test
     void storesANewCategoryLastUnderItsParent() {
-        repository.save(Category.create(
-                NEW, new CategoryTitle("64K intro"), CategoryParent.restore(NEW, new CategoryId(INTRO))));
+        repository.save(Category.create(NEW, titles("64K intro"), CategoryParent.restore(NEW, new CategoryId(INTRO))));
 
         Category stored = reload(NEW);
 
-        assertThat(stored.getTitle()).isEqualTo(new CategoryTitle("64K intro"));
+        assertThat(stored.getTitles()).isEqualTo(titles("64K intro"));
         assertThat(stored.getParent()).isEqualTo(CategoryParent.restore(NEW, new CategoryId(INTRO)));
         assertThat(position(NEW.value())).isEqualTo(15);
     }
 
     @Test
+    void readsTheTitlesOfACategoryInEveryLanguage() {
+        assertThat(repository.findById(new CategoryId(GAMES)).orElseThrow().getTitles())
+                .isEqualTo(titles("Игры", "Games"));
+    }
+
+    @Test
+    void storesTheTitlesInEveryLanguageAndForgetsOneTakenAway() {
+        repository.save(Category.create(NEW, titles("Железо", "Hardware"), null));
+        assertThat(reload(NEW).getTitles()).isEqualTo(titles("Железо", "Hardware"));
+
+        Category hardware = repository.findById(NEW).orElseThrow();
+        hardware.edit(titles("Оборудование"), null);
+        repository.save(hardware);
+
+        assertThat(reload(NEW).getTitles()).isEqualTo(titles("Оборудование"));
+        assertThat(count("SELECT count(*) FROM category_title WHERE category_id = ?", NEW.value()))
+                .isOne();
+    }
+
+    @Test
+    void deletesTheTitlesWithTheCategory() {
+        repository.save(Category.create(NEW, titles("Железо", "Hardware"), null));
+
+        repository.delete(repository.findById(NEW).orElseThrow());
+
+        assertThat(count("SELECT count(*) FROM category_title WHERE category_id = ?", NEW.value()))
+                .isZero();
+    }
+
+    @Test
     void storesANewCategoryLastAtTheTop() {
-        repository.save(Category.create(NEW, new CategoryTitle("Hardware"), null));
+        repository.save(Category.create(NEW, titles("Hardware"), null));
 
         assertThat(reload(NEW).getParent()).isNull();
         assertThat(position(NEW.value())).isEqualTo(9);
@@ -93,10 +122,10 @@ class JpaCategoryRepositoryIT {
         CategoryId id = new CategoryId(INTRO_4K);
         Category intro = repository.findById(id).orElseThrow();
 
-        intro.edit(new CategoryTitle("4K intros"), intro.getParent());
+        intro.edit(titles("4K intros"), intro.getParent());
         repository.save(intro);
 
-        assertThat(reload(id).getTitle()).isEqualTo(new CategoryTitle("4K intros"));
+        assertThat(reload(id).getTitles()).isEqualTo(titles("4K intros"));
         assertThat(position(INTRO_4K)).isEqualTo(8);
     }
 
@@ -106,7 +135,7 @@ class JpaCategoryRepositoryIT {
         int last = count("SELECT count(*) FROM category WHERE parent_id = ?", DEMOSCENE);
         Category intro = repository.findById(id).orElseThrow();
 
-        intro.edit(intro.getTitle(), CategoryParent.restore(id, new CategoryId(DEMOSCENE)));
+        intro.edit(intro.getTitles(), CategoryParent.restore(id, new CategoryId(DEMOSCENE)));
         repository.save(intro);
 
         assertThat(reload(id).getParent()).isEqualTo(CategoryParent.restore(id, new CategoryId(DEMOSCENE)));

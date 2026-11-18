@@ -21,9 +21,10 @@ public class ListSoftwareReleasesHandler {
 
     @Transactional(readOnly = true)
     public List<SoftwareRelease> handle(ListSoftwareReleasesQuery q) {
-        SoftwareDetails software = reads.findById(q.id().value()).orElseThrow(SoftwareNotFoundException::new);
+        SoftwareDetails software =
+                reads.findById(q.id().value(), q.language().code()).orElseThrow(SoftwareNotFoundException::new);
         AddedBy softwareAddedBy = AddedBy.of(software.addedBy());
-        return reads.findReleases(software.id()).stream()
+        return reads.findReleases(software.id(), q.language().code()).stream()
                 .map(release -> release.over(software.hardware())
                         .withCanChange(AddedBy.of(release.addedBy()).mayBeChangedBy(q.actor(), softwareAddedBy)))
                 .toList();

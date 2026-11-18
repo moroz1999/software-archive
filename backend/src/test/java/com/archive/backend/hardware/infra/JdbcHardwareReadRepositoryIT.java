@@ -24,7 +24,7 @@ class JdbcHardwareReadRepositoryIT {
 
     @Test
     void readsTheHardwareOfThePlatformByGroupThenName() {
-        List<HardwareItem> items = reads.findByPlatform("vector");
+        List<HardwareItem> items = reads.findByPlatform("vector", "en");
 
         assertThat(items).extracting(HardwareItem::code).contains("vector06c", "ay8910", "tape", "beeper");
         assertThat(items).extracting(HardwareItem::code).doesNotContain("bk0011m", "msxdos");
@@ -35,7 +35,17 @@ class JdbcHardwareReadRepositoryIT {
     }
 
     @Test
+    void readsTheHardwareOfThePlatformByGroupThenNameInRussian() {
+        List<HardwareItem> items = reads.findByPlatform("vector", "ru");
+
+        assertThat(items).extracting(item -> GROUPS.indexOf(item.group())).isSorted();
+        assertThat(items.stream().filter(item -> item.group().equals("storage")).map(HardwareItem::name))
+                .containsExactly("Дискета", "Магнитофон");
+        assertThat(items).contains(new HardwareItem("vector06c", "Вектор-06Ц", "computers"));
+    }
+
+    @Test
     void readsNothingForAnUnknownPlatform() {
-        assertThat(reads.findByPlatform("zx")).isEmpty();
+        assertThat(reads.findByPlatform("zx", "en")).isEmpty();
     }
 }

@@ -20,6 +20,6 @@ The page of the tree of categories ([domain/categories.md](../domain/categories.
 
 | Call | Answer |
 |---|---|
-| `GET /api/categories` | `200`, the categories at the top of the tree, each `{id, title, children}` with its subcategories in their order |
+| `GET /api/categories` | `200`, the categories at the top of the tree, each `{id, title, children}` with its subcategories in their order; `title` in the language of `Accept-Language`, else in Russian ([localization.md](localization.md)) |
 
 The tree is small (a few hundred categories), so every view that needs it loads it whole.

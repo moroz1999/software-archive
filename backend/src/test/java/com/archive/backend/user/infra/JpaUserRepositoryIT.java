@@ -4,10 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.user.domain.ConfirmationToken;
 import com.archive.backend.user.domain.Email;
 import com.archive.backend.user.domain.GrantedGroups;
-import com.archive.backend.user.domain.InterfaceLanguage;
 import com.archive.backend.user.domain.Login;
 import com.archive.backend.user.domain.PasswordHash;
 import com.archive.backend.user.domain.PendingConfirmation;
@@ -154,7 +154,7 @@ class JpaUserRepositoryIT {
                         new PasswordHash("hash"),
                         new ConfirmationToken("b"),
                         NOW,
-                        InterfaceLanguage.EN)))
+                        Language.EN)))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
@@ -182,7 +182,7 @@ class JpaUserRepositoryIT {
                 new PasswordHash("hash"),
                 token,
                 NOW,
-                InterfaceLanguage.EN);
+                Language.EN);
     }
 
     private static UserId id(int n) {

@@ -1,3 +1,5 @@
 package com.archive.backend.category.app;
 
-public record ListCategoriesQuery() {}
+import com.archive.backend.shared.domain.Language;
+
+public record ListCategoriesQuery(Language language) {}

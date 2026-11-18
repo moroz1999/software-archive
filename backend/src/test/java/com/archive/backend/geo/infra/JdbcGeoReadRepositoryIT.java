@@ -1,11 +1,14 @@
 package com.archive.backend.geo.infra;
 
+import static com.archive.backend.geo.GeoTestRows.city;
+import static com.archive.backend.geo.GeoTestRows.country;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.archive.backend.TestcontainersConfiguration;
 import com.archive.backend.geo.read.CityItem;
 import com.archive.backend.geo.read.CountryItem;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -20,9 +23,11 @@ class JdbcGeoReadRepositoryIT {
 
     private static final UUID NORWAY = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID FINLAND = UUID.fromString("00000000-0000-0000-0000-000000000002");
+    private static final UUID LATVIA = UUID.fromString("00000000-0000-0000-0000-000000000003");
     private static final UUID TAMPERE = UUID.fromString("00000000-0000-0000-0000-000000000011");
     private static final UUID HELSINKI = UUID.fromString("00000000-0000-0000-0000-000000000012");
     private static final UUID OSLO = UUID.fromString("00000000-0000-0000-0000-000000000013");
+    private static final UUID ESPOO = UUID.fromString("00000000-0000-0000-0000-000000000014");
 
     @Autowired
     private JdbcGeoReadRepository reads;
@@ -30,38 +35,70 @@ class JdbcGeoReadRepositoryIT {
     @Autowired
     private JdbcTemplate jdbc;
 
-    @Test
-    void readsTheCountriesByName() {
-        insert();
-
-        assertThat(reads.findCountries())
-                .containsExactly(new CountryItem(FINLAND, "Finland"), new CountryItem(NORWAY, "Norway"));
+    @BeforeEach
+    void insert() {
+        country(jdbc, NORWAY, "Норвегия", "Norway");
+        country(jdbc, FINLAND, "Финляндия", "Finland");
+        city(jdbc, TAMPERE, FINLAND, "Тампере", "Tampere");
+        city(jdbc, HELSINKI, FINLAND, "Хельсинки", "Helsinki");
+        city(jdbc, OSLO, NORWAY, "Осло", "Oslo");
     }
 
     @Test
-    void readsTheCitiesOfACountryByName() {
-        insert();
+    void readsTheCountriesByNameInTheLanguageAskedFor() {
+        assertThat(reads.findCountries("en"))
+                .containsExactly(new CountryItem(FINLAND, "Finland"), new CountryItem(NORWAY, "Norway"));
+        assertThat(reads.findCountries("ru"))
+                .containsExactly(new CountryItem(NORWAY, "Норвегия"), new CountryItem(FINLAND, "Финляндия"));
+    }
 
-        assertThat(reads.findCities(FINLAND))
+    @Test
+    void namesACountryWithoutANameInTheLanguageAskedForInRussian() {
+        country(jdbc, LATVIA, "Латвия", null);
+
+        assertThat(reads.findCountries("en"))
+                .containsExactly(
+                        new CountryItem(FINLAND, "Finland"),
+                        new CountryItem(NORWAY, "Norway"),
+                        new CountryItem(LATVIA, "Латвия"));
+    }
+
+    @Test
+    void readsTheCitiesOfACountryByNameInTheLanguageAskedFor() {
+        assertThat(reads.findCities(FINLAND, "en"))
                 .containsExactly(new CityItem(HELSINKI, "Helsinki"), new CityItem(TAMPERE, "Tampere"));
+        assertThat(reads.findCities(FINLAND, "ru"))
+                .containsExactly(new CityItem(TAMPERE, "Тампере"), new CityItem(HELSINKI, "Хельсинки"));
+    }
+
+    @Test
+    void namesACityWithoutANameInTheLanguageAskedForInRussian() {
+        city(jdbc, ESPOO, FINLAND, "Эспоо", null);
+
+        assertThat(reads.findCities(FINLAND, "en"))
+                .containsExactly(
+                        new CityItem(HELSINKI, "Helsinki"),
+                        new CityItem(TAMPERE, "Tampere"),
+                        new CityItem(ESPOO, "Эспоо"));
     }
 
     @Test
     void readsNoCitiesForAnUnknownCountry() {
-        insert();
-
-        assertThat(reads.findCities(UUID.randomUUID())).isEmpty();
+        assertThat(reads.findCities(UUID.randomUUID(), "en")).isEmpty();
     }
 
-    private void insert() {
-        jdbc.update("INSERT INTO country (id, name) VALUES (?, 'Norway'), (?, 'Finland')", NORWAY, FINLAND);
-        jdbc.update(
-                "INSERT INTO city (id, name, country_id) VALUES (?, 'Tampere', ?), (?, 'Helsinki', ?), (?, 'Oslo', ?)",
-                TAMPERE,
+    @Test
+    void deletesTheNamesWithTheCountryAndTheCity() {
+        jdbc.update("DELETE FROM city WHERE country_id = ?", FINLAND);
+        jdbc.update("DELETE FROM country WHERE id = ?", FINLAND);
+
+        Integer names = jdbc.queryForObject(
+                "SELECT (SELECT count(*) FROM country_name WHERE country_id = ?)"
+                        + " + (SELECT count(*) FROM city_name WHERE city_id IN (?, ?))",
+                Integer.class,
                 FINLAND,
                 HELSINKI,
-                FINLAND,
-                OSLO,
-                NORWAY);
+                TAMPERE);
+        assertThat(names).isZero();
     }
 }

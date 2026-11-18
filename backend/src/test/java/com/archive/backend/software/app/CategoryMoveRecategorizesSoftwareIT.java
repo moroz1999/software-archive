@@ -1,5 +1,6 @@
 package com.archive.backend.software.app;
 
+import static com.archive.backend.category.domain.CategoryTitleFixtures.titles;
 import static com.archive.backend.user.TestActors.ADMIN;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -8,7 +9,6 @@ import com.archive.backend.TypesenseTestConfiguration;
 import com.archive.backend.category.app.UpdateCategoryCommand;
 import com.archive.backend.category.app.UpdateCategoryHandler;
 import com.archive.backend.category.domain.CategoryId;
-import com.archive.backend.category.domain.CategoryTitle;
 import com.archive.backend.user.TestActors;
 import java.util.List;
 import java.util.UUID;
@@ -78,8 +78,8 @@ class CategoryMoveRecategorizesSoftwareIT {
 
     @Test
     void takesTheSoftwareOutOfACategoryTheMovePutAboveAnotherOfItsOwn() {
-        handler.handle(new UpdateCategoryCommand(
-                ADMIN, new CategoryId(ACTION), new CategoryTitle("Action"), new CategoryId(DEMOSCENE)));
+        handler.handle(
+                new UpdateCategoryCommand(ADMIN, new CategoryId(ACTION), titles("Action"), new CategoryId(DEMOSCENE)));
 
         assertThat(categoriesOf(ELITE)).containsExactly(SHOOTERS);
         assertThat(categoriesOf(TETRIS)).containsExactlyInAnyOrder(STRATEGY, SHOOTERS);

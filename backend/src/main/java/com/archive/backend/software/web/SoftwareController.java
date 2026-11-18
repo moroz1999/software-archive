@@ -1,5 +1,6 @@
 package com.archive.backend.software.web;
 
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.software.app.CreateSoftwareHandler;
 import com.archive.backend.software.app.DeleteSoftwareCommand;
 import com.archive.backend.software.app.DeleteSoftwareHandler;
@@ -60,17 +61,17 @@ public class SoftwareController {
     }
 
     @GetMapping("/{id}")
-    public SoftwareDetailsDto get(Actor actor, @PathVariable UUID id) {
-        return webMapper.toDetails(getHandler.handle(new GetSoftwareQuery(actor, new SoftwareId(id))));
+    public SoftwareDetailsDto get(Actor actor, @PathVariable UUID id, Language language) {
+        return webMapper.toDetails(getHandler.handle(new GetSoftwareQuery(actor, new SoftwareId(id), language)));
     }
 
     /**
      * The releases of the software, each with the hardware it shows.
      */
     @GetMapping("/{id}/releases")
-    public List<SoftwareReleaseDto> releases(Actor actor, @PathVariable UUID id) {
+    public List<SoftwareReleaseDto> releases(Actor actor, @PathVariable UUID id, Language language) {
         return webMapper.toReleases(
-                id, releasesHandler.handle(new ListSoftwareReleasesQuery(actor, new SoftwareId(id))));
+                id, releasesHandler.handle(new ListSoftwareReleasesQuery(actor, new SoftwareId(id), language)));
     }
 
     @PostMapping

@@ -8,6 +8,7 @@ import com.archive.backend.geo.domain.CountryId;
 import com.archive.backend.geo.web.dto.CityDto;
 import com.archive.backend.geo.web.dto.CountryDto;
 import com.archive.backend.geo.web.mapper.GeoWebMapper;
+import com.archive.backend.shared.domain.Language;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -26,12 +27,12 @@ public class GeoController {
     private final GeoWebMapper webMapper;
 
     @GetMapping
-    public List<CountryDto> countries() {
-        return webMapper.toCountries(countriesHandler.handle(new ListCountriesQuery()));
+    public List<CountryDto> countries(Language language) {
+        return webMapper.toCountries(countriesHandler.handle(new ListCountriesQuery(language)));
     }
 
     @GetMapping("/{id}/cities")
-    public List<CityDto> cities(@PathVariable UUID id) {
-        return webMapper.toCities(citiesHandler.handle(new ListCitiesQuery(new CountryId(id))));
+    public List<CityDto> cities(@PathVariable UUID id, Language language) {
+        return webMapper.toCities(citiesHandler.handle(new ListCitiesQuery(new CountryId(id), language)));
     }
 }

@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.archive.backend.category.domain.CategoryId;
 import com.archive.backend.category.read.CategoryDetails;
 import com.archive.backend.shared.domain.error.NotFoundException;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +20,7 @@ class GetCategoryHandlerTest {
 
     @Test
     void returnsTheCategory() {
-        CategoryDetails action = new CategoryDetails(ID, "Action", GAMES);
+        CategoryDetails action = new CategoryDetails(ID, Map.of("ru", "Экшен", "en", "Action"), GAMES);
         reads.add(action);
 
         assertThat(handler.handle(new GetCategoryQuery(new CategoryId(ID)))).isEqualTo(action);

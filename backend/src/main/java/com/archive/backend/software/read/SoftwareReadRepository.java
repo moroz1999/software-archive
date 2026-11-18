@@ -17,17 +17,29 @@ public interface SoftwareReadRepository {
      */
     Page<SoftwareSummary> findLatest(@Nullable String platform, Pageable pageable);
 
-    Optional<SoftwareDetails> findById(UUID id);
+    /**
+     * Software with its platform, hardware and categories named in the language of the given code, or in Russian when
+     * they have no name in that one.
+     */
+    Optional<SoftwareDetails> findById(UUID id, String language);
+
+    /** Whether the software is in the archive. */
+    boolean exists(UUID id);
 
     /**
-     * The releases of software, each with only its own hardware; none for unknown software.
+     * The releases of software, each with only its own hardware, named as in {@link #findById}; none for unknown
+     * software.
      */
-    List<SoftwareRelease> findReleases(UUID softwareId);
+    List<SoftwareRelease> findReleases(UUID softwareId, String language);
 
     /**
-     * A release of the software as it states itself; empty when the software has no such release.
+     * A release of the software as it states itself, its hardware named as in {@link #findById}; empty when the
+     * software has no such release.
      */
-    Optional<ReleaseDetails> findRelease(UUID softwareId, UUID releaseId);
+    Optional<ReleaseDetails> findRelease(UUID softwareId, UUID releaseId, String language);
+
+    /** Whether the software has such a release. */
+    boolean releaseExists(UUID softwareId, UUID releaseId);
 
     /**
      * The software the person is credited on, by themselves or by a label, in the order of the release dates and then

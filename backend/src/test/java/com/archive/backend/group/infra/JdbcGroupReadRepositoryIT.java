@@ -1,5 +1,7 @@
 package com.archive.backend.group.infra;
 
+import static com.archive.backend.geo.GeoTestRows.city;
+import static com.archive.backend.geo.GeoTestRows.country;
 import static com.archive.backend.user.TestActors.ADDED;
 import static com.archive.backend.user.TestActors.MEMBER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -64,13 +66,10 @@ class JdbcGroupReadRepositoryIT {
 
     @BeforeEach
     void insert() {
-        jdbc.update("INSERT INTO country (id, name) VALUES (?, 'Finland'), (?, 'Norway')", FINLAND, NORWAY);
-        jdbc.update(
-                "INSERT INTO city (id, name, country_id) VALUES (?, 'Helsinki', ?), (?, 'Tampere', ?)",
-                HELSINKI,
-                FINLAND,
-                TAMPERE,
-                FINLAND);
+        country(jdbc, FINLAND, "Финляндия", "Finland");
+        country(jdbc, NORWAY, "Норвегия", "Norway");
+        city(jdbc, HELSINKI, FINLAND, "Хельсинки", "Helsinki");
+        city(jdbc, TAMPERE, FINLAND, "Тампере", "Tampere");
 
         jdbc.update("INSERT INTO person (id, real_name) VALUES (?, 'Fyodor Ivanko'), (?, NULL)", FEDYA, ZED);
         jdbc.update(
@@ -227,8 +226,16 @@ class JdbcGroupReadRepositoryIT {
     }
 
     @Test
+    void namesTheLocationsOfAGroupInTheLanguageAskedFor() {
+        assertThat(reads.findById(CREW, "ru").orElseThrow().locations())
+                .containsExactly(
+                        new GroupLocation(FINLAND, "Финляндия", HELSINKI, "Хельсинки", true),
+                        new GroupLocation(NORWAY, "Норвегия", null, null, false));
+    }
+
+    @Test
     void readsTheDetailsOfAGroup() {
-        assertThat(reads.findById(CREW))
+        assertThat(reads.findById(CREW, "en"))
                 .get()
                 .usingRecursiveComparison()
                 .ignoringFields("added")
@@ -252,7 +259,7 @@ class JdbcGroupReadRepositoryIT {
 
     @Test
     void readsAGroupKnownOnlyByItsName() {
-        assertThat(reads.findById(BAND))
+        assertThat(reads.findById(BAND, "en"))
                 .get()
                 .usingRecursiveComparison()
                 .ignoringFields("added")
@@ -271,15 +278,15 @@ class JdbcGroupReadRepositoryIT {
 
     @Test
     void showsAGroupUnderItsNameWhateverLabelIsMarked() {
-        assertThat(reads.findById(CREW).orElseThrow().name()).isEqualTo("Crew Ltd");
-        assertThat(reads.findById(OLDIES).orElseThrow().labels())
+        assertThat(reads.findById(CREW, "en").orElseThrow().name()).isEqualTo("Crew Ltd");
+        assertThat(reads.findById(OLDIES, "en").orElseThrow().labels())
                 .extracting(GroupLabel::name)
                 .containsExactly("Alpha", "Zeta");
     }
 
     @Test
     void findsNothingForAnUnknownId() {
-        assertThat(reads.findById(UUID.randomUUID())).isEmpty();
+        assertThat(reads.findById(UUID.randomUUID(), "en")).isEmpty();
     }
 
     /**
@@ -312,7 +319,7 @@ class JdbcGroupReadRepositoryIT {
         TestActors.store(jdbc);
         jdbc.update("UPDATE \"group\" SET added_by = ? WHERE id = ?", MEMBER_ID.value(), CREW);
 
-        assertThat(reads.findById(CREW))
+        assertThat(reads.findById(CREW, "en"))
                 .hasValueSatisfying(group -> assertThat(group.addedBy()).isEqualTo(MEMBER_ID.value()));
     }
 

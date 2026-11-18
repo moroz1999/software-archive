@@ -15,6 +15,6 @@ public class ListCategoriesHandler {
 
     @Transactional(readOnly = true)
     public List<CategoryNode> handle(ListCategoriesQuery q) {
-        return reads.findTree();
+        return reads.findTree(q.language().code());
     }
 }

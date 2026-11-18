@@ -19,10 +19,13 @@ public class GetSoftwareReleaseHandler {
 
     @Transactional(readOnly = true)
     public ReleaseDetails handle(GetSoftwareReleaseQuery q) {
-        if (reads.findById(q.softwareId().value()).isEmpty()) {
+        if (!reads.exists(q.softwareId().value())) {
             throw new SoftwareNotFoundException();
         }
-        return reads.findRelease(q.softwareId().value(), q.releaseId().value())
+        return reads.findRelease(
+                        q.softwareId().value(),
+                        q.releaseId().value(),
+                        q.language().code())
                 .orElseThrow(ReleaseNotFoundException::new);
     }
 }

@@ -1,10 +1,10 @@
 package com.archive.backend.user.infra;
 
 import com.archive.backend.shared.config.AuthProperties;
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.user.domain.ConfirmationMailer;
 import com.archive.backend.user.domain.ConfirmationToken;
 import com.archive.backend.user.domain.Email;
-import com.archive.backend.user.domain.InterfaceLanguage;
 import com.archive.backend.user.domain.UserName;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -24,7 +24,7 @@ public class SmtpConfirmationMailer implements ConfirmationMailer {
     private final AuthProperties properties;
 
     @Override
-    public void send(Email to, UserName name, ConfirmationToken token, InterfaceLanguage language) {
+    public void send(Email to, UserName name, ConfirmationToken token, Language language) {
         String link = properties.publicUrl() + "/verify-email?token="
                 + URLEncoder.encode(token.value(), StandardCharsets.UTF_8);
         SimpleMailMessage letter = new SimpleMailMessage();

@@ -52,7 +52,7 @@ class InMemoryAuthorReadRepository implements AuthorReadRepository {
     }
 
     @Override
-    public Optional<AuthorDetails> findById(UUID id) {
+    public Optional<AuthorDetails> findById(UUID id, String language) {
         return details.stream().filter(author -> author.id().equals(id)).findFirst();
     }
 }

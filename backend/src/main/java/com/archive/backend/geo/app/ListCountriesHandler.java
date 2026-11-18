@@ -15,6 +15,6 @@ public class ListCountriesHandler {
 
     @Transactional(readOnly = true)
     public List<CountryItem> handle(ListCountriesQuery q) {
-        return reads.findCountries();
+        return reads.findCountries(q.language().code());
     }
 }

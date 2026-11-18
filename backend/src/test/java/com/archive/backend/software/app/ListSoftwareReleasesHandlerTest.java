@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.read.SoftwareDetails;
@@ -43,14 +44,15 @@ class ListSoftwareReleasesHandlerTest {
                 ADDED));
         reads.addReleases(ID, release("Elite", List.of()), release("Elite AY", List.of(AY)));
 
-        assertThat(handler.handle(new ListSoftwareReleasesQuery(Actor.anonymous(), new SoftwareId(ID))))
+        assertThat(handler.handle(new ListSoftwareReleasesQuery(Actor.anonymous(), new SoftwareId(ID), Language.EN)))
                 .extracting(SoftwareRelease::title, SoftwareRelease::hardware)
                 .containsExactly(tuple("Elite", List.of(VECTOR, BEEPER)), tuple("Elite AY", List.of(VECTOR, AY)));
     }
 
     @Test
     void failsWhenTheSoftwareDoesNotExist() {
-        assertThatThrownBy(() -> handler.handle(new ListSoftwareReleasesQuery(Actor.anonymous(), new SoftwareId(ID))))
+        assertThatThrownBy(() -> handler.handle(
+                        new ListSoftwareReleasesQuery(Actor.anonymous(), new SoftwareId(ID), Language.EN)))
                 .isInstanceOfSatisfying(
                         NotFoundException.class, e -> assertThat(e.code()).isEqualTo("software.not-found"));
     }
@@ -101,13 +103,13 @@ class ListSoftwareReleasesHandlerTest {
                         MEMBER_ID.value(),
                         false));
 
-        assertThat(handler.handle(new ListSoftwareReleasesQuery(MEMBER, new SoftwareId(ID))))
+        assertThat(handler.handle(new ListSoftwareReleasesQuery(MEMBER, new SoftwareId(ID), Language.EN)))
                 .extracting(SoftwareRelease::title, SoftwareRelease::canChange)
                 .containsExactly(tuple("Elite", false), tuple("Elite AY", true));
-        assertThat(handler.handle(new ListSoftwareReleasesQuery(ADMIN, new SoftwareId(ID))))
+        assertThat(handler.handle(new ListSoftwareReleasesQuery(ADMIN, new SoftwareId(ID), Language.EN)))
                 .extracting(SoftwareRelease::canChange)
                 .containsExactly(true, true);
-        assertThat(handler.handle(new ListSoftwareReleasesQuery(OTHER, new SoftwareId(ID))))
+        assertThat(handler.handle(new ListSoftwareReleasesQuery(OTHER, new SoftwareId(ID), Language.EN)))
                 .extracting(SoftwareRelease::canChange)
                 .containsExactly(false, false);
     }
@@ -142,7 +144,7 @@ class ListSoftwareReleasesHandlerTest {
                         null,
                         false));
 
-        assertThat(handler.handle(new ListSoftwareReleasesQuery(MEMBER, new SoftwareId(ID))))
+        assertThat(handler.handle(new ListSoftwareReleasesQuery(MEMBER, new SoftwareId(ID), Language.EN)))
                 .extracting(SoftwareRelease::canChange)
                 .containsExactly(true);
     }

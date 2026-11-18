@@ -1,5 +1,6 @@
 package com.archive.backend.user.web.mapper;
 
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.user.app.ConfirmEmailCommand;
 import com.archive.backend.user.app.GetCurrentUserQuery;
@@ -11,7 +12,6 @@ import com.archive.backend.user.app.ResendConfirmationCommand;
 import com.archive.backend.user.domain.Actor;
 import com.archive.backend.user.domain.ConfirmationToken;
 import com.archive.backend.user.domain.Email;
-import com.archive.backend.user.domain.InterfaceLanguage;
 import com.archive.backend.user.domain.Login;
 import com.archive.backend.user.domain.Password;
 import com.archive.backend.user.domain.UserName;
@@ -96,8 +96,8 @@ public interface AuthWebMapper {
         return new Password(required(value, "user.password-too-short"));
     }
 
-    private static InterfaceLanguage toLanguage(@Nullable String value) {
-        return value == null ? InterfaceLanguage.EN : InterfaceLanguage.ofCode(value);
+    private static Language toLanguage(@Nullable String value) {
+        return value == null ? Language.EN : Language.ofCode(value);
     }
 
     private static String required(@Nullable String value, String code) {

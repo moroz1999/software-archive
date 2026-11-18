@@ -1,6 +1,7 @@
 package com.archive.backend.software.web.mapper;
 
 import com.archive.backend.hardware.domain.HardwareCode;
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.software.app.CreateReleaseCommand;
 import com.archive.backend.software.app.DeleteReleaseCommand;
@@ -53,8 +54,8 @@ public interface ReleaseWebMapper {
         return new ReleaseCreatedDto(id.value());
     }
 
-    default GetSoftwareReleaseQuery toGet(UUID softwareId, UUID releaseId) {
-        return new GetSoftwareReleaseQuery(new SoftwareId(softwareId), new ReleaseId(releaseId));
+    default GetSoftwareReleaseQuery toGet(UUID softwareId, UUID releaseId, Language language) {
+        return new GetSoftwareReleaseQuery(new SoftwareId(softwareId), new ReleaseId(releaseId), language);
     }
 
     default CreateReleaseCommand toCreate(Actor actor, UUID softwareId, ReleaseRequestDto request) {

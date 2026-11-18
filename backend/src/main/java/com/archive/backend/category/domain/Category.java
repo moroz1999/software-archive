@@ -18,20 +18,20 @@ import org.jspecify.annotations.Nullable;
 public final class Category {
 
     private final CategoryId id;
-    private CategoryTitle title;
+    private CategoryTitles titles;
     private @Nullable CategoryParent parent;
 
     @Getter(lombok.AccessLevel.NONE)
     private final List<DomainEvent> events = new ArrayList<>();
 
-    public Category(CategoryId id, CategoryTitle title, @Nullable CategoryParent parent) {
+    public Category(CategoryId id, CategoryTitles titles, @Nullable CategoryParent parent) {
         this.id = Objects.requireNonNull(id, "id");
-        this.title = Objects.requireNonNull(title, "title");
+        this.titles = Objects.requireNonNull(titles, "titles");
         this.parent = checkedFor(id, parent);
     }
 
-    public static Category create(CategoryId id, CategoryTitle title, @Nullable CategoryParent parent) {
-        return new Category(id, title, parent);
+    public static Category create(CategoryId id, CategoryTitles titles, @Nullable CategoryParent parent) {
+        return new Category(id, titles, parent);
     }
 
     /** Categories are kept by administrators only (docs/domain/users.md). */
@@ -42,8 +42,8 @@ public final class Category {
     /**
      * A category put under another parent, or to or from the top, tells it moved.
      */
-    public void edit(CategoryTitle title, @Nullable CategoryParent parent) {
-        this.title = Objects.requireNonNull(title, "title");
+    public void edit(CategoryTitles titles, @Nullable CategoryParent parent) {
+        this.titles = Objects.requireNonNull(titles, "titles");
         CategoryParent checked = checkedFor(id, parent);
         if (!Objects.equals(parentId(this.parent), parentId(checked))) {
             events.add(new CategoryMoved(id));

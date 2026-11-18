@@ -18,6 +18,7 @@ import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.HardwareUnknownException;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.shared.web.ApiExceptionHandler;
 import com.archive.backend.software.app.CreateReleaseCommand;
 import com.archive.backend.software.app.CreateReleaseHandler;
@@ -102,8 +103,25 @@ class SoftwareReleaseControllerTest {
     private GetReleaseArchiveFileHandler archiveFileHandler;
 
     @Test
+    void returnsAReleaseInTheLanguageAskedFor() throws Exception {
+        when(getHandler.handle(new GetSoftwareReleaseQuery(new SoftwareId(ELITE), new ReleaseId(AY_MOD), Language.RU)))
+                .thenReturn(new ReleaseDetails(
+                        AY_MOD,
+                        null,
+                        null,
+                        "mod",
+                        null,
+                        null,
+                        List.of(new SoftwareHardware("floppy", "Дискета", "storage"))));
+
+        mvc.perform(get(RELEASE, ELITE, AY_MOD).header("Accept-Language", "ru"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.hardware[0].name").value("Дискета"));
+    }
+
+    @Test
     void returnsAReleaseAsItStatesItself() throws Exception {
-        when(getHandler.handle(new GetSoftwareReleaseQuery(new SoftwareId(ELITE), new ReleaseId(AY_MOD))))
+        when(getHandler.handle(new GetSoftwareReleaseQuery(new SoftwareId(ELITE), new ReleaseId(AY_MOD), Language.EN)))
                 .thenReturn(new ReleaseDetails(
                         AY_MOD,
                         null,

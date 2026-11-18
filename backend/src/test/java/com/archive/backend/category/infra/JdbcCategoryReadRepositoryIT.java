@@ -9,8 +9,10 @@ import com.archive.backend.TestcontainersConfiguration;
 import com.archive.backend.category.read.CategoryDetails;
 import com.archive.backend.category.read.CategoryNode;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -18,7 +20,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/** Reads the tree the schema brings: the categories of zxart. */
+/** Reads the tree the schema brings: the categories of zxart, titled in English and in Russian. */
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({TestcontainersConfiguration.class, JdbcCategoryReadRepository.class})
@@ -43,7 +45,7 @@ class JdbcCategoryReadRepositoryIT {
 
     @Test
     void readsTheWholeTreeInItsOrder() {
-        List<CategoryNode> tree = reads.findTree();
+        List<CategoryNode> tree = reads.findTree("en");
 
         assertThat(tree)
                 .extracting(CategoryNode::title)
@@ -85,25 +87,81 @@ class JdbcCategoryReadRepositoryIT {
     }
 
     @Test
+    void readsTheTreeInRussian() {
+        List<CategoryNode> tree = reads.findTree("ru");
+
+        assertThat(tree)
+                .extracting(CategoryNode::title)
+                .containsExactly(
+                        "Игры",
+                        "Системное программное обеспечение",
+                        "Разное",
+                        "Образовательные",
+                        "Сборники",
+                        "Демосцена",
+                        "Пресса",
+                        "Прикладное ПО",
+                        "Серии");
+        assertThat(child(tree.get(5), "Интро").children().get(8).title()).isEqualTo("4K интро");
+    }
+
+    @Test
+    void titlesEveryCategoryOfZxartInRussian() {
+        Integer untitled = jdbc.queryForObject(
+                "SELECT count(*) FROM category c WHERE NOT EXISTS"
+                        + " (SELECT 1 FROM category_title t WHERE t.category_id = c.id AND t.language = 'ru')",
+                Integer.class);
+
+        assertThat(untitled).isZero();
+    }
+
+    @Test
     void readsACategoryAddedLastAtTheEndOfItsParent() {
         UUID added = UUID.fromString("00000000-0000-0000-0000-000000000001");
-        jdbc.update(
-                "INSERT INTO category (id, parent_id, title, position) VALUES (?, ?, '64K intro', 15)", added, INTRO);
+        insert(added, INTRO, 15, "64K интро", "64K intro");
 
-        List<CategoryNode> intros = child(reads.findTree().get(5), "Intro").children();
+        List<CategoryNode> intros = child(reads.findTree("en").get(5), "Intro").children();
 
         assertThat(intros).hasSize(16);
         assertThat(intros.getLast()).isEqualTo(new CategoryNode(added, "64K intro", List.of()));
     }
 
     @Test
-    void readsACategoryWithItsParent() {
-        assertThat(reads.findById(INTRO)).hasValue(new CategoryDetails(INTRO, "Intro", DEMOSCENE));
+    void titlesACategoryWithoutATitleInTheLanguageAskedForInRussian() {
+        UUID added = UUID.fromString("00000000-0000-0000-0000-000000000001");
+        insert(added, INTRO, 15, "64K интро", null);
+
+        List<CategoryNode> intros = child(reads.findTree("en").get(5), "Intro").children();
+
+        assertThat(intros.getLast()).isEqualTo(new CategoryNode(added, "64K интро", List.of()));
+    }
+
+    @Test
+    void readsACategoryWithItsParentAndItsTitlesInEveryLanguage() {
+        assertThat(reads.findById(INTRO))
+                .hasValue(new CategoryDetails(INTRO, Map.of("en", "Intro", "ru", "Интро"), DEMOSCENE));
     }
 
     @Test
     void readsACategoryAtTheTopWithoutAParent() {
-        assertThat(reads.findById(GAMES)).hasValue(new CategoryDetails(GAMES, "Games", null));
+        assertThat(reads.findById(GAMES))
+                .hasValue(new CategoryDetails(GAMES, Map.of("en", "Games", "ru", "Игры"), null));
+    }
+
+    @Test
+    void readsOnlyTheTitlesACategoryHas() {
+        UUID added = UUID.fromString("00000000-0000-0000-0000-000000000001");
+        insert(added, INTRO, 15, "64K интро", null);
+
+        assertThat(reads.findById(added)).hasValue(new CategoryDetails(added, Map.of("ru", "64K интро"), INTRO));
+    }
+
+    private void insert(UUID id, UUID parent, int position, String russian, @Nullable String english) {
+        jdbc.update("INSERT INTO category (id, parent_id, position) VALUES (?, ?, ?)", id, parent, position);
+        jdbc.update("INSERT INTO category_title (category_id, language, title) VALUES (?, 'ru', ?)", id, russian);
+        if (english != null) {
+            jdbc.update("INSERT INTO category_title (category_id, language, title) VALUES (?, 'en', ?)", id, english);
+        }
     }
 
     @Test

@@ -19,14 +19,14 @@ public class ListScreenshotsHandler {
     @Transactional(readOnly = true)
     public List<SoftwareScreenshot> handle(ListScreenshotsQuery q) {
         UUID softwareId = q.softwareId().value();
-        if (reads.findById(softwareId).isEmpty()) {
+        if (!reads.exists(softwareId)) {
             throw new SoftwareNotFoundException();
         }
         if (q.releaseId() == null) {
             return reads.findScreenshots(softwareId);
         }
         UUID releaseId = q.releaseId().value();
-        if (reads.findRelease(softwareId, releaseId).isEmpty()) {
+        if (!reads.releaseExists(softwareId, releaseId)) {
             throw new ReleaseNotFoundException();
         }
         return reads.findReleaseScreenshots(releaseId);

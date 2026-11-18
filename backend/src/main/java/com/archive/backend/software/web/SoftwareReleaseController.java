@@ -1,5 +1,6 @@
 package com.archive.backend.software.web;
 
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.software.app.CreateReleaseHandler;
 import com.archive.backend.software.app.DeleteReleaseHandler;
 import com.archive.backend.software.app.GetReleaseArchiveFileHandler;
@@ -58,8 +59,8 @@ public class SoftwareReleaseController {
      * A release as it states itself, to edit it.
      */
     @GetMapping("/{releaseId}")
-    public ReleaseDetailsDto get(@PathVariable UUID softwareId, @PathVariable UUID releaseId) {
-        return webMapper.toDetails(softwareId, getHandler.handle(webMapper.toGet(softwareId, releaseId)));
+    public ReleaseDetailsDto get(@PathVariable UUID softwareId, @PathVariable UUID releaseId, Language language) {
+        return webMapper.toDetails(softwareId, getHandler.handle(webMapper.toGet(softwareId, releaseId, language)));
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)

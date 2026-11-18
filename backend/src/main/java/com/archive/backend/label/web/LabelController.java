@@ -27,6 +27,7 @@ import com.archive.backend.label.web.dto.LabelOwnerRequestDto;
 import com.archive.backend.label.web.dto.LabelRequestDto;
 import com.archive.backend.label.web.dto.NewLabelRequestDto;
 import com.archive.backend.label.web.mapper.LabelWebMapper;
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.user.domain.Actor;
 import java.net.URI;
@@ -73,8 +74,8 @@ public class LabelController {
     }
 
     @GetMapping("/{id}")
-    public LabelDetailsDto get(Actor actor, @PathVariable UUID id) {
-        return webMapper.toDetails(getHandler.handle(new GetLabelQuery(actor, new LabelId(id))));
+    public LabelDetailsDto get(Actor actor, @PathVariable UUID id, Language language) {
+        return webMapper.toDetails(getHandler.handle(new GetLabelQuery(actor, new LabelId(id), language)));
     }
 
     @PutMapping("/{id}")

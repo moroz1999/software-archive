@@ -16,7 +16,8 @@ public class GetGroupHandler {
 
     @Transactional(readOnly = true)
     public GroupDetails handle(GetGroupQuery q) {
-        GroupDetails group = reads.findById(q.id().value()).orElseThrow(GroupNotFoundException::new);
+        GroupDetails group =
+                reads.findById(q.id().value(), q.language().code()).orElseThrow(GroupNotFoundException::new);
         return group.withCanChange(AddedBy.of(group.addedBy()).mayBeChangedBy(q.actor()));
     }
 }

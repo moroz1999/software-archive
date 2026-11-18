@@ -4,6 +4,7 @@ import static com.archive.backend.user.TestActors.ADDED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.software.domain.ReleaseId;
 import com.archive.backend.software.domain.SoftwareId;
@@ -35,14 +36,15 @@ class GetSoftwareReleaseHandlerTest {
     void returnsTheReleaseAsItStatesItself() {
         eliteWithAyMod();
 
-        assertThat(handler.handle(new GetSoftwareReleaseQuery(new SoftwareId(ELITE), new ReleaseId(AY_MOD))))
+        assertThat(handler.handle(
+                        new GetSoftwareReleaseQuery(new SoftwareId(ELITE), new ReleaseId(AY_MOD), Language.EN)))
                 .isEqualTo(AY_MOD_DETAILS);
     }
 
     @Test
     void failsWhenTheSoftwareDoesNotExist() {
-        assertThatThrownBy(
-                        () -> handler.handle(new GetSoftwareReleaseQuery(new SoftwareId(ELITE), new ReleaseId(AY_MOD))))
+        assertThatThrownBy(() -> handler.handle(
+                        new GetSoftwareReleaseQuery(new SoftwareId(ELITE), new ReleaseId(AY_MOD), Language.EN)))
                 .isInstanceOfSatisfying(
                         NotFoundException.class, e -> assertThat(e.code()).isEqualTo("software.not-found"));
     }
@@ -51,8 +53,8 @@ class GetSoftwareReleaseHandlerTest {
     void failsWhenTheSoftwareHasNoSuchRelease() {
         eliteWithAyMod();
 
-        assertThatThrownBy(() -> handler.handle(
-                        new GetSoftwareReleaseQuery(new SoftwareId(ELITE), new ReleaseId(UUID.randomUUID()))))
+        assertThatThrownBy(() -> handler.handle(new GetSoftwareReleaseQuery(
+                        new SoftwareId(ELITE), new ReleaseId(UUID.randomUUID()), Language.EN)))
                 .isInstanceOfSatisfying(
                         NotFoundException.class, e -> assertThat(e.code()).isEqualTo("release.not-found"));
     }

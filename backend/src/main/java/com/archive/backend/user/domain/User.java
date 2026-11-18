@@ -1,5 +1,6 @@
 package com.archive.backend.user.domain;
 
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.shared.domain.ddd.AggregateRoot;
 import com.archive.backend.shared.domain.ddd.DomainEvent;
 import java.time.Duration;
@@ -65,7 +66,7 @@ public final class User {
             PasswordHash hash,
             ConfirmationToken token,
             Instant now,
-            InterfaceLanguage language) {
+            Language language) {
         User user = new User(id, name, email, hash, now, UserStatus.UNCONFIRMED, Set.of(), pendingFor(token, now));
         user.events.add(new ConfirmationLinkIssued(email, name, token, language));
         return user;
@@ -82,7 +83,7 @@ public final class User {
     /**
      * Replaces the confirmation link of an unconfirmed account with a new one.
      */
-    public void renewConfirmation(ConfirmationToken token, Instant now, InterfaceLanguage language) {
+    public void renewConfirmation(ConfirmationToken token, Instant now, Language language) {
         if (status == UserStatus.CONFIRMED) {
             throw new UserAlreadyConfirmedException();
         }

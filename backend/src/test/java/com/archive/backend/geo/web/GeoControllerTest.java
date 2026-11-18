@@ -15,6 +15,7 @@ import com.archive.backend.geo.read.CountryItem;
 import com.archive.backend.geo.web.mapper.GeoWebMapperImpl;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.shared.web.ApiExceptionHandler;
 import java.util.List;
 import java.util.UUID;
@@ -43,7 +44,7 @@ class GeoControllerTest {
 
     @Test
     void listsTheCountries() throws Exception {
-        when(countriesHandler.handle(new ListCountriesQuery()))
+        when(countriesHandler.handle(new ListCountriesQuery(Language.EN)))
                 .thenReturn(List.of(new CountryItem(COUNTRY, "Finland")));
 
         mvc.perform(get("/api/countries"))
@@ -54,13 +55,28 @@ class GeoControllerTest {
 
     @Test
     void listsTheCitiesOfACountry() throws Exception {
-        when(citiesHandler.handle(new ListCitiesQuery(new CountryId(COUNTRY))))
+        when(citiesHandler.handle(new ListCitiesQuery(new CountryId(COUNTRY), Language.EN)))
                 .thenReturn(List.of(new CityItem(CITY, "Helsinki")));
 
         mvc.perform(get("/api/countries/{id}/cities", COUNTRY))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(CITY.toString()))
                 .andExpect(jsonPath("$[0].name").value("Helsinki"));
+    }
+
+    @Test
+    void listsTheCountriesAndCitiesInTheLanguageAskedFor() throws Exception {
+        when(countriesHandler.handle(new ListCountriesQuery(Language.RU)))
+                .thenReturn(List.of(new CountryItem(COUNTRY, "Финляндия")));
+        when(citiesHandler.handle(new ListCitiesQuery(new CountryId(COUNTRY), Language.RU)))
+                .thenReturn(List.of(new CityItem(CITY, "Хельсинки")));
+
+        mvc.perform(get("/api/countries").header("Accept-Language", "ru"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name").value("Финляндия"));
+        mvc.perform(get("/api/countries/{id}/cities", COUNTRY).header("Accept-Language", "ru"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name").value("Хельсинки"));
     }
 
     @Test

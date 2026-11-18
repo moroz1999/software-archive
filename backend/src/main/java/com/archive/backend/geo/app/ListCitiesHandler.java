@@ -15,6 +15,6 @@ public class ListCitiesHandler {
 
     @Transactional(readOnly = true)
     public List<CityItem> handle(ListCitiesQuery q) {
-        return reads.findCities(q.country().value());
+        return reads.findCities(q.country().value(), q.language().code());
     }
 }

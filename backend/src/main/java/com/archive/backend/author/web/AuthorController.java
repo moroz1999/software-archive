@@ -13,6 +13,7 @@ import com.archive.backend.author.web.dto.AuthorCreatedDto;
 import com.archive.backend.author.web.dto.AuthorDetailsDto;
 import com.archive.backend.author.web.dto.AuthorRequestDto;
 import com.archive.backend.author.web.mapper.AuthorWebMapper;
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.user.domain.Actor;
 import java.net.URI;
 import java.util.UUID;
@@ -58,8 +59,8 @@ public class AuthorController {
     }
 
     @GetMapping("/{id}")
-    public AuthorDetailsDto get(Actor actor, @PathVariable UUID id) {
-        return webMapper.toDetails(getHandler.handle(new GetAuthorQuery(actor, new AuthorId(id))));
+    public AuthorDetailsDto get(Actor actor, @PathVariable UUID id, Language language) {
+        return webMapper.toDetails(getHandler.handle(new GetAuthorQuery(actor, new AuthorId(id), language)));
     }
 
     @PostMapping

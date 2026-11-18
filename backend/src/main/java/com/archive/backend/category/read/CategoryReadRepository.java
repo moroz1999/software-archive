@@ -10,9 +10,10 @@ import java.util.UUID;
 public interface CategoryReadRepository {
 
     /**
-     * The whole tree: the categories at its top, each with its subcategories, in their order.
+     * The whole tree: the categories at its top, each with its subcategories, in their order; each titled in the
+     * language of the given code, or in Russian when it has no title in that one.
      */
-    List<CategoryNode> findTree();
+    List<CategoryNode> findTree(String language);
 
     /**
      * A category; nothing for an unknown one.

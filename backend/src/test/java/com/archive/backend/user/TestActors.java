@@ -1,10 +1,10 @@
 package com.archive.backend.user;
 
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.user.domain.Actor;
 import com.archive.backend.user.domain.AddedBy;
 import com.archive.backend.user.domain.ConfirmationToken;
 import com.archive.backend.user.domain.Email;
-import com.archive.backend.user.domain.InterfaceLanguage;
 import com.archive.backend.user.domain.PasswordHash;
 import com.archive.backend.user.domain.User;
 import com.archive.backend.user.domain.UserGroup;
@@ -57,7 +57,7 @@ public final class TestActors {
                 new PasswordHash("hash"),
                 token,
                 now,
-                InterfaceLanguage.EN);
+                Language.EN);
         user.confirm(token, now);
         actor.groups().forEach(user::grant);
         String accessToken = tokens.issue(user, now).value();

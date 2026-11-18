@@ -6,12 +6,12 @@ import static com.archive.backend.user.app.UserFixtures.PASSWORD;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.shared.domain.error.RuleViolationException;
 import com.archive.backend.user.app.UserFixtures.MovingClock;
 import com.archive.backend.user.app.UserFixtures.RecordingMailer;
 import com.archive.backend.user.domain.ConfirmationToken;
 import com.archive.backend.user.domain.Email;
-import com.archive.backend.user.domain.InterfaceLanguage;
 import com.archive.backend.user.domain.PasswordHash;
 import com.archive.backend.user.domain.Registrations;
 import com.archive.backend.user.domain.User;
@@ -40,7 +40,7 @@ class RegisterUserHandlerTest {
         assertThat(mailer.letters).singleElement().satisfies(letter -> {
             assertThat(letter.to()).isEqualTo(new Email("zed@example.com"));
             assertThat(letter.name()).isEqualTo(new UserName("Zed"));
-            assertThat(letter.language()).isEqualTo(InterfaceLanguage.RU);
+            assertThat(letter.language()).isEqualTo(Language.RU);
             assertThat(Objects.requireNonNull(user.getConfirmation()).digest())
                     .isEqualTo(letter.token().digest());
         });
@@ -92,6 +92,6 @@ class RegisterUserHandlerTest {
     }
 
     private static RegisterUserCommand command(String name, String email) {
-        return new RegisterUserCommand(new UserName(name), new Email(email), PASSWORD, InterfaceLanguage.RU);
+        return new RegisterUserCommand(new UserName(name), new Email(email), PASSWORD, Language.RU);
     }
 }

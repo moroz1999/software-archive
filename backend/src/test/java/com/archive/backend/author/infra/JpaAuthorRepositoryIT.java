@@ -1,5 +1,7 @@
 package com.archive.backend.author.infra;
 
+import static com.archive.backend.geo.GeoTestRows.city;
+import static com.archive.backend.geo.GeoTestRows.country;
 import static com.archive.backend.user.TestActors.BY_OTHER;
 import static com.archive.backend.user.TestActors.MEMBER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -61,10 +63,9 @@ class JpaAuthorRepositoryIT {
     @BeforeEach
     void insertPlaces() {
         TestActors.store(jdbc);
-        jdbc.update(
-                "INSERT INTO country (id, name) VALUES (?, 'Finland'), (?, 'Norway')", FINLAND.value(), NORWAY.value());
-        jdbc.update(
-                "INSERT INTO city (id, name, country_id) VALUES (?, 'Helsinki', ?)", HELSINKI.value(), FINLAND.value());
+        country(jdbc, FINLAND.value(), "Финляндия", "Finland");
+        country(jdbc, NORWAY.value(), "Норвегия", "Norway");
+        city(jdbc, HELSINKI.value(), FINLAND.value(), "Хельсинки", "Helsinki");
         jdbc.update("INSERT INTO \"group\" (id, name) VALUES (?, 'Crew')", CREW);
         jdbc.update("INSERT INTO software (id, title, platform_code) VALUES (?, 'Elite', 'vector')", ELITE);
     }

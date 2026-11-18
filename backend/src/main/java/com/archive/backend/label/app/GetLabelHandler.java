@@ -21,7 +21,8 @@ public class GetLabelHandler {
 
     @Transactional(readOnly = true)
     public LabelDetails handle(GetLabelQuery q) {
-        LabelDetails label = reads.findById(q.id().value()).orElseThrow(LabelNotFoundException::new);
+        LabelDetails label =
+                reads.findById(q.id().value(), q.language().code()).orElseThrow(LabelNotFoundException::new);
         LabelDetails.Owner owner = label.owner();
         boolean administrator = q.actor().isAdministrator();
         boolean canEdit = AddedBy.of(label.addedBy()).mayBeChangedBy(q.actor());

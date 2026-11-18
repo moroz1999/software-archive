@@ -23,7 +23,8 @@ public interface GroupReadRepository {
             Pageable pageable);
 
     /**
-     * A group; nothing for an unknown one.
+     * A group, its locations named in the language of the given code, or in Russian when they have no name in that one;
+     * nothing for an unknown group.
      */
-    Optional<GroupDetails> findById(UUID id);
+    Optional<GroupDetails> findById(UUID id, String language);
 }

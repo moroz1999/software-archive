@@ -152,7 +152,7 @@ class JdbcSoftwareReadRepositoryIT {
     void readsTheScreenshotsOfEveryRelease() {
         releaseShots(AY_MOD, shot(5), shot(4));
 
-        assertThat(reads.findReleases(ELITE))
+        assertThat(reads.findReleases(ELITE, "en"))
                 .extracting(SoftwareRelease::id, SoftwareRelease::screenshots)
                 .containsExactly(
                         tuple(FIRST, List.of()),
@@ -234,7 +234,7 @@ class JdbcSoftwareReadRepositoryIT {
                     (?, NULL, NULL, ?, ARRAY['publisher'])
                 """, ELITE, john, ELITE, crew, ELITE, id(32));
 
-        assertThat(reads.findById(ELITE).orElseThrow().credits())
+        assertThat(reads.findById(ELITE, "en").orElseThrow().credits())
                 .containsExactly(
                         new SoftwareCredit(crew, crew, "group", "Crew Ltd", List.of("developer")),
                         new SoftwareCredit(id(32), crew, "group-label", "CRW — Crew Ltd", List.of("publisher")),
@@ -243,7 +243,7 @@ class JdbcSoftwareReadRepositoryIT {
 
     @Test
     void readsTheDetailsWithThePlatformAndTheHardwareInTheOrderOfTheGroups() {
-        assertThat(reads.findById(ELITE))
+        assertThat(reads.findById(ELITE, "en"))
                 .get()
                 .usingRecursiveComparison()
                 .ignoringFields("added")
@@ -259,6 +259,38 @@ class JdbcSoftwareReadRepositoryIT {
     }
 
     @Test
+    void readsThePlatformAndTheHardwareInTheLanguageAskedFor() {
+        assertThat(reads.findById(ELITE, "ru")).hasValueSatisfying(details -> {
+            assertThat(details.platform()).isEqualTo(new SoftwarePlatform("vector", "Вектор"));
+            assertThat(details.hardware())
+                    .containsExactly(
+                            new SoftwareHardware("vector06c", "Вектор-06Ц", "computers"),
+                            new SoftwareHardware("tape", "Магнитофон", "storage"),
+                            new SoftwareHardware("beeper", "Бипер", "sound"),
+                            new SoftwareHardware("joystick", "Джойстик", "controls"));
+        });
+    }
+
+    @Test
+    void readsTheHardwareOfReleasesInTheLanguageAskedFor() {
+        jdbc.update("INSERT INTO software_release_hardware (release_id, hardware_code) VALUES (?, 'floppy')", AY_MOD);
+        SoftwareHardware floppy = new SoftwareHardware("floppy", "Дискета", "storage");
+
+        assertThat(reads.findRelease(ELITE, AY_MOD, "ru"))
+                .hasValueSatisfying(release -> assertThat(release.hardware()).contains(floppy));
+        assertThat(reads.findReleases(ELITE, "ru"))
+                .anySatisfy(release -> assertThat(release.hardware()).contains(floppy));
+    }
+
+    @Test
+    void knowsWhetherSoftwareAndItsReleasesExist() {
+        assertThat(reads.exists(ELITE)).isTrue();
+        assertThat(reads.exists(UUID.randomUUID())).isFalse();
+        assertThat(reads.releaseExists(ELITE, AY_MOD)).isTrue();
+        assertThat(reads.releaseExists(TETRIS, AY_MOD)).isFalse();
+    }
+
+    @Test
     void readsThePagesOfTheArchivesTheSoftwareWasImportedFrom() {
         String page = "https://vektor-06c.ru/programmnoe-obespechenie/arkadnye-igry/elite/";
         jdbc.update(
@@ -269,33 +301,33 @@ class JdbcSoftwareReadRepositoryIT {
                 "INSERT INTO external_origin (origin, kind, external_id, entity_id) VALUES ('vektor-06c.ru', 'LABEL', 'Elite', ?)",
                 ELITE);
 
-        assertThat(reads.findById(ELITE))
+        assertThat(reads.findById(ELITE, "en"))
                 .hasValueSatisfying(details ->
                         assertThat(details.sources()).containsExactly(new SoftwareSource("vektor-06c.ru", page)));
-        assertThat(reads.findById(TETRIS))
+        assertThat(reads.findById(TETRIS, "en"))
                 .hasValueSatisfying(details -> assertThat(details.sources()).isEmpty());
     }
 
     @Test
     void readsTheYearOfSoftwareOfWhichOnlyTheYearIsKnown() {
-        assertThat(reads.findById(TETRIS))
+        assertThat(reads.findById(TETRIS, "en"))
                 .hasValueSatisfying(details -> assertThat(details.releaseDate()).isEqualTo("1989"));
     }
 
     @Test
     void readsTheYearOfAReleaseOfWhichOnlyTheYearIsKnown() {
-        assertThat(reads.findRelease(ELITE, DISK))
+        assertThat(reads.findRelease(ELITE, DISK, "en"))
                 .hasValueSatisfying(details -> assertThat(details.releaseDate()).isEqualTo("1990"));
     }
 
     @Test
     void findsNothingForAnUnknownId() {
-        assertThat(reads.findById(UUID.randomUUID())).isEmpty();
+        assertThat(reads.findById(UUID.randomUUID(), "en")).isEmpty();
     }
 
     @Test
     void readsTheReleasesOldestFirstWithOnlyTheirOwnHardware() {
-        assertThat(reads.findReleases(ELITE))
+        assertThat(reads.findReleases(ELITE, "en"))
                 .usingRecursiveFieldByFieldElementComparatorIgnoringFields("added")
                 .containsExactly(
                         new SoftwareRelease(
@@ -308,7 +340,7 @@ class JdbcSoftwareReadRepositoryIT {
 
     @Test
     void readsNoReleasesForSoftwareWithoutAny() {
-        assertThat(reads.findReleases(TETRIS)).isEmpty();
+        assertThat(reads.findReleases(TETRIS, "en")).isEmpty();
     }
 
     private static UUID id(int n) {
@@ -317,20 +349,20 @@ class JdbcSoftwareReadRepositoryIT {
 
     @Test
     void readsAReleaseAsItStatesItself() {
-        assertThat(reads.findRelease(ELITE, AY_MOD))
+        assertThat(reads.findRelease(ELITE, AY_MOD, "en"))
                 .contains(new ReleaseDetails(
                         AY_MOD, "Elite AY", "1.1", "mod", "1990-03-01", "With AY music", List.of(AY)));
     }
 
     @Test
     void readsAReleaseWithoutATitleOfItsOwnOrHardware() {
-        assertThat(reads.findRelease(ELITE, ORIGINAL))
+        assertThat(reads.findRelease(ELITE, ORIGINAL, "en"))
                 .contains(new ReleaseDetails(ORIGINAL, null, null, "original", null, null, List.of()));
     }
 
     @Test
     void readsNoReleaseOfOtherSoftware() {
-        assertThat(reads.findRelease(TETRIS, AY_MOD)).isEmpty();
+        assertThat(reads.findRelease(TETRIS, AY_MOD, "en")).isEmpty();
     }
 
     @Test
@@ -339,7 +371,10 @@ class JdbcSoftwareReadRepositoryIT {
         UUID intro4k = UUID.fromString("e9d495af-b0d1-5b0f-a22f-6955b423ab8d");
         UUID games = UUID.fromString("081bf3a1-782b-5a8b-8d12-3b155e0a58cb");
         UUID action = jdbc.queryForObject(
-                "SELECT id FROM category WHERE parent_id = ? AND title = 'Action'", UUID.class, games);
+                "SELECT c.id FROM category c JOIN category_title t ON t.category_id = c.id"
+                        + " WHERE c.parent_id = ? AND t.language = 'en' AND t.title = 'Action'",
+                UUID.class,
+                games);
         jdbc.update(
                 "INSERT INTO software_category (software_id, category_id) VALUES (?, ?), (?, ?), (?, ?)",
                 ELITE,
@@ -349,7 +384,7 @@ class JdbcSoftwareReadRepositoryIT {
                 ELITE,
                 games);
 
-        assertThat(reads.findById(ELITE))
+        assertThat(reads.findById(ELITE, "en"))
                 .hasValueSatisfying(details -> assertThat(details.categories())
                         .extracting(SoftwareCategory::title)
                         .containsExactly("Games", "Action", "4K intro"));
@@ -368,7 +403,7 @@ class JdbcSoftwareReadRepositoryIT {
                 ELITE,
                 games);
 
-        assertThat(reads.findById(ELITE))
+        assertThat(reads.findById(ELITE, "en"))
                 .hasValueSatisfying(details -> assertThat(details.categories())
                         .containsExactly(
                                 new SoftwareCategory(games, "Games", List.of(new SoftwareCategoryStep(games, "Games"))),
@@ -382,20 +417,38 @@ class JdbcSoftwareReadRepositoryIT {
     }
 
     @Test
+    void readsTheCategoriesWithTheirBranchesInTheLanguageAskedFor() {
+        UUID intro4k = UUID.fromString("e9d495af-b0d1-5b0f-a22f-6955b423ab8d");
+        UUID intro = UUID.fromString("47301d2f-eb74-5c1c-90c3-090b4f33e498");
+        UUID demoscene = UUID.fromString("c35b7f9b-44a8-5570-9406-9e6dcb30b607");
+        jdbc.update("INSERT INTO software_category (software_id, category_id) VALUES (?, ?)", ELITE, intro4k);
+
+        assertThat(reads.findById(ELITE, "ru"))
+                .hasValueSatisfying(details -> assertThat(details.categories())
+                        .containsExactly(new SoftwareCategory(
+                                intro4k,
+                                "4K интро",
+                                List.of(
+                                        new SoftwareCategoryStep(demoscene, "Демосцена"),
+                                        new SoftwareCategoryStep(intro, "Интро"),
+                                        new SoftwareCategoryStep(intro4k, "4K интро")))));
+    }
+
+    @Test
     void readsWhoAddedTheSoftwareAndEachRelease() {
         TestActors.store(jdbc);
         jdbc.update("UPDATE software SET added_by = ? WHERE id = ?", MEMBER_ID.value(), ELITE);
         jdbc.update("UPDATE software_release SET added_by = ? WHERE id = ?", MEMBER_ID.value(), AY_MOD);
 
-        assertThat(reads.findById(ELITE))
+        assertThat(reads.findById(ELITE, "en"))
                 .hasValueSatisfying(software -> assertThat(software.addedBy()).isEqualTo(MEMBER_ID.value()));
-        assertThat(reads.findById(TETRIS))
+        assertThat(reads.findById(TETRIS, "en"))
                 .hasValueSatisfying(software -> assertThat(software.addedBy()).isNull());
-        assertThat(reads.findReleases(ELITE))
+        assertThat(reads.findReleases(ELITE, "en"))
                 .filteredOn(release -> release.id().equals(AY_MOD))
                 .extracting(SoftwareRelease::addedBy)
                 .containsExactly(MEMBER_ID.value());
-        assertThat(reads.findReleases(ELITE))
+        assertThat(reads.findReleases(ELITE, "en"))
                 .filteredOn(release -> !release.id().equals(AY_MOD))
                 .extracting(SoftwareRelease::addedBy)
                 .containsOnlyNulls();

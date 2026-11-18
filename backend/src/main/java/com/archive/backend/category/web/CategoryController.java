@@ -14,6 +14,7 @@ import com.archive.backend.category.web.dto.CategoryDetailsDto;
 import com.archive.backend.category.web.dto.CategoryNodeDto;
 import com.archive.backend.category.web.dto.CategoryRequestDto;
 import com.archive.backend.category.web.mapper.CategoryWebMapper;
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.user.domain.Actor;
 import java.net.URI;
 import java.util.List;
@@ -47,8 +48,8 @@ public class CategoryController {
      * The whole tree at once: it is small, and every view of it needs all of it.
      */
     @GetMapping
-    public List<CategoryNodeDto> list() {
-        return listHandler.handle(new ListCategoriesQuery()).stream()
+    public List<CategoryNodeDto> list(Language language) {
+        return listHandler.handle(new ListCategoriesQuery(language)).stream()
                 .map(webMapper::toNode)
                 .toList();
     }

@@ -19,6 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.archive.backend.shared.config.AuthProperties;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.shared.domain.error.AuthenticationRequiredException;
 import com.archive.backend.shared.web.ApiExceptionHandler;
 import com.archive.backend.user.app.ConfirmEmailCommand;
@@ -40,7 +41,6 @@ import com.archive.backend.user.domain.ConfirmationExpiredException;
 import com.archive.backend.user.domain.ConfirmationToken;
 import com.archive.backend.user.domain.CredentialsInvalidException;
 import com.archive.backend.user.domain.Email;
-import com.archive.backend.user.domain.InterfaceLanguage;
 import com.archive.backend.user.domain.Login;
 import com.archive.backend.user.domain.Password;
 import com.archive.backend.user.domain.UserGroup;
@@ -126,10 +126,7 @@ class AuthControllerTest {
 
         verify(registerHandler)
                 .handle(new RegisterUserCommand(
-                        new UserName("Zed"),
-                        new Email("zed@example.com"),
-                        new Password("password1"),
-                        InterfaceLanguage.RU));
+                        new UserName("Zed"), new Email("zed@example.com"), new Password("password1"), Language.RU));
     }
 
     @Test
@@ -139,10 +136,7 @@ class AuthControllerTest {
 
         verify(registerHandler)
                 .handle(new RegisterUserCommand(
-                        new UserName("Zed"),
-                        new Email("zed@example.com"),
-                        new Password("password1"),
-                        InterfaceLanguage.EN));
+                        new UserName("Zed"), new Email("zed@example.com"), new Password("password1"), Language.EN));
     }
 
     @Test
@@ -210,8 +204,7 @@ class AuthControllerTest {
                         {"login": "Zed", "password": "password1", "language": "ru"}""")).andExpect(status().isNoContent());
 
         verify(resendHandler)
-                .handle(new ResendConfirmationCommand(
-                        new Login("Zed"), new Password("password1"), InterfaceLanguage.RU));
+                .handle(new ResendConfirmationCommand(new Login("Zed"), new Password("password1"), Language.RU));
     }
 
     @Test

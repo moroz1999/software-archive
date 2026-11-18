@@ -64,17 +64,29 @@ class InMemorySoftwareReadRepository implements SoftwareReadRepository {
     }
 
     @Override
-    public Optional<SoftwareDetails> findById(UUID id) {
+    public boolean exists(UUID id) {
+        return items.stream().anyMatch(details -> details.id().equals(id));
+    }
+
+    @Override
+    public boolean releaseExists(UUID softwareId, UUID releaseId) {
+        return releaseDetails.getOrDefault(softwareId, List.of()).stream()
+                .anyMatch(release -> release.id().equals(releaseId));
+    }
+
+    /** Naming in a language is the SQL's job: every language gets what was given. */
+    @Override
+    public Optional<SoftwareDetails> findById(UUID id, String language) {
         return items.stream().filter(details -> details.id().equals(id)).findFirst();
     }
 
     @Override
-    public List<SoftwareRelease> findReleases(UUID softwareId) {
+    public List<SoftwareRelease> findReleases(UUID softwareId, String language) {
         return releases.getOrDefault(softwareId, List.of());
     }
 
     @Override
-    public Optional<ReleaseDetails> findRelease(UUID softwareId, UUID releaseId) {
+    public Optional<ReleaseDetails> findRelease(UUID softwareId, UUID releaseId, String language) {
         return releaseDetails.getOrDefault(softwareId, List.of()).stream()
                 .filter(release -> release.id().equals(releaseId))
                 .findFirst();

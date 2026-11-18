@@ -5,9 +5,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.archive.backend.shared.config.AuthProperties;
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.user.domain.ConfirmationToken;
 import com.archive.backend.user.domain.Email;
-import com.archive.backend.user.domain.InterfaceLanguage;
 import com.archive.backend.user.domain.UserName;
 import java.time.Duration;
 import java.util.Objects;
@@ -30,7 +30,7 @@ class SmtpConfirmationMailerTest {
 
     @Test
     void mailsTheLinkToTheConfirmationPage() {
-        SimpleMailMessage letter = send(InterfaceLanguage.EN);
+        SimpleMailMessage letter = send(Language.EN);
 
         assertThat(letter.getTo()).containsExactly("zed@example.com");
         assertThat(letter.getFrom()).isEqualTo("no-reply@archive.example");
@@ -43,7 +43,7 @@ class SmtpConfirmationMailerTest {
 
     @Test
     void writesInTheLanguageOfTheInterface() {
-        SimpleMailMessage letter = send(InterfaceLanguage.RU);
+        SimpleMailMessage letter = send(Language.RU);
 
         assertThat(Objects.requireNonNull(letter.getSubject())).containsPattern("[а-яА-Я]");
         assertThat(letter.getText())
@@ -51,7 +51,7 @@ class SmtpConfirmationMailerTest {
                 .contains("7 дней");
     }
 
-    private SimpleMailMessage send(InterfaceLanguage language) {
+    private SimpleMailMessage send(Language language) {
         mailer.send(new Email("zed@example.com"), new UserName("Zed"), new ConfirmationToken("secret-token"), language);
         ArgumentCaptor<SimpleMailMessage> letter = ArgumentCaptor.forClass(SimpleMailMessage.class);
         verify(sender).send(letter.capture());

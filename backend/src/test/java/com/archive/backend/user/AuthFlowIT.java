@@ -9,10 +9,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.archive.backend.TestcontainersConfiguration;
 import com.archive.backend.TypesenseTestConfiguration;
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.user.domain.ConfirmationMailer;
 import com.archive.backend.user.domain.ConfirmationToken;
 import com.archive.backend.user.domain.Email;
-import com.archive.backend.user.domain.InterfaceLanguage;
 import com.archive.backend.user.domain.UserName;
 import com.jayway.jsonpath.JsonPath;
 import jakarta.servlet.http.Cookie;
@@ -146,7 +146,7 @@ class AuthFlowIT {
         @Bean
         @Primary
         ConfirmationMailer recordingMailer() {
-            return (Email to, UserName name, ConfirmationToken token, InterfaceLanguage language) ->
+            return (Email to, UserName name, ConfirmationToken token, Language language) ->
                     tokens.put(to.value(), token);
         }
 

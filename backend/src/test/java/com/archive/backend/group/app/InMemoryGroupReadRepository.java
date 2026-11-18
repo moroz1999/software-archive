@@ -52,7 +52,7 @@ class InMemoryGroupReadRepository implements GroupReadRepository {
     }
 
     @Override
-    public Optional<GroupDetails> findById(UUID id) {
+    public Optional<GroupDetails> findById(UUID id, String language) {
         return details.stream().filter(group -> group.id().equals(id)).findFirst();
     }
 }

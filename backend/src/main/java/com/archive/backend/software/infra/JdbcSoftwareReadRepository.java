@@ -1,5 +1,7 @@
 package com.archive.backend.software.infra;
 
+import com.archive.backend.category.read.CategoryTitleSql;
+import com.archive.backend.hardware.read.HardwareNameSql;
 import com.archive.backend.label.read.MainNameSql;
 import com.archive.backend.software.read.CardMadeBySql;
 import com.archive.backend.software.read.CardScreenshotsSql;
@@ -87,22 +89,42 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     }
 
     @Override
-    public Optional<SoftwareDetails> findById(UUID id) {
+    public boolean exists(UUID id) {
+        return Boolean.TRUE.equals(jdbc.sql("SELECT EXISTS (SELECT 1 FROM software WHERE id = :id)")
+                .param("id", id)
+                .query(Boolean.class)
+                .single());
+    }
+
+    @Override
+    public boolean releaseExists(UUID softwareId, UUID releaseId) {
+        return Boolean.TRUE.equals(jdbc.sql(
+                        "SELECT EXISTS (SELECT 1 FROM software_release WHERE software_id = :softwareId AND id = :releaseId)")
+                .param("softwareId", softwareId)
+                .param("releaseId", releaseId)
+                .query(Boolean.class)
+                .single());
+    }
+
+    @Override
+    public Optional<SoftwareDetails> findById(UUID id, String language) {
         return jdbc.sql("""
-                        SELECT s.title, s.description, %s AS release_date, p.code, p.name, s.added_by, %s
+                        SELECT s.title, s.description, %s AS release_date, p.code, %s AS name, s.added_by, %s
                         FROM software s
                         JOIN platform p ON p.code = s.platform_code
                         WHERE s.id = :id
-                        """.formatted(ReleaseDateSql.of("s"), AdditionSql.columns("s")))
+                        """.formatted(
+                                ReleaseDateSql.of("s"), HardwareNameSql.platform("p.code"), AdditionSql.columns("s")))
                 .param("id", id)
+                .param("language", language)
                 .query((rs, row) -> new SoftwareDetails(
                         id,
                         rs.getString("title"),
                         rs.getString("description"),
                         rs.getString("release_date"),
                         new SoftwarePlatform(rs.getString("code"), rs.getString("name")),
-                        hardware("software_hardware", "software_id", id),
-                        categories(id),
+                        hardware("software_hardware", "software_id", id, language),
+                        categories(id, language),
                         credits(id),
                         sources(id),
                         AdditionSql.of(rs),
@@ -236,7 +258,7 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     }
 
     @Override
-    public List<SoftwareRelease> findReleases(UUID softwareId) {
+    public List<SoftwareRelease> findReleases(UUID softwareId, String language) {
         return jdbc.sql("""
                         SELECT r.id, COALESCE(r.title, s.title) AS title, r.version, r.type, %s AS release_date,
                                r.description, r.archive_id, r.archive_file_name, r.archive_size, r.added_by,
@@ -256,7 +278,7 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                             rs.getString("type"),
                             rs.getString("release_date"),
                             rs.getString("description"),
-                            hardware("software_release_hardware", "release_id", id),
+                            hardware("software_release_hardware", "release_id", id, language),
                             findReleaseScreenshots(id),
                             archive(rs),
                             AdditionSql.of(rs),
@@ -267,7 +289,7 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     }
 
     @Override
-    public Optional<ReleaseDetails> findRelease(UUID softwareId, UUID releaseId) {
+    public Optional<ReleaseDetails> findRelease(UUID softwareId, UUID releaseId, String language) {
         return jdbc.sql("""
                         SELECT r.id, r.title, r.version, r.type, %s AS release_date, r.description,
                                r.archive_id, r.archive_file_name, r.archive_size
@@ -283,7 +305,7 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                         rs.getString("type"),
                         rs.getString("release_date"),
                         rs.getString("description"),
-                        hardware("software_release_hardware", "release_id", releaseId),
+                        hardware("software_release_hardware", "release_id", releaseId, language),
                         archive(rs)))
                 .optional();
     }
@@ -299,15 +321,18 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
      * The categories of software in the order of the tree, each by the positions of its line from the top, with its
      * branch from the top down to itself.
      */
-    private List<SoftwareCategory> categories(UUID softwareId) {
+    private List<SoftwareCategory> categories(UUID softwareId, String language) {
         return jdbc.sql("""
-                        WITH RECURSIVE tree (id, title, path, ids, titles) AS (
+                        WITH RECURSIVE titled (id, parent_id, position, title) AS (
+                            SELECT c.id, c.parent_id, c.position, %s FROM category c
+                        ),
+                        tree (id, title, path, ids, titles) AS (
                             SELECT id, title, ARRAY[position], ARRAY[id], ARRAY[title]
-                            FROM category
+                            FROM titled
                             WHERE parent_id IS NULL
                             UNION ALL
                             SELECT c.id, c.title, t.path || c.position, t.ids || c.id, t.titles || c.title
-                            FROM category c
+                            FROM titled c
                             JOIN tree t ON c.parent_id = t.id
                         )
                         SELECT t.id, t.title, t.ids, t.titles
@@ -315,8 +340,9 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                         JOIN software_category sc ON sc.category_id = t.id
                         WHERE sc.software_id = :id
                         ORDER BY t.path, t.title, t.id
-                        """)
+                        """.formatted(CategoryTitleSql.of("c.id")))
                 .param("id", softwareId)
+                .param("language", language)
                 .query((rs, row) ->
                         new SoftwareCategory(rs.getObject("id", UUID.class), rs.getString("title"), branch(rs)))
                 .list();
@@ -335,11 +361,13 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     /**
      * The hardware attached to one row of the owner table.
      */
-    private List<SoftwareHardware> hardware(String table, String ownerColumn, UUID ownerId) {
-        return jdbc.sql("SELECT h.code, h.name, h.hardware_group FROM " + table
-                        + " x JOIN hardware h ON h.code = x.hardware_code WHERE x." + ownerColumn + " = :id"
+    private List<SoftwareHardware> hardware(String table, String ownerColumn, UUID ownerId, String language) {
+        return jdbc.sql("SELECT h.code, h.name, h.hardware_group FROM (SELECT hw.code, "
+                        + HardwareNameSql.hardware("hw.code") + " AS name, hw.hardware_group FROM " + table
+                        + " x JOIN hardware hw ON hw.code = x.hardware_code WHERE x." + ownerColumn + " = :id) h"
                         + HARDWARE_ORDER)
                 .param("id", ownerId)
+                .param("language", language)
                 .query((rs, row) -> new SoftwareHardware(
                         rs.getString("code"), rs.getString("name"), rs.getString("hardware_group")))
                 .list();

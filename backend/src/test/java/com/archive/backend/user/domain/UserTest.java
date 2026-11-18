@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.archive.backend.shared.domain.Language;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Set;
@@ -41,7 +42,7 @@ class UserTest {
     void aNewAccountGetsItsLinkMailed() {
         assertThat(registered().pullEvents())
                 .containsExactly(new ConfirmationLinkIssued(
-                        new Email("zed@example.com"), new UserName("Zed"), TOKEN, InterfaceLanguage.EN));
+                        new Email("zed@example.com"), new UserName("Zed"), TOKEN, Language.EN));
     }
 
     @Test
@@ -86,7 +87,7 @@ class UserTest {
         ConfirmationToken renewed = new ConfirmationToken("renewed");
         Instant later = NOW.plus(Duration.ofDays(10));
 
-        user.renewConfirmation(renewed, later, InterfaceLanguage.EN);
+        user.renewConfirmation(renewed, later, Language.EN);
 
         assertThatThrownBy(() -> user.confirm(TOKEN, later)).isInstanceOf(ConfirmationInvalidException.class);
         user.confirm(renewed, later.plus(Duration.ofDays(6)));
@@ -97,7 +98,7 @@ class UserTest {
     void aConfirmedAccountGetsNoNewLink() {
         User user = confirmed();
 
-        assertThatThrownBy(() -> user.renewConfirmation(TOKEN, NOW, InterfaceLanguage.EN))
+        assertThatThrownBy(() -> user.renewConfirmation(TOKEN, NOW, Language.EN))
                 .isInstanceOf(UserAlreadyConfirmedException.class);
     }
 
@@ -220,7 +221,7 @@ class UserTest {
                 HASHER.hash(new Password("password1")),
                 TOKEN,
                 NOW,
-                InterfaceLanguage.EN);
+                Language.EN);
     }
 
     private static User confirmed() {

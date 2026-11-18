@@ -8,7 +8,8 @@ import java.util.List;
 public interface PlatformReadRepository {
 
     /**
-     * All platforms by name.
+     * All platforms, each named in the language of the given code, or in Russian when it has no name in that one;
+     * by that name.
      */
-    List<PlatformItem> findAll();
+    List<PlatformItem> findAll(String language);
 }
