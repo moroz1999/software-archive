@@ -1,1 +1,1 @@
-export {NavChip, type NavChipProps, NavChips, type NavChipsProps} from './NavChips';
+export {NavChip, type NavChipProps, NavChipRow, type NavChipRowProps, NavChips, type NavChipsProps} from './NavChips';

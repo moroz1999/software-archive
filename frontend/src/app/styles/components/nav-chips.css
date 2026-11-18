@@ -1,4 +1,7 @@
 :root {
+    /* Gap between separate rows of chips. */
+    --nav-chips-row-gap: var(--space-4);
+
     /* Gap between the chips. */
     --nav-chips-gap: var(--space-4);
 

@@ -1,3 +1,9 @@
+.rows {
+    display: flex;
+    flex-direction: column;
+    gap: var(--nav-chips-row-gap);
+}
+
 .list {
     display: flex;
     flex-wrap: wrap;

@@ -1,5 +1,5 @@
-import {NavChip, NavChips} from '@/shared/ui/nav-chips';
-import {LABEL_LETTERS, type LabelLetter} from '../model/letter';
+import {NavChip, NavChipRow, NavChips} from '@/shared/ui/nav-chips';
+import {CYRILLIC_LABEL_LETTERS, LATIN_LABEL_LETTERS, type LabelLetter, REST_LABEL_LETTER} from '../model/letter';
 
 export interface LetterFilterProps {
     /** The chosen letter; null for all of them. */
@@ -14,12 +14,24 @@ export function LetterFilter({current, hrefOf, disabled}: LetterFilterProps) {
     const {t} = useTranslation();
     return (
         <NavChips label={t('filters.firstLetter')}>
-            <NavChip href={hrefOf(null)} active={current === null} disabled={disabled}>{t('filters.all')}</NavChip>
-            {LABEL_LETTERS.map((letter) => (
-                <NavChip key={letter} href={hrefOf(letter)} active={current === letter} disabled={disabled}>
-                    {letter}
+            <NavChipRow>
+                <NavChip href={hrefOf(null)} active={current === null} disabled={disabled}>{t('filters.all')}</NavChip>
+                {LATIN_LABEL_LETTERS.map((letter) => (
+                    <NavChip key={letter} href={hrefOf(letter)} active={current === letter} disabled={disabled}>
+                        {letter}
+                    </NavChip>
+                ))}
+                <NavChip href={hrefOf(REST_LABEL_LETTER)} active={current === REST_LABEL_LETTER} disabled={disabled}>
+                    {REST_LABEL_LETTER}
                 </NavChip>
-            ))}
+            </NavChipRow>
+            <NavChipRow>
+                {CYRILLIC_LABEL_LETTERS.map((letter) => (
+                    <NavChip key={letter} href={hrefOf(letter)} active={current === letter} disabled={disabled}>
+                        {letter}
+                    </NavChip>
+                ))}
+            </NavChipRow>
         </NavChips>
     );
 }

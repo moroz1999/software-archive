@@ -1,15 +1,17 @@
 import {describe, expect, it} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import {MemoryRouter} from 'react-router';
-import {NavChip, NavChips} from './NavChips';
+import {NavChip, NavChipRow, NavChips} from './NavChips';
 
 function renderChips(disabled = false) {
     render(
         <MemoryRouter>
             <NavChips label="First letter">
-                <NavChip href="/authors" disabled={disabled}>All</NavChip>
-                <NavChip href="/authors?letter=A" active disabled={disabled}>A</NavChip>
-                <NavChip href="/authors?letter=B" disabled={disabled}>B</NavChip>
+                <NavChipRow>
+                    <NavChip href="/authors" disabled={disabled}>All</NavChip>
+                    <NavChip href="/authors?letter=A" active disabled={disabled}>A</NavChip>
+                    <NavChip href="/authors?letter=B" disabled={disabled}>B</NavChip>
+                </NavChipRow>
             </NavChips>
         </MemoryRouter>,
     );

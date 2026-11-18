@@ -9,13 +9,22 @@ export interface NavChipsProps {
     readonly children: ReactNode;
 }
 
-/** A wrapping strip of link chips (A–Z, years) with one of them active. */
+/** One or more wrapping rows of link chips with one of them active. */
 export function NavChips({label, children}: NavChipsProps) {
     return (
-        <nav aria-label={label}>
-            <ul className={styles.list}>{children}</ul>
+        <nav aria-label={label} className={styles.rows}>
+            {children}
         </nav>
     );
+}
+
+export interface NavChipRowProps {
+    readonly children: ReactNode;
+}
+
+/** One wrapping row within a chip navigation. */
+export function NavChipRow({children}: NavChipRowProps) {
+    return <ul className={styles.list}>{children}</ul>;
 }
 
 export interface NavChipProps {
