@@ -57,7 +57,7 @@ The host needs Docker with Compose, ports 80 and 443 open, and a DNS `A` record 
 From the root of the repository:
 
 ```bash
-# once: asks the domain, generates the passwords and the secret into .env.prod
+# once: asks the domain and the SMTP relay, generates the passwords and the secret into .env.prod
 ./scripts/init-env-prod.sh
 docker compose --env-file .env.prod -f compose.prod.yaml build
 # once, on the empty database: asks the user name, email and password of the first administrator, then to confirm them
@@ -80,6 +80,8 @@ On the first start the backend applies the migrations to the empty database (nev
 git pull
 docker compose --env-file .env.prod -f compose.prod.yaml up -d --build
 ```
+
+A `.env.prod` written before mail was set up lacks the `SMTP_*` and `MAIL_FROM` lines: add them by hand from `.env.prod.example`; `up` refuses to start without them.
 
 ### Stopping
 

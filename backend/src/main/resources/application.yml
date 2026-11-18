@@ -18,6 +18,11 @@ spring:
     # Mailpit of docker-compose catches every letter: http://localhost:8025
     host: localhost
     port: 1025
+    properties:
+      # A hanging mail server must not hold the registration request forever (milliseconds).
+      "[mail.smtp.connectiontimeout]": 10000
+      "[mail.smtp.timeout]": 10000
+      "[mail.smtp.writetimeout]": 10000
   flyway:
     enabled: true
     # Fixtures are repeatable migrations applied only with the "fixtures" profile;

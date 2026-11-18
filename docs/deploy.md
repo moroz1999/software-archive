@@ -10,7 +10,10 @@ On the first start the backend applies the migrations to the empty database — 
 
 Named volumes keep what must survive a rebuild of the containers: the database, the search index, the uploads (screenshots and release archives, business data like the database: back them up together) and Caddy's certificates. `down` keeps them; only `down -v` deletes them. The search index can always be built anew from the database ([features/search.md](features/search.md#initial-load-and-rebuild)).
 
+## Mail
+
+Letters (the confirmation links of registration) go through an external SMTP relay given in `.env.prod`, over STARTTLS. A mail server of our own is not run: its letters would land in spam, and many hosts block outgoing port 25. The sender domain must have SPF and DKIM set up at the relay, otherwise letters are rejected or marked as spam. When the relay cannot be reached, registration fails with a system error and nothing is kept; the first administrator is created by the `create-admin` command, which needs no mail.
+
 ## Not set up yet
 
-- No mail server: registration cannot send its confirmation link and fails with a system error. The first administrator is created by the `create-admin` command of the first start, which needs no mail.
 - Permissions of accounts are configured in the database.

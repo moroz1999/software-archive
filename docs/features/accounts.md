@@ -47,7 +47,7 @@ Wrong credentials are `422`, not `401`: they are a mistake in the form, shown in
 
 ### Configuration
 
-`auth.*` in `application.yml`: the JWT secret (production sets its own, at least 32 bytes), the access token lifetime, the public URL of the frontend that links lead to, the sender of letters, secure cookies. Mail goes through `spring.mail`; locally Mailpit catches it ([local-dev.md](../local-dev.md)).
+`auth.*` in `application.yml`: the JWT secret (production sets its own, at least 32 bytes), the access token lifetime, the public URL of the frontend that links lead to, the sender of letters, secure cookies. Mail goes through `spring.mail`; locally Mailpit catches it ([local-dev.md](../local-dev.md)), in production an SMTP relay ([deploy.md](../deploy.md#mail)).
 
 ### First administrator
 
