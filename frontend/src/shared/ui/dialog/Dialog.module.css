@@ -23,6 +23,19 @@
     max-width: var(--dialog-wide-max-width);
 }
 
+.fullscreen {
+    height: 100%;
+    max-width: 100%;
+    background: var(--dialog-fullscreen-bg);
+    box-shadow: var(--dialog-fullscreen-shadow);
+    color: var(--dialog-fullscreen-text);
+}
+
+.fullscreenContent {
+    height: 100%;
+    min-height: 0;
+}
+
 .dialog:focus {
     outline: none;
 }

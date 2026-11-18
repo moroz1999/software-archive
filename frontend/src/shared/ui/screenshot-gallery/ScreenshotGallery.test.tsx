@@ -1,11 +1,53 @@
-import {describe, expect, it} from 'vitest';
-import {render, screen, within} from '@testing-library/react';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {act, render, screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {ScreenshotGallery} from './ScreenshotGallery';
 
 const URLS = ['/api/screenshots/1', '/api/screenshots/2', '/api/screenshots/3'];
 
+let nativeSize: {width: number; height: number};
+let stageSize: {width: number; height: number};
+let resize: () => void;
+
 describe(ScreenshotGallery, () => {
+    beforeEach(() => {
+        nativeSize = {width: 256, height: 192};
+        stageSize = {width: 1000, height: 800};
+        resize = () => undefined;
+        vi.stubGlobal('ResizeObserver', class {
+            constructor(callback: () => void) {
+                resize = callback;
+            }
+
+            observe(target: Element): void {
+                Object.defineProperties(target, {
+                    clientWidth: {configurable: true, get: () => stageSize.width},
+                    clientHeight: {configurable: true, get: () => stageSize.height},
+                });
+                resize();
+            }
+
+            disconnect(): void {
+                resize = () => undefined;
+            }
+        });
+        vi.stubGlobal('Image', class {
+            naturalWidth = 0;
+            naturalHeight = 0;
+            onload: (() => void) | null = null;
+
+            set src(_value: string) {
+                this.naturalWidth = nativeSize.width;
+                this.naturalHeight = nativeSize.height;
+                this.onload?.();
+            }
+        });
+    });
+
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
     it('shows every screenshot as a thumbnail button in its order', () => {
         render(<ScreenshotGallery urls={URLS} title="Elite"/>);
 
@@ -22,6 +64,44 @@ describe(ScreenshotGallery, () => {
         const viewer = screen.getByRole('dialog', {name: 'Elite'});
 
         expect(within(viewer).getByRole('img', {name: 'Screenshot 2 of 3'})).toHaveAttribute('src', '/api/screenshots/2');
+    });
+
+    it('opens the viewer over the whole viewport', async () => {
+        render(<ScreenshotGallery urls={URLS} title="Elite"/>);
+
+        await userEvent.click(screen.getByRole('button', {name: 'Screenshot 1 of 3'}));
+
+        expect(screen.getByRole('dialog', {name: 'Elite'})).toHaveClass('fullscreen');
+    });
+
+    it('shows the picture at the largest whole multiple of its native size that fits and recalculates it on resize', async () => {
+        render(<ScreenshotGallery urls={URLS} title="Elite"/>);
+        await userEvent.click(screen.getByRole('button', {name: 'Screenshot 1 of 3'}));
+        const picture = within(screen.getByRole('dialog', {name: 'Elite'})).getByRole('img', {name: 'Screenshot 1 of 3'});
+
+        expect(picture).toHaveAttribute('width', '768');
+        expect(picture).toHaveAttribute('height', '576');
+
+        stageSize = {width: 544, height: 416};
+        act(() => {
+            resize();
+        });
+
+        expect(picture).toHaveAttribute('width', '512');
+        expect(picture).toHaveAttribute('height', '384');
+    });
+
+    it('shrinks a picture larger than the viewport just enough to fit', async () => {
+        nativeSize = {width: 1000, height: 500};
+        stageSize = {width: 532, height: 900};
+        render(<ScreenshotGallery urls={URLS} title="Elite"/>);
+
+        await userEvent.click(screen.getByRole('button', {name: 'Screenshot 1 of 3'}));
+
+        const picture = within(screen.getByRole('dialog', {name: 'Elite'})).getByRole('img', {name: 'Screenshot 1 of 3'});
+
+        expect(picture).toHaveAttribute('width', '500');
+        expect(picture).toHaveAttribute('height', '250');
     });
 
     it('goes through the pictures by its buttons and the arrow keys, round from the last to the first', async () => {

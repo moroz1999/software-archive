@@ -16,7 +16,4 @@
 
     /* How fast the frame of a thumbnail follows the pointer. */
     --screenshot-gallery-duration: var(--animation-sm);
-
-    /* Tallest a picture gets in the viewer, so its buttons stay on screen. */
-    --screenshot-gallery-picture-max-height: 70vh;
 }

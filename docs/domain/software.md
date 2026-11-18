@@ -39,6 +39,7 @@ Screenshots are part of what the archive knows, as much as its records: they are
 - Reordering names every screenshot in its new order; when the screenshots have changed meanwhile, the order is refused and has to be chosen again.
 - Deleting a release or software deletes its screenshots.
 - The card of software in a list shows the software's own screenshots; software without its own shows the screenshots of its releases, release by release in the order of the releases. Pointing at the picture across its width goes through them.
+- A screenshot opens in a full-screen viewer. A picture that fits is enlarged only by whole multiples of its native size, while one too large to fit is reduced proportionally.
 
 ## Credits
 

@@ -24,8 +24,8 @@ export interface DialogProps {
     readonly dismissible?: boolean;
     /** Takes the place of the title, such as a field the window is about; the title then only names it for assistive technology. */
     readonly header?: ReactNode;
-    /** `wide` for a window about a picture, which needs the room. */
-    readonly width?: 'md' | 'wide';
+    /** `wide` for a window about a picture; `fullscreen` for a window that uses the whole viewport. */
+    readonly width?: 'md' | 'wide' | 'fullscreen';
 }
 
 /** Modal dialog rendered over the page; closes on Escape. */
@@ -89,14 +89,14 @@ export function Dialog({open, title, onClose, children, actions, role = 'dialog'
                 aria-labelledby={header === undefined ? titleId : undefined}
                 aria-label={header === undefined ? undefined : title}
                 tabIndex={-1}
-                className={classNames(styles.dialog, width === 'wide' && styles.wide)}
+                className={classNames(styles.dialog, width === 'wide' && styles.wide, width === 'fullscreen' && styles.fullscreen)}
             >
-                <Stack gap="lg">
+                <Stack gap="lg" className={classNames(width === 'fullscreen' && styles.fullscreenContent)}>
                     {dismissible
                         ? (
                             <Inline gap="sm" align="center" justify="between">
                                 {header === undefined ? <Heading level={2} id={titleId}>{title}</Heading> : <div className={styles.header}>{header}</div>}
-                                <Button color="transparent" size="sm" square ariaLabel={t('actions.close')} onClick={onClose}>
+                                <Button color={width === 'fullscreen' ? 'primary' : 'transparent'} size="sm" square ariaLabel={t('actions.close')} onClick={onClose}>
                                     <CloseIcon/>
                                 </Button>
                             </Inline>

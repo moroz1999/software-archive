@@ -21,8 +21,15 @@
     --dialog-bg: var(--surface);
     --dialog-text: var(--text-color);
 
+    /* A full-screen window leaves its backdrop visible instead of stretching an opaque surface across it. */
+    --dialog-fullscreen-bg: transparent;
+    --dialog-fullscreen-text: var(--white);
+
     /* Shadow lifting the dialog off the backdrop. */
     --dialog-shadow: var(--shadow-lg);
+
+    /* A transparent full-screen window has no surface to lift. */
+    --dialog-fullscreen-shadow: none;
 
     /* Stacking layer. */
     --dialog-layer: var(--layer-dialog);
