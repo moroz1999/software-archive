@@ -10,6 +10,7 @@ public record SoftwareDetailsDto(
         String title,
         @Nullable String description,
         @Nullable String releaseDate,
+        String preservation,
         SoftwarePlatformDto platform,
         List<SoftwareHardwareDto> hardware,
         List<SoftwareCategoryDto> categories,

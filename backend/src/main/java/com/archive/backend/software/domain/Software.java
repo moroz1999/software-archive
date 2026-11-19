@@ -43,6 +43,9 @@ public final class Software {
     /** Who made it, published it and worked on it (docs/domain/software.md#credits). */
     private SoftwareCredits credits;
 
+    /** Whether the software can be had and how; unknown until it is known. */
+    private PreservationStatus preservation;
+
     private final List<Release> releases;
 
     /** The software's own screenshots; those of its releases are kept by the releases. */
@@ -64,7 +67,8 @@ public final class Software {
             SoftwareCredits credits,
             List<Release> releases,
             AddedBy addedBy,
-            Screenshots screenshots) {
+            Screenshots screenshots,
+            PreservationStatus preservation) {
         this.id = Objects.requireNonNull(id, "id");
         this.title = Objects.requireNonNull(title, "title");
         this.description = description;
@@ -76,6 +80,7 @@ public final class Software {
         this.releases = new ArrayList<>(releases);
         this.addedBy = Objects.requireNonNull(addedBy, "addedBy");
         this.screenshots = Objects.requireNonNull(screenshots, "screenshots");
+        this.preservation = Objects.requireNonNull(preservation, "preservation");
     }
 
     public Software(
@@ -88,7 +93,18 @@ public final class Software {
             SoftwareCredits credits,
             List<Release> releases,
             AddedBy addedBy) {
-        this(id, title, description, releaseDate, hardware, categories, credits, releases, addedBy, Screenshots.EMPTY);
+        this(
+                id,
+                title,
+                description,
+                releaseDate,
+                hardware,
+                categories,
+                credits,
+                releases,
+                addedBy,
+                Screenshots.EMPTY,
+                PreservationStatus.UNKNOWN);
     }
 
     public static Software create(
@@ -139,11 +155,12 @@ public final class Software {
 
     /**
      * Adds what an import found and the software lacks, never rewriting what it has (docs/domain/imports.md): the
-     * description and the date only while empty, the categories given, and the participants not credited yet.
+     * description, the date and the preservation status only while empty or unknown, the categories given, and the participants not credited yet.
      */
     public void supplement(
             @Nullable SoftwareDescription description,
             @Nullable ReleaseDate releaseDate,
+            PreservationStatus preservation,
             CategorySet categories,
             SoftwareCredits credits) {
         if (this.description == null) {
@@ -151,6 +168,9 @@ public final class Software {
         }
         if (this.releaseDate == null) {
             this.releaseDate = releaseDate;
+        }
+        if (this.preservation == PreservationStatus.UNKNOWN) {
+            this.preservation = Objects.requireNonNull(preservation, "preservation");
         }
         this.categories = Objects.requireNonNull(categories, "categories");
         Set<SoftwareReference> credited = this.credits.all().stream()
@@ -167,6 +187,11 @@ public final class Software {
     public List<ScreenshotImage> screenshotsOfNewSizes(List<ScreenshotImage> images) {
         Set<Long> sizes = screenshots.all().stream().map(Screenshot::size).collect(Collectors.toSet());
         return images.stream().filter(image -> sizes.add(image.size())).toList();
+    }
+
+    public void changePreservation(PreservationStatus preservation) {
+        this.preservation = Objects.requireNonNull(preservation, "preservation");
+        markChanged();
     }
 
     /** Replaces everyone credited on the software. */

@@ -31,14 +31,39 @@ class SoftwareSupplementTest {
         Software empty = software(null, null);
 
         described.supplement(
-                new SoftwareDescription("Theirs"), ReleaseDate.ofYear(Year.of(1990)), GAMES, SoftwareCredits.EMPTY);
+                new SoftwareDescription("Theirs"),
+                ReleaseDate.ofYear(Year.of(1990)),
+                PreservationStatus.UNKNOWN,
+                GAMES,
+                SoftwareCredits.EMPTY);
         empty.supplement(
-                new SoftwareDescription("Theirs"), ReleaseDate.ofYear(Year.of(1990)), GAMES, SoftwareCredits.EMPTY);
+                new SoftwareDescription("Theirs"),
+                ReleaseDate.ofYear(Year.of(1990)),
+                PreservationStatus.UNKNOWN,
+                GAMES,
+                SoftwareCredits.EMPTY);
 
         assertThat(described.getDescription()).isEqualTo(new SoftwareDescription("Ours"));
         assertThat(described.getReleaseDate()).isEqualTo(ReleaseDate.ofYear(Year.of(1987)));
         assertThat(empty.getDescription()).isEqualTo(new SoftwareDescription("Theirs"));
         assertThat(empty.getReleaseDate()).isEqualTo(ReleaseDate.ofYear(Year.of(1990)));
+    }
+
+    @Test
+    void fillsThePreservationStatusOnlyWhileItIsUnknown() {
+        Software unknown = software(null, null);
+        Software known = software(null, null);
+        known.changePreservation(PreservationStatus.IN_SALES);
+
+        unknown.supplement(null, null, PreservationStatus.MISSING_IN_ACTION, GAMES, SoftwareCredits.EMPTY);
+        known.supplement(null, null, PreservationStatus.MISSING_IN_ACTION, GAMES, SoftwareCredits.EMPTY);
+        Software kept = software(null, null);
+        kept.changePreservation(PreservationStatus.DONATIONWARE);
+        kept.supplement(null, null, PreservationStatus.UNKNOWN, GAMES, SoftwareCredits.EMPTY);
+
+        assertThat(unknown.getPreservation()).isEqualTo(PreservationStatus.MISSING_IN_ACTION);
+        assertThat(known.getPreservation()).isEqualTo(PreservationStatus.IN_SALES);
+        assertThat(kept.getPreservation()).isEqualTo(PreservationStatus.DONATIONWARE);
     }
 
     @Test
@@ -48,6 +73,7 @@ class SoftwareSupplementTest {
         software.supplement(
                 null,
                 null,
+                PreservationStatus.UNKNOWN,
                 GAMES_AND_DEMOS,
                 SoftwareCredits.restore(List.of(
                         new SoftwareCreditDraft(IVAN, List.of("unknown")),

@@ -7,6 +7,7 @@ import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.software.app.CreateSoftwareCommand;
 import com.archive.backend.software.app.ListLatestSoftwareQuery;
 import com.archive.backend.software.app.UpdateSoftwareCommand;
+import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.SoftwareCreditDraft;
 import com.archive.backend.software.domain.SoftwareDescription;
@@ -105,7 +106,8 @@ public interface SoftwareWebMapper {
                 toPlatform(request.platform()),
                 toHardware(request.hardware()),
                 toCategories(request.categories()),
-                toCredits(request.credits()));
+                toCredits(request.credits()),
+                toPreservation(request.preservation()));
     }
 
     default UpdateSoftwareCommand toUpdate(Actor actor, UUID id, SoftwareRequestDto request) {
@@ -118,10 +120,16 @@ public interface SoftwareWebMapper {
                 toPlatform(request.platform()),
                 toHardware(request.hardware()),
                 toCategories(request.categories()),
-                toCredits(request.credits()));
+                toCredits(request.credits()),
+                toPreservation(request.preservation()));
     }
 
     // Request scalars -> value objects.
+
+    /** A request that does not tell the status leaves it unknown. */
+    private static PreservationStatus toPreservation(@Nullable String value) {
+        return value == null ? PreservationStatus.UNKNOWN : PreservationStatus.fromCode(value);
+    }
 
     private static SoftwareTitle toTitle(@Nullable String value) {
         if (value == null) {

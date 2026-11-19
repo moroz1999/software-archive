@@ -17,7 +17,7 @@ export interface SoftwareFormProviderProps {
     readonly children: ReactNode;
 }
 
-const FIELDS = ['title', 'description', 'releaseDate', 'platform', 'hardware', 'categories', 'credits'] as const satisfies readonly (keyof SoftwareFormValues)[];
+const FIELDS = ['title', 'description', 'releaseDate', 'platform', 'hardware', 'categories', 'credits', 'preservation'] as const satisfies readonly (keyof SoftwareFormValues)[];
 
 /** The values of a software form being filled in, their format rules and why the last submit was refused. */
 export function SoftwareFormProvider({onSubmit, initial, platforms = [], busy = false, error, messages = {}, children}: SoftwareFormProviderProps) {

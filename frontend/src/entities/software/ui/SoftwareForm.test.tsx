@@ -110,7 +110,22 @@ describe(SoftwareForm, () => {
             hardware: [],
             categories: [],
             credits: [],
+            preservation: 'unknown',
         });
+    });
+
+    it('chooses the preservation status of the software, unknown until it is known', async () => {
+        const {onSubmit} = renderForm();
+        const status = screen.getByRole('combobox', {name: 'Preservation status'});
+
+        expect(status).toHaveDisplayValue('Unknown');
+
+        await userEvent.type(screen.getByRole('textbox', {name: 'Title'}), 'Elite');
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Platform'}), 'BK');
+        await userEvent.selectOptions(status, 'Missing in action');
+        await userEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        expect(onSubmit).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({preservation: 'missing-in-action'}));
     });
 
     it('takes a year alone as the release date and tells how to write one', async () => {
@@ -175,7 +190,7 @@ describe(SoftwareForm, () => {
     it('offers the platforms to choose from', () => {
         renderForm();
 
-        expect(screen.getAllByRole('option').map((option) => option.textContent)).toStrictEqual(['Choose a platform', 'Agat', 'BK']);
+        expect(within(screen.getByRole('combobox', {name: 'Platform'})).getAllByRole('option').map((option) => option.textContent)).toStrictEqual(['Choose a platform', 'Agat', 'BK']);
     });
 
     it('does not submit without a platform and says so under the field', async () => {

@@ -26,6 +26,9 @@ public class SoftwareEntity {
 
     private @Nullable String description;
 
+    @Column(nullable = false)
+    private String preservation = "unknown";
+
     /**
      * Set by the database default.
      */

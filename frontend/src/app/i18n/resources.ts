@@ -36,7 +36,7 @@ export const resources = {
         formSections: {main: 'Main', classification: 'Classification', credits: 'Credits', hardwareAndArchive: 'Hardware and archive', names: 'Names', geography: 'Geography', members: 'Members', account: 'Account', groups: 'Groups', sources: 'Sources'},
         fields: {
             title: 'Title', platform: 'Platform', description: 'Description', releaseDate: 'Release date', releaseDateHint: 'A year, such as 1987, or a day, such as 12.05.1987.', version: 'Version',
-            type: 'Type', hardware: 'Hardware', categories: 'Categories', credits: 'Credits', participant: 'Person or group',
+            type: 'Type', preservation: 'Preservation status', hardware: 'Hardware', categories: 'Categories', credits: 'Credits', participant: 'Person or group',
             choosePlatform: 'Choose a platform', chooseType: 'Choose a type',
             platformLocked: 'Remove the hardware to change the platform.',
         },
@@ -185,7 +185,8 @@ export const resources = {
             parent: 'Parent', top: 'None, at the top', expand: 'Expand {{name}}', collapse: 'Collapse {{name}}', delete: 'Delete category',
             deleteQuestion: 'Delete “{{title}}” with all its subcategories? Their software stays in the archive and only leaves them.',
         },
-        software: {delete: 'Delete software', deleteQuestion: 'Delete “{{title}}” from the archive?', source: 'Source', software: 'Software', creditedAs: 'as {{name}}'},
+        software: {delete: 'Delete software', deleteQuestion: 'Delete “{{title}}” from the archive?', source: 'Source', software: 'Software', creditedAs: 'as {{name}}',
+            preservation: {unknown: 'Unknown', 'missing-in-action': 'Missing in action', donationware: 'Donationware', 'in-sales': 'In sales'}},
         screenshots: {
             heading: 'Screenshots', numbered: 'Screenshot {{n}}', nOfCount: 'Screenshot {{n}} of {{count}}',
             previous: 'Previous screenshot', next: 'Next screenshot', none: 'No screenshots yet.', add: 'Add screenshots',
@@ -238,7 +239,7 @@ export const resources = {
         formSections: {main: 'Основное', classification: 'Классификация', credits: 'Титры', hardwareAndArchive: 'Оборудование и архив', names: 'Имена', geography: 'География', members: 'Участники', account: 'Учётная запись', groups: 'Группы', sources: 'Источники'},
         fields: {
             title: 'Название', platform: 'Платформа', description: 'Описание', releaseDate: 'Дата выпуска', releaseDateHint: 'Год, например 1987, или день, например 12.05.1987.', version: 'Версия',
-            type: 'Тип', hardware: 'Оборудование', categories: 'Категории', credits: 'Титры', participant: 'Человек или группа',
+            type: 'Тип', preservation: 'Статус сохранности', hardware: 'Оборудование', categories: 'Категории', credits: 'Титры', participant: 'Человек или группа',
             choosePlatform: 'Выберите платформу', chooseType: 'Выберите тип',
             platformLocked: 'Удалите оборудование, чтобы изменить платформу.',
         },
@@ -392,7 +393,8 @@ export const resources = {
             parent: 'Родитель', top: 'Нет, на верхнем уровне', expand: 'Раскрыть {{name}}', collapse: 'Свернуть {{name}}', delete: 'Удалить категорию',
             deleteQuestion: 'Удалить «{{title}}» со всеми подкатегориями? Их программы останутся в архиве и только покинут эти категории.',
         },
-        software: {delete: 'Удалить программу', deleteQuestion: 'Удалить «{{title}}» из архива?', source: 'Источник', software: 'Софт', creditedAs: 'как {{name}}'},
+        software: {delete: 'Удалить программу', deleteQuestion: 'Удалить «{{title}}» из архива?', source: 'Источник', software: 'Софт', creditedAs: 'как {{name}}',
+            preservation: {unknown: 'Неизвестно', 'missing-in-action': 'Потеряна', donationware: 'За донат', 'in-sales': 'В продаже'}},
         screenshots: {
             heading: 'Скриншоты', numbered: 'Скриншот {{n}}', nOfCount: 'Скриншот {{n}} из {{count}}',
             previous: 'Предыдущий скриншот', next: 'Следующий скриншот', none: 'Скриншотов пока нет.', add: 'Добавить скриншоты',

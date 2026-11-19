@@ -36,6 +36,7 @@ public class CreateSoftwareHandler {
                 categorySets.of(c.categories()),
                 creditSets.of(c.credits()),
                 addedBy);
+        software.changePreservation(c.preservation());
         repository.save(software);
         software.pullEvents().forEach(events::publishEvent);
         return id;

@@ -8,7 +8,7 @@ import {App} from './App';
 import {type AppRouter, createAppRouter} from './router';
 
 const ALPHA = {id: '00000000-0000-0000-0001-000000000001', title: 'Fixture Software Alpha', releaseDate: '1985-03-02'};
-const ALPHA_DETAILS = {...ALPHA, description: null, platform: {code: 'vector', name: 'Vector'}, hardware: [], categories: [], credits: [], sources: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true};
+const ALPHA_DETAILS = {...ALPHA, description: null, platform: {code: 'vector', name: 'Vector'}, hardware: [], categories: [], credits: [], sources: [], preservation: 'unknown', added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true};
 const AY_MOD = '00000000-0000-0000-0007-000000000002';
 const AY_MOD_DETAILS = {id: AY_MOD, title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: null, description: null, hardware: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true};
 const ZED = '00000000-0000-0000-0003-000000000001';

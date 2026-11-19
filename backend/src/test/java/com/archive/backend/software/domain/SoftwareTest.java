@@ -129,6 +129,20 @@ class SoftwareTest {
     }
 
     @Test
+    void isCreatedWithAnUnknownPreservationStatus() {
+        assertThat(elite().getPreservation()).isEqualTo(PreservationStatus.UNKNOWN);
+    }
+
+    @Test
+    void changesItsPreservationStatus() {
+        Software software = elite();
+
+        software.changePreservation(PreservationStatus.MISSING_IN_ACTION);
+
+        assertThat(software.getPreservation()).isEqualTo(PreservationStatus.MISSING_IN_ACTION);
+    }
+
+    @Test
     void addsReleasesWithWhatTheyStateAndTheirHardware() {
         Software software = elite();
 

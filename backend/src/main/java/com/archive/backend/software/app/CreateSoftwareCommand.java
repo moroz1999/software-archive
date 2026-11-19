@@ -3,6 +3,7 @@ package com.archive.backend.software.app;
 import com.archive.backend.category.domain.CategoryId;
 import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.PlatformCode;
+import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.SoftwareCreditDraft;
 import com.archive.backend.software.domain.SoftwareDescription;
@@ -20,7 +21,8 @@ public record CreateSoftwareCommand(
         PlatformCode platform,
         Set<HardwareCode> hardware,
         Set<CategoryId> categories,
-        List<SoftwareCreditDraft> credits) {
+        List<SoftwareCreditDraft> credits,
+        PreservationStatus preservation) {
 
     public CreateSoftwareCommand(
             Actor actor,
@@ -30,6 +32,36 @@ public record CreateSoftwareCommand(
             PlatformCode platform,
             Set<HardwareCode> hardware,
             Set<CategoryId> categories) {
-        this(actor, title, description, releaseDate, platform, hardware, categories, List.of());
+        this(
+                actor,
+                title,
+                description,
+                releaseDate,
+                platform,
+                hardware,
+                categories,
+                List.of(),
+                PreservationStatus.UNKNOWN);
+    }
+
+    public CreateSoftwareCommand(
+            Actor actor,
+            SoftwareTitle title,
+            @Nullable SoftwareDescription description,
+            @Nullable ReleaseDate releaseDate,
+            PlatformCode platform,
+            Set<HardwareCode> hardware,
+            Set<CategoryId> categories,
+            List<SoftwareCreditDraft> credits) {
+        this(
+                actor,
+                title,
+                description,
+                releaseDate,
+                platform,
+                hardware,
+                categories,
+                credits,
+                PreservationStatus.UNKNOWN);
     }
 }

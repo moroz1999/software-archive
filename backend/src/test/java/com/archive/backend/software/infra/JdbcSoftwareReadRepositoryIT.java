@@ -319,6 +319,18 @@ class JdbcSoftwareReadRepositoryIT {
     }
 
     @Test
+    void readsThePreservationStatusOfSoftware() {
+        jdbc.update("UPDATE software SET preservation = 'in-sales' WHERE id = ?", ELITE);
+
+        assertThat(reads.findById(ELITE, "en"))
+                .hasValueSatisfying(
+                        details -> assertThat(details.preservation()).isEqualTo("in-sales"));
+        assertThat(reads.findById(TETRIS, "en"))
+                .hasValueSatisfying(
+                        details -> assertThat(details.preservation()).isEqualTo("unknown"));
+    }
+
+    @Test
     void findsNothingForAnUnknownId() {
         assertThat(reads.findById(UUID.randomUUID(), "en")).isEmpty();
     }

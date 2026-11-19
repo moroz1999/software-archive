@@ -14,7 +14,8 @@ public record SoftwareRequestDto(
         @Nullable String platform,
         @Nullable List<String> hardware,
         @Nullable List<UUID> categories,
-        @Nullable List<CreditDto> credits) {
+        @Nullable List<CreditDto> credits,
+        @Nullable String preservation) {
 
     /** A person, a group or the exact label of either, with the roles they had. */
     public record CreditDto(

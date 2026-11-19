@@ -1,6 +1,7 @@
 package com.archive.backend.software.app;
 
 import com.archive.backend.category.domain.CategoryId;
+import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.ScreenshotImage;
 import com.archive.backend.software.domain.SoftwareCreditDraft;
@@ -17,6 +18,7 @@ public record SupplementSoftwareCommand(
         SoftwareId softwareId,
         @Nullable SoftwareDescription description,
         @Nullable ReleaseDate releaseDate,
+        PreservationStatus preservation,
         Set<CategoryId> categories,
         List<SoftwareCreditDraft> credits,
         List<ScreenshotImage> screenshots) {}

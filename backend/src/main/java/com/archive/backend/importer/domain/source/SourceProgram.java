@@ -5,6 +5,7 @@ import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.importer.domain.ExternalPage;
 import com.archive.backend.shared.domain.ddd.ValueObject;
+import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.ReleaseArchiveUpload;
 import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.ScreenshotImage;
@@ -33,6 +34,7 @@ public record SourceProgram(
         @Nullable SoftwareDescription description,
         @Nullable ReleaseDate softwareDate,
         @Nullable ReleaseDate releaseDate,
+        PreservationStatus preservation,
         PlatformCode platform,
         Set<HardwareCode> hardware,
         Set<HardwareCode> releaseHardware,
@@ -46,6 +48,7 @@ public record SourceProgram(
         Objects.requireNonNull(id, "id");
         Objects.requireNonNull(page, "page");
         Objects.requireNonNull(title, "title");
+        Objects.requireNonNull(preservation, "preservation");
         Objects.requireNonNull(platform, "platform");
         hardware = Set.copyOf(hardware);
         releaseHardware = Set.copyOf(releaseHardware);

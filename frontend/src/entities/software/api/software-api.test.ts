@@ -20,6 +20,7 @@ const DRAFT = {
     platform: toSoftwarePlatformCode('vector'),
     hardware: ['vector06c', 'ay8910'],
     categories: [GAMES],
+    preservation: 'donationware',
     credits: [
         {id: PUBLISHER, type: AUTHOR_LABEL, title: 'J.P. — Jane Publisher', roles: ['publisher'], startDate: '', endDate: ''},
         {id: DEVELOPER, type: GROUP, title: 'Nebula Studio', roles: ['developer'], startDate: '', endDate: ''},
@@ -46,6 +47,7 @@ describe(fetchSoftware, () => {
                 {id: DEVELOPER, type: GROUP, title: 'Nebula Studio', ownerId: DEVELOPER, roles: ['developer']},
             ],
             sources: [{archive: 'vektor-06c.ru', url: 'https://vektor-06c.ru/programmnoe-obespechenie/arkadnye-igry/joe-blade-/'}],
+            preservation: 'missing-in-action',
             added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
             canChange: true,
         }));
@@ -58,10 +60,20 @@ describe(fetchSoftware, () => {
                 {id: DEVELOPER, type: GROUP, title: 'Nebula Studio', ownerId: DEVELOPER, roles: ['developer'], startDate: '', endDate: ''},
             ],
             sources: [{archive: 'vektor-06c.ru', url: 'https://vektor-06c.ru/programmnoe-obespechenie/arkadnye-igry/joe-blade-/'}],
+            preservation: 'missing-in-action',
             added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
             canChange: true,
         });
         expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/software/${ID}`);
+    });
+
+    it('fails with a system error on an unknown preservation status', async () => {
+        stubFetch(json({
+            id: ID, title: 'Elite', description: null, releaseDate: null, platform: VECTOR, hardware: [], categories: [], credits: [], sources: [],
+            preservation: 'lost', added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true,
+        }));
+
+        await expect(fetchSoftware(ID, new AbortController().signal)).rejects.toBeInstanceOf(SystemError);
     });
 
     it('passes a not found error on', async () => {
@@ -143,7 +155,7 @@ describe(createSoftware, () => {
         expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/software');
         expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
             method: 'POST',
-            body: '{"title":"Elite","description":null,"releaseDate":"1985-09-20","platform":"vector","hardware":["vector06c","ay8910"],"categories":["00000000-0000-0000-0006-000000000001"],"credits":[{"id":"00000000-0000-0000-0003-000000000001","type":"author-label","roles":["publisher"]},{"id":"00000000-0000-0000-0004-000000000001","type":"group","roles":["developer"]}]}',
+            body: '{"title":"Elite","description":null,"releaseDate":"1985-09-20","platform":"vector","hardware":["vector06c","ay8910"],"categories":["00000000-0000-0000-0006-000000000001"],"credits":[{"id":"00000000-0000-0000-0003-000000000001","type":"author-label","roles":["publisher"]},{"id":"00000000-0000-0000-0004-000000000001","type":"group","roles":["developer"]}],"preservation":"donationware"}',
         });
     });
 });
@@ -160,7 +172,7 @@ describe(updateSoftware, () => {
         expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/software/${ID}`);
         expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
             method: 'PUT',
-            body: '{"title":"Elite","description":null,"releaseDate":"1985-09-20","platform":"vector","hardware":["vector06c","ay8910"],"categories":["00000000-0000-0000-0006-000000000001"],"credits":[{"id":"00000000-0000-0000-0003-000000000001","type":"author-label","roles":["publisher"]},{"id":"00000000-0000-0000-0004-000000000001","type":"group","roles":["developer"]}]}',
+            body: '{"title":"Elite","description":null,"releaseDate":"1985-09-20","platform":"vector","hardware":["vector06c","ay8910"],"categories":["00000000-0000-0000-0006-000000000001"],"credits":[{"id":"00000000-0000-0000-0003-000000000001","type":"author-label","roles":["publisher"]},{"id":"00000000-0000-0000-0004-000000000001","type":"group","roles":["developer"]}],"preservation":"donationware"}',
         });
     });
 });

@@ -31,6 +31,19 @@ export interface SoftwareCredit extends MemberRoleValue {
     readonly ownerId?: string | null;
 }
 
+/** Whether software can be had and how (docs/domain/software.md); unknown until it is known. */
+export const PRESERVATION_STATUSES = ['unknown', 'missing-in-action', 'donationware', 'in-sales'] as const;
+export type PreservationStatus = (typeof PRESERVATION_STATUSES)[number];
+
+const PRESERVATION_STATUS_SET: ReadonlySet<string> = new Set(PRESERVATION_STATUSES);
+
+export function toPreservationStatus(raw: string): PreservationStatus {
+    if (!PRESERVATION_STATUS_SET.has(raw)) {
+        throw new TypeError(`Invalid preservation status: ${raw}`);
+    }
+    return raw as PreservationStatus;
+}
+
 /** The page of software in an archive it was imported from. */
 export interface SoftwareSource {
     readonly archive: string;
@@ -56,6 +69,7 @@ export interface SoftwareDetails extends Software {
     readonly credits?: readonly SoftwareCredit[];
     /** The pages of the archives it was imported from (docs/domain/imports.md). */
     readonly sources?: readonly SoftwareSource[];
+    readonly preservation: PreservationStatus;
     /** Who added it and when. */
     readonly added: Addition;
     /** Whether whoever reads it may change it, as the archive tells. */

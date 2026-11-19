@@ -6,6 +6,7 @@ Software (a production) is a release of a program: the work itself, as it is kno
 - It has a title, a description and a release date — see [Release dates](#release-dates).
 - It can be in categories of the archive's tree — see [categories.md](categories.md).
 - It has credits: who made it, published it and worked on it — see [Credits](#credits).
+- It has a preservation status, shown to everybody and chosen in its form: unknown (until it is known, and then not shown), missing in action (nobody has it; «Потеряна»), donationware (given away for a donation; «За донат») or in sales (still sold; «В продаже»).
 - The title follows the common title rules (see the domain index). The description and the release date may be unknown.
 - Software can be added, edited and deleted, its base hardware with it, chosen from the hardware of its platform. For now anyone can do it; access rules come later.
 - Deleting software deletes what belongs only to it: its releases with their files and file trees, screenshots, alternative titles, languages, links, credits and where it was imported from. The people, groups and labels it credited stay, with their groups.

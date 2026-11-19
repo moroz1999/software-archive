@@ -93,6 +93,9 @@ function Details({software}: {readonly software: SoftwareDetails}) {
                     </Text>
                 </Section>
             )}
+            {software.preservation !== 'unknown' && (
+                <Section label={t('fields.preservation')}><Text>{t(`software.preservation.${software.preservation}`)}</Text></Section>
+            )}
             {software.hardware.length > 0 && (
                 <Stack as="section" gap="xs" ariaLabel={t('fields.hardware')}>
                     <Text variant="label" tone="muted">{t('fields.hardware')}</Text>

@@ -39,7 +39,12 @@ public class SupplementSoftwareHandler {
         software.requireChangeableBy(c.actor());
         Set<CategoryId> categories = new HashSet<>(software.getCategories().ids());
         categories.addAll(c.categories());
-        software.supplement(c.description(), c.releaseDate(), categorySets.of(categories), creditSets.of(c.credits()));
+        software.supplement(
+                c.description(),
+                c.releaseDate(),
+                c.preservation(),
+                categorySets.of(categories),
+                creditSets.of(c.credits()));
         List<ScreenshotImage> images = software.screenshotsOfNewSizes(c.screenshots());
         List<Screenshot> added = images.stream()
                 .map(image ->

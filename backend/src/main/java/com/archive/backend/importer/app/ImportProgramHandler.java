@@ -68,6 +68,7 @@ public class ImportProgramHandler {
                     known.get(),
                     program.description(),
                     program.softwareDate(),
+                    program.preservation(),
                     program.categories(),
                     credits,
                     program.screenshots()));
@@ -132,7 +133,8 @@ public class ImportProgramHandler {
                 program.platform(),
                 program.hardware(),
                 program.categories(),
-                credits));
+                credits,
+                program.preservation()));
         createRelease.handle(new CreateReleaseCommand(
                 Importer.ACTOR,
                 software,

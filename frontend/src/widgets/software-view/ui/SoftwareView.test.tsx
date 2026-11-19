@@ -37,6 +37,7 @@ const ELITE = {
     ],
     credits: [],
     sources: [],
+    preservation: 'unknown',
     added: {by: 'Zork', at: '2026-03-04T05:06:07Z'},
     canChange: true,
 };
@@ -289,6 +290,40 @@ describe(SoftwareView, () => {
         await screen.findByRole('heading', {level: 1, name: 'Elite'});
 
         expect(screen.queryByRole('region', {name: 'Source'})).not.toBeInTheDocument();
+    });
+
+    it('tells the preservation status of the software once it is known', async () => {
+        stubFetch(json({...ELITE, preservation: 'missing-in-action'}));
+        renderView(ID);
+
+        await screen.findByRole('heading', {level: 1, name: 'Elite'});
+
+        expect(detailLabels('Preservation status')).toHaveLength(1);
+        expect(screen.getByText('Missing in action')).toBeInTheDocument();
+    });
+
+    it('tells the preservation status in Russian', async () => {
+        await i18n.changeLanguage('ru');
+        try {
+            stubFetch(json({...ELITE, preservation: 'in-sales'}));
+            renderView(ID);
+
+            await screen.findByRole('heading', {level: 1, name: 'Elite'});
+
+            expect(detailLabels('Статус сохранности')).toHaveLength(1);
+            expect(screen.getByText('В продаже')).toBeInTheDocument();
+        } finally {
+            await i18n.changeLanguage('en');
+        }
+    });
+
+    it('shows no preservation status while it is unknown', async () => {
+        stubFetch(json(ELITE));
+        renderView(ID);
+
+        await screen.findByRole('heading', {level: 1, name: 'Elite'});
+
+        expect(detailLabels('Preservation status')).toHaveLength(0);
     });
 
     it('shows nothing for an unknown description and release date', async () => {

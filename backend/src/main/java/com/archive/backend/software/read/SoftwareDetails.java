@@ -7,13 +7,15 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * One software with everything shown about it; its base hardware by group, then by name; its categories in the order
- * of the tree; everyone credited on it; the pages of the archives it was imported from.
+ * of the tree; everyone credited on it; the pages of the archives it was imported from; the code of its preservation
+ * status.
  */
 public record SoftwareDetails(
         UUID id,
         String title,
         @Nullable String description,
         @Nullable String releaseDate,
+        String preservation,
         SoftwarePlatform platform,
         List<SoftwareHardware> hardware,
         List<SoftwareCategory> categories,
@@ -39,6 +41,7 @@ public record SoftwareDetails(
                 title,
                 description,
                 releaseDate,
+                "unknown",
                 platform,
                 hardware,
                 categories,
@@ -68,6 +71,7 @@ public record SoftwareDetails(
                 title,
                 description,
                 releaseDate,
+                "unknown",
                 platform,
                 hardware,
                 categories,

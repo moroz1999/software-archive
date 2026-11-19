@@ -5,6 +5,7 @@ import com.archive.backend.category.domain.CategorySet;
 import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.HardwareSet;
 import com.archive.backend.hardware.domain.PlatformCode;
+import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.Release;
 import com.archive.backend.software.domain.ReleaseArchive;
 import com.archive.backend.software.domain.ReleaseArchiveId;
@@ -66,7 +67,8 @@ public interface SoftwareMapper {
                         .map(release -> toRelease(platform, release))
                         .toList(),
                 AddedByRows.toAddedBy(entity.getAddedBy()),
-                toScreenshots(entity.getScreenshots()));
+                toScreenshots(entity.getScreenshots()),
+                PreservationStatus.fromCode(entity.getPreservation()));
     }
 
     default SoftwareEntity toEntity(Software software) {
@@ -75,6 +77,7 @@ public interface SoftwareMapper {
         entity.setTitle(software.getTitle().value());
         SoftwareDescription description = software.getDescription();
         entity.setDescription(description == null ? null : description.value());
+        entity.setPreservation(software.getPreservation().code());
         ReleaseDate releaseDate = software.getReleaseDate();
         entity.setReleaseYear(releaseDate == null ? null : releaseDate.year().getValue());
         entity.setReleaseDay(releaseDate == null ? null : releaseDate.day());

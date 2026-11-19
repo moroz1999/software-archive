@@ -38,6 +38,7 @@ import com.archive.backend.software.app.CreateSoftwareCommand;
 import com.archive.backend.software.app.CreateSoftwareHandler;
 import com.archive.backend.software.app.DeleteSoftwareCommand;
 import com.archive.backend.software.app.DeleteSoftwareHandler;
+import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.ReleaseArchiveUpload;
 import com.archive.backend.software.domain.ReleaseContent;
 import com.archive.backend.software.domain.ReleaseDate;
@@ -207,6 +208,27 @@ class ImportProgramIT {
         assertThat(origin("SOFTWARE", "1")).isEqualTo(ours.value());
         ImportRunReport report = lastReport();
         assertThat(List.of(report.added(), report.known())).containsExactly(0, 1);
+    }
+
+    @Test
+    void takesThePreservationStatusOfTheSourceForANewProgramAndForAKnownOneWhileItIsUnknown() {
+        SoftwareId unknown = ourSoftware("Elite", zip(Map.of("ELITE.ROM", ELITE_ROM)));
+        SoftwareId inSales = ourSoftware("Zork", zip(Map.of("ZORK.ROM", bytes("Zork"))));
+        jdbc.update("UPDATE software SET preservation = 'in-sales' WHERE id = ?", inSales.value());
+
+        importProgram(program("1", "Elite", zip(Map.of("ELITE.ROM", ELITE_ROM)))
+                .preservation(PreservationStatus.MISSING_IN_ACTION)
+                .build());
+        importProgram(program("2", "Zork", zip(Map.of("ZORK.ROM", bytes("Zork"))))
+                .preservation(PreservationStatus.MISSING_IN_ACTION)
+                .build());
+        importProgram(program("3", "Nature", zip(Map.of("NATURE.ROM", bytes("Nature"))))
+                .preservation(PreservationStatus.MISSING_IN_ACTION)
+                .build());
+
+        assertThat(preservation(unknown.value())).isEqualTo("missing-in-action");
+        assertThat(preservation(inSales.value())).isEqualTo("in-sales");
+        assertThat(preservation(software("Nature"))).isEqualTo("missing-in-action");
     }
 
     @Test
@@ -477,6 +499,10 @@ class ImportProgramIT {
         return reports.findLatest().orElseThrow();
     }
 
+    private String preservation(UUID software) {
+        return jdbc.queryForObject("SELECT preservation FROM software WHERE id = ?", String.class, software);
+    }
+
     private UUID software(String title) {
         return jdbc.queryForObject("SELECT id FROM software WHERE title = ?", UUID.class, title);
     }
@@ -556,6 +582,7 @@ class ImportProgramIT {
         private Set<CategoryId> categories = Set.of();
         private List<SourceAuthor> authors = List.of();
         private List<ScreenshotImage> screenshots = List.of();
+        private PreservationStatus preservation = PreservationStatus.UNKNOWN;
 
         private ProgramBuilder(String id, String title, ReleaseArchiveUpload file) {
             this.id = id;
@@ -593,6 +620,11 @@ class ImportProgramIT {
             return this;
         }
 
+        ProgramBuilder preservation(PreservationStatus value) {
+            preservation = value;
+            return this;
+        }
+
         SourceProgram build() {
             return new SourceProgram(
                     ARCHIVE,
@@ -602,6 +634,7 @@ class ImportProgramIT {
                     description == null ? null : new SoftwareDescription(description),
                     ReleaseDate.ofYear(Year.of(1987)),
                     null,
+                    preservation,
                     VECTOR,
                     hardware,
                     releaseHardware,

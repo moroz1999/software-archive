@@ -12,6 +12,7 @@ import {
     toSoftwarePlatformCode,
     toSoftwareReferenceType,
     toSoftwareId,
+    toPreservationStatus,
     toSoftwareTitle,
 } from '../model/software';
 import type {SoftwareDraft} from '../model/software-form';
@@ -32,6 +33,7 @@ function toBody(draft: SoftwareDraft): unknown {
         hardware: draft.hardware,
         categories: draft.categories,
         credits: draft.credits.map(({id, type, roles}) => ({id, type, roles})),
+        preservation: draft.preservation,
     };
 }
 
@@ -85,6 +87,7 @@ export async function fetchSoftware(id: SoftwareId, signal: AbortSignal): Promis
                 const source = readObject(item, 'source');
                 return {archive: readString(source, 'archive'), url: readString(source, 'url')};
             }),
+            preservation: toPreservationStatus(readString(dto, 'preservation')),
             added: readAddition(dto['added']),
             canChange: readBoolean(dto, 'canChange'),
         };

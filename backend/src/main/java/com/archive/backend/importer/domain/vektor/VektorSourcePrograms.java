@@ -6,6 +6,7 @@ import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.importer.domain.ExternalPage;
 import com.archive.backend.importer.domain.source.SourceAuthor;
 import com.archive.backend.importer.domain.source.SourceProgram;
+import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.ReleaseArchiveUpload;
 import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.ScreenshotFileName;
@@ -42,6 +43,7 @@ public final class VektorSourcePrograms {
                 description == null ? null : new SoftwareDescription(description),
                 dateOf(years.software()),
                 dateOf(years.release()),
+                PreservationStatus.UNKNOWN,
                 VECTOR,
                 Set.of(VECTOR_06C),
                 VektorStorage.of(program.archiveFiles()),

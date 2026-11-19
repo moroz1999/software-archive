@@ -12,7 +12,7 @@ import {PLATFORM_REQUIRED_KEY, RELEASE_DATE_HINT_KEY, RELEASE_DATE_INVALID_KEY, 
 import {fetchSoftwareParticipants} from '../api/software-api';
 import {usePlatformHardware} from '../model/platform-hardware-context';
 import {PlatformHardwareProvider} from '../model/PlatformHardwareProvider';
-import {toSoftwarePlatformCode} from '../model/software';
+import {PRESERVATION_STATUSES, toSoftwarePlatformCode} from '../model/software';
 import {useSoftwareForm} from '../model/software-form-context';
 import {HardwarePicker} from './HardwarePicker';
 import styles from './SoftwareForm.module.css';
@@ -62,6 +62,17 @@ export function SoftwareForm({submitLabel, actions, categories}: SoftwareFormPro
                     error={errors.releaseDate === undefined ? refusals.releaseDate : t(RELEASE_DATE_INVALID_KEY)}
                 >
                     {(control) => <Input {...control} value={values.releaseDate} onChange={change('releaseDate')} disabled={busy}/>}
+                </FormField>
+                <FormField label={t('fields.preservation')} error={refusals.preservation}>
+                    {(control) => (
+                        <Select
+                            {...control}
+                            value={values.preservation ?? 'unknown'}
+                            onChange={change('preservation')}
+                            options={PRESERVATION_STATUSES.map((status) => ({value: status, label: t(`software.preservation.${status}`)}))}
+                            disabled={busy}
+                        />
+                    )}
                 </FormField>
                 <FormField label={t('fields.description')} fullWidth error={refusals.description}>
                     {(control) => <Textarea {...control} value={values.description} onChange={change('description')} disabled={busy}/>}

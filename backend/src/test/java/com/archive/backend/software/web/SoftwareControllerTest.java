@@ -36,6 +36,7 @@ import com.archive.backend.software.app.ListSoftwareReleasesHandler;
 import com.archive.backend.software.app.ListSoftwareReleasesQuery;
 import com.archive.backend.software.app.UpdateSoftwareCommand;
 import com.archive.backend.software.app.UpdateSoftwareHandler;
+import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
@@ -180,6 +181,7 @@ class SoftwareControllerTest {
                 .andExpect(jsonPath("$.title").value("Elite"))
                 .andExpect(jsonPath("$.description").value("Space trading"))
                 .andExpect(jsonPath("$.releaseDate").value("1985-09-20"))
+                .andExpect(jsonPath("$.preservation").value("unknown"))
                 .andExpect(jsonPath("$.credits").isArray())
                 .andExpect(jsonPath("$.publishers").doesNotExist())
                 .andExpect(jsonPath("$.developers").doesNotExist());
@@ -194,6 +196,7 @@ class SoftwareControllerTest {
                         "Elite",
                         null,
                         null,
+                        "unknown",
                         new SoftwarePlatform("vector", "Vector"),
                         List.of(),
                         List.of(),
@@ -368,6 +371,56 @@ class SoftwareControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", "/api/software/" + ID))
                 .andExpect(jsonPath("$.id").value(ID.toString()));
+    }
+
+    @Test
+    void createsSoftwareWithItsPreservationStatus() throws Exception {
+        when(createHandler.handle(new CreateSoftwareCommand(
+                        Actor.anonymous(),
+                        new SoftwareTitle("Elite"),
+                        null,
+                        null,
+                        VECTOR,
+                        Set.of(),
+                        Set.of(),
+                        List.of(),
+                        PreservationStatus.MISSING_IN_ACTION)))
+                .thenReturn(new SoftwareId(ID));
+
+        mvc.perform(post("/api/software")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                                "{\"title\":\"Elite\",\"platform\":\"vector\",\"preservation\":\"missing-in-action\"}"))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void answers400ForAnUnknownPreservationStatus() throws Exception {
+        mvc.perform(post("/api/software")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Elite\",\"platform\":\"vector\",\"preservation\":\"lost\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void updatesThePreservationStatusOfSoftware() throws Exception {
+        mvc.perform(put("/api/software/{id}", ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Elite\",\"platform\":\"vector\",\"preservation\":\"donationware\"}"))
+                .andExpect(status().isNoContent());
+
+        verify(updateHandler)
+                .handle(new UpdateSoftwareCommand(
+                        Actor.anonymous(),
+                        new SoftwareId(ID),
+                        new SoftwareTitle("Elite"),
+                        null,
+                        null,
+                        VECTOR,
+                        Set.of(),
+                        Set.of(),
+                        List.of(),
+                        PreservationStatus.DONATIONWARE));
     }
 
     @Test

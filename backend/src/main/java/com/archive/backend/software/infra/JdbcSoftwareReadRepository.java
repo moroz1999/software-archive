@@ -109,7 +109,7 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     @Override
     public Optional<SoftwareDetails> findById(UUID id, String language) {
         return jdbc.sql("""
-                        SELECT s.title, s.description, %s AS release_date, p.code, %s AS name, s.added_by, %s
+                        SELECT s.title, s.description, s.preservation, %s AS release_date, p.code, %s AS name, s.added_by, %s
                         FROM software s
                         JOIN platform p ON p.code = s.platform_code
                         WHERE s.id = :id
@@ -122,6 +122,7 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                         rs.getString("title"),
                         rs.getString("description"),
                         rs.getString("release_date"),
+                        rs.getString("preservation"),
                         new SoftwarePlatform(rs.getString("code"), rs.getString("name")),
                         hardware("software_hardware", "software_id", id, language),
                         categories(id, language),

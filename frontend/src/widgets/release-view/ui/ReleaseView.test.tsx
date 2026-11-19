@@ -18,7 +18,7 @@ const ELITE = {
     hardware: [],
     categories: [],
     credits: [],
-    sources: [],
+    sources: [], preservation: 'unknown',
     added: {by: 'Admin', at: '2026-01-01T00:00:00Z'},
     canChange: false,
 };

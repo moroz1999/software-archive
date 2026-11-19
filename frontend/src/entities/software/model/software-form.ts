@@ -2,10 +2,12 @@ import {type TitleProblem, titleProblem} from '@/shared/lib/title';
 import type {MemberRoleValue} from '@/shared/ui/member-role-editor';
 import {parseReleaseDateText, releaseDateField} from '../lib/release-date';
 import {
+    type PreservationStatus,
     type ReleaseDate,
     type SoftwareDetails,
     type SoftwarePlatformCode,
     type SoftwareTitle,
+    toPreservationStatus,
     toSoftwarePlatformCode,
     toSoftwareTitle,
 } from './software';
@@ -23,6 +25,8 @@ export interface SoftwareFormValues {
     /** The ids of the checked categories. */
     readonly categories: readonly string[];
     readonly credits?: readonly MemberRoleValue[];
+    /** The code of the chosen preservation status; unknown when absent. */
+    readonly preservation?: string;
 }
 
 /** A platform the form offers. */
@@ -40,6 +44,7 @@ export interface SoftwareDraft {
     readonly hardware: readonly string[];
     readonly categories: readonly string[];
     readonly credits: readonly MemberRoleValue[];
+    readonly preservation: PreservationStatus;
 }
 
 export interface SoftwareFormErrors {
@@ -82,6 +87,7 @@ export function validateSoftwareForm(values: SoftwareFormValues): SoftwareFormRe
             hardware: values.hardware,
             categories: values.categories,
             credits: values.credits ?? [],
+            preservation: toPreservationStatus(values.preservation ?? 'unknown'),
         },
     };
 }
@@ -96,5 +102,6 @@ export function toSoftwareFormValues(software?: SoftwareDetails): SoftwareFormVa
         hardware: software?.hardware.map((item) => item.code) ?? [],
         categories: software?.categories.map((category) => category.id) ?? [],
         credits: software?.credits ?? [],
+        preservation: software?.preservation ?? 'unknown',
     };
 }

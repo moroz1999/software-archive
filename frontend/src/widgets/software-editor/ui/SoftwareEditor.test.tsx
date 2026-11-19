@@ -12,7 +12,7 @@ const ELITE = {id: ID, title: 'Elite', description: 'Space trading', releaseDate
         id: '00000000-0000-0000-0006-000000000002',
         title: 'Action',
         branch: [{id: '00000000-0000-0000-0006-000000000001', title: 'Games'}, {id: '00000000-0000-0000-0006-000000000002', title: 'Action'}],
-    }], credits: [], sources: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true};
+    }], credits: [], sources: [], preservation: 'unknown', added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true};
 const GAMES = '00000000-0000-0000-0006-000000000001';
 const ACTION = '00000000-0000-0000-0006-000000000002';
 const TREE = [{id: GAMES, title: 'Games', children: [{id: ACTION, title: 'Action', children: []}]}];

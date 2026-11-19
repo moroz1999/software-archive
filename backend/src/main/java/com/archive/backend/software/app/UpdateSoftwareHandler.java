@@ -32,6 +32,7 @@ public class UpdateSoftwareHandler {
                 hardwareSets.of(c.platform(), c.hardware()),
                 categorySets.of(c.categories()));
         software.changeCredits(creditSets.of(c.credits()));
+        software.changePreservation(c.preservation());
         repository.save(software);
         software.pullEvents().forEach(events::publishEvent);
     }

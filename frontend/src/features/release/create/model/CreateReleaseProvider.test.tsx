@@ -16,6 +16,7 @@ const SOFTWARE = {
     categories: [],
     added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
     canChange: true,
+    preservation: 'unknown' as const,
 };
 const RELEASE = '00000000-0000-0000-0007-000000000002';
 const HARDWARE: readonly Hardware[] = [{code: 'ay8910', name: 'AY-3-8910', group: 'sound'}];

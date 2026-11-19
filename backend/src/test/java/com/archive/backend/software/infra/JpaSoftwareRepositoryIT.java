@@ -16,6 +16,7 @@ import com.archive.backend.category.infra.JdbcCategoryCatalog;
 import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.HardwareSet;
 import com.archive.backend.hardware.domain.PlatformCode;
+import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.Release;
 import com.archive.backend.software.domain.ReleaseArchive;
 import com.archive.backend.software.domain.ReleaseArchiveId;
@@ -205,6 +206,26 @@ class JpaSoftwareRepositoryIT {
                 .isEqualTo("Elite Plus");
         assertThat(jdbc.queryForObject("SELECT platform_code FROM software WHERE id = ?", String.class, ID.value()))
                 .isEqualTo("bk");
+    }
+
+    @Test
+    void storesAndRestoresThePreservationStatus() {
+        Software software = Software.create(
+                ID,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                NO_HARDWARE,
+                CategorySet.EMPTY,
+                SoftwareCredits.EMPTY,
+                BY_OTHER);
+        software.changePreservation(PreservationStatus.DONATIONWARE);
+        repository.save(software);
+        springDataSoftwareRepository.flush();
+
+        assertThat(jdbc.queryForObject("SELECT preservation FROM software WHERE id = ?", String.class, ID.value()))
+                .isEqualTo("donationware");
+        assertThat(repository.findById(ID).orElseThrow().getPreservation()).isEqualTo(PreservationStatus.DONATIONWARE);
     }
 
     @Test

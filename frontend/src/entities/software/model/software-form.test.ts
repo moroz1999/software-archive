@@ -6,14 +6,21 @@ describe(validateSoftwareForm, () => {
     it('turns filled values into a draft', () => {
         expect(validateSoftwareForm({title: 'Elite', description: 'Space trading', releaseDate: '20.09.1985', platform: 'vector', hardware: [], categories: []})).toStrictEqual({
             ok: true,
-            draft: {title: 'Elite', description: 'Space trading', releaseDate: '1985-09-20', platform: 'vector', hardware: [], categories: [], credits: []},
+            draft: {title: 'Elite', description: 'Space trading', releaseDate: '1985-09-20', platform: 'vector', hardware: [], categories: [], credits: [], preservation: 'unknown'},
         });
     });
 
     it('turns empty optional values into unknown ones', () => {
         expect(validateSoftwareForm({title: 'Elite', description: '  ', releaseDate: '', platform: 'vector', hardware: [], categories: []})).toStrictEqual({
             ok: true,
-            draft: {title: 'Elite', description: null, releaseDate: null, platform: 'vector', hardware: [], categories: [], credits: []},
+            draft: {title: 'Elite', description: null, releaseDate: null, platform: 'vector', hardware: [], categories: [], credits: [], preservation: 'unknown'},
+        });
+    });
+
+    it('takes the chosen preservation status', () => {
+        expect(validateSoftwareForm({title: 'Elite', description: '', releaseDate: '', platform: 'vector', hardware: [], categories: [], preservation: 'missing-in-action'})).toMatchObject({
+            ok: true,
+            draft: {preservation: 'missing-in-action'},
         });
     });
 
@@ -64,7 +71,7 @@ describe('the hardware of the draft', () => {
 
 describe(toSoftwareFormValues, () => {
     it('is empty for new software', () => {
-        expect(toSoftwareFormValues()).toStrictEqual({title: '', description: '', releaseDate: '', platform: '', hardware: [], categories: [], credits: []});
+        expect(toSoftwareFormValues()).toStrictEqual({title: '', description: '', releaseDate: '', platform: '', hardware: [], categories: [], credits: [], preservation: 'unknown'});
     });
 
     it('holds the values of existing software, unknown ones empty', () => {
@@ -77,12 +84,13 @@ describe(toSoftwareFormValues, () => {
             platform: {code: toSoftwarePlatformCode('bk'), name: 'BK'},
             hardware: [],
             categories: [],
-        })).toStrictEqual({title: 'Elite', description: '', releaseDate: '20.09.1985', platform: 'bk', hardware: [], categories: [], credits: []});
+            preservation: 'in-sales',
+        })).toStrictEqual({title: 'Elite', description: '', releaseDate: '20.09.1985', platform: 'bk', hardware: [], categories: [], credits: [], preservation: 'in-sales'});
     });
 
     it('holds the codes of the hardware of the software', () => {
         expect(toSoftwareFormValues({
-            added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true,
+            added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true, preservation: 'unknown',
             id: toSoftwareId('00000000-0000-0000-0001-000000000001'),
             title: toSoftwareTitle('Elite'),
             description: null,
@@ -95,7 +103,7 @@ describe(toSoftwareFormValues, () => {
 
     it('holds the ids of the categories of the software', () => {
         expect(toSoftwareFormValues({
-            added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true,
+            added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true, preservation: 'unknown',
             id: toSoftwareId('00000000-0000-0000-0001-000000000001'),
             title: toSoftwareTitle('Elite'),
             description: null,

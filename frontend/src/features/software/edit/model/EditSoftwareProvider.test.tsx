@@ -16,6 +16,7 @@ const SOFTWARE = {
     categories: [],
     added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
     canChange: true,
+    preservation: 'unknown' as const,
 };
 const PLATFORMS = json([{code: 'bk', name: 'BK'}, {code: 'vector', name: 'Vector'}]);
 
@@ -49,7 +50,7 @@ describe(EditSoftwareProvider, () => {
 
         expect(fetchMock.mock.calls.find(([url]) => url === `/api/software/${SOFTWARE.id}`)?.[1]).toMatchObject({
             method: 'PUT',
-            body: '{"title":"Elite Plus","description":"Space trading","releaseDate":"1985-09-20","platform":"vector","hardware":[],"categories":[],"credits":[]}',
+            body: '{"title":"Elite Plus","description":"Space trading","releaseDate":"1985-09-20","platform":"vector","hardware":[],"categories":[],"credits":[],"preservation":"unknown"}',
         });
     });
 
