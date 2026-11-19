@@ -65,7 +65,7 @@ class FileSystemScreenshotFilesIT {
 
     private void ofSoftware(ScreenshotId id, String format) {
         jdbc.update(
-                "INSERT INTO software_screenshot (software_id, position, id, format) VALUES (?, 0, ?, ?)",
+                "INSERT INTO software_screenshot (software_id, position, id, format, file_name, size) VALUES (?, 0, ?, ?, 'shot', 1)",
                 ELITE,
                 id.value(),
                 format);
@@ -91,7 +91,7 @@ class FileSystemScreenshotFilesIT {
     void findsThePictureOfAReleaseScreenshot() {
         inTransaction(() -> {
             jdbc.update(
-                    "INSERT INTO software_release_screenshot (release_id, position, id, format) VALUES (?, 0, ?, 'webp')",
+                    "INSERT INTO software_release_screenshot (release_id, position, id, format, file_name, size) VALUES (?, 0, ?, 'webp', 'shot.webp', 1)",
                     AY_MOD,
                     screenshot.value());
             files.store(screenshot, ScreenshotImages.image(ScreenshotImages.webp()));

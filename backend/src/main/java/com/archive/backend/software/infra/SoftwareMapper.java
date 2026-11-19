@@ -16,6 +16,7 @@ import com.archive.backend.software.domain.ReleaseTitle;
 import com.archive.backend.software.domain.ReleaseType;
 import com.archive.backend.software.domain.ReleaseVersion;
 import com.archive.backend.software.domain.Screenshot;
+import com.archive.backend.software.domain.ScreenshotFileName;
 import com.archive.backend.software.domain.ScreenshotFormat;
 import com.archive.backend.software.domain.ScreenshotId;
 import com.archive.backend.software.domain.Screenshots;
@@ -94,14 +95,21 @@ public interface SoftwareMapper {
 
     private static Screenshots toScreenshots(List<ScreenshotRow> rows) {
         return new Screenshots(rows.stream()
-                .map(row -> new Screenshot(new ScreenshotId(row.getId()), ScreenshotFormat.fromCode(row.getFormat())))
+                .map(row -> new Screenshot(
+                        new ScreenshotId(row.getId()),
+                        ScreenshotFormat.fromCode(row.getFormat()),
+                        new ScreenshotFileName(row.getFileName()),
+                        row.getSize()))
                 .toList());
     }
 
     private static List<ScreenshotRow> fromScreenshots(Screenshots screenshots) {
         return screenshots.all().stream()
                 .map(screenshot -> new ScreenshotRow(
-                        screenshot.id().value(), screenshot.format().code()))
+                        screenshot.id().value(),
+                        screenshot.format().code(),
+                        screenshot.name().value(),
+                        screenshot.size()))
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 

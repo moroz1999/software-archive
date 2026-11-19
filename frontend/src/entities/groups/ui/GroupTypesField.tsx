@@ -3,7 +3,6 @@ import {Checkbox} from '@/shared/ui/checkbox';
 import {FormFieldset} from '@/shared/ui/form';
 import {Inline} from '@/shared/ui/inline';
 import {Skeleton} from '@/shared/ui/skeleton';
-import {TYPES_REQUIRED_KEY} from '../config/messages';
 import {useGroupForm} from '../model/group-form-context';
 import {useGroupTypes} from '../model/group-types-context';
 import {GroupTypesProvider} from '../model/GroupTypesProvider';
@@ -20,7 +19,7 @@ export function GroupTypesField() {
 
 function TypeChoices() {
     const {t} = useTranslation();
-    const {values, errors, refusals, changeTypes, busy} = useGroupForm();
+    const {values, refusals, changeTypes, busy} = useGroupForm();
     const types = useGroupTypes();
 
     function toggle(code: string, checked: boolean) {
@@ -28,7 +27,7 @@ function TypeChoices() {
     }
 
     return (
-        <FormFieldset legend={t('group.types')} required error={errors.types === undefined ? refusals.types : t(TYPES_REQUIRED_KEY)}>
+        <FormFieldset legend={t('group.types')} error={refusals.types}>
             {types.data === undefined
                 ? <Skeleton className={styles.loading}/>
                 : (

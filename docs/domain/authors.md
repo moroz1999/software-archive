@@ -6,7 +6,7 @@ The archive separates who someone is from the names they use.
 A real person. The real name is optional; a person may be known only through labels. Can have notes.
 
 ## Group
-A team or a company that releases works. Has a name, notes and at least one group type. Group types are a reference book kept in the archive: demogroup, crack group, game studio, label.
+A team or a company that releases works. Has a name, notes and group types, if known. Group types are a reference book kept in the archive: demogroup, crack group, game studio, label.
 
 ## Label
 A name works are released under ("VASYANSOFT"). Works are credited to labels, or to people and groups themselves when the name does not matter — see [software.md](software.md#credits).

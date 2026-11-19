@@ -405,9 +405,6 @@ class LabelIT {
 
     @Test
     void makesNoGroupWithoutAKnownType() throws Exception {
-        makeGroup(GHOST, ADMIN, "[]")
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.code").value("group.types-required"));
         makeGroup(GHOST, ADMIN, "[\"nonsense\"]")
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.code").value("group.type-unknown"));

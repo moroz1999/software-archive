@@ -9,6 +9,8 @@ A family of computers: RK-compatible, Orion, Specialist, PK8000, Korvet, Vector,
 
 A platform holds all models and clones of its family. BK is one platform for every BK; a model or a clone is hardware inside it, not a platform of its own.
 
+The platforms are the families the archive plans for; their hardware is added only once it is confirmed. For now only the Vector family has hardware ([The Vector family](#the-vector-family)); every other platform has none yet.
+
 ## Names
 Every platform and every item of hardware is named in English and in Russian. Visitors see the name in their interface language, or the Russian one when there is none in it, and lists follow that name. In Russian the MSX platform is called «Ямаха КУВТ».
 
@@ -19,9 +21,12 @@ Radio-86RK, Mikrosha, Apogey and Partner are one platform, RK-compatible, for fi
 - Mikrosha: the factory-made relative of the RK; 32 KB, another character generator, a timer for sound, other device addresses and its own tape format.
 - Apogey BK-01 and BK-01C: a better equipped factory machine on the base of the RK, about 56 KB for the user and three-channel sound; the BK-01C shows colour. Not to be confused with the Elektronika BK, a PDP-11 machine of the BK platform.
 - Partner 01.01, with its colour module.
-- Each machine is hardware of the platform; the memory variant of the RK and the colour Apogey are told apart because they decide whether software runs and how it looks.
+- Each machine is to be hardware of the platform once it is confirmed; the memory variant of the RK and the colour Apogey are told apart because they decide whether software runs and how it looks.
 - The same program can exist as two tape records, one in the format of the RK and one of the Mikrosha; they are releases of one software. A different character generator or colour mode can make the same bytes look different.
 - Specialist and Orion stay platforms of their own. Software belongs to exactly one platform, so a program confirmed to run on them as well is not shown there yet; that is an open question.
+
+## The Vector family
+The Vector platform is the family of computers compatible with the Vector-06C. Its computers (models and clones) are the Vector-06C (Вектор-06Ц) and the Krista-2 (Криста-2); they are partially compatible. Besides them the family has tape, the floppy disk and the AY sound chip.
 
 ## Hardware
 A flat list kept in the archive as a reference book (editing it comes later). Every item has:

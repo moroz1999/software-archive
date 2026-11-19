@@ -26,11 +26,12 @@ class JdbcHardwareReadRepositoryIT {
     void readsTheHardwareOfThePlatformByGroupThenName() {
         List<HardwareItem> items = reads.findByPlatform("vector", "en");
 
-        assertThat(items).extracting(HardwareItem::code).contains("vector06c", "ay8910", "tape", "beeper");
-        assertThat(items).extracting(HardwareItem::code).doesNotContain("bk0011m", "msxdos");
+        assertThat(items).extracting(HardwareItem::code).contains("vector06c", "krista2", "ay8910", "tape");
         assertThat(items).extracting(item -> GROUPS.indexOf(item.group())).isSorted();
-        assertThat(items.stream().filter(item -> item.group().equals("sound")).map(HardwareItem::name))
-                .isSortedAccordingTo(String.CASE_INSENSITIVE_ORDER);
+        assertThat(items.stream()
+                        .filter(item -> item.group().equals("computers"))
+                        .map(HardwareItem::name))
+                .containsExactly("Krista-2", "Vector-06C");
         assertThat(items).contains(new HardwareItem("ay8910", "AY-3-8910", "sound"));
     }
 

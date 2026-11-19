@@ -35,7 +35,7 @@ A release (a version) is a version of the software. It never lives apart from it
 Screenshots are part of what the archive knows, as much as its records: they are kept as uploaded, never recompressed, and are not lost with the services the archive runs on.
 - Software and each of its releases can have any number of screenshots, in an order chosen by whoever may change them.
 - A screenshot is a PNG, JPEG, GIF or WebP picture, judged by its content rather than by the name of its file, of at most 10 MB. Several can be uploaded at once; when one of them is refused, none is added.
-- Screenshots of software are added, deleted and reordered by whoever may change the software; screenshots of a release, by whoever may change the release ([users.md](users.md#user-groups)). A screenshot remembers nobody who added it.
+- Screenshots of software are added, deleted and reordered by whoever may change the software; screenshots of a release, by whoever may change the release ([users.md](users.md#user-groups)). A screenshot remembers nobody who added it; it keeps the name of its original file and its size.
 - Reordering names every screenshot in its new order; when the screenshots have changed meanwhile, the order is refused and has to be chosen again.
 - Deleting a release or software deletes its screenshots.
 - The card of software in a list shows the software's own screenshots; software without its own shows the screenshots of its releases, release by release in the order of the releases. Pointing at the picture across its width goes through them.

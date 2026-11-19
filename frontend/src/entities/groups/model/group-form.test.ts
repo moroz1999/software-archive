@@ -42,8 +42,8 @@ describe(validateGroupForm, () => {
         expect(validateGroupForm({...CREW, name: 'a'.repeat(256)})).toStrictEqual({ok: false, errors: {name: 'too-long'}});
     });
 
-    it('needs a type', () => {
-        expect(validateGroupForm({...CREW, types: []})).toStrictEqual({ok: false, errors: {types: 'required'}});
+    it('lets a group be of no known type', () => {
+        expect(validateGroupForm({...CREW, types: []})).toMatchObject({ok: true, draft: {types: []}});
     });
 
     it('names the problem of every label in its row', () => {
@@ -61,7 +61,7 @@ describe(validateGroupForm, () => {
     });
 
     it('names every problem at once', () => {
-        expect(validateGroupForm(EMPTY)).toStrictEqual({ok: false, errors: {name: 'required', types: 'required'}});
+        expect(validateGroupForm(EMPTY)).toStrictEqual({ok: false, errors: {name: 'required'}});
     });
 });
 

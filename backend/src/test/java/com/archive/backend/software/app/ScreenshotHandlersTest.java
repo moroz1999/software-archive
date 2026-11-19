@@ -14,6 +14,7 @@ import com.archive.backend.software.app.ScreenshotFixtures.RecordingEvents;
 import com.archive.backend.software.app.ScreenshotFixtures.RecordingScreenshotFiles;
 import com.archive.backend.software.domain.ReleaseId;
 import com.archive.backend.software.domain.Screenshot;
+import com.archive.backend.software.domain.ScreenshotFileName;
 import com.archive.backend.software.domain.ScreenshotFormat;
 import com.archive.backend.software.domain.ScreenshotId;
 import com.archive.backend.software.domain.ScreenshotImage;
@@ -52,7 +53,7 @@ class ScreenshotHandlersTest {
     }
 
     @Test
-    void addsScreenshotsToTheSoftwareAndStoresTheirPictures() {
+    void addsScreenshotsToTheSoftwareRememberingTheirFileNamesAndSizesAndStoresTheirPictures() {
         repository.save(eliteWithAyMod());
 
         List<ScreenshotId> ids = add.handle(new AddScreenshotsCommand(ADMIN, ELITE, null, List.of(PNG, GIF)));
@@ -60,8 +61,16 @@ class ScreenshotHandlersTest {
         assertThat(ids).hasSize(2).doesNotHaveDuplicates();
         assertThat(stored().screenshots(null).all())
                 .containsExactly(
-                        new Screenshot(ids.get(0), ScreenshotFormat.PNG),
-                        new Screenshot(ids.get(1), ScreenshotFormat.GIF));
+                        new Screenshot(
+                                ids.get(0),
+                                ScreenshotFormat.PNG,
+                                new ScreenshotFileName("shot.png"),
+                                ScreenshotImages.png().length),
+                        new Screenshot(
+                                ids.get(1),
+                                ScreenshotFormat.GIF,
+                                new ScreenshotFileName("shot.png"),
+                                ScreenshotImages.gif().length));
         assertThat(files.stored).containsOnlyKeys(ids);
         assertThat(files.stored.get(ids.get(1))).isSameAs(GIF);
         assertThat(events.published).containsExactly(new SoftwareChanged(ELITE));

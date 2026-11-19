@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 
 class ScreenshotImageTest {
 
+    private static final ScreenshotFileName NAME = new ScreenshotFileName("shot.png");
+
     @Test
     void tellsTheFormatByTheContent() {
         assertThat(ScreenshotImages.image(ScreenshotImages.png()).format()).isEqualTo(ScreenshotFormat.PNG);
@@ -55,10 +57,11 @@ class ScreenshotImageTest {
             throw new AssertionError("the content is read");
         };
 
-        assertThat(ScreenshotImage.of(ScreenshotImages.png(), ScreenshotImage.MAX_BYTES, unread)
+        assertThat(ScreenshotImage.of(ScreenshotImages.png(), ScreenshotImage.MAX_BYTES, NAME, unread)
                         .format())
                 .isEqualTo(ScreenshotFormat.PNG);
-        assertThatThrownBy(() -> ScreenshotImage.of(ScreenshotImages.png(), ScreenshotImage.MAX_BYTES + 1L, unread))
+        assertThatThrownBy(
+                        () -> ScreenshotImage.of(ScreenshotImages.png(), ScreenshotImage.MAX_BYTES + 1L, NAME, unread))
                 .isInstanceOf(ScreenshotTooLargeException.class);
     }
 }

@@ -25,7 +25,8 @@ public class AddScreenshotsHandler {
     public List<ScreenshotId> handle(AddScreenshotsCommand c) {
         Software software = repository.findById(c.softwareId()).orElseThrow(SoftwareNotFoundException::new);
         List<Screenshot> added = c.images().stream()
-                .map(image -> new Screenshot(new ScreenshotId(UUID.randomUUID()), image.format()))
+                .map(image ->
+                        new Screenshot(new ScreenshotId(UUID.randomUUID()), image.format(), image.name(), image.size()))
                 .toList();
         // Checked before anything is stored: no picture is kept for screenshots that are refused.
         software.addScreenshots(c.releaseId(), added, c.actor());

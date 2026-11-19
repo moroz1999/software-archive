@@ -80,7 +80,7 @@ describe(GroupEditor, () => {
 
         expect(within(main).getByRole('textbox', {name: 'Name'})).toBeInTheDocument();
         expect(within(main).getByRole('group', {name: 'Types'})).toBeInTheDocument();
-        expect(within(main).getAllByText('*')).toHaveLength(2);
+        expect(within(main).getAllByText('*')).toHaveLength(1);
     });
 
     it('puts the names, the places and the members of the group in sections of their own', async () => {

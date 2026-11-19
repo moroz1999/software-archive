@@ -27,6 +27,7 @@ import com.archive.backend.software.domain.ReleaseTitle;
 import com.archive.backend.software.domain.ReleaseType;
 import com.archive.backend.software.domain.ReleaseVersion;
 import com.archive.backend.software.domain.Screenshot;
+import com.archive.backend.software.domain.ScreenshotFileName;
 import com.archive.backend.software.domain.ScreenshotFormat;
 import com.archive.backend.software.domain.ScreenshotId;
 import com.archive.backend.software.domain.Software;
@@ -92,7 +93,7 @@ class JpaSoftwareRepositoryIT {
                     new CategoryId(UUID.fromString("c35b7f9b-44a8-5570-9406-9e6dcb30b607"))));
     private static final HardwareSet NO_HARDWARE = HardwareSet.restore(VECTOR, Set.of());
     private static final HardwareSet AY_AND_JOYSTICK =
-            HardwareSet.restore(VECTOR, Set.of(new HardwareCode("ay8910"), new HardwareCode("joystick")));
+            HardwareSet.restore(VECTOR, Set.of(new HardwareCode("ay8910"), new HardwareCode("floppy")));
 
     @Autowired
     private SpringDataSoftwareRepository springDataSoftwareRepository;
@@ -254,7 +255,11 @@ class JpaSoftwareRepositoryIT {
     }
 
     private static Screenshot shot(int n, ScreenshotFormat format) {
-        return new Screenshot(new ScreenshotId(UUID.fromString("00000000-0000-0000-0055-%012d".formatted(n))), format);
+        return new Screenshot(
+                new ScreenshotId(UUID.fromString("00000000-0000-0000-0055-%012d".formatted(n))),
+                format,
+                new ScreenshotFileName("shot-" + n + "." + format.code()),
+                100L * n);
     }
 
     @Test

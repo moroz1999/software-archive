@@ -19,4 +19,11 @@ public class ScreenshotRow {
 
     @Column(nullable = false)
     private String format;
+
+    /** The name of the file the picture came in. */
+    @Column(nullable = false)
+    private String fileName;
+
+    @Column(nullable = false)
+    private long size;
 }

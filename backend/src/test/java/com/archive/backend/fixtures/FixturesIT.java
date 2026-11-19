@@ -108,7 +108,8 @@ class FixturesIT {
 
     @Test
     void fixtureCountriesAndCitiesAreServedByTheApi() throws Exception {
-        mvc.perform(get("/api/countries")).andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(20)));
+        // The 20 countries of the fixtures and the country "Unknown" of the schema.
+        mvc.perform(get("/api/countries")).andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(21)));
         mvc.perform(get("/api/countries/{id}/cities", FINLAND))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(20)))
@@ -199,50 +200,21 @@ class FixturesIT {
     }
 
     @Test
-    void everyNewPlatformHasItsMachinesAsHardware() throws Exception {
-        Map<String, String[]> machines = Map.of(
-                "orion", new String[] {"orion128", "orion-pro"},
-                "pk8000", new String[] {"pk8000-vesta", "pk8000-hobby"},
-                "korvet", new String[] {"pk8010", "pk8020"},
-                "lviv", new String[] {"lviv-pk01"},
-                "okean", new String[] {"okean240"},
-                "bashkiria", new String[] {"bashkiria2m"},
-                "xt", new String[] {"poisk", "es1840", "iskra1030", "neuron-i966"});
-        for (Map.Entry<String, String[]> platform : machines.entrySet()) {
-            mvc.perform(get("/api/hardware").param("platform", platform.getKey()))
+    void noPlatformButTheVectorFamilyHasHardwareYet() throws Exception {
+        for (String platform : new String[] {
+            "agat", "bashkiria", "bk", "korvet", "lviv", "msx", "okean", "orion", "pk8000", "rk", "specialist", "xt"
+        }) {
+            mvc.perform(get("/api/hardware").param("platform", platform))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$[?(@.group == 'computers')].code").value(hasItems(platform.getValue())))
-                    .andExpect(jsonPath("$[*].code").value(hasItems("tape", "floppy", "beeper", "joystick")));
+                    .andExpect(jsonPath("$", hasSize(0)));
         }
     }
 
     @Test
-    void theRkFamilyHasItsMachinesAsHardware() throws Exception {
-        mvc.perform(get("/api/hardware").param("platform", "rk"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[?(@.group == 'computers')].code")
-                        .value(hasItems(
-                                "radio86rk-16k",
-                                "radio86rk-32k",
-                                "mikrosha",
-                                "apogey-bk01",
-                                "apogey-bk01c",
-                                "partner")))
-                .andExpect(jsonPath("$[*].code").value(hasItems("vi53", "partner-mcpg", "tape")));
-    }
-
-    @Test
-    void aFixtureRkGameHasAReleaseForEveryMachineAndMusicOnTheApogey() throws Exception {
+    void aFixtureRkGameHasAReleaseForEveryMachine() throws Exception {
         List<Map<String, Object>> releases = JsonPath.read(body(get("/api/software/{id}/releases", KHRYUKOSTYAG)), "$");
 
-        assertThat(releases)
-                .hasSize(3)
-                .anySatisfy(release -> assertThat(hardwareCodes(release)).contains("radio86rk-32k"))
-                .anySatisfy(release ->
-                        assertThat(hardwareCodes(release)).contains("mikrosha").doesNotContain("radio86rk-32k"))
-                .anySatisfy(release -> assertThat(hardwareCodes(release))
-                        .contains("apogey-bk01", "vi53")
-                        .doesNotContain("radio86rk-32k"));
+        assertThat(releases).hasSize(3);
     }
 
     @Test
@@ -250,8 +222,8 @@ class FixturesIT {
         mvc.perform(get("/api/software/{id}", ELITE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.platform.code").value("vector"))
-                .andExpect(jsonPath("$.hardware[*].group").value(hasItems("computers", "sound")))
-                .andExpect(jsonPath("$.hardware[*].code").value(hasItem("beeper")));
+                .andExpect(jsonPath("$.hardware[*].group").value(hasItems("computers", "storage")))
+                .andExpect(jsonPath("$.hardware[*].code").value(hasItem("tape")));
     }
 
     @Test
@@ -275,10 +247,10 @@ class FixturesIT {
         List<Map<String, Object>> releases = JsonPath.read(body(get("/api/software/{id}/releases", ELITE)), "$");
 
         assertThat(releases)
+                .anySatisfy(release -> assertThat(hardwareCodes(release)).contains("vector06c", "tape", "ay8910"))
                 .anySatisfy(release -> assertThat(hardwareCodes(release))
-                        .contains("vector06c", "ay8910")
-                        .doesNotContain("beeper"))
-                .anySatisfy(release -> assertThat(hardwareCodes(release)).contains("vector06c", "beeper"));
+                        .contains("vector06c", "tape")
+                        .doesNotContain("ay8910"));
         assertThat(releases).extracting(release -> release.get("type")).contains("original", "mod");
     }
 
@@ -286,7 +258,8 @@ class FixturesIT {
     void theHardwareOfAPlatformIsServedToChooseFrom() throws Exception {
         mvc.perform(get("/api/hardware").param("platform", "vector"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].code").value(hasItems("vector06c", "ay8910", "beeper")));
+                .andExpect(jsonPath("$[*].code")
+                        .value(containsInAnyOrder("vector06c", "krista2", "tape", "floppy", "ay8910")));
     }
 
     @Test

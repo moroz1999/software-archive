@@ -5,6 +5,7 @@ import com.archive.backend.software.app.DeleteScreenshotCommand;
 import com.archive.backend.software.app.ListScreenshotsQuery;
 import com.archive.backend.software.app.ReorderScreenshotsCommand;
 import com.archive.backend.software.domain.ReleaseId;
+import com.archive.backend.software.domain.ScreenshotFileName;
 import com.archive.backend.software.domain.ScreenshotId;
 import com.archive.backend.software.domain.ScreenshotImage;
 import com.archive.backend.software.domain.SoftwareId;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -80,7 +82,11 @@ public class ScreenshotWebMapper {
      */
     private static ScreenshotImage image(MultipartFile file) {
         try (InputStream in = file.getInputStream()) {
-            return ScreenshotImage.of(in.readNBytes(ScreenshotImage.HEAD_BYTES), file.getSize(), file::getInputStream);
+            return ScreenshotImage.of(
+                    in.readNBytes(ScreenshotImage.HEAD_BYTES),
+                    file.getSize(),
+                    new ScreenshotFileName(Objects.requireNonNullElse(file.getOriginalFilename(), "")),
+                    file::getInputStream);
         } catch (IOException e) {
             throw new UncheckedIOException("Could not read the uploaded file " + file.getOriginalFilename(), e);
         }

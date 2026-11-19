@@ -40,15 +40,25 @@ describe(MakeGroupButton, () => {
         expect(call?.[1]).toMatchObject({method: 'POST', body: JSON.stringify({types: ['demogroup']})});
     });
 
-    it('asks for the types of the group named after the label and makes nothing before one is chosen', async () => {
-        stubFetchAround(TYPES, json({id: MADE}, 201));
-        renderWithQueries(<MakeGroupButton label={GHOST} onMade={vi.fn<(owner: LabelOwner) => void>()}/>);
+    it('asks for the types of the group named after the label and makes it of no known type when none is chosen', async () => {
+        const fetchMock = stubFetchAround(TYPES, json({id: MADE}, 201));
+        const onMade = vi.fn<(owner: LabelOwner) => void>();
+        renderWithQueries(<MakeGroupButton label={GHOST} onMade={onMade}/>);
 
         await userEvent.click(screen.getByRole('button', {name: 'Make group'}));
 
         expect(screen.getByRole('dialog', {name: 'Make group'})).toHaveTextContent('Make a group named “Ghost”?');
         await expect(screen.findByRole('checkbox', {name: 'Label'})).resolves.not.toBeChecked();
-        expect(within(screen.getByRole('dialog', {name: 'Make group'})).getByRole('button', {name: 'Make group'})).toBeDisabled();
+
+        await userEvent.click(within(screen.getByRole('dialog', {name: 'Make group'})).getByRole('button', {name: 'Make group'}));
+
+        await vi.waitFor(() => {
+            expect(onMade).toHaveBeenCalledExactlyOnceWith({type: 'group', id: MADE});
+        });
+
+        const call = fetchMock.mock.calls.find(([url]) => url === `/api/labels/${ID}/group`);
+
+        expect(call?.[1]).toMatchObject({method: 'POST', body: JSON.stringify({types: []})});
     });
 
     it('shows group types in the UI language and sends their stable codes', async () => {

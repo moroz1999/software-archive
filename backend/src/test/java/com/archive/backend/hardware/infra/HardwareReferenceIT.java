@@ -20,9 +20,38 @@ class HardwareReferenceIT {
     private JdbcTemplate jdbc;
 
     @Test
-    void holdsHardwareOfEveryGroup() {
-        assertThat(jdbc.queryForList("SELECT DISTINCT hardware_group FROM hardware ORDER BY 1", String.class))
-                .containsExactly("computers", "controls", "dos", "expansion", "sound", "storage");
+    void holdsOnlyTheConfirmedHardwareOfTheVectorFamily() {
+        assertThat(jdbc.queryForList(
+                        "SELECT hardware_code || ':' || platform_code FROM hardware_platform ORDER BY 1", String.class))
+                .containsExactly("ay8910:vector", "floppy:vector", "krista2:vector", "tape:vector", "vector06c:vector");
+        assertThat(jdbc.queryForList("SELECT code FROM hardware ORDER BY 1", String.class))
+                .containsExactly("ay8910", "floppy", "krista2", "tape", "vector06c");
+    }
+
+    @Test
+    void holdsTheModelsAndClonesOfTheVectorFamilyAsItsComputers() {
+        assertThat(jdbc.queryForList(
+                        "SELECT code FROM hardware WHERE hardware_group = 'computers' ORDER BY 1", String.class))
+                .containsExactly("krista2", "vector06c");
+    }
+
+    @Test
+    void keepsEveryPlatformOfThePlannedFamilies() {
+        assertThat(jdbc.queryForList("SELECT code FROM platform ORDER BY 1", String.class))
+                .containsExactly(
+                        "agat",
+                        "bashkiria",
+                        "bk",
+                        "korvet",
+                        "lviv",
+                        "msx",
+                        "okean",
+                        "orion",
+                        "pk8000",
+                        "rk",
+                        "specialist",
+                        "vector",
+                        "xt");
     }
 
     @Test
@@ -37,27 +66,10 @@ class HardwareReferenceIT {
                                 + " WHERE n.hardware_code = h.code AND n.language IN ('ru', 'en')) <> 2",
                         Integer.class))
                 .isZero();
-        assertThat(jdbc.queryForObject(
-                        "SELECT name FROM hardware_name WHERE hardware_code = 'partner-mcpg' AND language = 'ru'",
-                        String.class))
-                .isEqualTo("Цветной модуль МЦПГ Партнёра");
-    }
-
-    @Test
-    void letsOneItemBelongToSeveralPlatforms() {
         assertThat(jdbc.queryForList(
-                        "SELECT platform_code FROM hardware_platform WHERE hardware_code = 'ay8910' ORDER BY 1",
+                        "SELECT language || ':' || name FROM hardware_name WHERE hardware_code = 'krista2'"
+                                + " AND language IN ('ru', 'en') ORDER BY 1",
                         String.class))
-                .containsExactly("msx", "specialist", "vector");
-    }
-
-    @Test
-    void holdsTheModelsAndClonesOfAPlatformAsItsComputers() {
-        assertThat(jdbc.queryForList("""
-                        SELECT h.code FROM hardware h
-                        JOIN hardware_platform p ON p.hardware_code = h.code
-                        WHERE h.hardware_group = 'computers' AND p.platform_code = 'bk'
-                        ORDER BY 1
-                        """, String.class)).containsExactly("bk0010-01", "bk0011m");
+                .containsExactly("en:Krista-2", "ru:Криста-2");
     }
 }

@@ -44,5 +44,5 @@ Accounts, how visitors register, confirm and sign in, and what each user group m
 Detailed logic and structure: [domain/users.md](domain/users.md)
 
 ### imports
-Where software taken in from other archives comes from, and how an import runs again without duplicates.
+One import for every source archive: how software, authors and places are matched, what is added and that nothing of the archive is rewritten.
 Detailed logic and structure: [domain/imports.md](domain/imports.md)

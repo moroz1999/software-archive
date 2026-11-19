@@ -51,7 +51,7 @@ function MakeGroupWithDialog() {
                 open={open}
                 title={t('label.makeGroup')}
                 question={t('label.makeGroupQuestion', {name: label.name})}
-                ready={types.length > 0}
+                ready
                 onMake={() => {
                     makeGroup(types);
                 }}
@@ -73,7 +73,7 @@ function TypeChoices({types, disabled, onChange}: TypeChoicesProps) {
     const {t} = useTranslation();
     const codes = useQuery(groupTypesQuery());
     return (
-        <FormFieldset legend={t('group.types')} required>
+        <FormFieldset legend={t('group.types')}>
             {codes.data === undefined
                 ? <Skeleton className={styles.loading}/>
                 : (

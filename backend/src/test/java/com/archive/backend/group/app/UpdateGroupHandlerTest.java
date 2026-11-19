@@ -91,13 +91,15 @@ class UpdateGroupHandlerTest {
     }
 
     @Test
-    void refusesToLeaveTheGroupWithoutTypes() {
+    void leavesTheGroupOfNoKnownType() {
         repository.save(crew());
 
-        assertThatThrownBy(() -> handler.handle(new UpdateGroupCommand(
-                        ADMIN, CREW, new GroupName("Crew"), null, Set.of(), List.of(), List.of())))
-                .isInstanceOfSatisfying(
-                        RuleViolationException.class, e -> assertThat(e.code()).isEqualTo("group.types-required"));
+        handler.handle(
+                new UpdateGroupCommand(ADMIN, CREW, new GroupName("Crew"), null, Set.of(), List.of(), List.of()));
+
+        assertThat(repository.findById(CREW))
+                .hasValueSatisfying(
+                        group -> assertThat(group.getTypes().codes()).isEmpty());
     }
 
     @Test

@@ -54,9 +54,8 @@ class JdbcSoftwareReadRepositoryIT {
 
     private static final SoftwareHardware VECTOR06C = new SoftwareHardware("vector06c", "Vector-06C", "computers");
     private static final SoftwareHardware TAPE = new SoftwareHardware("tape", "Tape", "storage");
-    private static final SoftwareHardware BEEPER = new SoftwareHardware("beeper", "Beeper", "sound");
+    private static final SoftwareHardware FLOPPY = new SoftwareHardware("floppy", "Floppy disk", "storage");
     private static final SoftwareHardware AY = new SoftwareHardware("ay8910", "AY-3-8910", "sound");
-    private static final SoftwareHardware JOYSTICK = new SoftwareHardware("joystick", "Joystick", "controls");
 
     @Autowired
     private JdbcSoftwareReadRepository reads;
@@ -74,8 +73,8 @@ class JdbcSoftwareReadRepositoryIT {
                 """, ELITE, TETRIS, NEWEST);
         jdbc.update("""
                 INSERT INTO software_hardware (software_id, hardware_code) VALUES
-                    (?, 'joystick'), (?, 'beeper'), (?, 'tape'), (?, 'vector06c')
-                """, ELITE, ELITE, ELITE, ELITE);
+                    (?, 'floppy'), (?, 'tape'), (?, 'vector06c')
+                """, ELITE, ELITE, ELITE);
         jdbc.update("""
                 INSERT INTO software_release
                     (id, software_id, title, version, type, release_year, release_day, description) VALUES
@@ -111,7 +110,7 @@ class JdbcSoftwareReadRepositoryIT {
     private void softwareShots(UUID software, SoftwareScreenshot... shots) {
         for (int i = 0; i < shots.length; i++) {
             jdbc.update(
-                    "INSERT INTO software_screenshot (software_id, position, id, format) VALUES (?, ?, ?, 'png')",
+                    "INSERT INTO software_screenshot (software_id, position, id, format, file_name, size) VALUES (?, ?, ?, 'png', 'shot.png', 1)",
                     software,
                     i,
                     shots[i].id());
@@ -121,7 +120,7 @@ class JdbcSoftwareReadRepositoryIT {
     private void releaseShots(UUID release, SoftwareScreenshot... shots) {
         for (int i = 0; i < shots.length; i++) {
             jdbc.update(
-                    "INSERT INTO software_release_screenshot (release_id, position, id, format) VALUES (?, ?, ?, 'png')",
+                    "INSERT INTO software_release_screenshot (release_id, position, id, format, file_name, size) VALUES (?, ?, ?, 'png', 'shot.png', 1)",
                     release,
                     i,
                     shots[i].id());
@@ -253,7 +252,7 @@ class JdbcSoftwareReadRepositoryIT {
                         "Space trading",
                         "1985-09-20",
                         new SoftwarePlatform("vector", "Vector"),
-                        List.of(VECTOR06C, TAPE, BEEPER, JOYSTICK),
+                        List.of(VECTOR06C, FLOPPY, TAPE),
                         List.of(),
                         ADDED));
     }
@@ -265,9 +264,8 @@ class JdbcSoftwareReadRepositoryIT {
             assertThat(details.hardware())
                     .containsExactly(
                             new SoftwareHardware("vector06c", "Вектор-06Ц", "computers"),
-                            new SoftwareHardware("tape", "Магнитофон", "storage"),
-                            new SoftwareHardware("beeper", "Бипер", "sound"),
-                            new SoftwareHardware("joystick", "Джойстик", "controls"));
+                            new SoftwareHardware("floppy", "Дискета", "storage"),
+                            new SoftwareHardware("tape", "Магнитофон", "storage"));
         });
     }
 

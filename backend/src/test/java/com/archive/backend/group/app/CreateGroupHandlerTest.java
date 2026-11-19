@@ -78,12 +78,13 @@ class CreateGroupHandlerTest {
     }
 
     @Test
-    void refusesAGroupWithoutTypesAndStoresNothing() {
-        assertThatThrownBy(() -> handler.handle(
-                        new CreateGroupCommand(ADMIN, new GroupName("Crew Ltd"), null, Set.of(), List.of(), List.of())))
-                .isInstanceOfSatisfying(
-                        RuleViolationException.class, e -> assertThat(e.code()).isEqualTo("group.types-required"));
-        assertThat(repository.count()).isZero();
+    void storesAGroupOfNoKnownType() {
+        GroupId id = handler.handle(
+                new CreateGroupCommand(ADMIN, new GroupName("Crew Ltd"), null, Set.of(), List.of(), List.of()));
+
+        assertThat(repository.findById(id))
+                .hasValueSatisfying(
+                        group -> assertThat(group.getTypes().codes()).isEmpty());
     }
 
     @Test

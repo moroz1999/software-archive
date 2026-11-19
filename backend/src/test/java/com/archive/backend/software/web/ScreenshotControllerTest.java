@@ -1,6 +1,7 @@
 package com.archive.backend.software.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -90,7 +91,11 @@ class ScreenshotControllerTest {
     private GetScreenshotFileHandler fileHandler;
 
     private static MockMultipartFile file(byte[] bytes) {
-        return new MockMultipartFile("files", "shot.png", "image/png", bytes);
+        return file("shot.png", bytes);
+    }
+
+    private static MockMultipartFile file(String name, byte[] bytes) {
+        return new MockMultipartFile("files", name, "image/png", bytes);
     }
 
     @Test
@@ -136,8 +141,8 @@ class ScreenshotControllerTest {
                 .thenReturn(List.of(new ScreenshotId(TITLE), new ScreenshotId(GAME)));
 
         mvc.perform(multipart(OF_SOFTWARE, ELITE)
-                        .file(file(ScreenshotImages.png()))
-                        .file(file(ScreenshotImages.gif())))
+                        .file(file("title.png", ScreenshotImages.png()))
+                        .file(file("game.gif", ScreenshotImages.gif())))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$[0].id").value(TITLE.toString()))
                 .andExpect(jsonPath("$[0].url").value("/api/screenshots/" + TITLE))
@@ -151,6 +156,11 @@ class ScreenshotControllerTest {
         assertThat(sent.getValue().images())
                 .extracting(ScreenshotImage::format)
                 .containsExactly(ScreenshotFormat.PNG, ScreenshotFormat.GIF);
+        // What the archive keeps of each upload: the name of its file and its size.
+        assertThat(sent.getValue().images())
+                .extracting(image -> image.name().value(), ScreenshotImage::size)
+                .containsExactly(tuple("title.png", (long) ScreenshotImages.png().length), tuple("game.gif", (long)
+                        ScreenshotImages.gif().length));
         // The content is streamed from the uploaded part, whole.
         try (InputStream content = sent.getValue().images().get(1).content().open()) {
             assertThat(content.readAllBytes()).isEqualTo(ScreenshotImages.gif());

@@ -34,7 +34,6 @@ import com.archive.backend.group.domain.GroupNotFoundException;
 import com.archive.backend.group.domain.GroupNotes;
 import com.archive.backend.group.domain.GroupTypeCode;
 import com.archive.backend.group.domain.GroupTypeUnknownException;
-import com.archive.backend.group.domain.GroupTypesRequiredException;
 import com.archive.backend.group.read.GroupCatalogEntry;
 import com.archive.backend.group.read.GroupDetails;
 import com.archive.backend.group.read.GroupLabel;
@@ -292,16 +291,6 @@ class GroupControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("group.type-code-blank"));
         verify(createHandler, never()).handle(any());
-    }
-
-    @Test
-    void answers422ForAGroupWithoutTypes() throws Exception {
-        when(createHandler.handle(any(CreateGroupCommand.class))).thenThrow(new GroupTypesRequiredException());
-
-        mvc.perform(post("/api/groups").contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"Crew Ltd\"}"))
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.code").value("group.types-required"))
-                .andExpect(jsonPath("$.errors[0].field").value("types"));
     }
 
     @Test

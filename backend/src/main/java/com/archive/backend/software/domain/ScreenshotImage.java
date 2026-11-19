@@ -21,10 +21,14 @@ public final class ScreenshotImage {
     private static final byte[] JPEG_SIGNATURE = {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF};
 
     private final ScreenshotFormat format;
+    private final ScreenshotFileName name;
+    private final long size;
     private final ScreenshotContent content;
 
-    private ScreenshotImage(ScreenshotFormat format, ScreenshotContent content) {
+    private ScreenshotImage(ScreenshotFormat format, ScreenshotFileName name, long size, ScreenshotContent content) {
         this.format = format;
+        this.name = name;
+        this.size = size;
         this.content = content;
     }
 
@@ -32,11 +36,11 @@ public final class ScreenshotImage {
      * The picture of the content, its format told by its first bytes ({@link #HEAD_BYTES} of them, or all when it is
      * shorter) and its size checked before anything is read further.
      */
-    public static ScreenshotImage of(byte[] head, long size, ScreenshotContent content) {
+    public static ScreenshotImage of(byte[] head, long size, ScreenshotFileName name, ScreenshotContent content) {
         if (size > MAX_BYTES) {
             throw new ScreenshotTooLargeException();
         }
-        return new ScreenshotImage(formatOf(head), content);
+        return new ScreenshotImage(formatOf(head), name, size, content);
     }
 
     /** The format by the signature the picture starts with. */
@@ -67,6 +71,16 @@ public final class ScreenshotImage {
 
     public ScreenshotFormat format() {
         return format;
+    }
+
+    /** The name of the file the picture came in. */
+    public ScreenshotFileName name() {
+        return name;
+    }
+
+    /** The size of the picture in bytes. */
+    public long size() {
+        return size;
     }
 
     /** The bytes of the picture as uploaded. */

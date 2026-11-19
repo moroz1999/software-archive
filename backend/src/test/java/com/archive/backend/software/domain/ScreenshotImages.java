@@ -34,6 +34,7 @@ public final class ScreenshotImages {
         return ScreenshotImage.of(
                 Arrays.copyOf(bytes, Math.min(bytes.length, ScreenshotImage.HEAD_BYTES)),
                 bytes.length,
+                new ScreenshotFileName("shot.png"),
                 () -> new ByteArrayInputStream(bytes));
     }
 

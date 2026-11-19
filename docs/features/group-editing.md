@@ -1,6 +1,6 @@
 # Group Editing
 
-Adding, editing and deleting groups: teams with a name of their own, at least one type, their labels, locations and members ([domain/authors.md](../domain/authors.md#group)). Member groups are not part of this form.
+Adding, editing and deleting groups: teams with a name of their own, their types if known, their labels, locations and members ([domain/authors.md](../domain/authors.md#group)). Member groups are not part of this form.
 
 ## Pages
 
@@ -13,7 +13,7 @@ Adding, editing and deleting groups: teams with a name of their own, at least on
 ## Form
 
 - In one narrow column, in sections: Main (Name, required, at most 255 characters; Types, required; Notes, multi-line), Names (Labels), Geography (Locations), Members; Cancel and the submit button at its bottom right — the same layout as the author form ([author-editing.md](author-editing.md)).
-- Types: a checkbox for every type of the reference book, under its code; at least one is needed, "Choose at least one type." under Types on submit.
+- Types: a checkbox for every type of the reference book, under its code; none chosen is a group of no known type.
 - Labels and Locations: the same editors as for authors, but the labels have no "Display name" — a group is always shown under its name; exactly one primary location; a label taken away stays in the archive as a label of nobody.
 - Members: people and their aliases are found remotely by name; every selected member has removable role chips and optional start and end days. The form replaces the complete roster.
 - Format rules are checked before sending; errors appear under their fields on submit and clear when the field is edited. Empty notes are sent as unknown (`null`).

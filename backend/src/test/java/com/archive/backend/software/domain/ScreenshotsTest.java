@@ -12,7 +12,10 @@ class ScreenshotsTest {
 
     static Screenshot shot(int n) {
         return new Screenshot(
-                new ScreenshotId(UUID.fromString("00000000-0000-0000-0055-%012d".formatted(n))), ScreenshotFormat.PNG);
+                new ScreenshotId(UUID.fromString("00000000-0000-0000-0055-%012d".formatted(n))),
+                ScreenshotFormat.PNG,
+                new ScreenshotFileName("shot-" + n + ".png"),
+                100L * n);
     }
 
     private static final Screenshots ONE_TWO = new Screenshots(List.of(shot(1), shot(2)));

@@ -1,6 +1,6 @@
 # Geo
 
-Countries and cities, with coordinates. A city belongs to a country.
+Countries and cities, with coordinates. A city belongs to a country. A city whose country is not known belongs to the country "Unknown" until it is sorted out by hand.
 
 People, groups, labels and events can be located in a city and/or a country. An entity can have several locations; one of them can be marked primary.
 

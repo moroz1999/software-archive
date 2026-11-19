@@ -39,4 +39,4 @@ The page of a label at `/labels/{id}` ([domain/authors.md](../domain/authors.md#
 | `GET /api/labels/{id}/software` | as `GET /api/authors/{id}/software`, every credit by the label itself | `400` for a malformed id |
 | `POST /api/labels/{id}/owner` `{type, id, display}` | `204` | `404 label.not-found`; `409 label.owned`; `422 label.owner-unknown` (field `owner`), `422 label.display-one` (a person only; `display` is ignored for a group); `401`, `403`; `400` for another `type` or a missing `id` |
 | `POST /api/labels/{id}/author` | `201 {id}` of the new person | `404 label.not-found`; `422 label.display-one`, `422 author.nameless` (taking it from a person); `401`, `403`; `400` for a malformed id |
-| `POST /api/labels/{id}/group` `{types}` | `201 {id}` of the new group | as `/author`; `422 group.types-required`, `422 group.type-unknown` |
+| `POST /api/labels/{id}/group` `{types}` | `201 {id}` of the new group | as `/author`; `422 group.type-unknown` |

@@ -8,7 +8,6 @@ export function createGroupMessages(t: TFunction): BusinessMessages {
         '403': t('errors.business.forbidden'),
         '409': t('errors.business.conflict'),
         '422': t('errors.business.refused'),
-        'group.types-required': t('validation.groupTypesRequired'),
         'group.type-unknown': t('errors.groupTypeUnknown'),
         'group.member-unknown': t('errors.groupMemberUnknown'),
         'label.not-own': t('errors.labelNotOwn'),

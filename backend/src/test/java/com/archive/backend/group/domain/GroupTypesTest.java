@@ -21,11 +21,8 @@ class GroupTypesTest {
     }
 
     @Test
-    void needsAType() {
-        assertThatThrownBy(() -> groupTypes.of(Set.of())).isInstanceOfSatisfying(RuleViolationException.class, e -> {
-            assertThat(e.code()).isEqualTo("group.types-required");
-            assertThat(e.field()).isEqualTo("types");
-        });
+    void letsAGroupBeOfNoKnownType() {
+        assertThat(groupTypes.of(Set.of()).codes()).isEmpty();
     }
 
     @Test

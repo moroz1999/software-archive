@@ -30,6 +30,7 @@ import com.archive.backend.software.domain.ReleaseArchiveUpload;
 import com.archive.backend.software.domain.ReleaseContent;
 import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.ReleaseType;
+import com.archive.backend.software.domain.ScreenshotFileName;
 import com.archive.backend.software.domain.ScreenshotImage;
 import com.archive.backend.software.domain.SoftwareCreditDraft;
 import com.archive.backend.software.domain.SoftwareDescription;
@@ -104,6 +105,7 @@ public class ImportVektorProgramHandler {
                     List.of(ScreenshotImage.of(
                             Arrays.copyOf(picture, Math.min(picture.length, ScreenshotImage.HEAD_BYTES)),
                             picture.length,
+                            new ScreenshotFileName(screenshot.substring(screenshot.lastIndexOf('/') + 1)),
                             () -> new ByteArrayInputStream(picture)))));
         }
         entries.save(new ImportedEntry(

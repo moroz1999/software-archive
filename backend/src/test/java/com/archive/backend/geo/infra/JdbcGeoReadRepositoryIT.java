@@ -23,6 +23,9 @@ class JdbcGeoReadRepositoryIT {
 
     private static final UUID NORWAY = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID FINLAND = UUID.fromString("00000000-0000-0000-0000-000000000002");
+    /** The country of the schema for cities whose country is not known. */
+    private static final UUID UNKNOWN = UUID.fromString("00000000-0000-0000-0000-00000000c001");
+
     private static final UUID LATVIA = UUID.fromString("00000000-0000-0000-0000-000000000003");
     private static final UUID TAMPERE = UUID.fromString("00000000-0000-0000-0000-000000000011");
     private static final UUID HELSINKI = UUID.fromString("00000000-0000-0000-0000-000000000012");
@@ -47,9 +50,15 @@ class JdbcGeoReadRepositoryIT {
     @Test
     void readsTheCountriesByNameInTheLanguageAskedFor() {
         assertThat(reads.findCountries("en"))
-                .containsExactly(new CountryItem(FINLAND, "Finland"), new CountryItem(NORWAY, "Norway"));
+                .containsExactly(
+                        new CountryItem(FINLAND, "Finland"),
+                        new CountryItem(NORWAY, "Norway"),
+                        new CountryItem(UNKNOWN, "Unknown"));
         assertThat(reads.findCountries("ru"))
-                .containsExactly(new CountryItem(NORWAY, "Норвегия"), new CountryItem(FINLAND, "Финляндия"));
+                .containsExactly(
+                        new CountryItem(UNKNOWN, "Неизвестно"),
+                        new CountryItem(NORWAY, "Норвегия"),
+                        new CountryItem(FINLAND, "Финляндия"));
     }
 
     @Test
@@ -60,6 +69,7 @@ class JdbcGeoReadRepositoryIT {
                 .containsExactly(
                         new CountryItem(FINLAND, "Finland"),
                         new CountryItem(NORWAY, "Norway"),
+                        new CountryItem(UNKNOWN, "Unknown"),
                         new CountryItem(LATVIA, "Латвия"));
     }
 

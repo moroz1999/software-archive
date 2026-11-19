@@ -43,7 +43,7 @@ class JdbcHardwareCatalogIT {
 
     @Test
     void refusesHardwareOfAnotherPlatform() {
-        assertThat(catalog.allOnPlatform(Set.of(new HardwareCode("ay8910"), new HardwareCode("bk0011m")), VECTOR))
+        assertThat(catalog.allOnPlatform(Set.of(new HardwareCode("tape")), new PlatformCode("bk")))
                 .isFalse();
     }
 

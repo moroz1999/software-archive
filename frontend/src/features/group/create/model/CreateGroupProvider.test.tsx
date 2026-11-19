@@ -48,14 +48,14 @@ describe(CreateGroupProvider, () => {
         expect(post?.[1]?.body).toBe('{"name":"Crew Ltd","notes":null,"types":["demogroup"],"labels":[],"locations":[],"members":[]}');
     });
 
-    it('sends nothing without a name and a type and says so at each', async () => {
+    it('sends nothing without a name and says so, asking no type', async () => {
         const {fetchMock} = showForm();
 
         await screen.findByRole('checkbox', {name: 'demogroup'});
         await userEvent.click(screen.getByRole('button', {name: 'Add group'}));
 
         expect(screen.getByRole('textbox', {name: 'Name'})).toHaveAccessibleDescription('Enter a title.');
-        expect(screen.getByRole('group', {name: 'Types'})).toHaveAccessibleDescription('Choose at least one type.');
+        expect(screen.getByRole('group', {name: 'Types'})).not.toHaveAccessibleDescription();
         expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false);
     });
 
