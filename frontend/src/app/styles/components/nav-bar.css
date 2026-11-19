@@ -1,8 +1,7 @@
 :root {
-    /* Surface of the bar and its bottom border. */
+    /* Surface and shadow of the bar. */
     --nav-bar-bg: var(--surface);
-    --nav-bar-border-width: var(--border-width-thin);
-    --nav-bar-border-color: var(--border-light);
+    --nav-bar-shadow: var(--shadow-lg);
 
     /* Width of the bar's row, the same as the page content, and its padding. */
     --nav-bar-max-width: 1200px;

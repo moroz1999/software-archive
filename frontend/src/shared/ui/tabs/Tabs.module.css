@@ -1,12 +1,9 @@
 .list {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--tabs-gap);
     margin: 0;
     padding: 0;
-    border-width: 0 0 var(--tabs-list-border-width);
-    border-style: solid;
-    border-color: var(--tabs-list-border);
+    box-shadow: var(--tabs-list-separator);
     list-style: none;
 }
 
@@ -18,11 +15,12 @@
     border-style: solid;
     border-color: var(--tabs-tab-border);
     color: var(--tabs-tab-text);
+    font-weight: var(--tabs-tab-font-weight);
     text-decoration: none;
+    transition: color var(--tabs-transition) ease;
 }
 
 a.tab:hover {
-    border-color: var(--tabs-tab-hover-border);
     color: var(--tabs-tab-hover-text);
 }
 

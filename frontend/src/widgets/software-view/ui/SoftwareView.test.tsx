@@ -1,6 +1,7 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen, within} from '@testing-library/react';
 import {MemoryRouter} from 'react-router';
+import i18n from 'i18next';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, noContent, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {toSoftwareId} from '@/entities/software';
@@ -219,6 +220,19 @@ describe(SoftwareView, () => {
         expect(within(credits).getByRole('link', {name: 'J.D. — Jane Doe'})).toHaveAttribute('href', `/labels/${AUTHOR_LABEL}`);
     });
 
+    it('names authors and the program on other sites clearly in Russian', async () => {
+        await i18n.changeLanguage('ru');
+        stubFetch(json({
+            ...ELITE,
+            credits: [{id: AUTHOR_LABEL, type: 'author-label', title: 'J.D. — Jane Doe', roles: ['code'], ownerId: AUTHOR}],
+            sources: [{archive: 'vektor-06c.ru', url: 'https://vektor-06c.ru/software/elite/'}],
+        }));
+        renderView(ID);
+
+        await expect(screen.findByRole('list', {name: 'Авторы'})).resolves.toBeInTheDocument();
+        expect(screen.getByRole('region', {name: 'Программа на других сайтах'})).toBeInTheDocument();
+    });
+
     it('leads from the groups among the credits to the group pages and from every label to its page', async () => {
         stubFetch(json({...ELITE, credits: GROUP_CREDITS}));
         renderView(ID);
@@ -278,7 +292,7 @@ describe(SoftwareView, () => {
         stubFetch(json({...ELITE, sources: [{archive: 'vektor-06c.ru', url}]}));
         renderView(ID);
 
-        const sources = await screen.findByRole('region', {name: 'Source'});
+        const sources = await screen.findByRole('region', {name: 'Program on other sites'});
 
         expect(within(sources).getByRole('link', {name: 'vektor-06c.ru'})).toHaveAttribute('href', url);
     });
@@ -289,7 +303,7 @@ describe(SoftwareView, () => {
 
         await screen.findByRole('heading', {level: 1, name: 'Elite'});
 
-        expect(screen.queryByRole('region', {name: 'Source'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('region', {name: 'Program on other sites'})).not.toBeInTheDocument();
     });
 
     it('tells the preservation status of the software once it is known', async () => {

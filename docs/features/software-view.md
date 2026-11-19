@@ -10,10 +10,10 @@ The page of one software ([domain/software.md](../domain/software.md)) at `/soft
 - Platform: the software's platform.
 - Preservation status: left out while unknown.
 - Categories: each category of the software with its whole branch from the top of the tree, one line of chips joined by "›" per category (`Games › Action › Shooters`), in the order of the tree; the section is left out without categories.
-- Credits: every person, group or exact label with the role chips beside it, developers and publishers among them, an unknown role not shown; a person or a group leads to their page, a label always to its own page ([label-view.md](label-view.md)). The section is left out without credits.
-- Hardware: the software's base hardware, grouped by hardware group in the fixed order computers, storage, DOS, sound, controls, expansion; the section is left out without hardware.
+- Authors: every person, group or exact label with the role chips beside it, developers and publishers among them, an unknown role not shown; a person or a group leads to their page, a label always to its own page ([label-view.md](label-view.md)). The section is left out without credits.
+- Hardware: the software's base hardware as technical chips, grouped by hardware group in the fixed order computers, storage, DOS, sound, controls, expansion; the section is left out without hardware.
 - Screenshots: a gallery of the software's own screenshots, left out without any ([screenshots.md](screenshots.md#pages)).
-- Source: a link to the page of each archive the software was imported from, named by the archive (`vektor-06c.ru`); left out for software typed in by hand ([vektor-import.md](vektor-import.md)).
+- Program on other sites: a link to the page of each archive the software was imported from, named by the archive (`vektor-06c.ru`); left out for software typed in by hand ([vektor-import.md](vektor-import.md)).
 - Releases: "Add release" next to the heading ([release-editing.md](release-editing.md)); "No releases known yet." when there are none. Otherwise:
   - a table of Title (leading to the release page, with the first screenshot beside it and the description under it), Release date, Version, Type, Hardware, Archive ("Download" with the size of the archive, empty without one) and "Edit", in the order they come; Title sorts from A, Release date from the newest with unknown dates last, a second click turns the order round;
   - "Type" shows the releases of one type, offered only when they are of more than one; an unknown type is not shown;

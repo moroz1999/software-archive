@@ -49,6 +49,8 @@ Screenshots are part of what the archive knows, as much as its records: they are
 ## Credits
 
 Credits tell who made the software, who published it and who worked on it. Developing and publishing are roles like any other, not separate lists: a studio that developed and published a game is credited once with both roles.
+
+- Visitors see these credited people and groups as the software's authors.
 - Anyone is credited: a person, a group, or the exact label of either under which they did the work. Each of them is credited once per software, with all their roles.
 - A credit has one or several roles (developer, publisher, code, graphics, music, etc.); without a chosen role it is recorded as unknown.
 - A label of nobody can be credited, as imports do; editing keeps it.

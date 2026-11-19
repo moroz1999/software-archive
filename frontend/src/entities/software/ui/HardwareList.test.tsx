@@ -14,7 +14,9 @@ describe(HardwareList, () => {
 
         expect(screen.getAllByRole('group').map((group) => group.getAttribute('aria-label'))).toStrictEqual(['Computers', 'Sound']);
         expect(within(sound).getAllByRole('listitem').map((item) => item.textContent)).toStrictEqual(['AY-3-8910', 'Beeper']);
-        expect(within(screen.getByRole('group', {name: 'Computers'})).getByText('Vector-06C')).toBeInTheDocument();
+        expect(within(screen.getByRole('group', {name: 'Computers'})).getByText('Vector-06C')).toHaveClass('mono');
+        expect(within(sound).getByText('AY-3-8910')).toHaveClass('mono');
+        expect(within(sound).getByText('Beeper')).toHaveClass('mono');
     });
 
     it('shows nothing without hardware', () => {

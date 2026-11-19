@@ -1,3 +1,5 @@
+import {Chip} from '@/shared/ui/chip';
+import {Inline} from '@/shared/ui/inline';
 import {Stack} from '@/shared/ui/stack';
 import {Text} from '@/shared/ui/typography';
 import {groupHardware} from '../lib/hardware-groups';
@@ -20,9 +22,9 @@ export function HardwareList({hardware}: HardwareListProps) {
                 <div key={section.group} role="group" aria-label={t(`hardwareGroups.${section.group}`)}>
                     <Stack gap="xs">
                         <Text variant="label" tone="muted">{t(`hardwareGroups.${section.group}`)}</Text>
-                        <Stack as="ul" gap="xs">
-                            {section.items.map((item) => <li key={item.code}><Text>{item.name}</Text></li>)}
-                        </Stack>
+                        <Inline as="ul" gap="sm" wrap>
+                            {section.items.map((item) => <li key={item.code}><Chip variant="mono">{item.name}</Chip></li>)}
+                        </Inline>
                     </Stack>
                 </div>
             ))}

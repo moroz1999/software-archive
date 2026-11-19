@@ -1,24 +1,20 @@
 :root {
-    /* Gap between adjacent tabs. */
-    --tabs-gap: var(--space-4);
+    /* Thin separator under the tab strip. */
+    --tabs-list-separator: inset 0 -1px 0 0 var(--border-color);
 
-    /* Border under the whole tab strip. */
-    --tabs-list-border-width: var(--border-width-thin);
-    --tabs-list-border: var(--border-light);
-
-    /* Tab padding, underline and text. */
-    --tabs-tab-padding: var(--space-8) var(--space-12);
+    /* Tab padding, indicator and text. */
+    --tabs-tab-padding: var(--space-12) var(--space-16);
     --tabs-tab-border-width: var(--border-width-thick);
-    --tabs-tab-border: var(--border-light);
+    --tabs-tab-border: transparent;
     --tabs-tab-text: var(--text-light-color);
+    --tabs-tab-font-weight: var(--font-weight-medium);
 
-    /* Hovered tab underline and text. */
-    --tabs-tab-hover-border: var(--primary-300);
-    --tabs-tab-hover-text: var(--text-color);
+    /* Hovered tab text. */
+    --tabs-tab-hover-text: var(--primary-600);
 
     /* Active tab underline and text. */
-    --tabs-active-border: var(--primary-600);
-    --tabs-active-text: var(--primary-700);
+    --tabs-active-border: var(--primary-500);
+    --tabs-active-text: var(--primary-600);
 
     /* Keyboard focus outline and its corner radius. */
     --tabs-focus-outline: var(--border-width-thick) solid var(--focus-ring-color);
@@ -26,4 +22,7 @@
 
     /* Opacity of a disabled tab. */
     --tabs-disabled-opacity: 0.5;
+
+    /* Duration of the hover transition. */
+    --tabs-transition: var(--animation-xs);
 }

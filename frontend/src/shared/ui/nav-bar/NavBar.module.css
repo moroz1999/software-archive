@@ -1,8 +1,6 @@
 .bar {
-    border-width: 0 0 var(--nav-bar-border-width);
-    border-style: solid;
-    border-color: var(--nav-bar-border-color);
     background: var(--nav-bar-bg);
+    box-shadow: var(--nav-bar-shadow);
 }
 
 .row {

@@ -185,7 +185,7 @@ export const resources = {
             parent: 'Parent', top: 'None, at the top', expand: 'Expand {{name}}', collapse: 'Collapse {{name}}', delete: 'Delete category',
             deleteQuestion: 'Delete “{{title}}” with all its subcategories? Their software stays in the archive and only leaves them.',
         },
-        software: {delete: 'Delete software', deleteQuestion: 'Delete “{{title}}” from the archive?', source: 'Source', software: 'Software', creditedAs: 'as {{name}}',
+        software: {delete: 'Delete software', deleteQuestion: 'Delete “{{title}}” from the archive?', source: 'Program on other sites', software: 'Software', creditedAs: 'as {{name}}',
             preservation: {unknown: 'Unknown', 'missing-in-action': 'Missing in action', donationware: 'Donationware', 'in-sales': 'In sales'}},
         screenshots: {
             heading: 'Screenshots', numbered: 'Screenshot {{n}}', nOfCount: 'Screenshot {{n}} of {{count}}',
@@ -236,10 +236,10 @@ export const resources = {
             search: 'Поиск', year: 'Год', anyYear: 'Любой год', allCategories: 'Все категории',
             withCount: '{{label}} ({{count}})',
         },
-        formSections: {main: 'Основное', classification: 'Классификация', credits: 'Титры', hardwareAndArchive: 'Оборудование и архив', names: 'Имена', geography: 'География', members: 'Участники', account: 'Учётная запись', groups: 'Группы', sources: 'Источники'},
+        formSections: {main: 'Основное', classification: 'Классификация', credits: 'Авторы', hardwareAndArchive: 'Оборудование и архив', names: 'Имена', geography: 'География', members: 'Участники', account: 'Учётная запись', groups: 'Группы', sources: 'Источники'},
         fields: {
             title: 'Название', platform: 'Платформа', description: 'Описание', releaseDate: 'Дата выпуска', releaseDateHint: 'Год, например 1987, или день, например 12.05.1987.', version: 'Версия',
-            type: 'Тип', preservation: 'Статус сохранности', hardware: 'Оборудование', categories: 'Категории', credits: 'Титры', participant: 'Человек или группа',
+            type: 'Тип', preservation: 'Статус сохранности', hardware: 'Оборудование', categories: 'Категории', credits: 'Авторы', participant: 'Человек или группа',
             choosePlatform: 'Выберите платформу', chooseType: 'Выберите тип',
             platformLocked: 'Удалите оборудование, чтобы изменить платформу.',
         },
@@ -280,7 +280,7 @@ export const resources = {
             categoryParentUnknown: 'Родительской категории больше нет в архиве. Перезагрузите страницу и попробуйте ещё раз.',
             categoryParentInside: 'Категорию нельзя поместить в неё саму или в её подкатегорию.',
             groupMemberUnknown: 'Одного из участников больше нет в архиве: выберите заново.',
-            softwareCreditUnknown: 'Кого-то из титров больше нет в архиве: выберите заново.',
+            softwareCreditUnknown: 'Одного из авторов больше нет в архиве: выберите заново.',
         },
         account: {
             menu: 'Аккаунт', login: 'Имя пользователя или эл. почта', password: 'Пароль', remember: 'Запомнить меня', signIn: 'Войти',
@@ -393,7 +393,7 @@ export const resources = {
             parent: 'Родитель', top: 'Нет, на верхнем уровне', expand: 'Раскрыть {{name}}', collapse: 'Свернуть {{name}}', delete: 'Удалить категорию',
             deleteQuestion: 'Удалить «{{title}}» со всеми подкатегориями? Их программы останутся в архиве и только покинут эти категории.',
         },
-        software: {delete: 'Удалить программу', deleteQuestion: 'Удалить «{{title}}» из архива?', source: 'Источник', software: 'Софт', creditedAs: 'как {{name}}',
+        software: {delete: 'Удалить программу', deleteQuestion: 'Удалить «{{title}}» из архива?', source: 'Программа на других сайтах', software: 'Софт', creditedAs: 'как {{name}}',
             preservation: {unknown: 'Неизвестно', 'missing-in-action': 'Потеряна', donationware: 'За донат', 'in-sales': 'В продаже'}},
         screenshots: {
             heading: 'Скриншоты', numbered: 'Скриншот {{n}}', nOfCount: 'Скриншот {{n}} из {{count}}',
