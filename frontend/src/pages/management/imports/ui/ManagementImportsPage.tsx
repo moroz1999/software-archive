@@ -1,5 +1,5 @@
 import {useTranslation} from 'react-i18next';
-import {VektorImport} from '@/features/import/vektor';
+import {SourceImport} from '@/features/import/source';
 import {ManagementTabs} from '@/features/user/management-navigation';
 import {PageLayout} from '@/shared/ui/page-layout';
 
@@ -9,7 +9,7 @@ export function ManagementImportsPage() {
     return (
         <PageLayout title={t('pages.imports')}>
             <ManagementTabs/>
-            <VektorImport/>
+            <SourceImport/>
         </PageLayout>
     );
 }

@@ -21,7 +21,7 @@ public class HttpVektorSite implements VektorSite {
 
     private static final String CATALOG = VektorPages.SITE + "/programmnoe-obespechenie/";
 
-    private final VektorHttp http;
+    private final SourceHttp http;
 
     @Override
     public Iterable<VektorListing> listings(@Nullable VektorSection section) {

@@ -11,6 +11,7 @@ import com.archive.backend.geo.app.FindOrAddCityHandler;
 import com.archive.backend.geo.app.FindOrAddCountryCommand;
 import com.archive.backend.geo.app.FindOrAddCountryHandler;
 import com.archive.backend.geo.domain.GeoName;
+import com.archive.backend.geo.domain.GeoNameRepository;
 import com.archive.backend.geo.domain.LocationDraft;
 import com.archive.backend.group.app.CreateGroupCommand;
 import com.archive.backend.group.app.CreateGroupHandler;
@@ -46,7 +47,8 @@ import org.springframework.stereotype.Service;
  * Whom the authors a source names stand for in the archive (docs/domain/imports.md#origin): an author is looked for by
  * its origin first, as whatever it was made into since, and is created only when the archive has nothing of it;
  * what the source tells of an author the archive has fills only its empty fields, so a place is looked for, or added,
- * only for one not located yet.
+ * only for one not located yet. A person is credited under the nickname the source names them by, as long as that
+ * label is still theirs: under which nickname a program came out is worth keeping.
  */
 @Service
 @RequiredArgsConstructor
@@ -64,6 +66,7 @@ public class CreditImportedAuthorsHandler {
     private final SupplementGroupHandler supplementGroup;
     private final FindOrAddCityHandler findOrAddCity;
     private final FindOrAddCountryHandler findOrAddCountry;
+    private final GeoNameRepository geoNames;
 
     /** The credits of the authors of a program, each subject once, with an unknown role: no source tells roles yet. */
     public List<SoftwareCreditDraft> handle(CreditImportedAuthorsCommand c) {
@@ -84,7 +87,7 @@ public class CreditImportedAuthorsHandler {
                     .orElse(false);
             supplementAuthor.handle(new SupplementAuthorCommand(
                     Importer.ACTOR, id, author.realName(), located ? List.of() : locationsOf(author.place())));
-            return reference(SoftwareReferenceType.AUTHOR, person.get());
+            return underNickname(id, author);
         }
         Optional<UUID> group = known(archive, ExternalKind.GROUP, author);
         if (group.isPresent()) {
@@ -118,7 +121,7 @@ public class CreditImportedAuthorsHandler {
                                 locationsOf(author.place())))
                         .value();
                 remember(archive, ExternalKind.AUTHOR, author, created);
-                yield reference(SoftwareReferenceType.AUTHOR, created);
+                yield underNickname(new AuthorId(created), author);
             }
             case GROUP -> {
                 UUID created = createGroup
@@ -136,6 +139,17 @@ public class CreditImportedAuthorsHandler {
         };
     }
 
+    /** The person's label of the nickname the source names them by; the person once that label is not theirs. */
+    private SoftwareReference underNickname(AuthorId person, SourceAuthor author) {
+        return authors.findById(person)
+                .flatMap(found -> found.getLabels().all().stream()
+                        .filter(label -> label.name().equals(author.label()))
+                        .findFirst())
+                .map(label ->
+                        reference(SoftwareReferenceType.AUTHOR_LABEL, label.id().value()))
+                .orElseGet(() -> reference(SoftwareReferenceType.AUTHOR, person.value()));
+    }
+
     private Optional<UUID> known(String archive, ExternalKind kind, SourceAuthor author) {
         return entries.findByOrigin(new ExternalOrigin(archive, kind, author.originId()))
                 .map(entry -> entry.getEntry().value());
@@ -150,21 +164,25 @@ public class CreditImportedAuthorsHandler {
         if (place == null) {
             return List.of();
         }
+        GeoName name = new GeoName(place.name());
         return List.of(
                 switch (place.kind()) {
-                    case CITY ->
-                        new LocationDraft(
-                                null,
-                                findOrAddCity.handle(
-                                        new FindOrAddCityCommand(new GeoName(place.name()), place.language())),
-                                true);
-                    case COUNTRY ->
-                        new LocationDraft(
-                                findOrAddCountry.handle(
-                                        new FindOrAddCountryCommand(new GeoName(place.name()), place.language())),
-                                null,
-                                true);
+                    case CITY -> city(name, place);
+                    case COUNTRY -> country(name, place);
+                    case CITY_OR_COUNTRY ->
+                        geoNames.countryNamed(name)
+                                .map(country -> new LocationDraft(country, null, true))
+                                .orElseGet(() -> city(name, place));
                 });
+    }
+
+    private LocationDraft city(GeoName name, SourcePlace place) {
+        return new LocationDraft(null, findOrAddCity.handle(new FindOrAddCityCommand(name, place.language())), true);
+    }
+
+    private LocationDraft country(GeoName name, SourcePlace place) {
+        return new LocationDraft(
+                findOrAddCountry.handle(new FindOrAddCountryCommand(name, place.language())), null, true);
     }
 
     private static SoftwareReference reference(SoftwareReferenceType type, UUID id) {

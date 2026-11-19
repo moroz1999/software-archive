@@ -1,7 +1,7 @@
 package com.archive.backend.importer.app;
 
-import static com.archive.backend.importer.infra.FakeVektorHttp.list;
-import static com.archive.backend.importer.infra.FakeVektorHttp.page;
+import static com.archive.backend.importer.infra.FakeSourceHttp.list;
+import static com.archive.backend.importer.infra.FakeSourceHttp.page;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.archive.backend.TestcontainersConfiguration;
@@ -13,7 +13,7 @@ import com.archive.backend.importer.domain.run.ImportRunId;
 import com.archive.backend.importer.domain.run.ImportRunRepository;
 import com.archive.backend.importer.domain.run.ImportScope;
 import com.archive.backend.importer.domain.vektor.VektorSection;
-import com.archive.backend.importer.infra.FakeVektorHttp;
+import com.archive.backend.importer.infra.FakeSourceHttp;
 import com.archive.backend.importer.read.ImportRunReadRepository;
 import com.archive.backend.importer.read.ImportRunReport;
 import com.archive.backend.software.app.DeleteSoftwareCommand;
@@ -61,8 +61,8 @@ class ImportVektorIT {
     static class Site {
         @Bean
         @Primary
-        FakeVektorHttp fakeVektorHttp() {
-            return new FakeVektorHttp();
+        FakeSourceHttp fakeSourceHttp() {
+            return new FakeSourceHttp();
         }
     }
 
@@ -70,7 +70,7 @@ class ImportVektorIT {
     private ImportVektorHandler handler;
 
     @Autowired
-    private FakeVektorHttp http;
+    private FakeSourceHttp http;
 
     @Autowired
     private DeleteSoftwareHandler deleteSoftware;

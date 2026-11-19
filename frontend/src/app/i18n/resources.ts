@@ -14,7 +14,8 @@ export const resources = {
         addition: {byOn: 'Added by {{by}} on {{day}}', on: 'Added on {{day}}'},
         pages: {recentlyAdded: 'Recently added', software: 'Software', authors: 'Authors', groups: 'Groups', categories: 'Categories', search: 'Search', users: 'Users', imports: 'Imports'},
         imports: {
-            vektor: 'vektor-06c.ru', section: 'Section', wholeSite: 'Whole site', start: 'Start',
+            whatToImport: 'What to import', source: 'Source', sources: {vektor: 'vektor-06c.ru', basis: 'caglrc.cc (Basis)'},
+            section: 'Section', wholeSite: 'Whole site', start: 'Start',
             started: 'The import has started.',
             errors: {running: 'An import is already running.', forbidden: 'Only an administrator starts an import.'},
             lastRun: 'Last import', noRun: 'Nothing has been imported yet.',
@@ -217,7 +218,8 @@ export const resources = {
         addition: {byOn: 'Добавил(а) {{by}} {{day}}', on: 'Добавлено {{day}}'},
         pages: {recentlyAdded: 'Недавно добавленное', software: 'Программы', authors: 'Авторы', groups: 'Группы', categories: 'Категории', search: 'Поиск', users: 'Пользователи', imports: 'Импорт'},
         imports: {
-            vektor: 'vektor-06c.ru', section: 'Раздел', wholeSite: 'Весь сайт', start: 'Запустить',
+            whatToImport: 'Что импортировать', source: 'Источник', sources: {vektor: 'vektor-06c.ru', basis: 'caglrc.cc («Базис»)'},
+            section: 'Раздел', wholeSite: 'Весь сайт', start: 'Запустить',
             started: 'Импорт запущен.',
             errors: {running: 'Импорт уже идёт.', forbidden: 'Импорт запускает только администратор.'},
             lastRun: 'Последний импорт', noRun: 'Импортов ещё не было.',

@@ -1,5 +1,5 @@
 import type {QueryClient} from '@tanstack/react-query';
-import {lastImportRunQuery, vektorSectionsQuery} from '@/features/import/vektor';
+import {lastImportRunQuery, vektorSectionsQuery} from '@/features/import/source';
 import {preloadView} from '@/shared/api';
 
 /** Route loader: the sections to import from and the report of the last run are the blocks of the page. */

@@ -17,9 +17,17 @@ Every source archive has a parser of its own that only reads the source and hand
 `CreditImportedAuthorsHandler` credits each author once, with the role `unknown`.
 - Looked for by origin (archive, kind, the source id or the label text): as `AUTHOR`, then `GROUP`, then `LABEL`. A label made into a person moves its origin to `AUTHOR` (`TransferReplacedLabelOriginHandler`); a label made into a group stays the group's label and is credited as such.
 - One not found is created as the source tells: a label of nobody, a person with the real name and the label as their display name, or a group without types; its origin is remembered under that kind.
+- A person is credited under the label of the nickname the source names them by (`author-label`), not as the person: which nickname a program came out under is kept. Only when the person has no label of that name any more, renamed or given away, is the person credited.
 - A person or a group found gets the real name and the location only while empty (`SupplementAuthorHandler`, `SupplementGroupHandler`); a place is looked up only for one without locations.
-- Places: `FindOrAddCityHandler` and `FindOrAddCountryHandler` look a name up among the names of all languages, whatever its case, and add one the archive lacks with the name in the language of the source; a new city goes to the country `Unknown` (`CountryId.UNKNOWN`, `V28`).
+- Places: a source tells a city, a country, or a place that may be either (`CITY_OR_COUNTRY`), which is the country of that name when the archive has one (`GeoNameRepository.countryNamed`) and a city otherwise. `FindOrAddCityHandler` and `FindOrAddCountryHandler` look a name up among the names of all languages, whatever its case, and add one the archive lacks with the name in the language of the source; a new city goes to the country `Unknown` (`CountryId.UNKNOWN`, `V28`).
+
+## Running
+
+- An administrator starts an import on the Imports tab of management (`/management/imports`, `features/import/source`): the source first, then for vektor-06c.ru the whole site or one section. `StartImportHandler` starts every source (`ImportSource`), so only one import runs at a time, whatever its source; a start while one runs answers `409 import.running`.
+- The report of the run started last names its archive: "vektor-06c.ru · section" (or the whole site) and "caglrc.cc (Basis)".
+- Both parsers read through one polite client, `SourceHttp` (`JdkSourceHttp`): one request at a time, a pause before each, a server failure or a broken connection tried up to three times, a missing page once.
 
 ## Sources
 
 - [vektor-06c.ru](vektor-import.md)
+- [caglrc.cc/scalar, "Базис"](basis-import.md)

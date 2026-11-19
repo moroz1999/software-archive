@@ -400,12 +400,49 @@ class ImportProgramIT {
                 .isEqualTo("Иван Андреев");
         assertThat(jdbc.queryForObject("SELECT person_id FROM label WHERE name = 'IVAN'", UUID.class))
                 .isEqualTo(person);
+        assertThat(cityOf(person)).isEqualTo(KNOWN_CITY);
+    }
+
+    @Test
+    void creditsAPersonUnderTheNicknameTheProgramCameOutUnderEachTime() {
+        SourceAuthor ivan = new SourceAuthor(
+                "17", new LabelName("IVAN"), SourceAuthorKind.PERSON, new RealName("Иван Андреев"), null);
+        importProgram(program("1", "Elite", zip(Map.of("ELITE.ROM", ELITE_ROM)))
+                .authors(ivan)
+                .build());
+        importProgram(program("2", "Exolon", zip(Map.of("EXOLON.ROM", EXTRA_ROM)))
+                .authors(ivan)
+                .build());
+
+        UUID nickname = jdbc.queryForObject("SELECT id FROM label WHERE name = 'IVAN'", UUID.class);
+        for (String title : List.of("Elite", "Exolon")) {
+            assertThat(jdbc.queryForMap(
+                            "SELECT person_id, label_id FROM software_contribution WHERE software_id = ?",
+                            software(title)))
+                    .containsEntry("person_id", null)
+                    .containsEntry("label_id", nickname);
+        }
+    }
+
+    @Test
+    void creditsThePersonItselfOnceTheNicknameIsNoLongerTheirs() {
+        SourceAuthor ivan = new SourceAuthor(
+                "17", new LabelName("IVAN"), SourceAuthorKind.PERSON, new RealName("Иван Андреев"), null);
+        importProgram(program("1", "Elite", zip(Map.of("ELITE.ROM", ELITE_ROM)))
+                .authors(ivan)
+                .build());
+        UUID person = origin("AUTHOR", "17");
+        jdbc.update("UPDATE label SET name = 'IVAN THE GREAT' WHERE person_id = ?", person);
+
+        importProgram(program("2", "Exolon", zip(Map.of("EXOLON.ROM", EXTRA_ROM)))
+                .authors(ivan)
+                .build());
+
         assertThat(jdbc.queryForObject(
                         "SELECT person_id FROM software_contribution WHERE software_id = ?",
                         UUID.class,
-                        software("Elite")))
+                        software("Exolon")))
                 .isEqualTo(person);
-        assertThat(cityOf(person)).isEqualTo(KNOWN_CITY);
     }
 
     @Test
@@ -473,7 +510,10 @@ class ImportProgramIT {
                 .isEqualTo("Иван Андреев");
         assertThat(cityOf(person)).isEqualTo(KNOWN_CITY);
         assertThat(jdbc.queryForObject(
-                        "SELECT count(*) FROM software_contribution WHERE person_id = ?", Integer.class, person))
+                        "SELECT count(*) FROM software_contribution c JOIN label l ON l.id = c.label_id"
+                                + " WHERE l.person_id = ? AND l.name = 'IVAN'",
+                        Integer.class,
+                        person))
                 .isEqualTo(3);
     }
 

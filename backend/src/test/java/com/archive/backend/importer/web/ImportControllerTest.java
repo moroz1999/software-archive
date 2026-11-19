@@ -13,9 +13,10 @@ import com.archive.backend.importer.app.GetLastImportRunHandler;
 import com.archive.backend.importer.app.GetLastImportRunQuery;
 import com.archive.backend.importer.app.ListVektorSectionsHandler;
 import com.archive.backend.importer.app.ListVektorSectionsQuery;
-import com.archive.backend.importer.app.StartVektorImportCommand;
-import com.archive.backend.importer.app.StartVektorImportHandler;
+import com.archive.backend.importer.app.StartImportCommand;
+import com.archive.backend.importer.app.StartImportHandler;
 import com.archive.backend.importer.domain.ImportRunningException;
+import com.archive.backend.importer.domain.run.ImportSource;
 import com.archive.backend.importer.domain.vektor.VektorSection;
 import com.archive.backend.importer.read.ImportRunAddedEntry;
 import com.archive.backend.importer.read.ImportRunFailedEntry;
@@ -46,7 +47,7 @@ class ImportControllerTest {
     private MockMvc mvc;
 
     @MockitoBean
-    private StartVektorImportHandler startHandler;
+    private StartImportHandler startHandler;
 
     @MockitoBean
     private ListVektorSectionsHandler sectionsHandler;
@@ -122,14 +123,23 @@ class ImportControllerTest {
     void startsTheImportOfASectionAndAnswersAccepted() throws Exception {
         mvc.perform(post("/api/imports/vektor").param("section", "zagruzchiki")).andExpect(status().isAccepted());
 
-        verify(startHandler).handle(new StartVektorImportCommand(Actor.anonymous(), new VektorSection("zagruzchiki")));
+        verify(startHandler)
+                .handle(new StartImportCommand(
+                        Actor.anonymous(), ImportSource.VEKTOR, new VektorSection("zagruzchiki")));
     }
 
     @Test
     void startsTheImportOfTheWholeSiteWithoutASection() throws Exception {
         mvc.perform(post("/api/imports/vektor")).andExpect(status().isAccepted());
 
-        verify(startHandler).handle(new StartVektorImportCommand(Actor.anonymous(), null));
+        verify(startHandler).handle(new StartImportCommand(Actor.anonymous(), ImportSource.VEKTOR, null));
+    }
+
+    @Test
+    void startsTheImportOfTheCardIndexOfBasis() throws Exception {
+        mvc.perform(post("/api/imports/basis")).andExpect(status().isAccepted());
+
+        verify(startHandler).handle(new StartImportCommand(Actor.anonymous(), ImportSource.BASIS, null));
     }
 
     @Test

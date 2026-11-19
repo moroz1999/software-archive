@@ -1,7 +1,7 @@
 package com.archive.backend.importer.infra;
 
-import static com.archive.backend.importer.infra.FakeVektorHttp.list;
-import static com.archive.backend.importer.infra.FakeVektorHttp.page;
+import static com.archive.backend.importer.infra.FakeSourceHttp.list;
+import static com.archive.backend.importer.infra.FakeSourceHttp.page;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.archive.backend.importer.domain.vektor.VektorListing;
@@ -13,7 +13,7 @@ class HttpVektorSiteTest {
 
     private static final String CATALOG = "https://vektor-06c.ru/programmnoe-obespechenie/";
 
-    private final FakeVektorHttp http = new FakeVektorHttp();
+    private final FakeSourceHttp http = new FakeSourceHttp();
     private final HttpVektorSite site = new HttpVektorSite(http);
 
     @Test

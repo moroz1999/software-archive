@@ -9,8 +9,6 @@ import java.util.regex.Pattern;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.nodes.TextNode;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -25,8 +23,6 @@ public final class VektorPages {
     private static final Pattern BACKGROUND = Pattern.compile("url\\('([^']+)'\\)");
     /** The picture the site shows for a program without a screenshot: "Скриншота нет". */
     private static final String NO_SCREENSHOT = "Skrinshota-net";
-
-    private static final Pattern SPACES = Pattern.compile("[ \\t\\u00A0]+");
 
     private VektorPages() {}
 
@@ -116,54 +112,10 @@ public final class VektorPages {
             Element title = block.selectFirst(".additional-info-title");
             Element text = block.selectFirst(".additional-info-text");
             if (title != null && text != null && title.text().trim().equals("Описание")) {
-                String description = lines(text);
+                String description = HtmlText.lines(text);
                 return description.isEmpty() ? null : description;
             }
         }
         return null;
-    }
-
-    /**
-     * The text of HTML with its line breaks: every line trimmed, its spaces joined, at most one empty line in a row.
-     */
-    private static String lines(Element html) {
-        StringBuilder raw = new StringBuilder();
-        collect(html, raw);
-        StringBuilder text = new StringBuilder();
-        boolean emptyBefore = false;
-        for (String line : raw.toString().split("\n", -1)) {
-            String clean = SPACES.matcher(line).replaceAll(" ").trim();
-            if (clean.isEmpty()) {
-                emptyBefore = text.length() > 0;
-                continue;
-            }
-            if (text.length() > 0) {
-                text.append(emptyBefore ? "\n\n" : "\n");
-            }
-            text.append(clean);
-            emptyBefore = false;
-        }
-        return text.toString();
-    }
-
-    private static void collect(Node node, StringBuilder text) {
-        for (Node child : node.childNodes()) {
-            if (child instanceof TextNode textNode) {
-                text.append(textNode.getWholeText().replaceAll("[\\r\\n]+", " "));
-            } else if (child instanceof Element element) {
-                if (element.normalName().equals("br")) {
-                    text.append('\n');
-                } else {
-                    boolean block = element.isBlock();
-                    if (block) {
-                        text.append('\n');
-                    }
-                    collect(element, text);
-                    if (block) {
-                        text.append('\n');
-                    }
-                }
-            }
-        }
     }
 }
