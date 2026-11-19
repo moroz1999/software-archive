@@ -99,6 +99,14 @@ public final class Group {
         this.locations = Objects.requireNonNull(locations, "locations");
     }
 
+    /** Fills what the group lacks from an import, never rewriting what it has (docs/domain/imports.md#authors). */
+    public void supplement(Locations locations) {
+        if (this.locations.all().isEmpty()) {
+            this.locations = Objects.requireNonNull(locations, "locations");
+        }
+        markChanged();
+    }
+
     /** Replaces the complete roster of this group. */
     public void changeMembers(GroupMembers members) {
         this.members = Objects.requireNonNull(members, "members");
@@ -143,6 +151,7 @@ public final class Group {
     public void delete() {
         events.add(labelsChanged());
         events.add(new GroupChanged(id));
+        events.add(new GroupDeleted(id));
     }
 
     private OwnerOfLabelsChanged labelsChanged() {

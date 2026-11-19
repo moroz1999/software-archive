@@ -12,7 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
@@ -133,6 +135,38 @@ public final class Software {
         this.hardware = hardware;
         this.categories = categories;
         markChanged();
+    }
+
+    /**
+     * Adds what an import found and the software lacks, never rewriting what it has (docs/domain/imports.md): the
+     * description and the date only while empty, the categories given, and the participants not credited yet.
+     */
+    public void supplement(
+            @Nullable SoftwareDescription description,
+            @Nullable ReleaseDate releaseDate,
+            CategorySet categories,
+            SoftwareCredits credits) {
+        if (this.description == null) {
+            this.description = description;
+        }
+        if (this.releaseDate == null) {
+            this.releaseDate = releaseDate;
+        }
+        this.categories = Objects.requireNonNull(categories, "categories");
+        Set<SoftwareReference> credited = this.credits.all().stream()
+                .map(SoftwareCreditDraft::participant)
+                .collect(Collectors.toSet());
+        this.credits = SoftwareCredits.of(Stream.concat(
+                        this.credits.all().stream(),
+                        credits.all().stream().filter(credit -> !credited.contains(credit.participant())))
+                .toList());
+        markChanged();
+    }
+
+    /** The pictures of sizes the software has no screenshot of yet, each size once (docs/domain/imports.md). */
+    public List<ScreenshotImage> screenshotsOfNewSizes(List<ScreenshotImage> images) {
+        Set<Long> sizes = screenshots.all().stream().map(Screenshot::size).collect(Collectors.toSet());
+        return images.stream().filter(image -> sizes.add(image.size())).toList();
     }
 
     /** Replaces everyone credited on the software. */

@@ -11,6 +11,9 @@ public interface ImportedEntryRepository {
 
     void save(ImportedEntry entry);
 
+    /** Whether the entry of this kind came from this source archive. */
+    boolean isFrom(String archive, ExternalKind kind, ImportedEntryId entry);
+
     /** Forgets where the entry of this kind came from, so an import may take it again. */
     void forget(ExternalKind kind, ImportedEntryId entry);
 

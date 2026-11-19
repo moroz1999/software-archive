@@ -8,6 +8,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface SpringDataExternalOriginRepository extends JpaRepository<ExternalOriginEntity, ExternalOriginKey> {
 
+    boolean existsByKeyOriginAndKeyKindAndEntityId(String origin, String kind, UUID entityId);
+
     @Modifying
     @Query("DELETE FROM ExternalOriginEntity o WHERE o.key.kind = :kind AND o.entityId = :entityId")
     void deleteByKeyKindAndEntityId(@Param("kind") String kind, @Param("entityId") UUID entityId);

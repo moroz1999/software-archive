@@ -45,6 +45,12 @@ public class JpaImportedEntryRepository implements ImportedEntryRepository {
     }
 
     @Override
+    public boolean isFrom(String archive, ExternalKind kind, ImportedEntryId entry) {
+        return springDataExternalOriginRepository.existsByKeyOriginAndKeyKindAndEntityId(
+                archive, kind.name(), entry.value());
+    }
+
+    @Override
     public void transfer(ExternalKind kind, ImportedEntryId entry, ExternalKind toKind, ImportedEntryId to) {
         springDataExternalOriginRepository.transfer(kind.name(), entry.value(), toKind.name(), to.value());
     }

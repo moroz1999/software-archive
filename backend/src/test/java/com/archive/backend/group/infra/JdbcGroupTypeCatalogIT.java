@@ -31,4 +31,9 @@ class JdbcGroupTypeCatalogIT {
         assertThat(catalog.allExist(Set.of(new GroupTypeCode("demogroup"), new GroupTypeCode("orchestra"))))
                 .isFalse();
     }
+
+    @Test
+    void hasNothingMissingOfNoTypes() {
+        assertThat(catalog.allExist(Set.of())).isTrue();
+    }
 }

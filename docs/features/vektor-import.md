@@ -1,6 +1,6 @@
 # Import from vektor-06c.ru
 
-A backend command that takes the software of vektor-06c.ru into the archive ([domain/imports.md](../domain/imports.md)). Only the reading of the site and the conducting of the run are its own; everything it adds goes through the use cases of the archive, under the importer's account, so the rules of software, releases, screenshots and credits hold for it as for anybody.
+A backend command that takes the software of vektor-06c.ru into the archive ([domain/imports.md](../domain/imports.md)). Only the reading of the site and the conducting of the run are its own: `VektorSourcePrograms` turns each program of the site into what [the one import](imports.md) takes in, by the rules of the site.
 
 ## Running
 
@@ -8,7 +8,7 @@ A backend command that takes the software of vektor-06c.ru into the archive ([do
 - The tab says the import has started, or why it could not: another run is going on, or the user is not an administrator.
 - Below the form, the report of the run started last: what it imports, its state (running, done, stopped), when it ran, the counts, the programs added with links to their software (one deleted since is named without a link) and the programs failed with their page on the site and the reason. While the run goes on the tab reads it again every 5 seconds.
 - A run takes far longer than a request waits, so it goes to the application's pool of background threads (`applicationTaskExecutor`, not the scheduler of the search worker) and the request is answered at once. Only one run goes at a time; restarting the backend stops a run, and the next run takes up what is left.
-- Every run is an `ImportRun` (`import_run`, `V21`), written down before it starts so that its report fills from the background thread. Each program writes what it came to as it goes: an added program in the transaction that adds it, so the report never names software that is not there; one already taken, left out (PC utilities) or failed in a transaction of its own. The run ends done; a failure of the whole run ends it stopped, and so does a restart: on start the application stops every run still marked running. The log keeps the summary and every failure with its cause. What a run added reaches the search through the outbox like any other change.
+- Every run is an `ImportRun` (`import_run`, `V21`), written down before it starts so that its report fills from the background thread. Each program writes what it came to as it goes: an added or found program in the transaction that takes it in, so the report never names software that is not there; one left out (PC utilities) or failed in a transaction of its own. A found program counts as known: the software the archive already has, by origin or by its program files. The run ends done; a failure of the whole run ends it stopped, and so does a restart: on start the application stops every run still marked running. The log keeps the summary and every failure with its cause. What a run added reaches the search through the outbox like any other change.
 
 ## REST
 
@@ -20,9 +20,9 @@ A backend command that takes the software of vektor-06c.ru into the archive ([do
 
 ## Rerunning
 
-- Every added program and every label created for an author name is remembered in `external_origin` by (archive, kind, external id): the site id for software, the name for a label. A program also keeps the address of its page (`url`, `V19`), which the software page links to as its source; the address cannot be built from the id, so it is taken from the list it was found in. A program found there is not read again. A known name credits its label until that label is made into a person; its origin then points to the person and later imports credit the person directly.
+- Every program is read again on every run and goes to [the one import](imports.md), which finds the software it became and adds only what it lacks. A program also keeps the address of its page (`url`, `V19`), which the software page links to as its source; the address cannot be built from the id, so it is taken from the list it was found in. An author name is a label remembered by the name itself.
 - Deleting software forgets its origin in the same transaction (`SoftwareDeleted`, answered by `importer/app/ForgetDeletedSoftwareHandler`), so the next run adds the program again; `V20` forgot the origins of software deleted before.
-- Each program is added in a transaction of its own: its labels, software, release with the archive, screenshot and origin commit together or not at all, so a failed program leaves no trace and is tried again by the next run.
+- Each program is taken in a transaction of its own: its labels, software, release with the archive, screenshot and origin commit together or not at all, so a failed program leaves no trace and is tried again by the next run. Its archive and picture are downloaded before it, so a failed download fails only that program.
 - The importer's account is created by the schema (`V18`); nobody can sign in with it.
 
 ## Reading the site

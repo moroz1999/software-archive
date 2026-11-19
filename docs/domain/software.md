@@ -8,7 +8,7 @@ Software (a production) is a release of a program: the work itself, as it is kno
 - It has credits: who made it, published it and worked on it — see [Credits](#credits).
 - The title follows the common title rules (see the domain index). The description and the release date may be unknown.
 - Software can be added, edited and deleted, its base hardware with it, chosen from the hardware of its platform. For now anyone can do it; access rules come later.
-- Deleting software deletes what belongs only to it: its releases, screenshots, alternative titles, languages, links and credits.
+- Deleting software deletes what belongs only to it: its releases with their files and file trees, screenshots, alternative titles, languages, links, credits and where it was imported from. The people, groups and labels it credited stay, with their groups.
 - It can be known under alternative titles; an alternative title can be tied to a language.
 - It lists the languages it is available in.
 - Languages — of the software and of its alternative titles — are chosen from the archive's fixed list of languages, each known by its code.

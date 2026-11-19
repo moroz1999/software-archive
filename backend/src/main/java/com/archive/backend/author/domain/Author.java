@@ -104,6 +104,17 @@ public final class Author {
         events.add(new AuthorChanged(id));
     }
 
+    /** Fills what the person lacks from an import, never rewriting what they have (docs/domain/imports.md#authors). */
+    public void supplement(@Nullable RealName realName, Locations locations) {
+        if (this.realName == null) {
+            this.realName = realName;
+        }
+        if (this.locations.all().isEmpty()) {
+            this.locations = Objects.requireNonNull(locations, "locations");
+        }
+        events.add(new AuthorChanged(id));
+    }
+
     /** A new person replacing a label under the same name, located where the label was. */
     public static Author replacing(AuthorId id, Label label, AddedBy addedBy) {
         Author author = new Author(
@@ -133,6 +144,7 @@ public final class Author {
     public void delete() {
         events.add(labelsChanged());
         events.add(new AuthorChanged(id));
+        events.add(new AuthorDeleted(id));
     }
 
     private OwnerOfLabelsChanged labelsChanged() {

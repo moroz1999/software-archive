@@ -9,5 +9,6 @@ import com.archive.backend.shared.domain.ddd.ValueObject;
 public enum ExternalKind {
     SOFTWARE,
     AUTHOR,
+    GROUP,
     LABEL
 }

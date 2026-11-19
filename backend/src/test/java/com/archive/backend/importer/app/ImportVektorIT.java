@@ -222,6 +222,24 @@ class ImportVektorIT {
     }
 
     @Test
+    void addsToAKnownProgramWhatItLacksOnAnotherRun() {
+        servePrograms();
+        VektorSection command = new VektorSection("operatsionnye-sistemy");
+        http.serve(OS, list("754", MICRODOS));
+        run(command);
+        jdbc.update("UPDATE software SET description = NULL WHERE added_by = ?", Importer.ID.value());
+        jdbc.update("DELETE FROM software_contribution");
+
+        assertThat(run(command)).isEqualTo(new ImportSummary(0, 1, 0, 0));
+
+        assertThat(jdbc.queryForObject(
+                        "SELECT description FROM software WHERE added_by = ?", String.class, Importer.ID.value()))
+                .isNotBlank();
+        assertThat(credits("МикроДОС 3.1 (BIOS 3.11.F.11)")).containsExactly("Филиппов Е.В.:{unknown}");
+        assertThat(importedSoftware()).isOne();
+    }
+
+    @Test
     void addsWhatIsNewAndKeepsWhatTheSiteDeleted() {
         servePrograms();
         VektorSection command = new VektorSection("operatsionnye-sistemy");

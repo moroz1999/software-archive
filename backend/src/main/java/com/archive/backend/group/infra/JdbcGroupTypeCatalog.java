@@ -15,6 +15,9 @@ public class JdbcGroupTypeCatalog implements GroupTypeCatalog {
 
     @Override
     public boolean allExist(Set<GroupTypeCode> codes) {
+        if (codes.isEmpty()) {
+            return true;
+        }
         Integer known = jdbc.sql("SELECT count(*) FROM group_type WHERE code IN (:codes)")
                 .param("codes", codes.stream().map(GroupTypeCode::value).toList())
                 .query(Integer.class)
