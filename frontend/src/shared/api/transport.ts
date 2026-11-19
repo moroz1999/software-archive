@@ -1,4 +1,5 @@
 import {AuthenticationRequiredError, BusinessError, type BusinessStatus, type FieldError, NotFoundError, SystemError} from './errors';
+import {contentLanguage} from './content-language';
 import {isObject, type JsonObject} from './parse';
 
 const BUSINESS_STATUSES: readonly number[] = [403, 409, 422] satisfies BusinessStatus[];
@@ -48,10 +49,22 @@ export async function toError(response: Response): Promise<Error> {
     return new SystemError('server', `HTTP ${String(status)}`);
 }
 
-/** Fetches; a fetch that cannot reach the server fails as a network error, an aborted one with its AbortError. */
+function withContentLanguage(headers: HeadersInit | undefined): HeadersInit {
+    if (headers instanceof Headers || Array.isArray(headers)) {
+        const all = new Headers(headers);
+        all.set('Accept-Language', contentLanguage());
+        return all;
+    }
+    return {...headers, 'Accept-Language': contentLanguage()};
+}
+
+/**
+ * Fetches, asking for the archive content in the content language; a fetch that cannot reach the server fails as a
+ * network error, an aborted one with its AbortError.
+ */
 export async function fetchOrFail(path: string, init: RequestInit): Promise<Response> {
     try {
-        return await fetch(path, init);
+        return await fetch(path, {...init, headers: withContentLanguage(init.headers)});
     } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') {
             throw error;

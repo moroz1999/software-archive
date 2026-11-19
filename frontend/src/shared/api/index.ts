@@ -8,4 +8,5 @@ export {mapResponse, readArray, readBoolean, readNullableString, readNumber, rea
 export {parsePage, type Page} from './page';
 export {reportSystemError, subscribeSystemErrors, type SystemErrorReport} from './system-errors';
 export {createQueryClient} from './query-client';
+export {setContentLanguage} from './content-language';
 export {PRELOAD_WINDOW_MS, preloadView} from './preload-view';

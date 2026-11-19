@@ -1,5 +1,6 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {getJson} from './http';
+import {getJson, postJson, putJson} from './http';
+import {setContentLanguage} from './content-language';
 import {BusinessError, NotFoundError, SystemError} from './errors';
 
 function respond(status: number, body: unknown, contentType = 'application/problem+json') {
@@ -62,5 +63,29 @@ describe(getJson, () => {
         respond(200, '{broken', 'application/json');
 
         await expect(getJson('/api/x')).rejects.toMatchObject({name: 'SystemError', kind: 'response'});
+    });
+});
+
+describe(setContentLanguage, () => {
+    afterEach(() => {
+        setContentLanguage('en');
+        vi.unstubAllGlobals();
+    });
+
+    it('asks every call for the archive content in the language chosen', async () => {
+        const fetchMock = vi.fn<typeof fetch>(() => Promise.resolve(
+            new Response('{}', {status: 200, headers: {'Content-Type': 'application/json'}}),
+        ));
+        vi.stubGlobal('fetch', fetchMock);
+
+        setContentLanguage('ru');
+        await getJson('/api/x');
+        await postJson('/api/x', {});
+        setContentLanguage('en');
+        await putJson('/api/x', {});
+
+        const asked = fetchMock.mock.calls.map(([, init]) => new Headers(init?.headers).get('Accept-Language'));
+
+        expect(asked).toStrictEqual(['ru', 'ru', 'en']);
     });
 });

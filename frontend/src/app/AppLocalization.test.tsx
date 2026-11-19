@@ -78,6 +78,55 @@ describe('UI localization', () => {
         expect(screen.getByRole('combobox', {name: 'Язык'})).toHaveValue('ru');
     });
 
+    it('loads the archive content in the UI language and again when the language is switched', async () => {
+        const authorId = '00000000-0000-0000-0003-000000000001';
+        window.history.replaceState(null, '', `/authors/${authorId}`);
+        const author = (country: string, city: string) => json({
+            id: authorId,
+            name: 'Zed',
+            realName: null,
+            notes: null,
+            labels: [],
+            locations: [{countryId: '00000000-0000-0000-0002-000000000006', country, cityId: '00000000-0000-0000-0002-000000000601', city, primary: true}],
+            groups: [],
+            added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
+            canChange: false,
+        });
+        vi.stubGlobal('fetch', vi.fn<typeof fetch>((input, init) => {
+            const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+            const russian = new Headers(init?.headers).get('Accept-Language') === 'ru';
+            const routes = new Map([
+                ['/api/platforms', json([])],
+                ['/api/auth/me', noContent()],
+                [`/api/authors/${authorId}`, russian ? author('Финляндия', 'Хельсинки') : author('Finland', 'Helsinki')],
+                [`/api/authors/${authorId}/software`, json([])],
+            ]);
+            const response = routes.get(url);
+            return response === undefined ? Promise.reject(new TypeError(`Unexpected fetch: ${url}`)) : Promise.resolve(response());
+        }));
+
+        renderApp();
+
+        await expect(screen.findByText('Helsinki, Finland')).resolves.toBeInTheDocument();
+
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Language'}), 'ru');
+
+        await expect(screen.findByText('Хельсинки, Финляндия')).resolves.toBeInTheDocument();
+    });
+
+    it('asks for the archive content in the remembered language from the first call', async () => {
+        localStorage.setItem('archive.language', 'ru');
+        const fetchMock = stubHome();
+
+        renderApp();
+
+        await screen.findByRole('heading', {level: 1, name: 'Недавно добавленное'});
+        const asked = fetchMock.mock.calls.map(([, init]) => new Headers(init?.headers).get('Accept-Language'));
+
+        expect(asked).not.toHaveLength(0);
+        expect(new Set(asked)).toStrictEqual(new Set(['ru']));
+    });
+
     it('localizes system errors', async () => {
         localStorage.setItem('archive.language', 'ru');
         stubHome(500);

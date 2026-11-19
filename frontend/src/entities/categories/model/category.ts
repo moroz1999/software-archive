@@ -1,5 +1,6 @@
 import {NotFoundError} from '@/shared/api';
 import {type Brand} from '@/shared/lib/brand';
+import type {UiLanguage} from '@/shared/lib/i18n';
 import {isUuid} from '@/shared/lib/uuid';
 
 /** The id of a category of software. */
@@ -12,11 +13,19 @@ export interface CategoryNode {
     readonly children: readonly CategoryNode[];
 }
 
-/** One category as its form shows it; no parent at the top of the tree. */
+/** The titles of a category by language: the Russian one is always there (docs/domain/categories.md). */
+export type CategoryTitles = Readonly<Partial<Record<UiLanguage, string>> & {readonly ru: string}>;
+
+/** One category as its form shows it, with its titles in every language; no parent at the top of the tree. */
 export interface CategoryDetails {
     readonly id: CategoryId;
-    readonly title: string;
+    readonly titles: CategoryTitles;
     readonly parentId: CategoryId | null;
+}
+
+/** The title of a category in the language, else the Russian one. */
+export function categoryTitle(titles: CategoryTitles, language: UiLanguage): string {
+    return titles[language] ?? titles.ru;
 }
 
 export function toCategoryId(raw: string): CategoryId {

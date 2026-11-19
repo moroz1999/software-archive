@@ -35,7 +35,7 @@ describe(CreateCategoryProvider, () => {
     it('adds the category under the chosen parent and hands its id on', async () => {
         const {fetchMock, onCreated} = showForm();
 
-        await userEvent.type(screen.getByRole('textbox', {name: 'Title'}), 'Action');
+        await userEvent.type(screen.getByRole('textbox', {name: 'Title in Russian'}), 'Action');
         await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Parent'}), await screen.findByRole('option', {name: 'Games'}));
         await userEvent.click(screen.getByRole('button', {name: 'Add category'}));
 
@@ -45,7 +45,7 @@ describe(CreateCategoryProvider, () => {
 
         const post = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST');
 
-        expect(post?.[1]?.body).toBe(`{"title":"Action","parentId":"${GAMES}"}`);
+        expect(post?.[1]?.body).toBe(`{"titles":{"ru":"Action"},"parentId":"${GAMES}"}`);
     });
 
     it('adds a category at the top when no parent is chosen', async () => {
@@ -55,14 +55,14 @@ describe(CreateCategoryProvider, () => {
 
         expect(screen.getByRole('combobox', {name: 'Parent'})).toHaveValue('');
 
-        await userEvent.type(screen.getByRole('textbox', {name: 'Title'}), 'Series');
+        await userEvent.type(screen.getByRole('textbox', {name: 'Title in Russian'}), 'Series');
         await userEvent.click(screen.getByRole('button', {name: 'Add category'}));
 
         await vi.waitFor(() => {
             expect(onCreated).toHaveBeenCalledExactlyOnceWith(ACTION);
         });
 
-        expect(fetchMock.mock.calls.find(([, init]) => init?.method === 'POST')?.[1]?.body).toBe('{"title":"Series","parentId":null}');
+        expect(fetchMock.mock.calls.find(([, init]) => init?.method === 'POST')?.[1]?.body).toBe('{"titles":{"ru":"Series"},"parentId":null}');
     });
 
     it('sends nothing without a title and says so under it', async () => {
@@ -70,14 +70,14 @@ describe(CreateCategoryProvider, () => {
 
         await userEvent.click(screen.getByRole('button', {name: 'Add category'}));
 
-        expect(screen.getByRole('textbox', {name: 'Title'})).toHaveAccessibleDescription('Enter a title.');
+        expect(screen.getByRole('textbox', {name: 'Title in Russian'})).toHaveAccessibleDescription('Enter a title.');
         expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false);
     });
 
     it('says why the parent was refused under the parent', async () => {
         showForm(json({status: 422, code: 'category.parent-unknown', errors: [{field: 'parentId', code: 'category.parent-unknown'}]}, 422));
 
-        await userEvent.type(screen.getByRole('textbox', {name: 'Title'}), 'Action');
+        await userEvent.type(screen.getByRole('textbox', {name: 'Title in Russian'}), 'Action');
         await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Parent'}), await screen.findByRole('option', {name: 'Games'}));
         await userEvent.click(screen.getByRole('button', {name: 'Add category'}));
 
@@ -95,13 +95,13 @@ describe(CreateCategoryProvider, () => {
         }));
         showForm(json({status: 500}, 500));
 
-        await userEvent.type(screen.getByRole('textbox', {name: 'Title'}), 'Action');
+        await userEvent.type(screen.getByRole('textbox', {name: 'Title in Russian'}), 'Action');
         await userEvent.click(screen.getByRole('button', {name: 'Add category'}));
 
         await vi.waitFor(() => {
             expect(reports).toHaveLength(1);
         });
 
-        expect(screen.getByRole('textbox', {name: 'Title'})).toHaveValue('Action');
+        expect(screen.getByRole('textbox', {name: 'Title in Russian'})).toHaveValue('Action');
     });
 });

@@ -18,6 +18,8 @@ export interface InputProps {
     /** Id of the element describing the input, such as its error. */
     readonly describedBy?: string | undefined;
     readonly disabled?: boolean;
+    /** A value has to be given; said to assistive technology, the form checks it itself. */
+    readonly required?: boolean;
     readonly maxLength?: number;
     /** External contour only; see docs/styles.md. */
     readonly className?: string;
@@ -33,7 +35,7 @@ export interface InputProps {
 }
 
 /** One-line input of a text, an email, a password or a date. */
-export function Input({id, value, onChange, type = 'text', autoComplete, ariaLabel, invalid = false, describedBy, disabled, maxLength, placeholder, className, role, ariaAutocomplete, ariaControls, ariaExpanded, ariaActiveDescendant, onKeyDown, onFocus, onBlur, inputRef}: InputProps) {
+export function Input({id, value, onChange, type = 'text', autoComplete, ariaLabel, invalid = false, describedBy, disabled, required = false, maxLength, placeholder, className, role, ariaAutocomplete, ariaControls, ariaExpanded, ariaActiveDescendant, onKeyDown, onFocus, onBlur, inputRef}: InputProps) {
     return (
         <input
             id={id}
@@ -45,6 +47,7 @@ export function Input({id, value, onChange, type = 'text', autoComplete, ariaLab
             }}
             aria-label={ariaLabel}
             aria-invalid={invalid}
+            aria-required={required || undefined}
             aria-describedby={describedBy}
             role={role}
             aria-autocomplete={ariaAutocomplete}

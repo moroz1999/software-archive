@@ -1,5 +1,6 @@
 import {deleteResource, getJson, mapResponse, postJson, putJson, readArray, readNullableString, readObject, readString} from '@/shared/api';
-import {type CategoryDetails, type CategoryId, type CategoryNode, toCategoryId} from '../model/category';
+import {SUPPORTED_UI_LANGUAGES, type UiLanguage} from '@/shared/lib/i18n';
+import {type CategoryDetails, type CategoryId, type CategoryNode, type CategoryTitles, toCategoryId} from '../model/category';
 import type {CategoryDraft} from '../model/category-form';
 
 function categoryPath(id: CategoryId): string {
@@ -7,7 +8,19 @@ function categoryPath(id: CategoryId): string {
 }
 
 function toBody(draft: CategoryDraft): unknown {
-    return {title: draft.title, parentId: draft.parentId};
+    return {titles: draft.titles, parentId: draft.parentId};
+}
+
+/** The titles in the languages of the site; one in another language is left out, a missing Russian one is malformed. */
+function parseTitles(value: unknown): CategoryTitles {
+    const dto = readObject(value, 'titles');
+    const titles: Partial<Record<UiLanguage, string>> = {};
+    for (const language of SUPPORTED_UI_LANGUAGES) {
+        if (dto[language] !== undefined) {
+            titles[language] = readString(dto, language);
+        }
+    }
+    return {...titles, ru: readString(dto, 'ru')};
 }
 
 function parseNode(item: unknown): CategoryNode {
@@ -25,7 +38,7 @@ export async function fetchCategoryTree(signal: AbortSignal): Promise<readonly C
     return mapResponse(() => readArray(json, 'categories').map(parseNode));
 }
 
-/** One category with its parent: `GET /api/categories/{id}`. */
+/** One category with its titles in every language and its parent: `GET /api/categories/{id}`. */
 export async function fetchCategory(id: CategoryId, signal: AbortSignal): Promise<CategoryDetails> {
     const json = await getJson(categoryPath(id), signal);
     return mapResponse(() => {
@@ -33,7 +46,7 @@ export async function fetchCategory(id: CategoryId, signal: AbortSignal): Promis
         const parentId = readNullableString(dto, 'parentId');
         return {
             id: toCategoryId(readString(dto, 'id')),
-            title: readString(dto, 'title'),
+            titles: parseTitles(dto['titles']),
             parentId: parentId === null ? null : toCategoryId(parentId),
         };
     });

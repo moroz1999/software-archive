@@ -35,17 +35,30 @@ describe(fetchCategory, () => {
         vi.unstubAllGlobals();
     });
 
-    it('reads one category with its parent', async () => {
-        const fetchMock = stubFetch(json({id: ACTION, title: 'Action', parentId: GAMES}));
+    it('reads one category with its titles in every language and its parent', async () => {
+        const fetchMock = stubFetch(json({id: ACTION, titles: {ru: 'Экшен', en: 'Action'}, parentId: GAMES}));
 
-        await expect(fetchCategory(ACTION, new AbortController().signal)).resolves.toStrictEqual({id: ACTION, title: 'Action', parentId: GAMES});
+        await expect(fetchCategory(ACTION, new AbortController().signal))
+            .resolves.toStrictEqual({id: ACTION, titles: {ru: 'Экшен', en: 'Action'}, parentId: GAMES});
         expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/categories/${ACTION}`);
     });
 
     it('reads a category at the top without a parent', async () => {
-        stubFetch(json({id: GAMES, title: 'Games', parentId: null}));
+        stubFetch(json({id: GAMES, titles: {ru: 'Игры'}, parentId: null}));
 
-        await expect(fetchCategory(GAMES, new AbortController().signal)).resolves.toStrictEqual({id: GAMES, title: 'Games', parentId: null});
+        await expect(fetchCategory(GAMES, new AbortController().signal)).resolves.toStrictEqual({id: GAMES, titles: {ru: 'Игры'}, parentId: null});
+    });
+
+    it('fails with a system error on a category without a Russian title', async () => {
+        stubFetch(json({id: GAMES, titles: {en: 'Games'}, parentId: null}));
+
+        await expect(fetchCategory(GAMES, new AbortController().signal)).rejects.toBeInstanceOf(SystemError);
+    });
+
+    it('takes no title in a language the site does not speak', async () => {
+        stubFetch(json({id: GAMES, titles: {ru: 'Игры', de: 'Spiele'}, parentId: null}));
+
+        await expect(fetchCategory(GAMES, new AbortController().signal)).resolves.toStrictEqual({id: GAMES, titles: {ru: 'Игры'}, parentId: null});
     });
 
     it('passes a not found error on', async () => {
@@ -63,9 +76,9 @@ describe(createCategory, () => {
     it('sends the draft and returns the new id', async () => {
         const fetchMock = stubFetch(json({id: ACTION}, 201));
 
-        await expect(createCategory({title: 'Action', parentId: GAMES})).resolves.toBe(ACTION);
+        await expect(createCategory({titles: {ru: 'Экшен', en: 'Action'}, parentId: GAMES})).resolves.toBe(ACTION);
         expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/categories');
-        expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({method: 'POST', body: `{"title":"Action","parentId":"${GAMES}"}`});
+        expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({method: 'POST', body: `{"titles":{"ru":"Экшен","en":"Action"},"parentId":"${GAMES}"}`});
     });
 });
 
@@ -77,10 +90,10 @@ describe(updateCategory, () => {
     it('sends the whole category', async () => {
         const fetchMock = stubFetch(noContent());
 
-        await updateCategory(ACTION, {title: 'Action games', parentId: null});
+        await updateCategory(ACTION, {titles: {ru: 'Экшен-игры'}, parentId: null});
 
         expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/categories/${ACTION}`);
-        expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({method: 'PUT', body: '{"title":"Action games","parentId":null}'});
+        expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({method: 'PUT', body: '{"titles":{"ru":"Экшен-игры"},"parentId":null}'});
     });
 });
 

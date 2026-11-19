@@ -1,5 +1,6 @@
 import {type ReactNode, useState} from 'react';
 import {type BusinessError, type BusinessMessages, splitRefusal, unedited} from '@/shared/api';
+import type {UiLanguage} from '@/shared/lib/i18n';
 import type {CategoryId} from './category';
 import {type CategoryDraft, type CategoryFormErrors, type CategoryFormValues, toCategoryFormValues, validateCategoryForm} from './category-form';
 import {CategoryFormContext, type CategoryFormState} from './category-form-context';
@@ -19,7 +20,7 @@ export interface CategoryFormProviderProps {
 }
 
 /** The request field each form field is sent as: a refusal names it so. */
-const REQUEST_FIELDS: Readonly<Record<keyof CategoryFormValues, string>> = {title: 'title', parent: 'parentId'};
+const REQUEST_FIELDS: Readonly<Record<keyof CategoryFormValues, string>> = {titles: 'titles', parent: 'parentId'};
 
 /** The values of a category form being filled in, their format rules and why the last submit was refused. */
 export function CategoryFormProvider({onSubmit, initial, editing, busy = false, error, messages = {}, children}: CategoryFormProviderProps) {
@@ -33,23 +34,29 @@ export function CategoryFormProvider({onSubmit, initial, editing, busy = false, 
 
     const refusal = splitRefusal(error, messages, Object.values(REQUEST_FIELDS));
     const fieldRefusals = unedited(refusal.fields, edited.fields);
-    const titleRefusal = fieldRefusals[REQUEST_FIELDS.title];
+    const titlesRefusal = fieldRefusals[REQUEST_FIELDS.titles];
     const parentRefusal = fieldRefusals[REQUEST_FIELDS.parent];
+
+    const markEdited = (field: keyof CategoryFormValues) => {
+        const requestField = REQUEST_FIELDS[field];
+        setEdited((current) => (current.fields.has(requestField) ? current : {...current, fields: new Set([...current.fields, requestField])}));
+    };
 
     const state: CategoryFormState = {
         values,
         errors,
         refusals: {
-            ...(titleRefusal === undefined ? {} : {title: titleRefusal}),
+            ...(titlesRefusal === undefined ? {} : {titles: titlesRefusal}),
             ...(parentRefusal === undefined ? {} : {parent: parentRefusal}),
         },
-        change: (field) => (value) => {
-            setValues((current) => ({...current, [field]: value}));
-            if (field === 'title') {
-                setErrors({});
-            }
-            const requestField = REQUEST_FIELDS[field];
-            setEdited((current) => (current.fields.has(requestField) ? current : {...current, fields: new Set([...current.fields, requestField])}));
+        changeTitle: (language: UiLanguage) => (value) => {
+            setValues((current) => ({...current, titles: {...current.titles, [language]: value}}));
+            setErrors({});
+            markEdited('titles');
+        },
+        changeParent: (value) => {
+            setValues((current) => ({...current, parent: value}));
+            markEdited('parent');
         },
         editing,
         submit: () => {

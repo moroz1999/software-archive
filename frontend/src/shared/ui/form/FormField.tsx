@@ -9,6 +9,8 @@ export interface FieldControl {
     readonly id: string;
     readonly invalid: boolean;
     readonly describedBy: string | undefined;
+    /** A value has to be given: the control says so to assistive technology. */
+    readonly required: boolean;
 }
 
 export interface FormFieldProps {
@@ -44,7 +46,7 @@ export function FormField({label, required = false, error, hint, fullWidth = fal
                 {required && <RequiredMark/>}
             </div>
             <div className={styles.control}>
-                {children({id, invalid, describedBy: described === '' ? undefined : described})}
+                {children({id, invalid, required, describedBy: described === '' ? undefined : described})}
                 {hint !== undefined && <Text as="span" id={hintId} variant="caption" tone="muted">{hint}</Text>}
                 {invalid && <Text as="span" id={errorId} variant="caption" tone="danger">{error}</Text>}
             </div>

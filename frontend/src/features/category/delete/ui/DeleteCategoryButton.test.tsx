@@ -6,7 +6,7 @@ import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, noContent, renderWithQueries, stubFetch} from '@/shared/lib/test';
 import {DeleteCategoryButton} from './DeleteCategoryButton';
 
-const CATEGORY = {id: toCategoryId('00000000-0000-0000-0006-000000000002'), title: 'Action'};
+const CATEGORY = {id: toCategoryId('00000000-0000-0000-0006-000000000002'), titles: {ru: 'Action'}};
 
 describe(DeleteCategoryButton, () => {
     afterEach(() => {

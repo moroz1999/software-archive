@@ -7,26 +7,40 @@ const ACTION = toCategoryId('00000000-0000-0000-0006-000000000002');
 
 describe(validateCategoryForm, () => {
     it('turns filled values into a draft', () => {
-        expect(validateCategoryForm({title: 'Action', parent: GAMES})).toStrictEqual({ok: true, draft: {title: 'Action', parentId: GAMES}});
+        expect(validateCategoryForm({titles: {ru: 'Экшен', en: 'Action'}, parent: GAMES}))
+            .toStrictEqual({ok: true, draft: {titles: {ru: 'Экшен', en: 'Action'}, parentId: GAMES}});
     });
 
     it('puts a category without a parent at the top', () => {
-        expect(validateCategoryForm({title: 'Series', parent: ''})).toStrictEqual({ok: true, draft: {title: 'Series', parentId: null}});
+        expect(validateCategoryForm({titles: {ru: 'Серии', en: 'Series'}, parent: ''}))
+            .toStrictEqual({ok: true, draft: {titles: {ru: 'Серии', en: 'Series'}, parentId: null}});
     });
 
-    it('needs a title of at most 255 characters', () => {
-        expect(validateCategoryForm({title: ' ', parent: ''})).toStrictEqual({ok: false, errors: {title: 'required'}});
-        expect(validateCategoryForm({title: 'a'.repeat(256), parent: ''})).toStrictEqual({ok: false, errors: {title: 'too-long'}});
+    it('leaves out a title not given in a language other than Russian', () => {
+        expect(validateCategoryForm({titles: {ru: 'Серии', en: ' '}, parent: ''}))
+            .toStrictEqual({ok: true, draft: {titles: {ru: 'Серии'}, parentId: null}});
+    });
+
+    it('needs a Russian title', () => {
+        expect(validateCategoryForm({titles: {ru: ' ', en: 'Action'}, parent: ''}))
+            .toStrictEqual({ok: false, errors: {titles: {ru: 'required'}}});
+    });
+
+    it('needs every title to be at most 255 characters', () => {
+        expect(validateCategoryForm({titles: {ru: 'a'.repeat(256), en: 'a'.repeat(256)}, parent: ''}))
+            .toStrictEqual({ok: false, errors: {titles: {ru: 'too-long', en: 'too-long'}}});
     });
 });
 
 describe(toCategoryFormValues, () => {
     it('is empty for a new category', () => {
-        expect(toCategoryFormValues()).toStrictEqual({title: '', parent: ''});
+        expect(toCategoryFormValues()).toStrictEqual({titles: {en: '', ru: ''}, parent: ''});
     });
 
     it('holds the values of an existing category', () => {
-        expect(toCategoryFormValues({id: ACTION, title: 'Action', parentId: GAMES})).toStrictEqual({title: 'Action', parent: GAMES});
-        expect(toCategoryFormValues({id: GAMES, title: 'Games', parentId: null})).toStrictEqual({title: 'Games', parent: ''});
+        expect(toCategoryFormValues({id: ACTION, titles: {ru: 'Экшен', en: 'Action'}, parentId: GAMES}))
+            .toStrictEqual({titles: {en: 'Action', ru: 'Экшен'}, parent: GAMES});
+        expect(toCategoryFormValues({id: GAMES, titles: {ru: 'Игры'}, parentId: null}))
+            .toStrictEqual({titles: {en: '', ru: 'Игры'}, parent: ''});
     });
 });

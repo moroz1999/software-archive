@@ -34,7 +34,7 @@ describe('CategoryEditPage', () => {
     });
 
     it('appears with the category in its form when the preload makes it in time', async () => {
-        stubFetchAround(AROUND, json({id: ACTION, title: 'Action', parentId: GAMES}));
+        stubFetchAround(AROUND, json({id: ACTION, titles: {ru: 'Экшен', en: 'Action'}, parentId: GAMES}));
 
         renderRoute();
 
@@ -42,13 +42,13 @@ describe('CategoryEditPage', () => {
         const management = within(screen.getByRole('navigation', {name: 'Management'}));
 
         expect(management.getByRole('link', {name: 'Categories'})).toHaveAttribute('aria-current', 'page');
-        expect(screen.getByRole('textbox', {name: 'Title'})).toHaveValue('Action');
+        expect(screen.getByRole('textbox', {name: 'Title in Russian'})).toHaveValue('Экшен');
         expect(screen.getByRole('option', {name: 'Games', selected: true})).toBeInTheDocument();
         expect(screen.queryByTestId('category-editor-skeleton')).not.toBeInTheDocument();
     });
 
     it('returns to the categories after saving', async () => {
-        stubFetchAround(AROUND, json({id: ACTION, title: 'Action', parentId: GAMES}), noContent());
+        stubFetchAround(AROUND, json({id: ACTION, titles: {ru: 'Экшен', en: 'Action'}, parentId: GAMES}), noContent());
         renderRoute();
 
         await userEvent.click(await screen.findByRole('button', {name: 'Save'}));
@@ -57,7 +57,7 @@ describe('CategoryEditPage', () => {
     });
 
     it('returns to the categories after deleting', async () => {
-        stubFetchAround(AROUND, json({id: ACTION, title: 'Action', parentId: GAMES}), noContent());
+        stubFetchAround(AROUND, json({id: ACTION, titles: {ru: 'Экшен', en: 'Action'}, parentId: GAMES}), noContent());
         renderRoute();
 
         await userEvent.click(await screen.findByRole('button', {name: 'Delete'}));

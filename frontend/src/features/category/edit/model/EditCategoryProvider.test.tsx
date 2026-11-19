@@ -13,7 +13,7 @@ const TREE = [
     {id: GAMES, title: 'Games', children: [{id: ACTION, title: 'Action', children: [{id: SHOOTERS, title: 'Shooters', children: []}]}]},
     {id: DEMOSCENE, title: 'Demoscene', children: []},
 ];
-const CATEGORY = {id: toCategoryId(ACTION), title: 'Action', parentId: toCategoryId(GAMES)};
+const CATEGORY = {id: toCategoryId(ACTION), titles: {ru: 'Action'}, parentId: toCategoryId(GAMES)};
 
 const AROUND = new Map([['/api/categories', json(TREE)]]);
 
@@ -35,7 +35,7 @@ describe(EditCategoryProvider, () => {
         const onSaved = vi.fn<() => void>();
         renderEditor(onSaved);
 
-        expect(screen.getByRole('textbox', {name: 'Title'})).toHaveValue('Action');
+        expect(screen.getByRole('textbox', {name: 'Title in Russian'})).toHaveValue('Action');
         await expect(screen.findByRole('option', {name: 'Games', selected: true})).resolves.toBeInTheDocument();
 
         await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Parent'}), screen.getByRole('option', {name: 'Demoscene'}));
@@ -46,7 +46,7 @@ describe(EditCategoryProvider, () => {
         });
 
         expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/categories/${ACTION}`);
-        expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({method: 'PUT', body: `{"title":"Action","parentId":"${DEMOSCENE}"}`});
+        expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({method: 'PUT', body: `{"titles":{"ru":"Action"},"parentId":"${DEMOSCENE}"}`});
     });
 
     it('offers neither the category itself nor its subcategories as its parent', async () => {

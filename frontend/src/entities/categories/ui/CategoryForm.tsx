@@ -5,6 +5,7 @@ import {Form, FormActions, FormField, FormMessage} from '@/shared/ui/form';
 import {Input} from '@/shared/ui/input';
 import {Select} from '@/shared/ui/select';
 import {TITLE_PROBLEM_KEYS} from '../config/messages';
+import {CATEGORY_TITLE_LANGUAGES} from '../model/category-form';
 import {useCategoryForm} from '../model/category-form-context';
 import {parentOptions} from '../model/category-tree';
 import {useCategoryTree} from '../model/category-tree-context';
@@ -19,12 +20,12 @@ export interface CategoryFormProps {
 }
 
 /**
- * The fields of a category inside a CategoryFormProvider, which holds their values and checks them; the parents to
+ * The fields of a category, a title per language with the Russian one required, inside a CategoryFormProvider, which holds their values and checks them; the parents to
  * choose from come from the CategoryTreeProvider around.
  */
 export function CategoryForm({submitLabel, actions}: CategoryFormProps) {
     const {t} = useTranslation();
-    const {values, errors, refusals, change, editing, submit, busy, error} = useCategoryForm();
+    const {values, errors, refusals, changeTitle, changeParent, editing, submit, busy, error} = useCategoryForm();
     const tree = useCategoryTree();
     const options = parentOptions(tree.data ?? [], editing).map((option) => ({
         value: option.id,
@@ -34,15 +35,26 @@ export function CategoryForm({submitLabel, actions}: CategoryFormProps) {
     return (
         <Form onSubmit={submit}>
             {error !== undefined && <FormMessage>{error}</FormMessage>}
-            <FormField label={t('fields.title')} required error={errors.title === undefined ? refusals.title : t(TITLE_PROBLEM_KEYS[errors.title])}>
-                {(control) => <Input {...control} value={values.title} onChange={change('title')} disabled={busy}/>}
-            </FormField>
+            {CATEGORY_TITLE_LANGUAGES.map((language) => {
+                const problem = errors.titles?.[language];
+                const refusal = language === 'ru' ? refusals.titles : undefined;
+                return (
+                    <FormField
+                        key={language}
+                        label={t(`category.titleIn.${language}`)}
+                        required={language === 'ru'}
+                        error={problem === undefined ? refusal : t(TITLE_PROBLEM_KEYS[problem])}
+                    >
+                        {(control) => <Input {...control} value={values.titles[language]} onChange={changeTitle(language)} disabled={busy}/>}
+                    </FormField>
+                );
+            })}
             <FormField label={t('category.parent')} error={refusals.parent}>
                 {(control) => (
                     <Select
                         {...control}
                         value={values.parent}
-                        onChange={change('parent')}
+                        onChange={changeParent}
                         options={options}
                         placeholder={t('category.top')}
                         disabled={busy || tree.data === undefined}

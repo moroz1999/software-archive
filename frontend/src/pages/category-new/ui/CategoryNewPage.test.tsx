@@ -30,7 +30,7 @@ describe('CategoryNewPage', () => {
         expect(management.getByRole('link', {name: 'Categories'})).toHaveAttribute('aria-current', 'page');
         expect(screen.getByRole('option', {name: 'Games'})).toBeInTheDocument();
 
-        await userEvent.type(screen.getByRole('textbox', {name: 'Title'}), 'Series');
+        await userEvent.type(screen.getByRole('textbox', {name: 'Title in Russian'}), 'Серии');
         await userEvent.click(screen.getByRole('button', {name: 'Add category'}));
 
         await expect(screen.findByText('Categories list')).resolves.toBeInTheDocument();

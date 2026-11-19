@@ -22,7 +22,7 @@ describe(postJson, () => {
         await expect(postJson('/api/x', {title: 'Elite'})).resolves.toStrictEqual({id: '1'});
         expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/x', {
             method: 'POST',
-            headers: {Accept: 'application/json', 'Content-Type': 'application/json'},
+            headers: {Accept: 'application/json', 'Content-Type': 'application/json', 'Accept-Language': 'en'},
             body: '{"title":"Elite"}',
         });
     });
@@ -57,7 +57,7 @@ describe(putJson, () => {
         await expect(putJson('/api/x/1', {title: 'Elite'})).resolves.toBeUndefined();
         expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/x/1', {
             method: 'PUT',
-            headers: {Accept: 'application/json', 'Content-Type': 'application/json'},
+            headers: {Accept: 'application/json', 'Content-Type': 'application/json', 'Accept-Language': 'en'},
             body: '{"title":"Elite"}',
         });
     });
@@ -78,7 +78,7 @@ describe(deleteResource, () => {
         const fetchMock = respond(204);
 
         await expect(deleteResource('/api/x/1')).resolves.toBeUndefined();
-        expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/x/1', {method: 'DELETE', headers: {Accept: 'application/json'}});
+        expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/x/1', {method: 'DELETE', headers: {Accept: 'application/json', 'Accept-Language': 'en'}});
     });
 
     it('turns a 500 into a system error', async () => {
@@ -99,7 +99,7 @@ describe(postNoContent, () => {
         await expect(postNoContent('/api/x', {login: 'Zed'})).resolves.toBeUndefined();
         expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/x', {
             method: 'POST',
-            headers: {Accept: 'application/json', 'Content-Type': 'application/json'},
+            headers: {Accept: 'application/json', 'Content-Type': 'application/json', 'Accept-Language': 'en'},
             body: '{"login":"Zed"}',
         });
     });
@@ -109,7 +109,7 @@ describe(postNoContent, () => {
 
         await postNoContent('/api/x');
 
-        expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/x', {method: 'POST', headers: {Accept: 'application/json'}});
+        expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/x', {method: 'POST', headers: {Accept: 'application/json', 'Accept-Language': 'en'}});
     });
 });
 
@@ -124,7 +124,7 @@ describe(postForm, () => {
         form.append('files', new File(['png'], 'shot.png', {type: 'image/png'}));
 
         await expect(postForm('/api/x', form)).resolves.toStrictEqual([{id: '1'}]);
-        expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/x', {method: 'POST', headers: {Accept: 'application/json'}, body: form});
+        expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/x', {method: 'POST', headers: {Accept: 'application/json', 'Accept-Language': 'en'}, body: form});
     });
 
     it('turns a 422 with a code into a business error', async () => {

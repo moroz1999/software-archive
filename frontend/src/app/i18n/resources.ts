@@ -181,6 +181,7 @@ export const resources = {
             },
         },
         category: {
+            titleIn: {ru: 'Title in Russian', en: 'Title in English'},
             parent: 'Parent', top: 'None, at the top', expand: 'Expand {{name}}', collapse: 'Collapse {{name}}', delete: 'Delete category',
             deleteQuestion: 'Delete “{{title}}” with all its subcategories? Their software stays in the archive and only leaves them.',
         },
@@ -387,6 +388,7 @@ export const resources = {
             },
         },
         category: {
+            titleIn: {ru: 'Название на русском', en: 'Название на английском'},
             parent: 'Родитель', top: 'Нет, на верхнем уровне', expand: 'Раскрыть {{name}}', collapse: 'Свернуть {{name}}', delete: 'Удалить категорию',
             deleteQuestion: 'Удалить «{{title}}» со всеми подкатегориями? Их программы останутся в архиве и только покинут эти категории.',
         },

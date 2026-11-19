@@ -23,19 +23,20 @@ describe(CategoryEditor, () => {
     });
 
     it('shows a skeleton, then the form with the category and its parent', async () => {
-        stubFetchAround(AROUND, json({id: ACTION, title: 'Action', parentId: GAMES}));
+        stubFetchAround(AROUND, json({id: ACTION, titles: {ru: 'Экшен', en: 'Action'}, parentId: GAMES}));
         renderEditor();
 
         expect(screen.getByTestId('category-editor-skeleton')).toBeInTheDocument();
-        await expect(screen.findByRole('textbox', {name: 'Title'})).resolves.toHaveValue('Action');
+        await expect(screen.findByRole('textbox', {name: 'Title in Russian'})).resolves.toHaveValue('Экшен');
+        expect(screen.getByRole('textbox', {name: 'Title in English'})).toHaveValue('Action');
         await expect(screen.findByRole('option', {name: 'Games', selected: true})).resolves.toBeInTheDocument();
     });
 
     it('puts Delete next to the title and returns to the categories on Cancel', async () => {
-        stubFetchAround(AROUND, json({id: ACTION, title: 'Action', parentId: GAMES}));
+        stubFetchAround(AROUND, json({id: ACTION, titles: {ru: 'Экшен', en: 'Action'}, parentId: GAMES}));
         renderEditor();
 
-        await screen.findByRole('textbox', {name: 'Title'});
+        await screen.findByRole('textbox', {name: 'Title in Russian'});
 
         expect(screen.getByRole('heading', {level: 1, name: 'Edit category'})).toBeInTheDocument();
         expect(screen.getByRole('button', {name: 'Delete'})).toBeInTheDocument();
@@ -43,27 +44,40 @@ describe(CategoryEditor, () => {
     });
 
     it('saves the category', async () => {
-        const fetchMock = stubFetchAround(AROUND, json({id: ACTION, title: 'Action', parentId: GAMES}), noContent());
+        const fetchMock = stubFetchAround(AROUND, json({id: ACTION, titles: {ru: 'Экшен', en: 'Action'}, parentId: GAMES}), noContent());
         const onSaved = vi.fn<() => void>();
         renderEditor(onSaved);
 
-        await userEvent.type(await screen.findByRole('textbox', {name: 'Title'}), ' games');
+        await userEvent.clear(await screen.findByRole('textbox', {name: 'Title in English'}));
         await userEvent.click(screen.getByRole('button', {name: 'Save'}));
 
         await vi.waitFor(() => {
             expect(onSaved).toHaveBeenCalledExactlyOnceWith();
         });
 
-        expect(fetchMock.mock.calls.find(([, init]) => init?.method === 'PUT')?.[1]?.body).toBe(`{"title":"Action games","parentId":"${GAMES}"}`);
+        expect(fetchMock.mock.calls.find(([, init]) => init?.method === 'PUT')?.[1]?.body).toBe(`{"titles":{"ru":"Экшен"},"parentId":"${GAMES}"}`);
+    });
+
+    it('names a category without a title in the UI language by its Russian title', async () => {
+        stubFetchAround(AROUND, json({id: ACTION, titles: {ru: 'Экшен'}, parentId: GAMES}));
+        renderEditor();
+
+        await screen.findByRole('textbox', {name: 'Title in Russian'});
+        await userEvent.click(screen.getByRole('button', {name: 'Delete'}));
+
+        expect(screen.getByRole('alertdialog')).toHaveTextContent('Delete “Экшен” with all its subcategories?');
     });
 
     it('reports the category deleted', async () => {
-        stubFetchAround(AROUND, json({id: ACTION, title: 'Action', parentId: GAMES}), noContent());
+        stubFetchAround(AROUND, json({id: ACTION, titles: {ru: 'Экшен', en: 'Action'}, parentId: GAMES}), noContent());
         const onDeleted = vi.fn<() => void>();
         renderEditor(vi.fn<() => void>(), onDeleted);
 
-        await screen.findByRole('textbox', {name: 'Title'});
+        await screen.findByRole('textbox', {name: 'Title in Russian'});
         await userEvent.click(screen.getByRole('button', {name: 'Delete'}));
+
+        expect(screen.getByRole('alertdialog')).toHaveTextContent('Delete “Action” with all its subcategories?');
+
         await userEvent.click(screen.getByRole('button', {name: 'Delete for good'}));
 
         await vi.waitFor(() => {

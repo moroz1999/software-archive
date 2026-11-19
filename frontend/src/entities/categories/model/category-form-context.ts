@@ -1,10 +1,12 @@
 import {createRequiredContext} from '@/shared/lib/context';
+import type {UiLanguage} from '@/shared/lib/i18n';
 import type {CategoryId} from './category';
 import type {CategoryFormErrors, CategoryFormValues} from './category-form';
 
 /** The texts of a refusal under the fields it names. */
 export interface CategoryFormRefusals {
-    readonly title?: string;
+    /** Shown under the Russian title, the one every category has. */
+    readonly titles?: string;
     readonly parent?: string;
 }
 
@@ -14,7 +16,8 @@ export interface CategoryFormState {
     readonly errors: CategoryFormErrors;
     /** Why the last submit was refused, under the fields the refusal names; a field's text clears once it is edited. */
     readonly refusals: CategoryFormRefusals;
-    readonly change: (field: keyof CategoryFormValues) => (value: string) => void;
+    readonly changeTitle: (language: UiLanguage) => (value: string) => void;
+    readonly changeParent: (value: string) => void;
     /** The category being edited: it and its subcategories cannot be its parent. */
     readonly editing: CategoryId | undefined;
     /** Checks the format rules and hands the draft on only when they pass. */
