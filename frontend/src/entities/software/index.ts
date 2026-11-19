@@ -1,4 +1,4 @@
-export {createRelease, deleteRelease, fetchPlatformHardware, fetchReleaseFiles, fetchSoftwareRelease, updateRelease} from './api/release-api';
+export {createRelease, deleteRelease, fetchPlatformHardware, fetchReleaseFiles, fetchSoftwareRelease, reparseReleaseFiles, updateRelease} from './api/release-api';
 export {createSoftware, deleteSoftware, fetchSoftware, fetchSoftwareParticipants, fetchSoftwareReleases, updateSoftware} from './api/software-api';
 export {fetchLatestSoftware, parseSoftware} from './api/fetch-software-page';
 export {deleteScreenshot, reorderScreenshots, uploadScreenshots} from './api/screenshot-api';

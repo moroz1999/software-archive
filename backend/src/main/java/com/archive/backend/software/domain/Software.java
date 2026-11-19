@@ -224,6 +224,15 @@ public final class Software {
         }
     }
 
+    /** The file of a release is parsed again on request by whoever may change the release. */
+    public void requireReleaseFileReparsableBy(ReleaseId releaseId, Actor actor) {
+        Release release = existingRelease(releaseId);
+        requireReleaseChangeableBy(release, actor);
+        if (release.archive() == null) {
+            throw new ReleaseArchiveNotFoundException();
+        }
+    }
+
     public void removeRelease(ReleaseId releaseId, Actor actor) {
         Release release = release(releaseId).orElseThrow(ReleaseNotFoundException::new);
         requireReleaseChangeableBy(release, actor);

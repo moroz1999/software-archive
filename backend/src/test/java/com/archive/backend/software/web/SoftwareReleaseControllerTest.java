@@ -29,6 +29,8 @@ import com.archive.backend.software.app.GetReleaseFilesHandler;
 import com.archive.backend.software.app.GetReleaseFilesQuery;
 import com.archive.backend.software.app.GetSoftwareReleaseHandler;
 import com.archive.backend.software.app.GetSoftwareReleaseQuery;
+import com.archive.backend.software.app.ReparseReleaseFileOnRequestCommand;
+import com.archive.backend.software.app.ReparseReleaseFileOnRequestHandler;
 import com.archive.backend.software.app.UpdateReleaseCommand;
 import com.archive.backend.software.app.UpdateReleaseHandler;
 import com.archive.backend.software.domain.ReleaseArchiveNotFoundException;
@@ -49,6 +51,7 @@ import com.archive.backend.software.read.ReleaseFiles;
 import com.archive.backend.software.read.SoftwareHardware;
 import com.archive.backend.software.web.mapper.ReleaseWebMapperImpl;
 import com.archive.backend.user.domain.Actor;
+import com.archive.backend.user.domain.ChangeForbiddenException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -110,6 +113,9 @@ class SoftwareReleaseControllerTest {
 
     @MockitoBean
     private GetReleaseFilesHandler filesHandler;
+
+    @MockitoBean
+    private ReparseReleaseFileOnRequestHandler reparseHandler;
 
     @Test
     void returnsAReleaseInTheLanguageAskedFor() throws Exception {
@@ -187,7 +193,8 @@ class SoftwareReleaseControllerTest {
                                 "elite.zip",
                                 false,
                                 false,
-                                List.of(new ReleaseFileItem(program, "ELITE.ROM", false, true, List.of())))));
+                                false,
+                                List.of(new ReleaseFileItem(program, "ELITE.ROM", false, true, false, List.of())))));
 
         mvc.perform(get(RELEASE_FILES, ELITE, AY_MOD))
                 .andExpect(status().isOk())
@@ -195,6 +202,19 @@ class SoftwareReleaseControllerTest {
                 .andExpect(jsonPath("$.root.name").value("elite.zip"))
                 .andExpect(jsonPath("$.root.children[0].name").value("ELITE.ROM"))
                 .andExpect(jsonPath("$.root.children[0].executable").value(true));
+    }
+
+    @Test
+    void marksAReleaseFileThatCouldNotBeRead() throws Exception {
+        UUID root = UUID.fromString("00000000-0000-0000-0000-000000000013");
+        when(filesHandler.handle(new GetReleaseFilesQuery(new SoftwareId(ELITE), new ReleaseId(AY_MOD))))
+                .thenReturn(
+                        new ReleaseFiles(true, new ReleaseFileItem(root, "broken.zip", false, false, true, List.of())));
+
+        mvc.perform(get(RELEASE_FILES, ELITE, AY_MOD))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.root.unreadable").value(true))
+                .andExpect(jsonPath("$.root.children").isEmpty());
     }
 
     @Test
@@ -430,5 +450,34 @@ class SoftwareReleaseControllerTest {
     @Test
     void answers400ForAMalformedReleaseId() throws Exception {
         mvc.perform(get(RELEASE, ELITE, "not-a-uuid")).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void parsesTheFileOfAReleaseAgainOnRequest() throws Exception {
+        mvc.perform(post(RELEASE_FILES + "/reparse", ELITE, AY_MOD)).andExpect(status().isNoContent());
+
+        verify(reparseHandler)
+                .handle(new ReparseReleaseFileOnRequestCommand(
+                        Actor.anonymous(), new SoftwareId(ELITE), new ReleaseId(AY_MOD)));
+    }
+
+    @Test
+    void answers404WhenAReleaseToParseAgainHasNoFile() throws Exception {
+        doThrow(new ReleaseArchiveNotFoundException())
+                .when(reparseHandler)
+                .handle(any(ReparseReleaseFileOnRequestCommand.class));
+
+        mvc.perform(post(RELEASE_FILES + "/reparse", ELITE, AY_MOD))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("release.archive-not-found"));
+    }
+
+    @Test
+    void answers403WhenTheReleaseMayNotBeChangedByWhoeverAsksToParseItAgain() throws Exception {
+        doThrow(new ChangeForbiddenException())
+                .when(reparseHandler)
+                .handle(any(ReparseReleaseFileOnRequestCommand.class));
+
+        mvc.perform(post(RELEASE_FILES + "/reparse", ELITE, AY_MOD)).andExpect(status().isForbidden());
     }
 }

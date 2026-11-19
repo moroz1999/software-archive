@@ -1,4 +1,4 @@
-import {deleteResource, getJson, mapResponse, postForm, putForm, readArray, readBoolean, readNullableString, readNumber, readObject, readString} from '@/shared/api';
+import {deleteResource, getJson, mapResponse, postForm, postNoContent, putForm, readArray, readBoolean, readNullableString, readNumber, readObject, readString} from '@/shared/api';
 import {type ReleaseDetails, type ReleaseId, toReleaseId, toReleaseType} from '../model/release';
 import type {ReleaseArchive} from '../model/release-archive';
 import {type ReleaseFile, toReleaseFileId} from '../model/release-file';
@@ -72,6 +72,7 @@ function parseReleaseFile(raw: unknown): ReleaseFile {
         name: readString(dto, 'name'),
         directory: readBoolean(dto, 'directory'),
         executable: readBoolean(dto, 'executable'),
+        unreadable: readBoolean(dto, 'unreadable'),
         children: readArray(dto['children'], 'release file children').map(parseReleaseFile),
     };
 }
@@ -83,6 +84,11 @@ export async function fetchReleaseFiles(softwareId: SoftwareId, releaseId: Relea
         const root = readObject(json, 'release files')['root'];
         return root === null ? null : parseReleaseFile(root);
     });
+}
+
+/** Builds the tree of a release file again; only whoever may change the release may ask. */
+export async function reparseReleaseFiles(softwareId: SoftwareId, releaseId: ReleaseId): Promise<void> {
+    await postNoContent(`${releasePath(softwareId, releaseId)}/files/reparse`);
 }
 
 /** Adds a release to its software and returns its id. */

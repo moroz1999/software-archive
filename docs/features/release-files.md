@@ -11,10 +11,10 @@ The optional downloadable archive of a release ([domain/software.md](../domain/s
 ## Parsed structure
 
 - Adding, replacing or removing a release file, and moving its software to another platform, discard the parsed structure in the transaction of the change. After that change commits, the file is parsed from storage in a transaction of its own; a failure is logged and leaves the file waiting for its structure. Deleting the release removes the structure by cascade.
-- One row represents the root file and every contained file or directory. Every row carries the release id for a direct lookup, while the parent id and position preserve the tree. Files carry their MD5 digest and executable flag; directories carry neither a digest nor an executable flag.
+- One row represents the root file and every contained file or directory. Every row carries the release id for a direct lookup, while the parent id and position preserve the tree. Files carry their MD5 digest, executable flag and unreadable flag (only a root can have it); directories carry neither a digest nor an executable flag.
 - Executable extensions are fixed in code per platform, not edited by administrators. Extension matching is case-insensitive; Vector has `rom`.
-- ZIP is recognized by its signature, independently of its name, and nested ZIP files are opened recursively. An executable is a leaf even when its bytes have a container signature. A ZIP that cannot be read, entry names outside UTF-8 included, remains in the tree without children. Only a root that is a container is held in memory; any other root is hashed as it streams.
-- Parsing stops opening containers after ten levels or when their combined expanded content exceeds 500 MB. The file itself remains available.
+- ZIP is recognized by its signature, independently of its name, and nested ZIP files are opened recursively. An executable is a leaf even when its bytes have a container signature. A tree is never partial: a ZIP that cannot be read at any level, entry names outside UTF-8 included, leaves only the root row, flagged unreadable. Only a root that is a container is held in memory; any other root is hashed as it streams.
+- A container nested deeper than ten levels, or combined expanded content over 500 MB, flags the root unreadable the same way. The file itself remains available.
 - Future disk and tape readers use the same tree contract but disable executable recognition for every descendant of the medium.
 
 Existing files are deliberately reparsed only by the offline command:
@@ -38,4 +38,5 @@ Creation and editing are documented with the rest of the release form in [releas
 | Call | Answer | Errors |
 |---|---|---|
 | `GET /api/software/{id}/releases/{releaseId}/archive` | `application/octet-stream` attachment under the original file name | `404 release.archive-not-found`; `400` for malformed ids |
-| `GET /api/software/{id}/releases/{releaseId}/files` | `{root}`: `null` while the file waits for parsing, otherwise `{id, name, directory, executable, children}` with recursive children in stored order | `404 release.not-found` for an unknown software or release, `404 release.archive-not-found` for a release without a file; `400` for malformed ids |
+| `POST /api/software/{id}/releases/{releaseId}/files/reparse` | `204`; the file is parsed again within the request, by whoever may change the release | `401`/`403` by release rights, `404 release.archive-not-found` for a release without a file, `404 release.not-found` / `software.not-found`; storage failures are system errors |
+| `GET /api/software/{id}/releases/{releaseId}/files` | `{root}`: `null` while the file waits for parsing, otherwise `{id, name, directory, executable, unreadable, children}`; an unreadable root has no children with recursive children in stored order | `404 release.not-found` for an unknown software or release, `404 release.archive-not-found` for a release without a file; `400` for malformed ids |

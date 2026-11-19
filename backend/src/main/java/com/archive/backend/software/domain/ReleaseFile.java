@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 
-/** One node of the parsed tree of a release file. */
+/** One node of the parsed tree of a release file; a root that could not be parsed whole is unreadable. */
 @ValueObject
 public record ReleaseFile(
         ReleaseFileId id,
@@ -13,6 +13,7 @@ public record ReleaseFile(
         @Nullable ReleaseFileHash md5,
         boolean directory,
         boolean executable,
+        boolean unreadable,
         List<ReleaseFile> children) {
 
     public ReleaseFile {
@@ -24,6 +25,9 @@ public record ReleaseFile(
         }
         if (!directory && md5 == null) {
             throw new IllegalArgumentException("Every release file needs a hash.");
+        }
+        if (unreadable && (directory || !children.isEmpty())) {
+            throw new IllegalArgumentException("Only a file can be unreadable, and it has no known contents.");
         }
     }
 }

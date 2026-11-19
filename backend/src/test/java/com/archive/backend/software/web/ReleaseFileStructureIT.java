@@ -1,7 +1,9 @@
 package com.archive.backend.software.web;
 
 import static com.archive.backend.user.TestActors.ADMIN;
+import static com.archive.backend.user.TestActors.OTHER;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -13,6 +15,8 @@ import com.archive.backend.TypesenseTestConfiguration;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.software.app.CreateReleaseCommand;
 import com.archive.backend.software.app.CreateReleaseHandler;
+import com.archive.backend.software.app.ReparseReleaseFileOnRequestCommand;
+import com.archive.backend.software.app.ReparseReleaseFileOnRequestHandler;
 import com.archive.backend.software.app.ReparseReleaseFilesHandler;
 import com.archive.backend.software.app.UpdateReleaseCommand;
 import com.archive.backend.software.app.UpdateReleaseHandler;
@@ -29,6 +33,7 @@ import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareTitle;
 import com.archive.backend.software.read.ReleaseArchiveFileSource;
 import com.archive.backend.user.TestActors;
+import com.archive.backend.user.domain.ChangeForbiddenException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.Charset;
@@ -81,6 +86,9 @@ class ReleaseFileStructureIT {
     private ReparseReleaseFilesHandler reparse;
 
     @Autowired
+    private ReparseReleaseFileOnRequestHandler reparseOnRequest;
+
+    @Autowired
     private ReleaseArchiveFileSource archives;
 
     @MockitoSpyBean
@@ -123,6 +131,7 @@ class ReleaseFileStructureIT {
                 .andExpect(jsonPath("$.root.name").value("bundle.bin"))
                 .andExpect(jsonPath("$.root.directory").value(false))
                 .andExpect(jsonPath("$.root.executable").value(false))
+                .andExpect(jsonPath("$.root.unreadable").value(false))
                 .andExpect(jsonPath("$.root.children[0].name").value("docs"))
                 .andExpect(jsonPath("$.root.children[0].directory").value(true))
                 .andExpect(jsonPath("$.root.children[0].children[0].name").value("readme.txt"))
@@ -166,17 +175,14 @@ class ReleaseFileStructureIT {
     }
 
     @Test
-    void keepsAnUnreadableZipAsTheRootFile() throws Exception {
-        ReleaseId release = create("broken.bin", "PK-not-a-zip".getBytes(StandardCharsets.UTF_8));
+    void marksAnUnreadableZipAsUnreadableWithNoContents() throws Exception {
+        ReleaseId release = create("broken.bin", "PK\u0003\u0004-not-a-zip".getBytes(StandardCharsets.UTF_8));
 
-        files(release)
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.root.name").value("broken.bin"))
-                .andExpect(jsonPath("$.root.children").isEmpty());
+        unreadable(release, "broken.bin");
     }
 
     @Test
-    void keepsAZipWithNamesOutsideUtf8AsTheRootFile() throws Exception {
+    void marksAZipWithNamesOutsideUtf8AsUnreadableWithNoContents() throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (ZipOutputStream zip = new ZipOutputStream(bytes, Charset.forName("CP866"))) {
             zip.putNextEntry(new ZipEntry("ИГРА.ROM"));
@@ -185,34 +191,46 @@ class ReleaseFileStructureIT {
         }
         ReleaseId release = create("igra.zip", bytes.toByteArray());
 
-        files(release)
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.root.name").value("igra.zip"))
-                .andExpect(jsonPath("$.root.children").isEmpty());
+        unreadable(release, "igra.zip");
     }
 
     @Test
-    void stopsOpeningAContainerBeyondTheExpandedSizeLimit() throws Exception {
+    void marksTheWholeFileUnreadableWhenANestedZipCannotBeRead() throws Exception {
+        Map<String, byte[]> files = new LinkedHashMap<>();
+        files.put("ELITE.ROM", ROM);
+        files.put("broken.zip", "PK\u0003\u0004-not-a-zip".getBytes(StandardCharsets.UTF_8));
+        ReleaseId release = create("bundle.zip", zip(files));
+
+        unreadable(release, "bundle.zip");
+    }
+
+    @Test
+    void marksTheWholeFileUnreadableBeyondTheExpandedSizeLimit() throws Exception {
         ReleaseId release = create("large.zip", zip(Map.of("large.bin", new byte[1025])));
 
-        files(release)
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.root.name").value("large.zip"))
-                .andExpect(jsonPath("$.root.children").isEmpty());
+        unreadable(release, "large.zip");
     }
 
     @Test
-    void stopsOpeningNestedContainersAtTheDepthLimit() throws Exception {
+    void marksTheWholeFileUnreadableBeyondTheDepthLimit() throws Exception {
         byte[] third = zip(Map.of("program.rom", ROM));
         byte[] second = zip(Map.of("third.zip", third));
         byte[] first = zip(Map.of("second.zip", second));
         ReleaseId release = create("first.zip", first);
 
+        unreadable(release, "first.zip");
+    }
+
+    /** No partial tree: the file is shown without contents, marked as one that could not be read. */
+    private void unreadable(ReleaseId release, String name) throws Exception {
         files(release)
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.root.children[0].name").value("second.zip"))
-                .andExpect(jsonPath("$.root.children[0].children[0].name").value("third.zip"))
-                .andExpect(jsonPath("$.root.children[0].children[0].children").isEmpty());
+                .andExpect(jsonPath("$.root.name").value(name))
+                .andExpect(jsonPath("$.root.unreadable").value(true))
+                .andExpect(jsonPath("$.root.children").isEmpty());
+        assertThat(jdbc.queryForObject(
+                        "SELECT count(*) FROM release_file WHERE release_id = ?", Long.class, release.value()))
+                .isOne();
     }
 
     @Test
@@ -268,6 +286,30 @@ class ReleaseFileStructureIT {
                 .andExpect(jsonPath("$.root.children[0].name").value("ELITE.ROM"))
                 .andExpect(jsonPath("$.root.children[0].executable").value(true));
         files(lost).andExpect(status().isOk()).andExpect(jsonPath("$.root").value((Object) null));
+    }
+
+    @Test
+    void parsesTheFileOfAReleaseAgainOnRequestOfWhoeverMayChangeIt() throws Exception {
+        ReleaseId release = create("elite.zip", zip(Map.of("ELITE.ROM", ROM)));
+        jdbc.update("DELETE FROM release_file WHERE release_id = ?", release.value());
+
+        reparseOnRequest.handle(new ReparseReleaseFileOnRequestCommand(ADMIN, SOFTWARE, release));
+
+        files(release)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.root.children[0].name").value("ELITE.ROM"))
+                .andExpect(jsonPath("$.root.children[0].executable").value(true));
+    }
+
+    @Test
+    void doesNotParseTheFileAgainForWhoeverMayNotChangeTheRelease() throws Exception {
+        ReleaseId release = create("elite.zip", zip(Map.of("ELITE.ROM", ROM)));
+        jdbc.update("DELETE FROM release_file WHERE release_id = ?", release.value());
+
+        assertThatThrownBy(
+                        () -> reparseOnRequest.handle(new ReparseReleaseFileOnRequestCommand(OTHER, SOFTWARE, release)))
+                .isInstanceOf(ChangeForbiddenException.class);
+        files(release).andExpect(status().isOk()).andExpect(jsonPath("$.root").value((Object) null));
     }
 
     @Test

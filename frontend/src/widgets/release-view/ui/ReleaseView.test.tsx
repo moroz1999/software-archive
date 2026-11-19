@@ -74,12 +74,14 @@ describe(ReleaseView, () => {
                 name: 'bundle.zip',
                 directory: false,
                 executable: false,
+                unreadable: false,
                 children: [{
                     id: '00000000-0000-0000-00f2-000000000002',
                     name: 'games',
                     directory: true,
                     executable: false,
-                    children: [{id: '00000000-0000-0000-00f2-000000000003', name: 'ELITE.ROM', directory: false, executable: true, children: []}],
+                    unreadable: false,
+                    children: [{id: '00000000-0000-0000-00f2-000000000003', name: 'ELITE.ROM', directory: false, executable: true, unreadable: false, children: []}],
                 }],
             }})],
             [`/api/software/${ID}/releases/${RELEASE}/screenshots`, json([])],
@@ -98,6 +100,30 @@ describe(ReleaseView, () => {
         expect(within(tree).getByText('Executable')).toBeInTheDocument();
     });
 
+    it('tells that a release file could not be read instead of showing a tree', async () => {
+        stubFetchRoutes(new Map([
+            [`/api/software/${ID}`, json(ELITE)],
+            [`/api/software/${ID}/releases`, json([{
+                ...AY_MOD,
+                archive: {fileName: 'broken.zip', size: 42, url: `/api/software/${ID}/releases/${RELEASE}/archive`},
+            }])],
+            [`/api/software/${ID}/releases/${RELEASE}/files`, json({root: {
+                id: '00000000-0000-0000-00f2-000000000001',
+                name: 'broken.zip',
+                directory: false,
+                executable: false,
+                unreadable: true,
+                children: [],
+            }})],
+            [`/api/software/${ID}/releases/${RELEASE}/screenshots`, json([])],
+        ]));
+        renderWithQueries(<MemoryRouter><ReleaseView softwareId={toSoftwareId(ID)} releaseId={toReleaseId(RELEASE)}/></MemoryRouter>);
+
+        await expect(screen.findByText('The file could not be read')).resolves.toBeInTheDocument();
+        expect(screen.getByText('File structure')).toBeInTheDocument();
+        expect(screen.queryByRole('list', {name: 'File structure'})).not.toBeInTheDocument();
+    });
+
     it('tells that a release file waits for its structure to be parsed', async () => {
         stubFetchRoutes(new Map([
             [`/api/software/${ID}`, json(ELITE)],
@@ -112,7 +138,35 @@ describe(ReleaseView, () => {
 
         await expect(screen.findByText('Waiting for the structure to be parsed')).resolves.toBeInTheDocument();
         expect(screen.getByText('File structure')).toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Parse again'})).not.toBeInTheDocument();
         expect(screen.queryByRole('list', {name: 'File structure'})).not.toBeInTheDocument();
+    });
+
+    it('parses the release file again for whoever may change the release and shows the new tree', async () => {
+        let parsed = false;
+        stubFetchRoutes(new Map([
+            [`/api/software/${ID}`, json(ELITE)],
+            [`/api/software/${ID}/releases`, json([{
+                ...AY_MOD,
+                canChange: true,
+                archive: {fileName: 'bundle.zip', size: 42, url: `/api/software/${ID}/releases/${RELEASE}/archive`},
+            }])],
+            [`/api/software/${ID}/releases/${RELEASE}/files`, () => json({root: parsed
+                ? {id: '00000000-0000-0000-00f2-000000000001', name: 'bundle.zip', directory: false, executable: false, unreadable: false, children: []}
+                : null})()],
+            [`/api/software/${ID}/releases/${RELEASE}/files/reparse`, () => {
+                parsed = true;
+                return new Response(null, {status: 204});
+            }],
+            [`/api/software/${ID}/releases/${RELEASE}/screenshots`, json([])],
+        ]));
+        renderWithQueries(<MemoryRouter><ReleaseView softwareId={toSoftwareId(ID)} releaseId={toReleaseId(RELEASE)}/></MemoryRouter>);
+
+        await userEvent.click(await screen.findByRole('button', {name: 'Parse again'}));
+
+        const tree = await screen.findByRole('list', {name: 'File structure'});
+
+        expect(within(tree).getByText('bundle.zip')).toBeInTheDocument();
     });
 
     it('hands a release file loading error to the error dialog', async () => {

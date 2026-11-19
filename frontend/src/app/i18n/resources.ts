@@ -169,7 +169,7 @@ export const resources = {
             hardwareHint: 'A group checked here replaces that group of the software.',
             archive: 'Archive', addArchive: 'Add archive', replaceArchive: 'Replace archive', removeArchive: 'Remove archive',
             downloadArchive: 'Download archive', download: 'Download', downloadNamed: 'Download {{title}}', archiveHint: 'Any file type, up to 100 MB.',
-            fileStructure: 'File structure', structurePending: 'Waiting for the structure to be parsed', executable: 'Executable', expandFile: 'Expand {{name}}', collapseFile: 'Collapse {{name}}',
+            fileStructure: 'File structure', structurePending: 'Waiting for the structure to be parsed', fileUnreadable: 'The file could not be read', reparseFiles: 'Parse again', executable: 'Executable', expandFile: 'Expand {{name}}', collapseFile: 'Collapse {{name}}',
             archiveErrors: {
                 size: 'A release archive can be at most 100 MB.', name: 'Choose a named file for the release archive.',
                 change: 'Choose either replacement or removal of the release archive.',
@@ -376,7 +376,7 @@ export const resources = {
             hardwareHint: 'Выбранная здесь группа заменяет соответствующую группу оборудования программы.',
             archive: 'Архив', addArchive: 'Добавить архив', replaceArchive: 'Заменить архив', removeArchive: 'Удалить архив',
             downloadArchive: 'Скачать архив', download: 'Скачать', downloadNamed: 'Скачать {{title}}', archiveHint: 'Файл любого типа, до 100 МБ.',
-            fileStructure: 'Структура файлов', structurePending: 'Ожидает парсинга структуры', executable: 'Исполняемый файл', expandFile: 'Раскрыть {{name}}', collapseFile: 'Свернуть {{name}}',
+            fileStructure: 'Структура файлов', structurePending: 'Ожидает парсинга структуры', fileUnreadable: 'Не удалось разобрать файл', reparseFiles: 'Разобрать заново', executable: 'Исполняемый файл', expandFile: 'Раскрыть {{name}}', collapseFile: 'Свернуть {{name}}',
             archiveErrors: {
                 size: 'Архив релиза может весить не больше 100 МБ.', name: 'Выберите для релиза файл с именем.',
                 change: 'Выберите либо замену, либо удаление архива релиза.',

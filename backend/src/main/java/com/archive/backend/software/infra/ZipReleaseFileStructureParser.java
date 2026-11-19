@@ -37,6 +37,10 @@ public class ZipReleaseFileStructureParser implements ReleaseFileStructureParser
 
     private static final int SIGNATURE_SIZE = 4;
 
+    private static final int END_OF_CENTRAL_DIRECTORY_SIZE = 22;
+
+    private static final int MAX_ZIP_COMMENT_SIZE = 0xFFFF;
+
     private final ReleaseFileParserProperties properties;
 
     public ZipReleaseFileStructureParser(ReleaseFileParserProperties properties) {
@@ -44,7 +48,9 @@ public class ZipReleaseFileStructureParser implements ReleaseFileStructureParser
     }
 
     /**
-     * Only a root that is a container is held in memory; any other file is hashed as it streams by.
+     * Only a root that is a container is held in memory; any other file is hashed as it streams by. A tree is never
+     * partial: a container inside that cannot be read, or the depth or size limit reached, leaves the root unreadable
+     * with no known contents.
      */
     @Override
     public ReleaseFile parse(PlatformCode platform, ReleaseArchiveUpload upload) {
@@ -55,13 +61,13 @@ public class ZipReleaseFileStructureParser implements ReleaseFileStructureParser
             byte[] signature = input.readNBytes(SIGNATURE_SIZE);
             input.reset();
             if (executable || !isZip(signature)) {
-                return new ReleaseFile(newId(), name, md5(input), false, executable, List.of());
+                return new ReleaseFile(newId(), name, md5(input), false, executable, false, List.of());
             }
             byte[] content = input.readAllBytes();
             try {
                 return parseFile(platform, name, content, true, 0, new ExpandedBytes(properties.maxExpandedBytes()));
-            } catch (ExpandedSizeExceededException e) {
-                return file(name, content, false, List.of());
+            } catch (UnreadableContainerException e) {
+                return file(name, content, false, true, List.of());
             }
         } catch (IOException e) {
             throw new UncheckedIOException("Could not read release file " + upload.fileName(), e);
@@ -76,19 +82,25 @@ public class ZipReleaseFileStructureParser implements ReleaseFileStructureParser
             int containerDepth,
             ExpandedBytes expanded) {
         boolean executable = executablesAllowed && ExecutableFiles.isExecutable(platform, name);
-        if (executable || !isZip(content) || containerDepth >= properties.maxContainerDepth()) {
-            return file(name, content, executable, List.of());
+        if (executable || !isZip(content)) {
+            return file(name, content, executable, false, List.of());
+        }
+        if (containerDepth >= properties.maxContainerDepth()) {
+            throw new UnreadableContainerException();
+        }
+        if (!hasEndOfCentralDirectory(content)) {
+            throw new UnreadableContainerException();
         }
         List<ReleaseFile> children;
         try {
             children = zipChildren(platform, content, executablesAllowed, containerDepth, expanded);
-        } catch (ExpandedSizeExceededException e) {
+        } catch (UnreadableContainerException e) {
             throw e;
         } catch (IOException | RuntimeException e) {
-            // A container that cannot be read, its entry names included, stays a file with no known contents.
-            children = List.of();
+            // Entry names outside UTF-8 included.
+            throw new UnreadableContainerException();
         }
-        return file(name, content, false, children);
+        return file(name, content, false, false, children);
     }
 
     private List<ReleaseFile> zipChildren(
@@ -134,7 +146,7 @@ public class ZipReleaseFileStructureParser implements ReleaseFileStructureParser
         for (ParsedNode child : node.children.values()) {
             children.add(toFile(platform, child, executablesAllowed, containerDepth, expanded));
         }
-        return new ReleaseFile(newId(), name, null, true, false, children);
+        return new ReleaseFile(newId(), name, null, true, false, false, children);
     }
 
     private static void add(Map<String, ParsedNode> roots, List<String> parts, boolean directory, byte[] content) {
@@ -184,11 +196,29 @@ public class ZipReleaseFileStructureParser implements ReleaseFileStructureParser
                         || (content[2] == 7 && content[3] == 8));
     }
 
+    /**
+     * A streamed ZIP that is cut short or broken after its signature reads as if it had no more entries; a whole one
+     * ends with its end of central directory record, within the last 22 bytes and the longest comment.
+     */
+    private static boolean hasEndOfCentralDirectory(byte[] content) {
+        int last = content.length - END_OF_CENTRAL_DIRECTORY_SIZE;
+        int first = Math.max(0, last - MAX_ZIP_COMMENT_SIZE);
+        for (int index = last; index >= first; index--) {
+            if (content[index] == 'P'
+                    && content[index + 1] == 'K'
+                    && content[index + 2] == 5
+                    && content[index + 3] == 6) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static ReleaseFile file(
-            ReleaseFileName name, byte[] content, boolean executable, List<ReleaseFile> children) {
+            ReleaseFileName name, byte[] content, boolean executable, boolean unreadable, List<ReleaseFile> children) {
         MessageDigest digest = md5();
         digest.update(content);
-        return new ReleaseFile(newId(), name, hash(digest), false, executable, children);
+        return new ReleaseFile(newId(), name, hash(digest), false, executable, unreadable, children);
     }
 
     private static ReleaseFileHash md5(InputStream input) throws IOException {
@@ -243,12 +273,13 @@ public class ZipReleaseFileStructureParser implements ReleaseFileStructureParser
         private void add(int bytes) {
             used += bytes;
             if (used > maximum) {
-                throw new ExpandedSizeExceededException();
+                throw new UnreadableContainerException();
             }
         }
     }
 
-    private static final class ExpandedSizeExceededException extends RuntimeException {
+    /** A container that cannot be read whole: broken, too deep, or expanding beyond the limit. */
+    private static final class UnreadableContainerException extends RuntimeException {
 
         private static final long serialVersionUID = 1L;
     }

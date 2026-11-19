@@ -8,6 +8,8 @@ export interface ReleaseFile {
     readonly name: string;
     readonly directory: boolean;
     readonly executable: boolean;
+    /** The file could not be parsed whole, so its contents are not known. */
+    readonly unreadable: boolean;
     readonly children: readonly ReleaseFile[];
 }
 

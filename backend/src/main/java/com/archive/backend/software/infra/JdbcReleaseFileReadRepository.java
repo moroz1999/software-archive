@@ -26,7 +26,7 @@ public class JdbcReleaseFileReadRepository implements ReleaseFileReadRepository 
     public Optional<ReleaseFiles> find(UUID softwareId, UUID releaseId) {
         List<Row> rows = jdbc.sql("""
                         SELECT r.archive_id IS NOT NULL AS archive,
-                               f.id, f.parent_id, f.file_name, f.directory, f.executable
+                               f.id, f.parent_id, f.file_name, f.directory, f.executable, f.unreadable
                         FROM software_release r
                         LEFT JOIN release_file f ON f.release_id = r.id
                         WHERE r.id = :release AND r.software_id = :software
@@ -40,7 +40,8 @@ public class JdbcReleaseFileReadRepository implements ReleaseFileReadRepository 
                         rs.getObject("parent_id", UUID.class),
                         rs.getString("file_name"),
                         rs.getBoolean("directory"),
-                        rs.getBoolean("executable")))
+                        rs.getBoolean("executable"),
+                        rs.getBoolean("unreadable")))
                 .list();
         if (rows.isEmpty()) {
             return Optional.empty();
@@ -68,6 +69,7 @@ public class JdbcReleaseFileReadRepository implements ReleaseFileReadRepository 
                 Objects.requireNonNull(row.name),
                 row.directory,
                 row.executable,
+                row.unreadable,
                 children.getOrDefault(id, List.of()).stream()
                         .map(child -> toItem(child, children))
                         .toList());
@@ -79,5 +81,6 @@ public class JdbcReleaseFileReadRepository implements ReleaseFileReadRepository 
             @Nullable UUID parent,
             @Nullable String name,
             boolean directory,
-            boolean executable) {}
+            boolean executable,
+            boolean unreadable) {}
 }

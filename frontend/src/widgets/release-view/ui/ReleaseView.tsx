@@ -18,6 +18,7 @@ import {
     useReleaseFiles,
     useSoftwareReleases,
 } from '@/entities/software';
+import {ReparseReleaseFilesButton} from '@/features/release/reparse-files';
 import {NotFoundError} from '@/shared/api';
 import {useSkeleton} from '@/shared/lib/loading';
 import {useInViewport} from '@/shared/lib/screen';
@@ -94,7 +95,7 @@ function LoadedView({softwareId, releaseId}: ReleaseViewProps) {
                                     <Button href={release.archive.url} target="_self" color="primary">{t('release.downloadArchive')}</Button>
                                 </Stack>
                             </Section>
-                            <ReleaseFileStructure/>
+                            <ReleaseFileStructure softwareId={softwareId} releaseId={releaseId} canChange={release.canChange}/>
                         </>
                     )}
                     {release.hardware.length > 0 && (
@@ -117,7 +118,7 @@ function LoadedView({softwareId, releaseId}: ReleaseViewProps) {
     );
 }
 
-function ReleaseFileStructure() {
+function ReleaseFileStructure({softwareId, releaseId, canChange}: ReleaseViewProps & {readonly canChange: boolean}) {
     const {t} = useTranslation();
     const files = useReleaseFiles();
     const skeleton = useSkeleton(files);
@@ -127,24 +128,31 @@ function ReleaseFileStructure() {
     if (files.isLoadingError) {
         return null;
     }
-    if (files.data === null) {
-        return (
-            <Section label={t('release.fileStructure')}>
-                <Text tone="muted">{t('release.structurePending')}</Text>
-            </Section>
-        );
-    }
-    const item = toTreeItem(files.data, t('release.executable'));
     return (
         <Section label={t('release.fileStructure')}>
-            <Tree
-                items={[item]}
-                ariaLabel={t('release.fileStructure')}
-                expandLabel={(name) => t('release.expandFile', {name})}
-                collapseLabel={(name) => t('release.collapseFile', {name})}
-                initiallyExpanded={[item.id]}
-            />
+            <ReleaseFileTree root={files.data}/>
+            {canChange && <ReparseReleaseFilesButton softwareId={softwareId} releaseId={releaseId}/>}
         </Section>
+    );
+}
+
+function ReleaseFileTree({root}: {readonly root: ReleaseFile | null}) {
+    const {t} = useTranslation();
+    if (root === null) {
+        return <Text tone="muted">{t('release.structurePending')}</Text>;
+    }
+    if (root.unreadable) {
+        return <Text tone="muted">{t('release.fileUnreadable')}</Text>;
+    }
+    const item = toTreeItem(root, t('release.executable'));
+    return (
+        <Tree
+            items={[item]}
+            ariaLabel={t('release.fileStructure')}
+            expandLabel={(name) => t('release.expandFile', {name})}
+            collapseLabel={(name) => t('release.collapseFile', {name})}
+            initiallyExpanded={[item.id]}
+        />
     );
 }
 

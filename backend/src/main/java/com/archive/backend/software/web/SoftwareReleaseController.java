@@ -8,6 +8,8 @@ import com.archive.backend.software.app.GetReleaseArchiveFileQuery;
 import com.archive.backend.software.app.GetReleaseFilesHandler;
 import com.archive.backend.software.app.GetReleaseFilesQuery;
 import com.archive.backend.software.app.GetSoftwareReleaseHandler;
+import com.archive.backend.software.app.ReparseReleaseFileOnRequestCommand;
+import com.archive.backend.software.app.ReparseReleaseFileOnRequestHandler;
 import com.archive.backend.software.app.UpdateReleaseHandler;
 import com.archive.backend.software.domain.ReleaseId;
 import com.archive.backend.software.domain.SoftwareId;
@@ -57,6 +59,7 @@ public class SoftwareReleaseController {
     private final DeleteReleaseHandler deleteHandler;
     private final GetReleaseArchiveFileHandler archiveFileHandler;
     private final GetReleaseFilesHandler filesHandler;
+    private final ReparseReleaseFileOnRequestHandler reparseHandler;
     private final ReleaseWebMapper webMapper;
 
     /**
@@ -72,6 +75,14 @@ public class SoftwareReleaseController {
     public ReleaseFilesDto files(@PathVariable UUID softwareId, @PathVariable UUID releaseId) {
         return webMapper.toFilesDto(
                 filesHandler.handle(new GetReleaseFilesQuery(new SoftwareId(softwareId), new ReleaseId(releaseId))));
+    }
+
+    /** Builds the tree of the release file again, by whoever may change the release. */
+    @PostMapping("/{releaseId}/files/reparse")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void reparseFiles(Actor actor, @PathVariable UUID softwareId, @PathVariable UUID releaseId) {
+        reparseHandler.handle(
+                new ReparseReleaseFileOnRequestCommand(actor, new SoftwareId(softwareId), new ReleaseId(releaseId)));
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)

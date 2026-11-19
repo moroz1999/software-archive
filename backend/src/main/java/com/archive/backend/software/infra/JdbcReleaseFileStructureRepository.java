@@ -32,8 +32,8 @@ public class JdbcReleaseFileStructureRepository implements ReleaseFileStructureR
         jdbc.update(
                 """
                 INSERT INTO release_file
-                    (id, release_id, parent_id, file_name, position, md5, directory, executable)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    (id, release_id, parent_id, file_name, position, md5, directory, executable, unreadable)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 file.id().value(),
                 release.value(),
@@ -42,7 +42,8 @@ public class JdbcReleaseFileStructureRepository implements ReleaseFileStructureR
                 position,
                 hash == null ? null : hash.value(),
                 file.directory(),
-                file.executable());
+                file.executable(),
+                file.unreadable());
         for (int childPosition = 0; childPosition < file.children().size(); childPosition++) {
             insert(release, file.id(), childPosition, file.children().get(childPosition));
         }

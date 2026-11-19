@@ -2,11 +2,18 @@ package com.archive.backend.software.domain;
 
 import static com.archive.backend.user.TestActors.ADMIN;
 import static com.archive.backend.user.TestActors.BY_OTHER;
+import static com.archive.backend.user.TestActors.MEMBER;
+import static com.archive.backend.user.TestActors.OTHER;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.archive.backend.category.domain.CategorySet;
 import com.archive.backend.hardware.domain.HardwareSet;
 import com.archive.backend.hardware.domain.PlatformCode;
+import com.archive.backend.user.domain.Actor;
+import com.archive.backend.user.domain.ChangeForbiddenException;
+import com.archive.backend.user.domain.SignInRequiredException;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -93,5 +100,30 @@ class SoftwareReleaseArchivesTest {
                         new SoftwareChanged(SOFTWARE),
                         new SoftwareDeleted(SOFTWARE),
                         new ReleaseArchivesDiscarded(List.of(ORIGINAL.id())));
+    }
+
+    @Test
+    void parsesTheFileOfAReleaseAgainForWhoeverMayChangeTheRelease() {
+        Software software = software();
+
+        assertThatCode(() -> software.requireReleaseFileReparsableBy(RELEASE, OTHER))
+                .doesNotThrowAnyException();
+        assertThatCode(() -> software.requireReleaseFileReparsableBy(RELEASE, ADMIN))
+                .doesNotThrowAnyException();
+        assertThatThrownBy(() -> software.requireReleaseFileReparsableBy(RELEASE, MEMBER))
+                .isInstanceOf(ChangeForbiddenException.class);
+        assertThatThrownBy(() -> software.requireReleaseFileReparsableBy(RELEASE, Actor.anonymous()))
+                .isInstanceOf(SignInRequiredException.class);
+    }
+
+    @Test
+    void parsesAgainOnlyAReleaseThatHasAFile() {
+        Software software = software();
+        software.editRelease(RELEASE, CONTENT, NO_HARDWARE, ADMIN, null, true);
+
+        assertThatThrownBy(() -> software.requireReleaseFileReparsableBy(RELEASE, ADMIN))
+                .isInstanceOf(ReleaseArchiveNotFoundException.class);
+        assertThatThrownBy(() -> software.requireReleaseFileReparsableBy(new ReleaseId(id(99)), ADMIN))
+                .isInstanceOf(ReleaseNotFoundException.class);
     }
 }
