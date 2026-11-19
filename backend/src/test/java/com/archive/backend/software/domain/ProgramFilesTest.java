@@ -25,6 +25,14 @@ class ProgramFilesTest {
     }
 
     @Test
+    void areEveryExecutableFileOfVector() {
+        ReleaseFile root = zip(
+                "bundle.zip", file("XZONE.COM", "a"), file("game.r0m", "b"), file("demo.vec", "c"), file("a.txt", "d"));
+
+        assertThat(ProgramFiles.of(VECTOR, root)).containsExactlyInAnyOrder(hash("a"), hash("b"), hash("c"));
+    }
+
+    @Test
     void doesNotLookIntoAProgramFile() {
         ReleaseFile root = zip("bundle.zip", zip("disk.fdd", file("INNER.ROM", "a")));
 

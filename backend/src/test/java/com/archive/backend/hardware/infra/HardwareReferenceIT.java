@@ -20,19 +20,49 @@ class HardwareReferenceIT {
     private JdbcTemplate jdbc;
 
     @Test
-    void holdsOnlyTheConfirmedHardwareOfTheVectorFamily() {
+    void holdsOnlyTheHardwareOfTheVectorFamily() {
         assertThat(jdbc.queryForList(
                         "SELECT hardware_code || ':' || platform_code FROM hardware_platform ORDER BY 1", String.class))
-                .containsExactly("ay8910:vector", "floppy:vector", "krista2:vector", "tape:vector", "vector06c:vector");
+                .containsExactly(
+                        "ay8910:vector",
+                        "barkar:vector",
+                        "beeper:vector",
+                        "floppy:vector",
+                        "hdd:vector",
+                        "joystick-p:vector",
+                        "joystick-s:vector",
+                        "krista2:vector",
+                        "kvaz:vector",
+                        "pk6128c:vector",
+                        "start1200:vector",
+                        "tape:vector",
+                        "vector06c:vector",
+                        "vi53:vector",
+                        "z80:vector");
         assertThat(jdbc.queryForList("SELECT code FROM hardware ORDER BY 1", String.class))
-                .containsExactly("ay8910", "floppy", "krista2", "tape", "vector06c");
+                .containsExactly(
+                        "ay8910",
+                        "barkar",
+                        "beeper",
+                        "floppy",
+                        "hdd",
+                        "joystick-p",
+                        "joystick-s",
+                        "krista2",
+                        "kvaz",
+                        "pk6128c",
+                        "start1200",
+                        "tape",
+                        "vector06c",
+                        "vi53",
+                        "z80");
     }
 
     @Test
     void holdsTheModelsAndClonesOfTheVectorFamilyAsItsComputers() {
         assertThat(jdbc.queryForList(
                         "SELECT code FROM hardware WHERE hardware_group = 'computers' ORDER BY 1", String.class))
-                .containsExactly("krista2", "vector06c");
+                .containsExactly("krista2", "pk6128c", "start1200", "vector06c");
     }
 
     @Test

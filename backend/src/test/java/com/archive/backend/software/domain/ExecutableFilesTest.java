@@ -18,6 +18,16 @@ class ExecutableFilesTest {
     }
 
     @Test
+    void aVectorComR0mAndVecAreExecutable() {
+        assertThat(ExecutableFiles.isExecutable(VECTOR, new ReleaseFileName("XZONE.COM")))
+                .isTrue();
+        assertThat(ExecutableFiles.isExecutable(VECTOR, new ReleaseFileName("game.r0m")))
+                .isTrue();
+        assertThat(ExecutableFiles.isExecutable(VECTOR, new ReleaseFileName("demo.Vec")))
+                .isTrue();
+    }
+
+    @Test
     void aRomIsNotExecutableOnAPlatformWithoutThatExtension() {
         assertThat(ExecutableFiles.isExecutable(new PlatformCode("bk"), new ReleaseFileName("ELITE.ROM")))
                 .isFalse();

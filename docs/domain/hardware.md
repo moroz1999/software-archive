@@ -26,7 +26,12 @@ Radio-86RK, Mikrosha, Apogey and Partner are one platform, RK-compatible, for fi
 - Specialist and Orion stay platforms of their own. Software belongs to exactly one platform, so a program confirmed to run on them as well is not shown there yet; that is an open question.
 
 ## The Vector family
-The Vector platform is the family of computers compatible with the Vector-06C. Its computers (models and clones) are the Vector-06C (Вектор-06Ц) and the Krista-2 (Криста-2); they are partially compatible. Besides them the family has tape, the floppy disk and the AY sound chip.
+The Vector platform is the family of computers compatible with the Vector-06C.
+- Computers (models and clones): the Vector-06C (Вектор-06Ц), the Krista-2 (Криста-2), the PK-6128C (ПК-6128Ц) and its forerunner the Vector Start-1200 (Вектор Старт-1200); they are partially compatible.
+- Storage: tape, the floppy disk, the hard disk, the quasi-disk (a RAM disk) and Barkar's quasi-disk.
+- Sound: the AY chip, the beeper and the sound of the VI53 timer.
+- Controls: the joysticks P and S.
+- Expansion: the Z80 processor in place of the 8080.
 
 ## Hardware
 A flat list kept in the archive as a reference book (editing it comes later). Every item has:

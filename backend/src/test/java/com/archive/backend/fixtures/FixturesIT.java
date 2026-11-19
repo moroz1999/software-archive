@@ -272,7 +272,22 @@ class FixturesIT {
         mvc.perform(get("/api/hardware").param("platform", "vector"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].code")
-                        .value(containsInAnyOrder("vector06c", "krista2", "tape", "floppy", "ay8910")));
+                        .value(containsInAnyOrder(
+                                "ay8910",
+                                "barkar",
+                                "beeper",
+                                "floppy",
+                                "hdd",
+                                "joystick-p",
+                                "joystick-s",
+                                "krista2",
+                                "kvaz",
+                                "pk6128c",
+                                "start1200",
+                                "tape",
+                                "vector06c",
+                                "vi53",
+                                "z80")));
     }
 
     @Test
