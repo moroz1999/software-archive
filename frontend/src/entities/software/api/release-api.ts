@@ -1,6 +1,7 @@
-import {deleteResource, getJson, mapResponse, postForm, putForm, readNullableString, readNumber, readObject, readString} from '@/shared/api';
+import {deleteResource, getJson, mapResponse, postForm, putForm, readArray, readBoolean, readNullableString, readNumber, readObject, readString} from '@/shared/api';
 import {type ReleaseDetails, type ReleaseId, toReleaseId, toReleaseType} from '../model/release';
 import type {ReleaseArchive} from '../model/release-archive';
+import {type ReleaseFile, toReleaseFileId} from '../model/release-file';
 import type {ReleaseDraft} from '../model/release-form';
 import {type Hardware, type SoftwareId, type SoftwarePlatformCode, toReleaseDate} from '../model/software';
 import {parseHardwareList} from './software-api';
@@ -61,6 +62,26 @@ export async function fetchSoftwareRelease(softwareId: SoftwareId, releaseId: Re
             hardware: parseHardwareList(dto['hardware']),
             archive: parseReleaseArchive(dto['archive']),
         };
+    });
+}
+
+function parseReleaseFile(raw: unknown): ReleaseFile {
+    const dto = readObject(raw, 'release file');
+    return {
+        id: toReleaseFileId(readString(dto, 'id')),
+        name: readString(dto, 'name'),
+        directory: readBoolean(dto, 'directory'),
+        executable: readBoolean(dto, 'executable'),
+        children: readArray(dto['children'], 'release file children').map(parseReleaseFile),
+    };
+}
+
+/** The parsed tree rooted at a release's downloadable file; null while the file waits for parsing. */
+export async function fetchReleaseFiles(softwareId: SoftwareId, releaseId: ReleaseId, signal: AbortSignal): Promise<ReleaseFile | null> {
+    const json = await getJson(`${releasePath(softwareId, releaseId)}/files`, signal);
+    return mapResponse(() => {
+        const root = readObject(json, 'release files')['root'];
+        return root === null ? null : parseReleaseFile(root);
     });
 }
 

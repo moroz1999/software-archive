@@ -22,6 +22,7 @@ Each domain is a package under `com.archive.backend`. A request passes four role
 - Owns the transaction boundary.
 - Holds no business rules itself — they live in the domain.
 - Publishes the domain events of the aggregates it saved (`pullEvents()`) through Spring's `ApplicationEventPublisher`. Another module answers with a use case of its own: a handler with an `@EventListener` method, run synchronously in the transaction of the change, so the change and the answer commit or roll back together. Thus a module answers a change of another without that one knowing it: a moved category (`CategoryMoved`) recategorizes software.
+- Work that must never undo the change it follows answers with `@TransactionalEventListener(phase = AFTER_COMMIT)` and runs in a transaction of its own (`REQUIRES_NEW`); it catches and logs its failures, because the change has already committed. Parsing a stored release file is such work.
 
 ### Domain services and model (`domain`)
 - Business rules belong to the domain model first. A domain service holds a rule only when it does not belong to a single entity.

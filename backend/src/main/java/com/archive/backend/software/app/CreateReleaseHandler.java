@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,7 @@ public class CreateReleaseHandler {
     private final SoftwareRepository repository;
     private final HardwareSets hardwareSets;
     private final ReleaseArchiveRepository archiveFiles;
+    private final ApplicationEventPublisher events;
 
     @Transactional
     public ReleaseId handle(CreateReleaseCommand c) {
@@ -40,6 +42,7 @@ public class CreateReleaseHandler {
             archiveFiles.store(Objects.requireNonNull(archive).id(), upload);
         }
         repository.save(software);
+        software.pullEvents().forEach(events::publishEvent);
         return id;
     }
 }

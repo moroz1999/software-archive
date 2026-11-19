@@ -9,16 +9,17 @@ The page of one release ([domain/software.md](../domain/software.md#releases)) a
 - Release date (a year, or a day as dd.mm.yyyy), version and description are left out when unknown. Description lines stay separate.
 - Type is always shown. Hardware is the effective hardware returned for the release, grouped in the archive's fixed hardware-group order.
 - When the release has an archive, its original file name and size are shown with a download action.
+- The parsed file structure follows the download as a collapsible tree. The root starts open, nested levels are indented, and executable files are marked. A file not parsed yet shows "Waiting for the structure to be parsed" in place of the tree.
 - The release's screenshots appear in their gallery below the facts and are left out when there are none ([screenshots.md](screenshots.md#pages)).
 - Last: who added the release and on which day ("Added by Zork on 4 March 2026"), only the day once their account is gone ([domain/users.md](../domain/users.md#who-added-an-entry)).
 
 ## Loading and errors
 
-- The page preloads the software and its releases together ([data-loading.md](../data-loading.md)); within 300 ms it appears filled, otherwise with a skeleton matching the title and facts.
+- The page preloads the software and its releases together and, when the release has a file, its parsed structure ([data-loading.md](../data-loading.md)); within 300 ms it appears filled, otherwise with a skeleton matching the title and facts.
 - Screenshots are a lazy block with thumbnail skeletons until they come into view.
 - Unknown software or release, and an id in the URL that cannot be one, show the not found page. A malformed id is never sent to the backend.
 - Business and system read errors go to the error dialog with Retry ([error-handling.md](../error-handling.md)).
 
 ## REST
 
-The page uses the software details and release list calls documented by [software-view.md](software-view.md#rest), so it reads the same effective hardware, display title, archive metadata and change permission as the software page. Its screenshot block uses the release screenshot call documented by [screenshots.md](screenshots.md#rest). Archive downloads are documented by [release-files.md](release-files.md#rest).
+The page uses the software details and release list calls documented by [software-view.md](software-view.md#rest), so it reads the same effective hardware, display title, archive metadata and change permission as the software page. Its screenshot block uses the release screenshot call documented by [screenshots.md](screenshots.md#rest). Archive downloads and the parsed structure call are documented by [release-files.md](release-files.md#rest).

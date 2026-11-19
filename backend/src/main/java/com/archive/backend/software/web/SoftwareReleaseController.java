@@ -5,6 +5,8 @@ import com.archive.backend.software.app.CreateReleaseHandler;
 import com.archive.backend.software.app.DeleteReleaseHandler;
 import com.archive.backend.software.app.GetReleaseArchiveFileHandler;
 import com.archive.backend.software.app.GetReleaseArchiveFileQuery;
+import com.archive.backend.software.app.GetReleaseFilesHandler;
+import com.archive.backend.software.app.GetReleaseFilesQuery;
 import com.archive.backend.software.app.GetSoftwareReleaseHandler;
 import com.archive.backend.software.app.UpdateReleaseHandler;
 import com.archive.backend.software.domain.ReleaseId;
@@ -12,6 +14,7 @@ import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.read.ReleaseArchiveFile;
 import com.archive.backend.software.web.dto.ReleaseCreatedDto;
 import com.archive.backend.software.web.dto.ReleaseDetailsDto;
+import com.archive.backend.software.web.dto.ReleaseFilesDto;
 import com.archive.backend.software.web.dto.ReleaseRequestDto;
 import com.archive.backend.software.web.mapper.ReleaseWebMapper;
 import com.archive.backend.user.domain.Actor;
@@ -53,6 +56,7 @@ public class SoftwareReleaseController {
     private final UpdateReleaseHandler updateHandler;
     private final DeleteReleaseHandler deleteHandler;
     private final GetReleaseArchiveFileHandler archiveFileHandler;
+    private final GetReleaseFilesHandler filesHandler;
     private final ReleaseWebMapper webMapper;
 
     /**
@@ -61,6 +65,13 @@ public class SoftwareReleaseController {
     @GetMapping("/{releaseId}")
     public ReleaseDetailsDto get(@PathVariable UUID softwareId, @PathVariable UUID releaseId, Language language) {
         return webMapper.toDetails(softwareId, getHandler.handle(webMapper.toGet(softwareId, releaseId, language)));
+    }
+
+    /** The parsed tree rooted at the release's downloadable file; no root while the file waits for parsing. */
+    @GetMapping("/{releaseId}/files")
+    public ReleaseFilesDto files(@PathVariable UUID softwareId, @PathVariable UUID releaseId) {
+        return webMapper.toFilesDto(
+                filesHandler.handle(new GetReleaseFilesQuery(new SoftwareId(softwareId), new ReleaseId(releaseId))));
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)

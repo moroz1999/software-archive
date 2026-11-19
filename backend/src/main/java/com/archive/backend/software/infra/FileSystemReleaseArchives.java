@@ -1,8 +1,12 @@
 package com.archive.backend.software.infra;
 
+import com.archive.backend.hardware.domain.PlatformCode;
+import com.archive.backend.software.domain.ReleaseArchiveForParsing;
 import com.archive.backend.software.domain.ReleaseArchiveId;
 import com.archive.backend.software.domain.ReleaseArchiveRepository;
 import com.archive.backend.software.domain.ReleaseArchiveUpload;
+import com.archive.backend.software.domain.ReleaseArchivesForParsing;
+import com.archive.backend.software.domain.ReleaseId;
 import com.archive.backend.software.read.ReleaseArchiveFile;
 import com.archive.backend.software.read.ReleaseArchiveFileSource;
 import java.io.IOException;
@@ -21,7 +25,8 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 /** Release archives stored under internal UUIDs, following their database transactions. */
 @Repository
-public class FileSystemReleaseArchives implements ReleaseArchiveRepository, ReleaseArchiveFileSource {
+public class FileSystemReleaseArchives
+        implements ReleaseArchiveRepository, ReleaseArchiveFileSource, ReleaseArchivesForParsing {
 
     private final Path root;
     private final JdbcClient jdbc;
@@ -89,6 +94,34 @@ public class FileSystemReleaseArchives implements ReleaseArchiveRepository, Rele
                         rs.getLong("archive_size")))
                 .optional()
                 .filter(found -> Files.isRegularFile(found.path()));
+    }
+
+    @Override
+    public List<ReleaseId> findAllIds() {
+        return jdbc.sql("SELECT id FROM software_release WHERE archive_id IS NOT NULL ORDER BY id")
+                .query((rs, row) -> new ReleaseId(rs.getObject("id", UUID.class)))
+                .list();
+    }
+
+    @Override
+    public Optional<ReleaseArchiveForParsing> find(ReleaseId release) {
+        return jdbc.sql("""
+                        SELECT s.platform_code, r.archive_id, r.archive_file_name, r.archive_size
+                        FROM software_release r
+                        JOIN software s ON s.id = r.software_id
+                        WHERE r.id = :release AND r.archive_id IS NOT NULL
+                        """)
+                .param("release", release.value())
+                .query((rs, row) -> {
+                    Path path = file(rs.getObject("archive_id", UUID.class));
+                    return new ReleaseArchiveForParsing(
+                            new PlatformCode(rs.getString("platform_code")),
+                            new ReleaseArchiveUpload(
+                                    rs.getString("archive_file_name"),
+                                    rs.getLong("archive_size"),
+                                    () -> Files.newInputStream(path)));
+                })
+                .optional();
     }
 
     private Path file(UUID id) {

@@ -1,8 +1,8 @@
-export {createRelease, deleteRelease, fetchPlatformHardware, fetchSoftwareRelease, updateRelease} from './api/release-api';
+export {createRelease, deleteRelease, fetchPlatformHardware, fetchReleaseFiles, fetchSoftwareRelease, updateRelease} from './api/release-api';
 export {createSoftware, deleteSoftware, fetchSoftware, fetchSoftwareParticipants, fetchSoftwareReleases, updateSoftware} from './api/software-api';
 export {fetchLatestSoftware, parseSoftware} from './api/fetch-software-page';
 export {deleteScreenshot, reorderScreenshots, uploadScreenshots} from './api/screenshot-api';
-export {creditedSoftwareQuery, platformHardwareQuery, querySoftwareWithHardware, screenshotsQuery, SOFTWARE_QUERY_KEY, softwareDetailsQuery, softwareReleaseQuery, softwareReleasesQuery} from './api/software-queries';
+export {creditedSoftwareQuery, platformHardwareQuery, querySoftwareWithHardware, releaseFilesQuery, screenshotsQuery, SOFTWARE_QUERY_KEY, softwareDetailsQuery, softwareReleaseQuery, softwareReleasesQuery} from './api/software-queries';
 export {
     RELEASE_EDIT_ROUTE,
     RELEASE_NEW_ROUTE,
@@ -21,6 +21,9 @@ export {releaseDateText} from './lib/release-date';
 export {releaseYear} from './lib/release-year';
 export {type ReleaseDetails, type ReleaseId, type ReleaseType, requireReleaseId, type SoftwareRelease, toReleaseId} from './model/release';
 export {fileSizeText, type ReleaseArchive, RELEASE_ARCHIVE_MAX_BYTES, releaseArchiveProblem} from './model/release-archive';
+export {type ReleaseFile, type ReleaseFileId, toReleaseFileId} from './model/release-file';
+export {useReleaseFiles} from './model/release-files-context';
+export {ReleaseFilesProvider, type ReleaseFilesProviderProps} from './model/ReleaseFilesProvider';
 export {type ReleaseDraft, type ReleaseFormValues, toReleaseFormValues} from './model/release-form';
 export {type ReleaseFormState, useReleaseForm} from './model/release-form-context';
 export {ReleaseFormProvider, type ReleaseFormProviderProps} from './model/ReleaseFormProvider';

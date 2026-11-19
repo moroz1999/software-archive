@@ -1,6 +1,8 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {screen} from '@testing-library/react';
+import {screen, within} from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
+import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {toReleaseId, toSoftwareId} from '@/entities/software';
 import {ReleaseView} from './ReleaseView';
@@ -58,5 +60,87 @@ describe(ReleaseView, () => {
         renderView({...AY_MOD, added: {by: null, at: '2026-03-04T05:06:07Z'}});
 
         await expect(screen.findByText('Added on 4 March 2026')).resolves.toBeInTheDocument();
+    });
+
+    it('shows the parsed release file as an indented tree and marks executables', async () => {
+        stubFetchRoutes(new Map([
+            [`/api/software/${ID}`, json(ELITE)],
+            [`/api/software/${ID}/releases`, json([{
+                ...AY_MOD,
+                archive: {fileName: 'bundle.zip', size: 42, url: `/api/software/${ID}/releases/${RELEASE}/archive`},
+            }])],
+            [`/api/software/${ID}/releases/${RELEASE}/files`, json({root: {
+                id: '00000000-0000-0000-00f2-000000000001',
+                name: 'bundle.zip',
+                directory: false,
+                executable: false,
+                children: [{
+                    id: '00000000-0000-0000-00f2-000000000002',
+                    name: 'games',
+                    directory: true,
+                    executable: false,
+                    children: [{id: '00000000-0000-0000-00f2-000000000003', name: 'ELITE.ROM', directory: false, executable: true, children: []}],
+                }],
+            }})],
+            [`/api/software/${ID}/releases/${RELEASE}/screenshots`, json([])],
+        ]));
+        renderWithQueries(<MemoryRouter><ReleaseView softwareId={toSoftwareId(ID)} releaseId={toReleaseId(RELEASE)}/></MemoryRouter>);
+
+        const tree = await screen.findByRole('list', {name: 'File structure'});
+
+        expect(within(tree).getByText('bundle.zip')).toBeInTheDocument();
+        expect(within(tree).getByText('games')).toBeInTheDocument();
+        expect(within(tree).queryByText('ELITE.ROM')).not.toBeInTheDocument();
+
+        await userEvent.click(within(tree).getByRole('button', {name: 'Expand games'}));
+
+        expect(within(tree).getByText('ELITE.ROM')).toBeInTheDocument();
+        expect(within(tree).getByText('Executable')).toBeInTheDocument();
+    });
+
+    it('tells that a release file waits for its structure to be parsed', async () => {
+        stubFetchRoutes(new Map([
+            [`/api/software/${ID}`, json(ELITE)],
+            [`/api/software/${ID}/releases`, json([{
+                ...AY_MOD,
+                archive: {fileName: 'bundle.zip', size: 42, url: `/api/software/${ID}/releases/${RELEASE}/archive`},
+            }])],
+            [`/api/software/${ID}/releases/${RELEASE}/files`, json({root: null})],
+            [`/api/software/${ID}/releases/${RELEASE}/screenshots`, json([])],
+        ]));
+        renderWithQueries(<MemoryRouter><ReleaseView softwareId={toSoftwareId(ID)} releaseId={toReleaseId(RELEASE)}/></MemoryRouter>);
+
+        await expect(screen.findByText('Waiting for the structure to be parsed')).resolves.toBeInTheDocument();
+        expect(screen.getByText('File structure')).toBeInTheDocument();
+        expect(screen.queryByRole('list', {name: 'File structure'})).not.toBeInTheDocument();
+    });
+
+    it('hands a release file loading error to the error dialog', async () => {
+        const reports: SystemErrorReport[] = [];
+        const unsubscribe = subscribeSystemErrors((report) => {
+            reports.push(report);
+        });
+        stubFetchRoutes(new Map([
+            [`/api/software/${ID}`, json(ELITE)],
+            [`/api/software/${ID}/releases`, json([{
+                ...AY_MOD,
+                archive: {fileName: 'bundle.zip', size: 42, url: `/api/software/${ID}/releases/${RELEASE}/archive`},
+            }])],
+            [`/api/software/${ID}/releases/${RELEASE}/files`, json({status: 500}, 500)],
+            [`/api/software/${ID}/releases/${RELEASE}/screenshots`, json([])],
+        ]));
+
+        try {
+            renderWithQueries(<MemoryRouter><ReleaseView softwareId={toSoftwareId(ID)} releaseId={toReleaseId(RELEASE)}/></MemoryRouter>);
+
+            await vi.waitFor(() => {
+                expect(reports).toHaveLength(1);
+            });
+
+            expect(reports[0]?.error.kind).toBe('server');
+            expect(screen.queryByRole('list', {name: 'File structure'})).not.toBeInTheDocument();
+        } finally {
+            unsubscribe();
+        }
     });
 });

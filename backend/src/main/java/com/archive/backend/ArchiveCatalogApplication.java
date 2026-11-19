@@ -1,5 +1,6 @@
 package com.archive.backend;
 
+import com.archive.backend.software.web.ReparseReleaseFilesRunner;
 import com.archive.backend.user.web.CreateAdminRunner;
 import java.util.Arrays;
 import java.util.List;
@@ -21,7 +22,9 @@ public class ArchiveCatalogApplication {
             "--spring.jpa.show-sql=false");
 
     public static void main(String[] args) {
-        boolean command = Arrays.asList(args).contains(CreateAdminRunner.COMMAND);
+        List<String> arguments = Arrays.asList(args);
+        boolean command =
+                arguments.contains(CreateAdminRunner.COMMAND) || arguments.contains(ReparseReleaseFilesRunner.COMMAND);
         SpringApplication.run(
                 ArchiveCatalogApplication.class,
                 command

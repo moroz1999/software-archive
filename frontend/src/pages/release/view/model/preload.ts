@@ -1,16 +1,21 @@
 import type {QueryClient} from '@tanstack/react-query';
 import type {LoaderFunctionArgs} from 'react-router';
-import {requireReleaseId, requireSoftwareId, softwareDetailsQuery, softwareReleasesQuery} from '@/entities/software';
+import {releaseFilesQuery, requireReleaseId, requireSoftwareId, softwareDetailsQuery, softwareReleasesQuery} from '@/entities/software';
 import {preloadView} from '@/shared/api';
 
 /** Route loader: the software and its releases form the block at the top; malformed ids mean the page does not exist. */
 export function preloadReleaseViewPage(queryClient: QueryClient): (args: LoaderFunctionArgs) => Promise<null> {
     return ({params}) => {
         const softwareId = requireSoftwareId(params['id']);
-        requireReleaseId(params['releaseId']);
+        const releaseId = requireReleaseId(params['releaseId']);
+        const releases = queryClient.query(softwareReleasesQuery(softwareId));
         return preloadView([
             queryClient.query(softwareDetailsQuery(softwareId)),
-            queryClient.query(softwareReleasesQuery(softwareId)),
+            releases,
+            releases.then((items) => {
+                const release = items.find((item) => item.id === releaseId);
+                return release?.archive == null ? null : queryClient.query(releaseFilesQuery(softwareId, releaseId));
+            }),
         ]);
     };
 }

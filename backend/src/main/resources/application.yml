@@ -37,6 +37,11 @@ release-archives:
   # Kept beside the screenshots in upload, in a folder of their own, under internal UUIDs.
   storage-path: ../upload/releases
 
+release-files:
+  # ZIP contents are bounded independently of the uploaded archive's compressed size.
+  max-expanded-bytes: 524288000
+  max-container-depth: 10
+
 search:
   typesense:
     url: http://localhost:8108

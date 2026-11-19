@@ -112,6 +112,10 @@ SET archive_id = '00000000-0000-0000-000b-000000000001',
     archive_size = 26
 WHERE id = '00000000-0000-0000-0007-000000000002';
 
+INSERT INTO release_file (id, release_id, parent_id, file_name, position, md5, directory, executable)
+VALUES ('00000000-0000-0000-000f-000000000001', '00000000-0000-0000-0007-000000000002', NULL,
+        'elite-ay.txt', 0, '476ab158b8cfbec74fc36d548e72c518', FALSE, FALSE);
+
 INSERT INTO software_release_hardware (release_id, hardware_code)
 VALUES ('00000000-0000-0000-0007-000000000002', 'ay8910');
 

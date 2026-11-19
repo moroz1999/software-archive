@@ -85,6 +85,19 @@ class FixturesIT {
     }
 
     @Test
+    void fixtureReleaseFileStructureIsServedByTheApi() throws Exception {
+        mvc.perform(get(
+                        "/api/software/{softwareId}/releases/{releaseId}/files",
+                        ELITE,
+                        "00000000-0000-0000-0007-000000000002"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.root.name").value("elite-ay.txt"))
+                .andExpect(jsonPath("$.root.directory").value(false))
+                .andExpect(jsonPath("$.root.executable").value(false))
+                .andExpect(jsonPath("$.root.children", hasSize(0)));
+    }
+
+    @Test
     void fixtureScreenshotsAreServedWithTheirPictures() throws Exception {
         mvc.perform(get("/api/software/{id}/screenshots", ELITE))
                 .andExpect(status().isOk())

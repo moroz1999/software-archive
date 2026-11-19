@@ -5,6 +5,8 @@ import {
     fileSizeText,
     releaseDateText,
     releaseEditPath,
+    type ReleaseFile,
+    ReleaseFilesProvider,
     type ReleaseId,
     ScreenshotsProvider,
     type SoftwareId,
@@ -13,17 +15,21 @@ import {
     SoftwareReleasesProvider,
     SoftwareScreenshots,
     useSoftwareDetails,
+    useReleaseFiles,
     useSoftwareReleases,
 } from '@/entities/software';
 import {NotFoundError} from '@/shared/api';
 import {useSkeleton} from '@/shared/lib/loading';
 import {useInViewport} from '@/shared/lib/screen';
 import {Button} from '@/shared/ui/button';
+import {Badge} from '@/shared/ui/badge';
 import {AdditionNote} from '@/shared/ui/addition-note';
+import {Inline} from '@/shared/ui/inline';
 import {PageLayout} from '@/shared/ui/page-layout';
 import {Skeleton} from '@/shared/ui/skeleton';
 import {Stack} from '@/shared/ui/stack';
 import {Text, TextLink} from '@/shared/ui/typography';
+import {Tree, type TreeItem} from '@/shared/ui/tree';
 import styles from './ReleaseView.module.css';
 
 export interface ReleaseViewProps {
@@ -62,11 +68,12 @@ function LoadedView({softwareId, releaseId}: ReleaseViewProps) {
     }
     const lines = release.description?.split('\n').filter((line) => line.trim() !== '') ?? [];
     return (
-        <PageLayout
-            title={release.title}
-            actions={release.canChange && <Button href={releaseEditPath(softwareId, releaseId)} color="secondary">{t('actions.edit')}</Button>}
-        >
-            <Stack gap="xl">
+        <ReleaseFilesProvider softwareId={softwareId} releaseId={releaseId} enabled={release.archive != null}>
+            <PageLayout
+                title={release.title}
+                actions={release.canChange && <Button href={releaseEditPath(softwareId, releaseId)} color="secondary">{t('actions.edit')}</Button>}
+            >
+                <Stack gap="xl">
                 <Stack gap="lg">
                     <Section label={t('release.software')}>
                         <Text><TextLink href={softwarePath(softwareId)}>{software.data.title}</TextLink></Text>
@@ -79,13 +86,16 @@ function LoadedView({softwareId, releaseId}: ReleaseViewProps) {
                     {release.version !== null && <Section label={t('fields.version')}><Text>{release.version}</Text></Section>}
                     <Section label={t('fields.type')}><Text>{t(`release.types.${release.type}`)}</Text></Section>
                     {release.archive != null && (
-                        <Section label={t('release.archive')}>
-                            <Stack gap="xs" align="start">
-                                <Text>{release.archive.fileName}</Text>
-                                <Text variant="bodySm" tone="muted">{fileSizeText(release.archive.size)}</Text>
-                                <Button href={release.archive.url} target="_self" color="primary">{t('release.downloadArchive')}</Button>
-                            </Stack>
-                        </Section>
+                        <>
+                            <Section label={t('release.archive')}>
+                                <Stack gap="xs" align="start">
+                                    <Text>{release.archive.fileName}</Text>
+                                    <Text variant="bodySm" tone="muted">{fileSizeText(release.archive.size)}</Text>
+                                    <Button href={release.archive.url} target="_self" color="primary">{t('release.downloadArchive')}</Button>
+                                </Stack>
+                            </Section>
+                            <ReleaseFileStructure/>
+                        </>
                     )}
                     {release.hardware.length > 0 && (
                         <Stack as="section" gap="xs" ariaLabel={t('fields.hardware')}>
@@ -99,11 +109,57 @@ function LoadedView({softwareId, releaseId}: ReleaseViewProps) {
                         </Stack>
                     )}
                 </Stack>
-                <ReleaseScreenshots softwareId={softwareId} releaseId={releaseId} title={release.title}/>
-                <AdditionNote addition={release.added}/>
-            </Stack>
-        </PageLayout>
+                    <ReleaseScreenshots softwareId={softwareId} releaseId={releaseId} title={release.title}/>
+                    <AdditionNote addition={release.added}/>
+                </Stack>
+            </PageLayout>
+        </ReleaseFilesProvider>
     );
+}
+
+function ReleaseFileStructure() {
+    const {t} = useTranslation();
+    const files = useReleaseFiles();
+    const skeleton = useSkeleton(files);
+    if (skeleton || files.isPending) {
+        return <Skeleton className={styles.lineBone}/>;
+    }
+    if (files.isLoadingError) {
+        return null;
+    }
+    if (files.data === null) {
+        return (
+            <Section label={t('release.fileStructure')}>
+                <Text tone="muted">{t('release.structurePending')}</Text>
+            </Section>
+        );
+    }
+    const item = toTreeItem(files.data, t('release.executable'));
+    return (
+        <Section label={t('release.fileStructure')}>
+            <Tree
+                items={[item]}
+                ariaLabel={t('release.fileStructure')}
+                expandLabel={(name) => t('release.expandFile', {name})}
+                collapseLabel={(name) => t('release.collapseFile', {name})}
+                initiallyExpanded={[item.id]}
+            />
+        </Section>
+    );
+}
+
+function toTreeItem(file: ReleaseFile, executableLabel: string): TreeItem {
+    return {
+        id: file.id,
+        name: file.name,
+        content: (
+            <Inline gap="xs" align="center">
+                <Text>{file.name}</Text>
+                {file.executable && <Badge variant="secondary">{executableLabel}</Badge>}
+            </Inline>
+        ),
+        children: file.children.map((child) => toTreeItem(child, executableLabel)),
+    };
 }
 
 function Section({label, children}: {readonly label: string; readonly children: ReactNode}) {

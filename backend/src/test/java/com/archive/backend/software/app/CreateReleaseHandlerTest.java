@@ -26,12 +26,14 @@ import com.archive.backend.user.domain.SignInRequiredException;
 import java.io.ByteArrayInputStream;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationEventPublisher;
 
 class CreateReleaseHandlerTest {
 
     private final InMemorySoftwareRepository repository = new InMemorySoftwareRepository();
     private final ReleaseArchiveRepository archiveFiles = mock(ReleaseArchiveRepository.class);
-    private final CreateReleaseHandler handler = new CreateReleaseHandler(repository, hardwareSets(), archiveFiles);
+    private final CreateReleaseHandler handler =
+            new CreateReleaseHandler(repository, hardwareSets(), archiveFiles, mock(ApplicationEventPublisher.class));
 
     @Test
     void addsTheReleaseToItsSoftwareUnderANewId() {

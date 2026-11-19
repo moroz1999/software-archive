@@ -42,17 +42,20 @@ class SoftwareReleaseArchivesTest {
     }
 
     @Test
-    void replacesTheOneArchiveAndDiscardsTheOldOne() {
+    void replacesTheOneArchiveDiscardingTheOldOneAndOutdatingTheFileStructure() {
         Software software = software();
 
         software.editRelease(RELEASE, CONTENT, NO_HARDWARE, ADMIN, REPLACEMENT, false);
 
         assertThat(software.release(RELEASE).orElseThrow().archive()).isEqualTo(REPLACEMENT);
-        assertThat(software.pullEvents()).containsExactly(new ReleaseArchivesDiscarded(List.of(ORIGINAL.id())));
+        assertThat(software.pullEvents())
+                .containsExactly(
+                        new ReleaseArchivesDiscarded(List.of(ORIGINAL.id())),
+                        new ReleaseFileStructuresOutdated(List.of(RELEASE)));
     }
 
     @Test
-    void removesTheArchiveWithoutRemovingTheRelease() {
+    void removesTheArchiveWithoutRemovingTheReleaseAndOutdatesTheFileStructure() {
         Software software = software();
 
         software.editRelease(RELEASE, CONTENT, NO_HARDWARE, ADMIN, null, true);
@@ -62,7 +65,10 @@ class SoftwareReleaseArchivesTest {
                 .get()
                 .extracting(Release::archive)
                 .isNull();
-        assertThat(software.pullEvents()).containsExactly(new ReleaseArchivesDiscarded(List.of(ORIGINAL.id())));
+        assertThat(software.pullEvents())
+                .containsExactly(
+                        new ReleaseArchivesDiscarded(List.of(ORIGINAL.id())),
+                        new ReleaseFileStructuresOutdated(List.of(RELEASE)));
     }
 
     @Test

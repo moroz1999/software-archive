@@ -117,8 +117,15 @@ public final class Software {
             @Nullable ReleaseDate releaseDate,
             HardwareSet hardware,
             CategorySet categories) {
-        if (!hardware.platform().equals(getPlatform()) && releasesHaveHardware()) {
+        boolean platformChanged = !hardware.platform().equals(getPlatform());
+        if (platformChanged && releasesHaveHardware()) {
             throw new SoftwarePlatformLockedException();
+        }
+        if (platformChanged) {
+            outdateFileStructures(releases.stream()
+                    .filter(release -> release.archive() != null)
+                    .map(Release::id)
+                    .toList());
         }
         this.title = title;
         this.description = description;
@@ -181,6 +188,9 @@ public final class Software {
             AddedBy addedBy,
             @Nullable ReleaseArchive archive) {
         releases.add(new Release(releaseId, content, requireOwn(hardware), addedBy, Screenshots.EMPTY, archive));
+        if (archive != null) {
+            outdateFileStructures(List.of(releaseId));
+        }
     }
 
     public void editRelease(ReleaseId releaseId, ReleaseContent content, HardwareSet hardware, Actor actor) {
@@ -208,6 +218,9 @@ public final class Software {
         }
         if (old != null && (replacement != null || removeArchive)) {
             discardArchives(List.of(old.id()));
+        }
+        if (replacement != null || (old != null && removeArchive)) {
+            outdateFileStructures(List.of(releaseId));
         }
     }
 
@@ -276,6 +289,13 @@ public final class Software {
     private void discardArchives(List<ReleaseArchiveId> ids) {
         if (!ids.isEmpty()) {
             events.add(new ReleaseArchivesDiscarded(ids));
+        }
+    }
+
+    /** The parsed structure of a release follows its file and the platform that decides what is executable. */
+    private void outdateFileStructures(List<ReleaseId> ids) {
+        if (!ids.isEmpty()) {
+            events.add(new ReleaseFileStructuresOutdated(ids));
         }
     }
 

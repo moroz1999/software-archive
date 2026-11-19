@@ -25,10 +25,13 @@ import com.archive.backend.software.app.CreateReleaseHandler;
 import com.archive.backend.software.app.DeleteReleaseCommand;
 import com.archive.backend.software.app.DeleteReleaseHandler;
 import com.archive.backend.software.app.GetReleaseArchiveFileHandler;
+import com.archive.backend.software.app.GetReleaseFilesHandler;
+import com.archive.backend.software.app.GetReleaseFilesQuery;
 import com.archive.backend.software.app.GetSoftwareReleaseHandler;
 import com.archive.backend.software.app.GetSoftwareReleaseQuery;
 import com.archive.backend.software.app.UpdateReleaseCommand;
 import com.archive.backend.software.app.UpdateReleaseHandler;
+import com.archive.backend.software.domain.ReleaseArchiveNotFoundException;
 import com.archive.backend.software.domain.ReleaseContent;
 import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.ReleaseDescription;
@@ -41,6 +44,8 @@ import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareNotFoundException;
 import com.archive.backend.software.read.ReleaseArchiveFile;
 import com.archive.backend.software.read.ReleaseDetails;
+import com.archive.backend.software.read.ReleaseFileItem;
+import com.archive.backend.software.read.ReleaseFiles;
 import com.archive.backend.software.read.SoftwareHardware;
 import com.archive.backend.software.web.mapper.ReleaseWebMapperImpl;
 import com.archive.backend.user.domain.Actor;
@@ -70,6 +75,7 @@ class SoftwareReleaseControllerTest {
     private static final UUID AY_MOD = UUID.fromString("00000000-0000-0000-0000-000000000012");
     private static final String RELEASES = "/api/software/{softwareId}/releases";
     private static final String RELEASE = RELEASES + "/{releaseId}";
+    private static final String RELEASE_FILES = RELEASE + "/files";
     private static final String AY_MOD_JSON = """
             {"title":"Elite AY","version":"1.1","type":"mod","releaseDate":"1990-03-01",\
             "description":"With AY music","hardware":["ay8910"]}""";
@@ -101,6 +107,9 @@ class SoftwareReleaseControllerTest {
 
     @MockitoBean
     private GetReleaseArchiveFileHandler archiveFileHandler;
+
+    @MockitoBean
+    private GetReleaseFilesHandler filesHandler;
 
     @Test
     void returnsAReleaseInTheLanguageAskedFor() throws Exception {
@@ -164,6 +173,37 @@ class SoftwareReleaseControllerTest {
                 .andExpect(header().string("Content-Length", "7"))
                 .andExpect(
                         header().string("Content-Disposition", org.hamcrest.Matchers.containsString("Elite%20AY.zip")));
+    }
+
+    @Test
+    void returnsTheReleaseFileTree() throws Exception {
+        UUID root = UUID.fromString("00000000-0000-0000-0000-000000000013");
+        UUID program = UUID.fromString("00000000-0000-0000-0000-000000000014");
+        when(filesHandler.handle(new GetReleaseFilesQuery(new SoftwareId(ELITE), new ReleaseId(AY_MOD))))
+                .thenReturn(new ReleaseFiles(
+                        true,
+                        new ReleaseFileItem(
+                                root,
+                                "elite.zip",
+                                false,
+                                false,
+                                List.of(new ReleaseFileItem(program, "ELITE.ROM", false, true, List.of())))));
+
+        mvc.perform(get(RELEASE_FILES, ELITE, AY_MOD))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.root.id").value(root.toString()))
+                .andExpect(jsonPath("$.root.name").value("elite.zip"))
+                .andExpect(jsonPath("$.root.children[0].name").value("ELITE.ROM"))
+                .andExpect(jsonPath("$.root.children[0].executable").value(true));
+    }
+
+    @Test
+    void answers404WhenTheReleaseHasNoFile() throws Exception {
+        when(filesHandler.handle(any(GetReleaseFilesQuery.class))).thenThrow(new ReleaseArchiveNotFoundException());
+
+        mvc.perform(get(RELEASE_FILES, ELITE, AY_MOD))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("release.archive-not-found"));
     }
 
     @Test

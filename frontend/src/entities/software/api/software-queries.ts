@@ -4,7 +4,7 @@ import type {SoftwareId, SoftwarePlatformCode} from '../model/software';
 import type {CreditedOwner} from '../model/credited-software';
 import {fetchCreditedSoftware} from './credited-software-api';
 import {fetchScreenshots} from './screenshot-api';
-import {fetchPlatformHardware, fetchSoftwareRelease} from './release-api';
+import {fetchPlatformHardware, fetchReleaseFiles, fetchSoftwareRelease} from './release-api';
 import {fetchSoftware, fetchSoftwareReleases} from './software-api';
 
 /** The common prefix of every software query: invalidating it refreshes all of them after a change. */
@@ -39,6 +39,14 @@ export function softwareReleaseQuery(softwareId: SoftwareId, releaseId: ReleaseI
     return queryOptions({
         queryKey: [...SOFTWARE_QUERY_KEY, 'release', softwareId, releaseId],
         queryFn: ({signal}) => fetchSoftwareRelease(softwareId, releaseId, signal),
+    });
+}
+
+/** The parsed file tree of one release. */
+export function releaseFilesQuery(softwareId: SoftwareId, releaseId: ReleaseId) {
+    return queryOptions({
+        queryKey: [...SOFTWARE_QUERY_KEY, 'release-files', softwareId, releaseId],
+        queryFn: ({signal}) => fetchReleaseFiles(softwareId, releaseId, signal),
     });
 }
 

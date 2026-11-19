@@ -19,10 +19,14 @@ import com.archive.backend.software.domain.ReleaseVersion;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.read.ReleaseArchiveDetails;
 import com.archive.backend.software.read.ReleaseDetails;
+import com.archive.backend.software.read.ReleaseFileItem;
+import com.archive.backend.software.read.ReleaseFiles;
 import com.archive.backend.software.read.SoftwareHardware;
 import com.archive.backend.software.web.dto.ReleaseArchiveDto;
 import com.archive.backend.software.web.dto.ReleaseCreatedDto;
 import com.archive.backend.software.web.dto.ReleaseDetailsDto;
+import com.archive.backend.software.web.dto.ReleaseFileDto;
+import com.archive.backend.software.web.dto.ReleaseFilesDto;
 import com.archive.backend.software.web.dto.ReleaseRequestDto;
 import com.archive.backend.user.domain.Actor;
 import java.util.List;
@@ -37,6 +41,10 @@ import org.springframework.web.multipart.MultipartFile;
 public interface ReleaseWebMapper {
 
     List<com.archive.backend.software.web.dto.SoftwareHardwareDto> toHardwareDtos(List<SoftwareHardware> hardware);
+
+    ReleaseFileDto toFileDto(ReleaseFileItem file);
+
+    ReleaseFilesDto toFilesDto(ReleaseFiles files);
 
     default ReleaseDetailsDto toDetails(UUID softwareId, ReleaseDetails details) {
         return new ReleaseDetailsDto(
