@@ -5,7 +5,7 @@ import static com.archive.backend.category.infra.SeededTree.GAMES;
 import static com.archive.backend.category.infra.SeededTree.INTRO;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.IntegrationTest;
 import com.archive.backend.category.read.CategoryDetails;
 import com.archive.backend.category.read.CategoryNode;
 import java.util.List;
@@ -15,15 +15,12 @@ import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
 /** Reads the tree the schema brings: the categories of zxart, titled in English and in Russian. */
-@JdbcTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({TestcontainersConfiguration.class, JdbcCategoryReadRepository.class})
+@IntegrationTest
+@Transactional
 class JdbcCategoryReadRepositoryIT {
 
     @Autowired

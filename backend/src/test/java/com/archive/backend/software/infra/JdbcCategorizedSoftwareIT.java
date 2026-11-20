@@ -2,22 +2,19 @@ package com.archive.backend.software.infra;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.IntegrationTest;
 import com.archive.backend.category.domain.CategoryId;
 import com.archive.backend.software.domain.SoftwareId;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
 /** Finds the software a move of Games → Action under Demoscene puts on one branch twice. */
-@JdbcTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({TestcontainersConfiguration.class, JdbcCategorizedSoftware.class})
+@IntegrationTest
+@Transactional
 class JdbcCategorizedSoftwareIT {
 
     /** In Demoscene and in Action. */

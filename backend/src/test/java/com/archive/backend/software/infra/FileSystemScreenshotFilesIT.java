@@ -2,7 +2,7 @@ package com.archive.backend.software.infra;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.IntegrationTest;
 import com.archive.backend.software.domain.ScreenshotId;
 import com.archive.backend.software.domain.ScreenshotImages;
 import com.archive.backend.software.read.ScreenshotFile;
@@ -14,9 +14,6 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Propagation;
@@ -24,10 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /** The pictures follow the change they are stored or discarded in. */
-@JdbcTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
-@Import({TestcontainersConfiguration.class, ScreenshotStorageConfig.class, FileSystemScreenshotFiles.class})
+@IntegrationTest
 class FileSystemScreenshotFilesIT {
 
     private static final UUID ELITE = UUID.fromString("00000000-0000-0000-0000-000000000001");

@@ -2,8 +2,7 @@ package com.archive.backend.importer.app;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.archive.backend.TestcontainersConfiguration;
-import com.archive.backend.TypesenseTestConfiguration;
+import com.archive.backend.IntegrationTest;
 import com.archive.backend.author.app.DeleteAuthorCommand;
 import com.archive.backend.author.app.DeleteAuthorHandler;
 import com.archive.backend.author.domain.AuthorId;
@@ -69,16 +68,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * The one import every source goes through (docs/domain/imports.md), against programs as a parser hands them over;
  * every program commits for real.
  */
-@SpringBootTest
-@Import({TestcontainersConfiguration.class, TypesenseTestConfiguration.class})
+@IntegrationTest
 class ImportProgramIT {
 
     private static final String ARCHIVE = "test-archive";

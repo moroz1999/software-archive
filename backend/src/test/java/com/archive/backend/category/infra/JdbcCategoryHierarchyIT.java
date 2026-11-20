@@ -6,19 +6,16 @@ import static com.archive.backend.category.infra.SeededTree.INTRO;
 import static com.archive.backend.category.infra.SeededTree.INTRO_4K;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.IntegrationTest;
 import com.archive.backend.category.domain.CategoryId;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.transaction.annotation.Transactional;
 
 /** Reads lines of the tree the schema brings. */
-@JdbcTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({TestcontainersConfiguration.class, JdbcCategoryHierarchy.class})
+@IntegrationTest
+@Transactional
 class JdbcCategoryHierarchyIT {
 
     @Autowired

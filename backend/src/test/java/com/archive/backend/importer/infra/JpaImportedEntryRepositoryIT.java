@@ -2,7 +2,7 @@ package com.archive.backend.importer.infra;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.IntegrationTest;
 import com.archive.backend.importer.domain.ExternalKind;
 import com.archive.backend.importer.domain.ExternalOrigin;
 import com.archive.backend.importer.domain.ExternalPage;
@@ -13,14 +13,11 @@ import jakarta.persistence.EntityManager;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({TestcontainersConfiguration.class, JpaImportedEntryRepository.class})
+@IntegrationTest
+@Transactional
 class JpaImportedEntryRepositoryIT {
 
     private static final ImportedEntryId SOFTWARE = new ImportedEntryId(UUID.randomUUID());

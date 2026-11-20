@@ -7,7 +7,7 @@ import static com.archive.backend.category.infra.SeededTree.INTRO;
 import static com.archive.backend.category.infra.SeededTree.INTRO_4K;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.IntegrationTest;
 import com.archive.backend.category.domain.Category;
 import com.archive.backend.category.domain.CategoryId;
 import com.archive.backend.category.domain.CategoryParent;
@@ -15,14 +15,11 @@ import jakarta.persistence.EntityManager;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({TestcontainersConfiguration.class, JpaCategoryRepository.class, CategoryMapperImpl.class})
+@IntegrationTest
+@Transactional
 class JpaCategoryRepositoryIT {
 
     private static final CategoryId NEW = new CategoryId(UUID.fromString("00000000-0000-0000-0000-000000000001"));

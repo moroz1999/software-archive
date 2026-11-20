@@ -2,7 +2,7 @@ package com.archive.backend.software.infra;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.IntegrationTest;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -12,9 +12,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,10 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
  * Publisher and Developer (docs/domain/software.md#credits): run on a schema of its own, migrated up to the version
  * before it and filled the old way. Its tables are named with the schema: the pool shares its connections.
  */
-@JdbcTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import(TestcontainersConfiguration.class)
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
+@IntegrationTest
 class PublishersAndDevelopersAsCreditsMigrationIT {
 
     private static final String SCHEMA = "credits_migration";

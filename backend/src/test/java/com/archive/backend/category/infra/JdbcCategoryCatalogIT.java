@@ -6,7 +6,7 @@ import static com.archive.backend.category.infra.SeededTree.INTRO;
 import static com.archive.backend.category.infra.SeededTree.INTRO_4K;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.IntegrationTest;
 import com.archive.backend.category.domain.CategoryId;
 import com.archive.backend.category.domain.CategoryLine;
 import java.util.List;
@@ -14,14 +14,11 @@ import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.transaction.annotation.Transactional;
 
 /** Looks categories up in the tree the schema brings. */
-@JdbcTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({TestcontainersConfiguration.class, JdbcCategoryCatalog.class})
+@IntegrationTest
+@Transactional
 class JdbcCategoryCatalogIT {
 
     private static final CategoryId GONE = new CategoryId(UUID.fromString("00000000-0000-0000-0000-000000000009"));

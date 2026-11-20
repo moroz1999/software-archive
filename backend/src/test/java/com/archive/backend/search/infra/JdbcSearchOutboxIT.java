@@ -2,7 +2,7 @@ package com.archive.backend.search.infra;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.IntegrationTest;
 import com.archive.backend.search.domain.Attempts;
 import com.archive.backend.search.domain.SearchEntity;
 import com.archive.backend.search.domain.SearchEntityType;
@@ -11,15 +11,12 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
 /** The outbox of search tasks (docs/features/search.md#synchronization). */
-@JdbcTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({TestcontainersConfiguration.class, JdbcSearchOutbox.class})
+@IntegrationTest
+@Transactional
 class JdbcSearchOutboxIT {
 
     @Autowired

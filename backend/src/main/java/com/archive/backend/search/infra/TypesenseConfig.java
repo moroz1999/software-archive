@@ -16,8 +16,14 @@ public class TypesenseConfig {
     Client typesenseClient(
             @Value("${search.typesense.url}") URI url,
             @Value("${search.typesense.api-key}") String apiKey,
-            @Value("${search.typesense.timeout}") Duration timeout) {
+            @Value("${search.typesense.timeout}") Duration timeout,
+            @Value("${search.typesense.attempts}") int attempts,
+            @Value("${search.typesense.retry-interval}") Duration retryInterval) {
         Node node = new Node(url.getScheme(), url.getHost(), String.valueOf(url.getPort()));
-        return new Client(new org.typesense.api.Configuration(List.of(node), timeout, apiKey));
+        var configuration = new org.typesense.api.Configuration(List.of(node), timeout, apiKey);
+        // The client names the number of attempts, the first one included, its retries.
+        configuration.numRetries = attempts;
+        configuration.retryInterval = retryInterval;
+        return new Client(configuration);
     }
 }

@@ -17,14 +17,19 @@ Tests describe behaviour, not implementation: assert on results and visible effe
 JUnit 5 with `spring-boot-starter-test`.
 
 - `*Test` — unit and slice tests, no database. Includes the ArchUnit architecture rules. Run: `cd backend && ./mvnw test` (single test: `-Dtest=ClassName`).
-- `*IT` — integration tests against a throwaway PostgreSQL container (Testcontainers, shared `TestcontainersConfiguration`). Run with everything else: `cd backend && ./mvnw verify` (single test: `-Dit.test=ClassName`). They never touch the dev database. Tests that start the whole application (`@SpringBootTest`) also import `TypesenseTestConfiguration`: a throwaway Typesense, with the search worker off its schedule so the test drives it.
+- `*IT` — integration tests against the whole application, its PostgreSQL and its Typesense. Run with everything else: `cd backend && ./mvnw verify` (single test: `-Dit.test=ClassName`). They never touch the dev database or search.
+  - A test is marked `@IntegrationTest`, the one configuration they share, so the Spring context starts once and every test reuses it. A test that needs something of its own (a fake source site, a mail catcher, other limits) adds it and gets a context of its own; keep those few.
+  - Each test JVM has one throwaway PostgreSQL and one Typesense (Testcontainers), started once and shared by all its contexts. The profile `fixtures` uses a database and a Typesense of its own, so the fixture data set never reaches the other tests.
+  - A test either rolls back (`@Transactional`) or commits; after a class that commits, its database is reset to what the migrations make of it (`ResetDatabaseAfterCommittingTests`), so no class depends on what another left behind.
+  - Test classes run in 4 parallel JVMs (`-Dit.forks=N` changes that; `-Dit.forks=1` runs them one by one, which also shows a test that depends on another).
+  - Test settings are in `src/test/resources/config/application.properties`: the search worker is off its schedule there, so a test drives it; Typesense fails a call at once instead of retrying.
 
 | Layer | Test |
 |---|---|
 | Domain model and domain services | Plain unit tests, no Spring context |
 | Use cases | Unit tests with in-memory fakes of the domain repository interfaces |
 | Controllers | `@WebMvcTest` slice with the use case mocked; asserts HTTP status and JSON |
-| Repository implementations | Integration tests against PostgreSQL with Flyway migrations applied |
+| Repository implementations | `@IntegrationTest` against PostgreSQL with Flyway migrations applied |
 
 ## Frontend
 

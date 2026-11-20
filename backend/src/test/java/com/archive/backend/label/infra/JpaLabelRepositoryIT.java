@@ -3,7 +3,7 @@ package com.archive.backend.label.infra;
 import static com.archive.backend.user.TestActors.MEMBER;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.IntegrationTest;
 import com.archive.backend.geo.domain.Locations;
 import com.archive.backend.label.domain.Label;
 import com.archive.backend.label.domain.LabelId;
@@ -15,14 +15,11 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({TestcontainersConfiguration.class, JpaLabelRepository.class})
+@IntegrationTest
+@Transactional
 class JpaLabelRepositoryIT {
 
     private static final UUID ID = UUID.fromString("00000000-0000-0000-0000-000000000001");

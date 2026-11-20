@@ -3,8 +3,7 @@ package com.archive.backend.search.infra;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.archive.backend.TestcontainersConfiguration;
-import com.archive.backend.TypesenseTestConfiguration;
+import com.archive.backend.IntegrationTest;
 import com.archive.backend.search.TypesenseProbe;
 import com.archive.backend.search.domain.AuthorDocument;
 import com.archive.backend.search.domain.GroupDocument;
@@ -24,16 +23,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.testcontainers.typesense.TypesenseContainer;
 
 /**
  * The quick search over the collections of software, people and groups (docs/domain/search.md#quick-search): every
  * test puts collections of its own in use, holding exactly the entities below.
  */
-@SpringBootTest
-@Import({TestcontainersConfiguration.class, TypesenseTestConfiguration.class})
+@IntegrationTest
 class TypesenseQuickSearchIT {
 
     private static final SoftwareDocument ELITE = software(1, "Elite", List.of("Элита"), "vector");

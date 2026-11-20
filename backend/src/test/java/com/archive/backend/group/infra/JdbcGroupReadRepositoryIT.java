@@ -6,7 +6,7 @@ import static com.archive.backend.user.TestActors.ADDED;
 import static com.archive.backend.user.TestActors.MEMBER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.IntegrationTest;
 import com.archive.backend.group.read.GroupCatalogEntry;
 import com.archive.backend.group.read.GroupDetails;
 import com.archive.backend.group.read.GroupLabel;
@@ -20,16 +20,13 @@ import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
-@JdbcTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({TestcontainersConfiguration.class, JdbcGroupReadRepository.class})
+@IntegrationTest
+@Transactional
 class JdbcGroupReadRepositoryIT {
 
     private static final PageRequest FIRST_PAGE = PageRequest.of(0, 100);

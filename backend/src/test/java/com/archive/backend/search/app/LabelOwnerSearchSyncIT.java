@@ -3,8 +3,7 @@ package com.archive.backend.search.app;
 import static com.archive.backend.user.TestActors.ADMIN;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.archive.backend.TestcontainersConfiguration;
-import com.archive.backend.TypesenseTestConfiguration;
+import com.archive.backend.IntegrationTest;
 import com.archive.backend.author.app.AttachLabelToAuthorCommand;
 import com.archive.backend.author.app.AttachLabelToAuthorHandler;
 import com.archive.backend.author.app.CreateAuthorCommand;
@@ -57,8 +56,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.testcontainers.typesense.TypesenseContainer;
 
@@ -66,8 +63,7 @@ import org.testcontainers.typesense.TypesenseContainer;
  * Changes of the archive reach the documents of people and groups through the outbox and the worker
  * (docs/features/search.md#synchronization). Every change commits for real; the test drives the worker.
  */
-@SpringBootTest
-@Import({TestcontainersConfiguration.class, TypesenseTestConfiguration.class})
+@IntegrationTest
 class LabelOwnerSearchSyncIT {
 
     private static final Set<GroupTypeCode> DEMOGROUP = Set.of(new GroupTypeCode("demogroup"));

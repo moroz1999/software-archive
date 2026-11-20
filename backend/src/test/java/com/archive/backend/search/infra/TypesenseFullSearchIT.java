@@ -3,8 +3,7 @@ package com.archive.backend.search.infra;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.archive.backend.TestcontainersConfiguration;
-import com.archive.backend.TypesenseTestConfiguration;
+import com.archive.backend.IntegrationTest;
 import com.archive.backend.search.TypesenseProbe;
 import com.archive.backend.search.domain.AuthorDocument;
 import com.archive.backend.search.domain.GroupDocument;
@@ -28,8 +27,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.testcontainers.typesense.TypesenseContainer;
 
 /**
@@ -37,8 +34,7 @@ import org.testcontainers.typesense.TypesenseContainer;
  * Every test puts collections of its own in use, holding exactly the entities below: matched by "z", three people
  * and two groups of the vector, four software of the vector, and one of each of the BK.
  */
-@SpringBootTest
-@Import({TestcontainersConfiguration.class, TypesenseTestConfiguration.class})
+@IntegrationTest
 class TypesenseFullSearchIT {
 
     private static final Set<FoundType> ALL = EnumSet.allOf(FoundType.class);

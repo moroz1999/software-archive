@@ -2,8 +2,7 @@ package com.archive.backend.search.app;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.archive.backend.TestcontainersConfiguration;
-import com.archive.backend.TypesenseTestConfiguration;
+import com.archive.backend.IntegrationTest;
 import com.archive.backend.search.TypesenseProbe;
 import com.archive.backend.search.domain.SearchEntityType;
 import com.archive.backend.search.domain.SearchIndex;
@@ -13,8 +12,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.testcontainers.typesense.TypesenseContainer;
 
@@ -22,8 +19,7 @@ import org.testcontainers.typesense.TypesenseContainer;
  * The search collections are built anew from PostgreSQL and take over only when fully loaded
  * (docs/features/search.md#initial-load-and-rebuild).
  */
-@SpringBootTest
-@Import({TestcontainersConfiguration.class, TypesenseTestConfiguration.class})
+@IntegrationTest
 class SearchRebuildIT {
 
     private static final UUID ELITE = UUID.fromString("00000000-0000-0000-00fe-000000000001");

@@ -47,6 +47,9 @@ search:
     url: http://localhost:8108
     api-key: my-secret-key
     timeout: 2s
+    # A call is made up to this many times, this long apart, before it fails.
+    attempts: 3
+    retry-interval: 3s
   worker:
     delay: 1s
 

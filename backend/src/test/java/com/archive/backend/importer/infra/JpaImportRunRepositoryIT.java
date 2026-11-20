@@ -2,7 +2,7 @@ package com.archive.backend.importer.infra;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.IntegrationTest;
 import com.archive.backend.importer.domain.ExternalPage;
 import com.archive.backend.importer.domain.ImportSummary;
 import com.archive.backend.importer.domain.ImportedEntryId;
@@ -20,13 +20,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.transaction.annotation.Transactional;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({TestcontainersConfiguration.class, JpaImportRunRepository.class, ImportRunMapperImpl.class})
+@IntegrationTest
+@Transactional
 class JpaImportRunRepositoryIT {
 
     private static final Instant START = Instant.parse("2026-11-14T10:00:00Z");

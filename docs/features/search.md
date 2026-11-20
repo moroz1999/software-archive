@@ -49,7 +49,7 @@ Platforms of people and groups are those of the software they are credited on, b
 
 - The changes are told by domain events, published by the use cases: `SoftwareChanged`, `AuthorChanged` and `GroupChanged` (added, edited, deleted), `CategoryMoved`, `CategoryDeleted`, and `OwnerOfLabelsChanged` from a person or a group edited or deleted, with the labels it had before (new labels have no credits yet). A deletion tells before it deletes, while the subtree and the credits can still be found. `search/app/EnqueueSearchDocumentsHandler` answers them all.
 - A row of `search_outbox` carries a renewal number from a sequence: a new change renews it, and the worker removes the row only with the number it took.
-- The worker (`ProcessSearchOutboxHandler`) runs every `search.worker.delay`; the retry delay doubles from 1 s to at most 10 minutes. A call to Typesense that timed out may still be applied once Typesense answers again: a retry then only upserts the same document once more.
+- The worker (`ProcessSearchOutboxHandler`) runs every `search.worker.delay`; the retry delay doubles from 1 s to at most 10 minutes. Each call to Typesense is itself made up to `search.typesense.attempts` times, `search.typesense.retry-interval` apart, before the worker counts it failed. A call to Typesense that timed out may still be applied once Typesense answers again: a retry then only upserts the same document once more.
 - A software document leaves the roles of work on a copy out of its countries; the list of those roles is in `JdbcSoftwareDocuments`.
 
 ## Initial load and rebuild

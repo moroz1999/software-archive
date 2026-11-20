@@ -6,14 +6,11 @@ import static com.archive.backend.category.infra.SeededTree.INTRO_4K;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.IntegrationTest;
 import com.archive.backend.category.domain.CategoryId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -26,15 +23,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  * A category is loaded for a change under a lock held until the change commits, and so is the line of the parent it is
  * checked against: two moves cannot put two categories under each other (docs/backend.md).
  */
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({
-    TestcontainersConfiguration.class,
-    JpaCategoryRepository.class,
-    CategoryMapperImpl.class,
-    JdbcCategoryHierarchy.class
-})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
+@IntegrationTest
 class JpaCategoryRepositoryLockIT {
 
     @Autowired

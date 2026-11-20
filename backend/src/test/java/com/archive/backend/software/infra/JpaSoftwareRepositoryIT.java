@@ -8,11 +8,10 @@ import static com.archive.backend.user.TestActors.OTHER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
-import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.IntegrationTest;
 import com.archive.backend.category.domain.CategoryId;
 import com.archive.backend.category.domain.CategoryLine;
 import com.archive.backend.category.domain.CategorySet;
-import com.archive.backend.category.infra.JdbcCategoryCatalog;
 import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.HardwareSet;
 import com.archive.backend.hardware.domain.PlatformCode;
@@ -51,19 +50,11 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({
-    TestcontainersConfiguration.class,
-    JpaSoftwareRepository.class,
-    SoftwareMapperImpl.class,
-    JdbcCategoryCatalog.class
-})
+@IntegrationTest
+@Transactional
 class JpaSoftwareRepositoryIT {
 
     private static final SoftwareId ID = new SoftwareId(UUID.fromString("00000000-0000-0000-0000-000000000001"));

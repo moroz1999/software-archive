@@ -4,8 +4,7 @@ import static com.archive.backend.category.domain.CategoryTitleFixtures.titles;
 import static com.archive.backend.user.TestActors.ADMIN;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.archive.backend.TestcontainersConfiguration;
-import com.archive.backend.TypesenseTestConfiguration;
+import com.archive.backend.IntegrationTest;
 import com.archive.backend.category.app.UpdateCategoryCommand;
 import com.archive.backend.category.app.UpdateCategoryHandler;
 import com.archive.backend.category.domain.CategoryId;
@@ -16,16 +15,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * Moving a category takes software out of every category the move put above another of its own
  * (docs/domain/categories.md), in the transaction of the move.
  */
-@SpringBootTest
-@Import({TestcontainersConfiguration.class, TypesenseTestConfiguration.class})
+@IntegrationTest
 class CategoryMoveRecategorizesSoftwareIT {
 
     /** In Demoscene and in Shooters, of Games → Action. */

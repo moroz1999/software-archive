@@ -4,9 +4,8 @@ import static com.archive.backend.user.TestActors.BY_OTHER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.IntegrationTest;
 import com.archive.backend.category.domain.CategorySet;
-import com.archive.backend.category.infra.JdbcCategoryCatalog;
 import com.archive.backend.hardware.domain.HardwareSet;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.software.domain.Software;
@@ -20,9 +19,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -36,15 +32,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  * its invariants against the same state (docs/backend.md). Each transaction here is real and commits, so the test runs
  * outside the transaction of the test itself.
  */
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({
-    TestcontainersConfiguration.class,
-    JpaSoftwareRepository.class,
-    SoftwareMapperImpl.class,
-    JdbcCategoryCatalog.class
-})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
+@IntegrationTest
 class JpaSoftwareRepositoryLockIT {
 
     private static final SoftwareId ID = new SoftwareId(UUID.fromString("00000000-0000-0000-0000-000000000001"));

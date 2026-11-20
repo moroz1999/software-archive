@@ -4,7 +4,7 @@ import static com.archive.backend.user.TestActors.BY_OTHER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.archive.backend.TestcontainersConfiguration;
+import com.archive.backend.IntegrationTest;
 import com.archive.backend.geo.domain.Locations;
 import com.archive.backend.group.domain.Group;
 import com.archive.backend.group.domain.GroupId;
@@ -20,9 +20,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -32,10 +29,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /** A group is loaded for a change under a lock held until the change commits (docs/backend.md). */
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({TestcontainersConfiguration.class, JpaGroupRepository.class, GroupMapperImpl.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
+@IntegrationTest
 class JpaGroupRepositoryLockIT {
 
     private static final GroupId ID = new GroupId(UUID.fromString("00000000-0000-0000-0000-000000000001"));

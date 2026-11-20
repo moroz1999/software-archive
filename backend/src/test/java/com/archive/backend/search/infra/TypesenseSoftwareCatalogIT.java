@@ -3,8 +3,7 @@ package com.archive.backend.search.infra;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.archive.backend.TestcontainersConfiguration;
-import com.archive.backend.TypesenseTestConfiguration;
+import com.archive.backend.IntegrationTest;
 import com.archive.backend.search.TypesenseProbe;
 import com.archive.backend.search.domain.SearchCollection;
 import com.archive.backend.search.domain.SearchEntityType;
@@ -22,8 +21,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.testcontainers.typesense.TypesenseContainer;
 
@@ -31,8 +28,7 @@ import org.testcontainers.typesense.TypesenseContainer;
  * The software catalog read from Typesense (docs/domain/search.md#software-catalog): every test puts a collection of its
  * own in use, holding exactly the software below.
  */
-@SpringBootTest
-@Import({TestcontainersConfiguration.class, TypesenseTestConfiguration.class})
+@IntegrationTest
 class TypesenseSoftwareCatalogIT {
 
     private static final UUID GAMES = UUID.fromString("00000000-0000-0000-00fd-0000000000c1");

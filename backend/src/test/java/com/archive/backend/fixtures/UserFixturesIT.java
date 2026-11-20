@@ -6,15 +6,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.archive.backend.TestcontainersConfiguration;
-import com.archive.backend.TypesenseTestConfiguration;
+import com.archive.backend.IntegrationTest;
 import com.jayway.jsonpath.JsonPath;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -23,10 +19,8 @@ import org.springframework.test.web.servlet.ResultActions;
 /**
  * The fixture accounts: one of every group, all with the password {@code password1}.
  */
-@SpringBootTest
-@AutoConfigureMockMvc
+@IntegrationTest
 @ActiveProfiles("fixtures")
-@Import({TestcontainersConfiguration.class, TypesenseTestConfiguration.class})
 class UserFixturesIT {
 
     @Autowired
