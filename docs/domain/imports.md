@@ -27,6 +27,12 @@ The archive takes in software from other archives so that it does not have to be
 ## Authors
 - An author whom the source does not tell to be a person or a group is a label of nobody, sorted out by hand later; each source tells by rules of its own when an author is a person or a group.
 - An author page of the source gives data about the author, such as the full name; it goes to the author in the archive by the rule of empty fields.
+- An author the archive has nothing of from this source yet may be one the archive already has, from another source or added by hand. Before a new one is created, the archive is searched, and an author found is remembered as that author of the source from then on:
+  - A person is the archive's person only when both the full real name, of at least two words, and the nickname are the same, whatever their case: "S.E.S., Ермолаев Сергей" is the S.E.S. Ермолаев Сергей of the archive. The nickname alone or a short name ("Сергей") is too little: people share nicknames.
+  - A group is the archive's group of the same name, or with a label of that name, compared by letters and digits alone, whatever their case: "E.B.O. Soft" is EBO SOFT, but SOFT is not SOFT123. Groups almost never share a name, so a label of nobody a source names is taken for such a group too.
+  - The place must not contradict: when both the source and the archive tell where the author is from, they share a city or a country. A place the archive does not know is another place.
+  - When two of the archive match, neither is taken: a new author is created, and the duplicate is fixed by hand.
+  - A label of nobody is never taken for a person of the archive.
 - A city or a country of an author or a group found in a source is looked for among the cities and countries of the archive by their names in all languages. One that the archive does not have is created, with its name in one language. What a place of a source is, a city or a country, and the language of its name, is told by each source.
 
 ## vektor-06c.ru

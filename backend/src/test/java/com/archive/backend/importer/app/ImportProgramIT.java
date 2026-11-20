@@ -3,14 +3,21 @@ package com.archive.backend.importer.app;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.archive.backend.IntegrationTest;
+import com.archive.backend.author.app.CreateAuthorCommand;
+import com.archive.backend.author.app.CreateAuthorHandler;
 import com.archive.backend.author.app.DeleteAuthorCommand;
 import com.archive.backend.author.app.DeleteAuthorHandler;
 import com.archive.backend.author.domain.AuthorId;
 import com.archive.backend.author.domain.RealName;
 import com.archive.backend.category.domain.CategoryId;
+import com.archive.backend.geo.domain.CityId;
+import com.archive.backend.geo.domain.LocationDraft;
+import com.archive.backend.group.app.CreateGroupCommand;
+import com.archive.backend.group.app.CreateGroupHandler;
 import com.archive.backend.group.app.DeleteGroupCommand;
 import com.archive.backend.group.app.DeleteGroupHandler;
 import com.archive.backend.group.domain.GroupId;
+import com.archive.backend.group.domain.GroupName;
 import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.importer.domain.ExternalPage;
@@ -28,8 +35,10 @@ import com.archive.backend.importer.read.ImportRunReadRepository;
 import com.archive.backend.importer.read.ImportRunReport;
 import com.archive.backend.label.app.MakeAuthorOfLabelCommand;
 import com.archive.backend.label.app.MakeAuthorOfLabelHandler;
+import com.archive.backend.label.domain.LabelDraft;
 import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.LabelName;
+import com.archive.backend.label.domain.UnmarkedLabelDraft;
 import com.archive.backend.shared.domain.Language;
 import com.archive.backend.software.app.CreateReleaseCommand;
 import com.archive.backend.software.app.CreateReleaseHandler;
@@ -59,6 +68,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
@@ -111,6 +121,12 @@ class ImportProgramIT {
     private DeleteGroupHandler deleteGroup;
 
     @Autowired
+    private CreateAuthorHandler createAuthor;
+
+    @Autowired
+    private CreateGroupHandler createGroup;
+
+    @Autowired
     private ImportRunRepository runs;
 
     @Autowired
@@ -133,15 +149,17 @@ class ImportProgramIT {
     @AfterEach
     void cleanUp() {
         jdbc.update("DELETE FROM software WHERE added_by IN (?, ?)", Importer.ID.value(), TestActors.ADMIN_ID.value());
-        UUID importer = Importer.ID.value();
-        jdbc.update("DELETE FROM label WHERE added_by = ?", importer);
-        jdbc.update(
-                "DELETE FROM entity_location WHERE entity_id IN (SELECT id FROM person WHERE added_by = ?)"
-                        + " OR entity_id IN (SELECT id FROM \"group\" WHERE added_by = ?)",
-                importer,
-                importer);
-        jdbc.update("DELETE FROM person WHERE added_by = ?", importer);
-        jdbc.update("DELETE FROM \"group\" WHERE added_by = ?", importer);
+        // What the import added, and what the archive had before it: people and groups an administrator added.
+        for (UUID adder : List.of(Importer.ID.value(), TestActors.ADMIN_ID.value())) {
+            jdbc.update("DELETE FROM label WHERE added_by = ?", adder);
+            jdbc.update(
+                    "DELETE FROM entity_location WHERE entity_id IN (SELECT id FROM person WHERE added_by = ?)"
+                            + " OR entity_id IN (SELECT id FROM \"group\" WHERE added_by = ?)",
+                    adder,
+                    adder);
+            jdbc.update("DELETE FROM person WHERE added_by = ?", adder);
+            jdbc.update("DELETE FROM \"group\" WHERE added_by = ?", adder);
+        }
         jdbc.update("DELETE FROM external_origin");
         jdbc.update("DELETE FROM city WHERE country_id = ?", UNKNOWN_COUNTRY);
         jdbc.update("DELETE FROM import_run");
@@ -513,6 +531,193 @@ class ImportProgramIT {
                 .isEqualTo(3);
     }
 
+    @Test
+    void takesForThePersonOfTheArchiveAPersonOfTheSameNicknameAndFullRealName() {
+        UUID ours = ourPerson("Иван Андреев", "IVAN", KNOWN_CITY);
+
+        importProgram(program("1", "Elite", zip(Map.of("ELITE.ROM", ELITE_ROM)))
+                .authors(person(
+                        "17", "IVAN", "Иван Андреев", new SourcePlace("Testgrad", Language.EN, SourcePlaceKind.CITY)))
+                .build());
+
+        assertThat(origin("AUTHOR", "17")).isEqualTo(ours);
+        assertThat(jdbc.queryForObject(
+                        "SELECT count(*) FROM person WHERE added_by = ?", Integer.class, Importer.ID.value()))
+                .isZero();
+        assertThat(jdbc.queryForObject(
+                        "SELECT label_id FROM software_contribution WHERE software_id = ?",
+                        UUID.class,
+                        software("Elite")))
+                .isEqualTo(labelOf(ours, "IVAN"));
+    }
+
+    @Test
+    void comparesTheNicknameAndTheRealNameOfAPersonWhateverTheCase() {
+        UUID ours = ourPerson("Иван Андреев", "IVAN", null);
+
+        importProgram(program("1", "Elite", zip(Map.of("ELITE.ROM", ELITE_ROM)))
+                .authors(person("17", "ivan", "ИВАН АНДРЕЕВ", null))
+                .build());
+
+        assertThat(origin("AUTHOR", "17")).isEqualTo(ours);
+    }
+
+    @Test
+    void makesANewPersonOfOneWhoseNicknameAloneIsThatOfAPersonOfTheArchive() {
+        UUID ours = ourPerson("Иван Андреев", "IVAN", null);
+
+        importProgram(program("1", "Elite", zip(Map.of("ELITE.ROM", ELITE_ROM)))
+                .authors(
+                        new SourceAuthor("17", new LabelName("IVAN"), SourceAuthorKind.PERSON, null, null),
+                        person("18", "IVAN", "Иван Другой", null))
+                .build());
+
+        assertThat(origin("AUTHOR", "17")).isNotEqualTo(ours);
+        assertThat(origin("AUTHOR", "18")).isNotEqualTo(ours).isNotEqualTo(origin("AUTHOR", "17"));
+    }
+
+    @Test
+    void makesANewPersonOfOneWhoseRealNameIsNotFull() {
+        UUID ours = ourPerson("Иван", "IVAN", null);
+
+        importProgram(program("1", "Elite", zip(Map.of("ELITE.ROM", ELITE_ROM)))
+                .authors(person("17", "IVAN", "Иван", null))
+                .build());
+
+        assertThat(origin("AUTHOR", "17")).isNotEqualTo(ours);
+    }
+
+    @Test
+    void makesANewPersonOfOneFromAnotherPlace() {
+        UUID ours = ourPerson("Иван Андреев", "IVAN", KNOWN_CITY);
+
+        importProgram(program("1", "Elite", zip(Map.of("ELITE.ROM", ELITE_ROM)))
+                .authors(person(
+                        "17", "IVAN", "Иван Андреев", new SourcePlace("Новоград", Language.RU, SourcePlaceKind.CITY)))
+                .build());
+
+        assertThat(origin("AUTHOR", "17")).isNotEqualTo(ours);
+    }
+
+    @Test
+    void makesANewPersonOfOneTwoPeopleOfTheArchiveMatch() {
+        UUID one = ourPerson("Иван Андреев", "IVAN", null);
+        UUID other = ourPerson("Иван Андреев", "IVAN", null);
+
+        importProgram(program("1", "Elite", zip(Map.of("ELITE.ROM", ELITE_ROM)))
+                .authors(person("17", "IVAN", "Иван Андреев", null))
+                .build());
+
+        assertThat(origin("AUTHOR", "17")).isNotIn(one, other);
+    }
+
+    @Test
+    void neverTakesALabelOfASourceForAPersonOfTheArchive() {
+        UUID ours = ourPerson("Иван Андреев", "IVAN", null);
+
+        importProgram(program("1", "Elite", zip(Map.of("ELITE.ROM", ELITE_ROM)))
+                .authors(SourceAuthor.label(new LabelName("IVAN")))
+                .build());
+
+        assertThat(jdbc.queryForObject(
+                        "SELECT label_id FROM software_contribution WHERE software_id = ?",
+                        UUID.class,
+                        software("Elite")))
+                .isNotEqualTo(labelOf(ours, "IVAN"));
+    }
+
+    @Test
+    void takesForTheGroupOfTheArchiveAGroupOfTheSameNameWhateverItsCaseAndMarks() {
+        UUID ours = ourGroup("EBO Soft", List.of(), KNOWN_CITY);
+
+        importProgram(program("1", "Elite", zip(Map.of("ELITE.ROM", ELITE_ROM)))
+                .authors(new SourceAuthor(
+                        "18",
+                        new LabelName("e.b.o. soft"),
+                        SourceAuthorKind.GROUP,
+                        null,
+                        new SourcePlace("Testgrad", Language.EN, SourcePlaceKind.CITY)))
+                .build());
+
+        assertThat(origin("GROUP", "18")).isEqualTo(ours);
+        assertThat(jdbc.queryForObject(
+                        "SELECT count(*) FROM \"group\" WHERE added_by = ?", Integer.class, Importer.ID.value()))
+                .isZero();
+        assertThat(jdbc.queryForObject(
+                        "SELECT group_id FROM software_contribution WHERE software_id = ?",
+                        UUID.class,
+                        software("Elite")))
+                .isEqualTo(ours);
+    }
+
+    @Test
+    void takesForTheGroupOfTheArchiveAGroupNamedAsOneOfItsLabels() {
+        UUID ours = ourGroup("Ebo Software", List.of("EBOSOFT"), null);
+
+        importProgram(program("1", "Elite", zip(Map.of("ELITE.ROM", ELITE_ROM)))
+                .authors(new SourceAuthor("18", new LabelName("EBOSOFT"), SourceAuthorKind.GROUP, null, null))
+                .build());
+
+        assertThat(origin("GROUP", "18")).isEqualTo(ours);
+    }
+
+    @Test
+    void takesForTheGroupOfTheArchiveALabelOfASourceOfTheSameName() {
+        UUID ours = ourGroup("EBOSOFT", List.of(), null);
+
+        importProgram(program("1", "Elite", zip(Map.of("ELITE.ROM", ELITE_ROM)))
+                .authors(SourceAuthor.label(new LabelName("EboSoft")))
+                .build());
+
+        assertThat(jdbc.queryForObject(
+                        "SELECT group_id FROM software_contribution WHERE software_id = ?",
+                        UUID.class,
+                        software("Elite")))
+                .isEqualTo(ours);
+        assertThat(jdbc.queryForObject(
+                        "SELECT count(*) FROM label WHERE added_by = ?", Integer.class, Importer.ID.value()))
+                .isZero();
+    }
+
+    @Test
+    void makesANewGroupOfOneWhoseNameOnlyBeginsAGroupOfTheArchive() {
+        UUID ours = ourGroup("SOFT123", List.of(), null);
+
+        importProgram(program("1", "Elite", zip(Map.of("ELITE.ROM", ELITE_ROM)))
+                .authors(new SourceAuthor("18", new LabelName("SOFT"), SourceAuthorKind.GROUP, null, null))
+                .build());
+
+        assertThat(origin("GROUP", "18")).isNotEqualTo(ours);
+    }
+
+    @Test
+    void makesANewGroupOfOneFromAnotherPlace() {
+        UUID ours = ourGroup("EBOSOFT", List.of(), KNOWN_CITY);
+
+        importProgram(program("1", "Elite", zip(Map.of("ELITE.ROM", ELITE_ROM)))
+                .authors(new SourceAuthor(
+                        "18",
+                        new LabelName("EBOSOFT"),
+                        SourceAuthorKind.GROUP,
+                        null,
+                        new SourcePlace("Новоград", Language.RU, SourcePlaceKind.CITY)))
+                .build());
+
+        assertThat(origin("GROUP", "18")).isNotEqualTo(ours);
+    }
+
+    @Test
+    void makesANewGroupOfOneTwoGroupsOfTheArchiveMatch() {
+        UUID one = ourGroup("EBOSOFT", List.of(), null);
+        UUID other = ourGroup("Ebo Software", List.of("EBO-SOFT"), null);
+
+        importProgram(program("1", "Elite", zip(Map.of("ELITE.ROM", ELITE_ROM)))
+                .authors(new SourceAuthor("18", new LabelName("EBOSOFT"), SourceAuthorKind.GROUP, null, null))
+                .build());
+
+        assertThat(origin("GROUP", "18")).isNotIn(one, other);
+    }
+
     private void importProgram(SourceProgram program) {
         ImportRunId run = new ImportRunId(UUID.randomUUID());
         runs.save(ImportRun.start(run, new ImportScope(ARCHIVE, null), Instant.now()));
@@ -529,6 +734,46 @@ class ImportProgramIT {
                 Set.of(),
                 upload("ours.zip", file)));
         return software;
+    }
+
+    /** A person the archive has, added by an administrator before any import. */
+    private UUID ourPerson(String realName, String nickname, @Nullable UUID city) {
+        return createAuthor
+                .handle(new CreateAuthorCommand(
+                        TestActors.ADMIN,
+                        new RealName(realName),
+                        null,
+                        List.of(new LabelDraft(null, new LabelName(nickname), true)),
+                        locations(city)))
+                .value();
+    }
+
+    /** A group the archive has, added by an administrator before any import. */
+    private UUID ourGroup(String name, List<String> labels, @Nullable UUID city) {
+        return createGroup
+                .handle(new CreateGroupCommand(
+                        TestActors.ADMIN,
+                        new GroupName(name),
+                        null,
+                        Set.of(),
+                        labels.stream()
+                                .map(label -> new UnmarkedLabelDraft(null, new LabelName(label)))
+                                .toList(),
+                        locations(city)))
+                .value();
+    }
+
+    private static List<LocationDraft> locations(@Nullable UUID city) {
+        return city == null ? List.of() : List.of(new LocationDraft(null, new CityId(city), true));
+    }
+
+    private UUID labelOf(UUID person, String name) {
+        return Objects.requireNonNull(
+                jdbc.queryForObject("SELECT id FROM label WHERE person_id = ? AND name = ?", UUID.class, person, name));
+    }
+
+    private static SourceAuthor person(String id, String nickname, String realName, @Nullable SourcePlace place) {
+        return new SourceAuthor(id, new LabelName(nickname), SourceAuthorKind.PERSON, new RealName(realName), place);
     }
 
     private ImportRunReport lastReport() {
