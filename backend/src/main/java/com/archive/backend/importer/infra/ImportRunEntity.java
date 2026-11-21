@@ -60,4 +60,37 @@ public class ImportRunEntity {
     @CollectionTable(name = "import_run_failed", joinColumns = @JoinColumn(name = "run_id"))
     @OrderColumn(name = "position")
     private List<ImportRunFailedRow> failedPrograms = new ArrayList<>();
+
+    /** The programs found in the archive, in the order the run met them. */
+    @ElementCollection
+    @CollectionTable(name = "import_run_known", joinColumns = @JoinColumn(name = "run_id"))
+    @OrderColumn(name = "position")
+    private List<ImportRunKnownRow> knownPrograms = new ArrayList<>();
+
+    /** The programs left out, in the order the run met them. */
+    @ElementCollection
+    @CollectionTable(name = "import_run_skipped", joinColumns = @JoinColumn(name = "run_id"))
+    @OrderColumn(name = "position")
+    private List<ImportRunSkippedRow> skippedPrograms = new ArrayList<>();
+
+    /** The authors taken for the first time, in the order the run took them. */
+    @ElementCollection
+    @CollectionTable(name = "import_run_author", joinColumns = @JoinColumn(name = "run_id"))
+    @OrderColumn(name = "position")
+    private List<ImportRunAuthorRow> authors = new ArrayList<>();
+
+    /** The places added, in the order the run added them. */
+    @ElementCollection
+    @CollectionTable(name = "import_run_place", joinColumns = @JoinColumn(name = "run_id"))
+    @OrderColumn(name = "position")
+    private List<ImportRunPlaceRow> places = new ArrayList<>();
+
+    @Column(name = "progress_position", nullable = false)
+    private int progressPosition;
+
+    @Column(name = "progress_total")
+    private @Nullable Integer progressTotal;
+
+    @Column(name = "progress_url")
+    private @Nullable String progressUrl;
 }

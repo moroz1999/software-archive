@@ -4,7 +4,10 @@ import com.archive.backend.importer.domain.ExternalPage;
 import com.archive.backend.importer.domain.ImportSummary;
 import com.archive.backend.importer.domain.run.FailedProgram;
 import com.archive.backend.importer.domain.run.ImportOutcome;
+import com.archive.backend.importer.domain.run.ImportProgress;
 import com.archive.backend.importer.domain.run.ImportRunState;
+import com.archive.backend.importer.domain.run.SkipReason;
+import com.archive.backend.importer.domain.run.SkippedProgram;
 import com.archive.backend.importer.domain.vektor.VektorListing;
 import com.archive.backend.importer.domain.vektor.VektorProgram;
 import com.archive.backend.importer.domain.vektor.VektorSections;
@@ -28,6 +31,7 @@ public class ImportVektorHandler {
     private final VektorSite site;
     private final ImportProgramHandler importProgram;
     private final RecordImportOutcomeHandler recordOutcome;
+    private final RecordImportProgressHandler progress;
     private final EndImportRunHandler endRun;
 
     public ImportSummary handle(ImportVektorCommand c) {
@@ -35,12 +39,24 @@ public class ImportVektorHandler {
         int known = 0;
         int skipped = 0;
         int failed = 0;
+        int position = 0;
         for (VektorListing listing : site.listings(c.section())) {
+            // The site lists its programs page by page: how many there are is not known before the last one.
+            position++;
+            progress.handle(new RecordImportProgressCommand(
+                    c.run(), new ImportProgress(position, null, new ExternalPage(listing.url()))));
             try {
                 VektorProgram program = site.program(listing);
                 if (!VektorSections.placementOf(program.section()).imported()) {
                     skipped++;
-                    record(c, new ImportOutcome.Skipped());
+                    record(
+                            c,
+                            new ImportOutcome.Skipped(new SkippedProgram(
+                                    listing.id(),
+                                    new ExternalPage(listing.url()),
+                                    program.title(),
+                                    SkipReason.SECTION,
+                                    program.section())));
                     continue;
                 }
                 ImportProgramResult result =

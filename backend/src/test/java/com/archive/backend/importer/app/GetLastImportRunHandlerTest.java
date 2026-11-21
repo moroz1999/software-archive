@@ -5,6 +5,7 @@ import static com.archive.backend.user.TestActors.MEMBER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.archive.backend.importer.read.ImportRunProgressEntry;
 import com.archive.backend.importer.read.ImportRunReport;
 import com.archive.backend.user.domain.Actor;
 import com.archive.backend.user.domain.ChangeForbiddenException;
@@ -29,7 +30,12 @@ class GetLastImportRunHandlerTest {
             0,
             0,
             List.of(),
-            List.of());
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of(),
+            new ImportRunProgressEntry(0, null, null));
 
     private final GetLastImportRunHandler handler = new GetLastImportRunHandler(() -> Optional.of(REPORT));
 

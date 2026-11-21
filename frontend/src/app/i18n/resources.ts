@@ -24,6 +24,16 @@ export const resources = {
             startedAt: 'Started {{time}}', ranFromTo: '{{from}} – {{to}}',
             counts: 'Added {{added}} · already there {{known}} · left out {{skipped}} · failed {{failed}}',
             addedPrograms: 'Added', failedPrograms: 'Failed', deleted: '{{title}} (deleted since)',
+            supplementedPrograms: 'Supplemented', unchangedPrograms: 'Already there, nothing added', skippedPrograms: 'Left out',
+            createdAuthors: 'Authors created', foundAuthors: 'Authors found in the archive', addedPlaces: 'Places added',
+            now: {list: 'Now: reading the list of programs', program: 'Now: program {{position}} of {{total}}', programUncounted: 'Now: program {{position}}'},
+            supplements: {
+                description: 'description', 'release-date': 'release date', preservation: 'preservation status', categories: 'categories',
+                credits: 'authors', screenshots: 'screenshots',
+            },
+            skipReasons: {section: 'The section {{detail}} is not imported', category: 'The category {{detail}} is not imported'},
+            authorKinds: {author: 'Person', group: 'Group', label: 'Label'},
+            placeKinds: {city: 'City', country: 'Country'},
         },
         empty: {
             software: 'No software in the archive yet.', authors: 'No authors found.', groups: 'No groups found.', categories: 'No categories yet.',
@@ -229,6 +239,16 @@ export const resources = {
             startedAt: 'Начат {{time}}', ranFromTo: '{{from}} – {{to}}',
             counts: 'Добавлено {{added}} · уже были {{known}} · пропущено {{skipped}} · не удалось {{failed}}',
             addedPrograms: 'Добавлены', failedPrograms: 'Не удалось', deleted: '{{title}} (с тех пор удалена)',
+            supplementedPrograms: 'Дополнены', unchangedPrograms: 'Уже были, ничего не добавлено', skippedPrograms: 'Пропущены',
+            createdAuthors: 'Созданы авторы', foundAuthors: 'Найдены в архиве', addedPlaces: 'Добавлены места',
+            now: {list: 'Сейчас: читаю список программ', program: 'Сейчас: программа {{position}} из {{total}}', programUncounted: 'Сейчас: программа {{position}}'},
+            supplements: {
+                description: 'описание', 'release-date': 'дата выпуска', preservation: 'статус сохранности', categories: 'категории',
+                credits: 'авторы', screenshots: 'скриншоты',
+            },
+            skipReasons: {section: 'Раздел {{detail}} не импортируется', category: 'Категория {{detail}} не импортируется'},
+            authorKinds: {author: 'Человек', group: 'Группа', label: 'Псевдоним'},
+            placeKinds: {city: 'Город', country: 'Страна'},
         },
         empty: {
             software: 'В архиве пока нет программ.', authors: 'Авторы не найдены.', groups: 'Группы не найдены.', categories: 'Категорий пока нет.',

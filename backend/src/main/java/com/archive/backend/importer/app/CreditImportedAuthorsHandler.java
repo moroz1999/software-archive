@@ -32,6 +32,10 @@ import com.archive.backend.importer.domain.ImportedEntry;
 import com.archive.backend.importer.domain.ImportedEntryId;
 import com.archive.backend.importer.domain.ImportedEntryRepository;
 import com.archive.backend.importer.domain.Importer;
+import com.archive.backend.importer.domain.run.AddedPlace;
+import com.archive.backend.importer.domain.run.ImportedCredits;
+import com.archive.backend.importer.domain.run.TakenAuthor;
+import com.archive.backend.importer.domain.run.TakenAuthors;
 import com.archive.backend.importer.domain.source.MatchingAuthors;
 import com.archive.backend.importer.domain.source.SourceAuthor;
 import com.archive.backend.importer.domain.source.SourceAuthorKind;
@@ -43,6 +47,7 @@ import com.archive.backend.software.domain.SoftwareCreditDraft;
 import com.archive.backend.software.domain.SoftwareReference;
 import com.archive.backend.software.domain.SoftwareReferenceId;
 import com.archive.backend.software.domain.SoftwareReferenceType;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -80,23 +85,35 @@ public class CreditImportedAuthorsHandler {
     private final MatchingAuthors matching;
 
     /** The credits of the authors of a program, each subject once, with an unknown role: no source tells roles yet. */
-    public List<SoftwareCreditDraft> handle(CreditImportedAuthorsCommand c) {
+    public ImportedCredits handle(CreditImportedAuthorsCommand c) {
         String archive = c.program().archive();
-        return c.program().authors().stream()
-                .map(author -> referenceOf(archive, author))
+        Taking taking = new Taking();
+        List<SoftwareCreditDraft> credits = c.program().authors().stream()
+                .map(author -> referenceOf(archive, author, taking))
                 .distinct()
                 .map(reference -> new SoftwareCreditDraft(reference, UNKNOWN_ROLE))
                 .toList();
+        return new ImportedCredits(credits, new TakenAuthors(taking.authors, taking.places));
     }
 
-    private SoftwareReference referenceOf(String archive, SourceAuthor author) {
+    /** The authors and places one program makes the import take for the first time, for the report of the run. */
+    private static final class Taking {
+        private final List<TakenAuthor> authors = new ArrayList<>();
+        private final List<AddedPlace> places = new ArrayList<>();
+
+        void author(ExternalKind kind, UUID entity, String name, boolean created) {
+            authors.add(new TakenAuthor(kind, new ImportedEntryId(entity), name, created));
+        }
+    }
+
+    private SoftwareReference referenceOf(String archive, SourceAuthor author, Taking taking) {
         Optional<UUID> person = known(archive, ExternalKind.AUTHOR, author);
         if (person.isPresent()) {
-            return creditPerson(new AuthorId(person.get()), author);
+            return creditPerson(new AuthorId(person.get()), author, taking);
         }
         Optional<UUID> group = known(archive, ExternalKind.GROUP, author);
         if (group.isPresent()) {
-            return creditGroup(new GroupId(group.get()), author);
+            return creditGroup(new GroupId(group.get()), author, taking);
         }
         Optional<UUID> label = known(archive, ExternalKind.LABEL, author);
         if (label.isPresent()) {
@@ -105,33 +122,42 @@ public class CreditImportedAuthorsHandler {
         Optional<AuthorId> match = matchingPerson(author);
         if (match.isPresent()) {
             remember(archive, ExternalKind.AUTHOR, author, match.get().value());
-            return creditPerson(match.get(), author);
+            SoftwareReference credited = creditPerson(match.get(), author, taking);
+            taking.author(ExternalKind.AUTHOR, match.get().value(), nameOf(match.get(), author), false);
+            return credited;
         }
         Optional<GroupId> matchingGroup = matchingGroup(author);
         if (matchingGroup.isPresent()) {
             remember(archive, ExternalKind.GROUP, author, matchingGroup.get().value());
-            return creditGroup(matchingGroup.get(), author);
+            taking.author(
+                    ExternalKind.GROUP,
+                    matchingGroup.get().value(),
+                    groups.findById(matchingGroup.get())
+                            .map(found -> found.getName().value())
+                            .orElse(author.label().value()),
+                    false);
+            return creditGroup(matchingGroup.get(), author, taking);
         }
-        return created(archive, author);
+        return created(archive, author, taking);
     }
 
     /** A person of the archive the author is: what the source tells fills only its empty fields. */
-    private SoftwareReference creditPerson(AuthorId id, SourceAuthor author) {
+    private SoftwareReference creditPerson(AuthorId id, SourceAuthor author, Taking taking) {
         boolean located = authors.findById(id)
                 .map(found -> !found.getLocations().all().isEmpty())
                 .orElse(false);
         supplementAuthor.handle(new SupplementAuthorCommand(
-                Importer.ACTOR, id, author.realName(), located ? List.of() : locationsOf(author.place())));
+                Importer.ACTOR, id, author.realName(), located ? List.of() : locationsOf(author.place(), taking)));
         return underNickname(id, author);
     }
 
     /** A group of the archive the author is: what the source tells fills only its empty fields. */
-    private SoftwareReference creditGroup(GroupId id, SourceAuthor author) {
+    private SoftwareReference creditGroup(GroupId id, SourceAuthor author, Taking taking) {
         boolean located = groups.findById(id)
                 .map(found -> !found.getLocations().all().isEmpty())
                 .orElse(false);
-        supplementGroup.handle(
-                new SupplementGroupCommand(Importer.ACTOR, id, located ? List.of() : locationsOf(author.place())));
+        supplementGroup.handle(new SupplementGroupCommand(
+                Importer.ACTOR, id, located ? List.of() : locationsOf(author.place(), taking)));
         return reference(SoftwareReferenceType.GROUP, id.value());
     }
 
@@ -208,13 +234,15 @@ public class CreditImportedAuthorsHandler {
                         || (theirCountry.isPresent() && theirCountry.get().equals(our.country())));
     }
 
-    private SoftwareReference created(String archive, SourceAuthor author) {
+    private SoftwareReference created(String archive, SourceAuthor author, Taking taking) {
         return switch (author.kind()) {
             case LABEL -> {
                 UUID created = createLabel
-                        .handle(new CreateLabelCommand(Importer.ACTOR, author.label(), locationsOf(author.place())))
+                        .handle(new CreateLabelCommand(
+                                Importer.ACTOR, author.label(), locationsOf(author.place(), taking)))
                         .value();
                 remember(archive, ExternalKind.LABEL, author, created);
+                taking.author(ExternalKind.LABEL, created, author.label().value(), true);
                 yield reference(SoftwareReferenceType.AUTHOR_LABEL, created);
             }
             case PERSON -> {
@@ -224,9 +252,10 @@ public class CreditImportedAuthorsHandler {
                                 author.realName(),
                                 null,
                                 List.of(new LabelDraft(null, author.label(), true)),
-                                locationsOf(author.place())))
+                                locationsOf(author.place(), taking)))
                         .value();
                 remember(archive, ExternalKind.AUTHOR, author, created);
+                taking.author(ExternalKind.AUTHOR, created, author.label().value(), true);
                 yield underNickname(new AuthorId(created), author);
             }
             case GROUP -> {
@@ -237,12 +266,26 @@ public class CreditImportedAuthorsHandler {
                                 null,
                                 Set.of(),
                                 List.of(),
-                                locationsOf(author.place())))
+                                locationsOf(author.place(), taking)))
                         .value();
                 remember(archive, ExternalKind.GROUP, author, created);
+                taking.author(ExternalKind.GROUP, created, author.label().value(), true);
                 yield reference(SoftwareReferenceType.GROUP, created);
             }
         };
+    }
+
+    /** The person's label of the nickname the source names them by, else their real name, as the report names them. */
+    private String nameOf(AuthorId person, SourceAuthor author) {
+        return authors.findById(person)
+                .flatMap(found -> found.getLabels().all().stream()
+                        .filter(label -> label.name()
+                                .value()
+                                .equalsIgnoreCase(author.label().value()))
+                        .map(label -> label.name().value())
+                        .findFirst()
+                        .or(() -> Optional.ofNullable(found.getRealName()).map(RealName::value)))
+                .orElse(author.label().value());
     }
 
     /** The person's label of the nickname the source names them by; the person once that label is not theirs. */
@@ -268,27 +311,33 @@ public class CreditImportedAuthorsHandler {
                 new ImportedEntry(new ExternalOrigin(archive, kind, author.originId()), new ImportedEntryId(entity)));
     }
 
-    private List<LocationDraft> locationsOf(@Nullable SourcePlace place) {
+    private List<LocationDraft> locationsOf(@Nullable SourcePlace place, Taking taking) {
         if (place == null) {
             return List.of();
         }
         GeoName name = new GeoName(place.name());
         return List.of(
                 switch (place.kind()) {
-                    case CITY -> city(name, place);
-                    case COUNTRY -> country(name, place);
+                    case CITY -> city(name, place, taking);
+                    case COUNTRY -> country(name, place, taking);
                     case CITY_OR_COUNTRY ->
                         geoNames.countryNamed(name)
                                 .map(country -> new LocationDraft(country, null, true))
-                                .orElseGet(() -> city(name, place));
+                                .orElseGet(() -> city(name, place, taking));
                 });
     }
 
-    private LocationDraft city(GeoName name, SourcePlace place) {
+    private LocationDraft city(GeoName name, SourcePlace place, Taking taking) {
+        if (geoNames.cityNamed(name).isEmpty()) {
+            taking.places.add(new AddedPlace(AddedPlace.Kind.CITY, place.name()));
+        }
         return new LocationDraft(null, findOrAddCity.handle(new FindOrAddCityCommand(name, place.language())), true);
     }
 
-    private LocationDraft country(GeoName name, SourcePlace place) {
+    private LocationDraft country(GeoName name, SourcePlace place, Taking taking) {
+        if (geoNames.countryNamed(name).isEmpty()) {
+            taking.places.add(new AddedPlace(AddedPlace.Kind.COUNTRY, place.name()));
+        }
         return new LocationDraft(
                 findOrAddCountry.handle(new FindOrAddCountryCommand(name, place.language())), null, true);
     }

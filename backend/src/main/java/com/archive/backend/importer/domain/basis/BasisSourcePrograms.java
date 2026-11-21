@@ -25,6 +25,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -49,7 +50,14 @@ public final class BasisSourcePrograms {
 
     /** Whether the card is software of the archive: software for the PC and paper are not. */
     public static boolean imported(BasisProgram program) {
-        return program.categories().stream().noneMatch(BasisCategories.LEFT_OUT::contains);
+        return leftOutBy(program).isEmpty();
+    }
+
+    /** The category the card is left out by, the first of those it has; none for software of the archive. */
+    public static Optional<String> leftOutBy(BasisProgram program) {
+        return program.categories().stream()
+                .filter(BasisCategories.LEFT_OUT::contains)
+                .findFirst();
     }
 
     public static SourceProgram of(BasisProgram program, BasisSite site) {

@@ -7,15 +7,15 @@ public sealed interface ImportOutcome {
 
     /** Taken into the archive. */
     @ValueObject
-    record Added(AddedProgram program) implements ImportOutcome {}
+    record Added(AddedProgram program, TakenAuthors taken) implements ImportOutcome {}
 
-    /** Taken by an earlier run. */
+    /** Found in the archive, taken by an earlier run or matched by its files; what it lacked is added to it. */
     @ValueObject
-    record Known() implements ImportOutcome {}
+    record Known(KnownProgram program, TakenAuthors taken) implements ImportOutcome {}
 
     /** Left out by the rules of the import. */
     @ValueObject
-    record Skipped() implements ImportOutcome {}
+    record Skipped(SkippedProgram program) implements ImportOutcome {}
 
     /** Not taken: it failed. */
     @ValueObject

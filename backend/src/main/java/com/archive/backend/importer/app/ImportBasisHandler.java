@@ -8,7 +8,12 @@ import com.archive.backend.importer.domain.basis.BasisSite;
 import com.archive.backend.importer.domain.basis.BasisSourcePrograms;
 import com.archive.backend.importer.domain.run.FailedProgram;
 import com.archive.backend.importer.domain.run.ImportOutcome;
+import com.archive.backend.importer.domain.run.ImportProgress;
 import com.archive.backend.importer.domain.run.ImportRunState;
+import com.archive.backend.importer.domain.run.SkipReason;
+import com.archive.backend.importer.domain.run.SkippedProgram;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +32,7 @@ public class ImportBasisHandler {
     private final BasisSite site;
     private final ImportProgramHandler importProgram;
     private final RecordImportOutcomeHandler recordOutcome;
+    private final RecordImportProgressHandler progress;
     private final EndImportRunHandler endRun;
 
     public ImportSummary handle(ImportBasisCommand c) {
@@ -34,12 +40,25 @@ public class ImportBasisHandler {
         int known = 0;
         int skipped = 0;
         int failed = 0;
-        for (BasisListing listing : site.listings()) {
+        List<BasisListing> listings = site.listings();
+        int position = 0;
+        for (BasisListing listing : listings) {
+            position++;
+            progress.handle(new RecordImportProgressCommand(
+                    c.run(), new ImportProgress(position, listings.size(), new ExternalPage(listing.url()))));
             try {
                 BasisProgram program = site.program(listing);
-                if (!BasisSourcePrograms.imported(program)) {
+                Optional<String> leftOut = BasisSourcePrograms.leftOutBy(program);
+                if (leftOut.isPresent()) {
                     skipped++;
-                    record(c, new ImportOutcome.Skipped());
+                    record(
+                            c,
+                            new ImportOutcome.Skipped(new SkippedProgram(
+                                    listing.id(),
+                                    new ExternalPage(listing.url()),
+                                    program.title(),
+                                    SkipReason.CATEGORY,
+                                    leftOut.get())));
                     continue;
                 }
                 ImportProgramResult result =

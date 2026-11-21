@@ -31,6 +31,7 @@ import com.archive.backend.importer.domain.source.SourceAuthorKind;
 import com.archive.backend.importer.domain.source.SourcePlace;
 import com.archive.backend.importer.domain.source.SourcePlaceKind;
 import com.archive.backend.importer.domain.source.SourceProgram;
+import com.archive.backend.importer.read.ImportRunAuthorEntry;
 import com.archive.backend.importer.read.ImportRunReadRepository;
 import com.archive.backend.importer.read.ImportRunReport;
 import com.archive.backend.label.app.MakeAuthorOfLabelCommand;
@@ -162,6 +163,7 @@ class ImportProgramIT {
         }
         jdbc.update("DELETE FROM external_origin");
         jdbc.update("DELETE FROM city WHERE country_id = ?", UNKNOWN_COUNTRY);
+        jdbc.update("DELETE FROM country WHERE id IN (SELECT country_id FROM country_name WHERE name = 'Атлантида')");
         jdbc.update("DELETE FROM import_run");
     }
 
@@ -222,6 +224,102 @@ class ImportProgramIT {
         assertThat(origin("SOFTWARE", "1")).isEqualTo(ours.value());
         ImportRunReport report = lastReport();
         assertThat(List.of(report.added(), report.known())).containsExactly(0, 1);
+        assertThat(report.knownPrograms()).singleElement().satisfies(known -> {
+            assertThat(known.externalId()).isEqualTo("1");
+            assertThat(known.softwareId()).isEqualTo(ours.value());
+            assertThat(known.title()).isEqualTo("Elite (other title)");
+            assertThat(known.exists()).isTrue();
+            assertThat(known.supplements())
+                    .containsExactlyInAnyOrder("description", "release-date", "categories", "credits");
+        });
+    }
+
+    @Test
+    void reportsAKnownProgramThatLackedNothingAsSuch() {
+        SourceProgram elite = program("1", "Elite", zip(Map.of("ELITE.ROM", ELITE_ROM)))
+                .description("Theirs")
+                .screenshots(screenshot("elite.png", 100))
+                .build();
+        importProgram(elite);
+
+        importProgram(elite);
+
+        assertThat(lastReport().knownPrograms())
+                .singleElement()
+                .satisfies(known -> assertThat(known.supplements()).isEmpty());
+    }
+
+    @Test
+    void reportsTheScreenshotsAddedToAKnownProgram() {
+        importProgram(program("1", "Elite", zip(Map.of("ELITE.ROM", ELITE_ROM))).build());
+
+        importProgram(program("1", "Elite", zip(Map.of("ELITE.ROM", ELITE_ROM)))
+                .screenshots(screenshot("elite.png", 100))
+                .build());
+
+        assertThat(lastReport().knownPrograms())
+                .singleElement()
+                .satisfies(known -> assertThat(known.supplements()).containsExactly("screenshots"));
+    }
+
+    @Test
+    void reportsTheAuthorsAndPlacesItCreatedForAProgram() {
+        importProgram(program("1", "Elite", zip(Map.of("ELITE.ROM", ELITE_ROM)))
+                .authors(
+                        SourceAuthor.label(new LabelName("IVAN A")),
+                        person(
+                                "17",
+                                "IVAN",
+                                "Иван Андреев",
+                                new SourcePlace("Новоград", Language.RU, SourcePlaceKind.CITY)),
+                        new SourceAuthor(
+                                "18",
+                                new LabelName("Fenomen"),
+                                SourceAuthorKind.GROUP,
+                                null,
+                                new SourcePlace("Атлантида", Language.RU, SourcePlaceKind.COUNTRY)))
+                .build());
+
+        ImportRunReport report = lastReport();
+        assertThat(report.authors())
+                .extracting(
+                        author -> author.kind() + ":" + author.name() + ":" + author.created() + ":" + author.exists())
+                .containsExactly("label:IVAN A:true:true", "author:IVAN:true:true", "group:Fenomen:true:true");
+        assertThat(report.authors())
+                .extracting(ImportRunAuthorEntry::id)
+                .containsExactly(
+                        jdbc.queryForObject("SELECT id FROM label WHERE name = 'IVAN A'", UUID.class),
+                        origin("AUTHOR", "17"),
+                        origin("GROUP", "18"));
+        assertThat(report.places())
+                .extracting(place -> place.kind() + ":" + place.name())
+                .containsExactly("city:Новоград", "country:Атлантида");
+    }
+
+    @Test
+    void reportsTheAuthorsFoundInTheArchiveOnlyTheFirstTime() {
+        UUID ours = ourPerson("Иван Андреев", "IVAN", KNOWN_CITY);
+        SourceAuthor ivan =
+                person("17", "IVAN", "Иван Андреев", new SourcePlace("Testgrad", Language.EN, SourcePlaceKind.CITY));
+
+        importProgram(program("1", "Elite", zip(Map.of("ELITE.ROM", ELITE_ROM)))
+                .authors(ivan)
+                .build());
+
+        ImportRunReport first = lastReport();
+        assertThat(first.authors()).singleElement().satisfies(author -> {
+            assertThat(author.kind()).isEqualTo("author");
+            assertThat(author.id()).isEqualTo(ours);
+            assertThat(author.name()).isEqualTo("IVAN");
+            assertThat(author.created()).isFalse();
+        });
+        assertThat(first.places()).isEmpty();
+
+        importProgram(program("2", "Exolon", zip(Map.of("EXOLON.ROM", EXTRA_ROM)))
+                .authors(ivan)
+                .build());
+
+        assertThat(lastReport().authors()).isEmpty();
     }
 
     @Test

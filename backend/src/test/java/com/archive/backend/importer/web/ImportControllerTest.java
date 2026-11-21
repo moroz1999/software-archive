@@ -19,8 +19,13 @@ import com.archive.backend.importer.domain.ImportRunningException;
 import com.archive.backend.importer.domain.run.ImportSource;
 import com.archive.backend.importer.domain.vektor.VektorSection;
 import com.archive.backend.importer.read.ImportRunAddedEntry;
+import com.archive.backend.importer.read.ImportRunAuthorEntry;
 import com.archive.backend.importer.read.ImportRunFailedEntry;
+import com.archive.backend.importer.read.ImportRunKnownEntry;
+import com.archive.backend.importer.read.ImportRunPlaceEntry;
+import com.archive.backend.importer.read.ImportRunProgressEntry;
 import com.archive.backend.importer.read.ImportRunReport;
+import com.archive.backend.importer.read.ImportRunSkippedEntry;
 import com.archive.backend.importer.web.mapper.ImportWebMapperImpl;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
@@ -71,7 +76,13 @@ class ImportControllerTest {
                         0,
                         1,
                         List.of(new ImportRunAddedEntry("599", software, "Disk Loader", true)),
-                        List.of(new ImportRunFailedEntry("598", "https://vektor-06c.ru/g-dos/", "Timed out")))));
+                        List.of(new ImportRunFailedEntry("598", "https://vektor-06c.ru/g-dos/", "Timed out")),
+                        List.of(new ImportRunKnownEntry("754", software, "МикроДОС", true, List.of("description"))),
+                        List.of(new ImportRunSkippedEntry(
+                                "524", "https://vektor-06c.ru/512-demo/", "512 demo", "section", "utility-dlya-pc")),
+                        List.of(new ImportRunAuthorEntry("label", software, "Графов А.", true, true)),
+                        List.of(new ImportRunPlaceEntry("city", "Ковров")),
+                        new ImportRunProgressEntry(4, 12, "https://vektor-06c.ru/512-demo/"))));
 
         mvc.perform(get("/api/imports/last-run"))
                 .andExpect(status().isOk())
@@ -82,7 +93,15 @@ class ImportControllerTest {
                 .andExpect(jsonPath("$.run.known").value(2))
                 .andExpect(jsonPath("$.run.addedPrograms[0].softwareId").value(software.toString()))
                 .andExpect(jsonPath("$.run.addedPrograms[0].exists").value(true))
-                .andExpect(jsonPath("$.run.failedPrograms[0].reason").value("Timed out"));
+                .andExpect(jsonPath("$.run.failedPrograms[0].reason").value("Timed out"))
+                .andExpect(jsonPath("$.run.knownPrograms[0].supplements[0]").value("description"))
+                .andExpect(jsonPath("$.run.skippedPrograms[0].reason").value("section"))
+                .andExpect(jsonPath("$.run.skippedPrograms[0].detail").value("utility-dlya-pc"))
+                .andExpect(jsonPath("$.run.authors[0].kind").value("label"))
+                .andExpect(jsonPath("$.run.authors[0].created").value(true))
+                .andExpect(jsonPath("$.run.places[0].name").value("Ковров"))
+                .andExpect(jsonPath("$.run.progress.position").value(4))
+                .andExpect(jsonPath("$.run.progress.total").value(12));
     }
 
     @Test

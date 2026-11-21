@@ -9,6 +9,8 @@ import com.archive.backend.importer.domain.ImportedEntryRepository;
 import com.archive.backend.importer.domain.Importer;
 import com.archive.backend.importer.domain.run.AddedProgram;
 import com.archive.backend.importer.domain.run.ImportOutcome;
+import com.archive.backend.importer.domain.run.ImportedCredits;
+import com.archive.backend.importer.domain.run.KnownProgram;
 import com.archive.backend.importer.domain.source.SourceProgram;
 import com.archive.backend.software.app.AddScreenshotsCommand;
 import com.archive.backend.software.app.AddScreenshotsHandler;
@@ -30,6 +32,7 @@ import com.archive.backend.software.domain.ReleasedFileTree;
 import com.archive.backend.software.domain.ScreenshotImage;
 import com.archive.backend.software.domain.SoftwareCreditDraft;
 import com.archive.backend.software.domain.SoftwareId;
+import com.archive.backend.software.domain.SoftwareSupplement;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -60,10 +63,11 @@ public class ImportProgramHandler {
     @Transactional
     public ImportProgramResult handle(ImportProgramCommand c) {
         SourceProgram program = c.program();
-        List<SoftwareCreditDraft> credits = creditAuthors.handle(new CreditImportedAuthorsCommand(program));
+        ImportedCredits imported = creditAuthors.handle(new CreditImportedAuthorsCommand(program));
+        List<SoftwareCreditDraft> credits = imported.credits();
         Optional<SoftwareId> known = knownSoftware(program);
         if (known.isPresent()) {
-            supplementSoftware.handle(new SupplementSoftwareCommand(
+            Set<SoftwareSupplement> supplements = supplementSoftware.handle(new SupplementSoftwareCommand(
                     Importer.ACTOR,
                     known.get(),
                     program.description(),
@@ -72,17 +76,27 @@ public class ImportProgramHandler {
                     program.categories(),
                     credits,
                     program.screenshots()));
-            recordOutcome.handle(new RecordImportOutcomeCommand(c.run(), new ImportOutcome.Known()));
+            recordOutcome.handle(new RecordImportOutcomeCommand(
+                    c.run(),
+                    new ImportOutcome.Known(
+                            new KnownProgram(
+                                    program.id(),
+                                    new ImportedEntryId(known.get().value()),
+                                    program.title().value(),
+                                    supplements),
+                            imported.taken())));
             return ImportProgramResult.KNOWN;
         }
         SoftwareId software = add(program, credits);
         remember(program, software);
         recordOutcome.handle(new RecordImportOutcomeCommand(
                 c.run(),
-                new ImportOutcome.Added(new AddedProgram(
-                        program.id(),
-                        new ImportedEntryId(software.value()),
-                        program.title().value()))));
+                new ImportOutcome.Added(
+                        new AddedProgram(
+                                program.id(),
+                                new ImportedEntryId(software.value()),
+                                program.title().value()),
+                        imported.taken())));
         return ImportProgramResult.ADDED;
     }
 

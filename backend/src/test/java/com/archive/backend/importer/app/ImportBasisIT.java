@@ -12,6 +12,8 @@ import com.archive.backend.importer.domain.run.ImportRunId;
 import com.archive.backend.importer.domain.run.ImportRunRepository;
 import com.archive.backend.importer.domain.run.ImportScope;
 import com.archive.backend.importer.infra.FakeSourceHttp;
+import com.archive.backend.importer.read.ImportRunReadRepository;
+import com.archive.backend.importer.read.ImportRunReport;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +61,9 @@ class ImportBasisIT {
 
     @Autowired
     private ImportRunRepository runs;
+
+    @Autowired
+    private ImportRunReadRepository reports;
 
     @Autowired
     private JdbcTemplate jdbc;
@@ -229,6 +234,25 @@ class ImportBasisIT {
         assertThat(run()).isEqualTo(new ImportSummary(4, 0, 1, 0));
         assertThat(jdbc.queryForObject("SELECT count(*) FROM software WHERE title = 'Zone X'", Integer.class))
                 .isZero();
+        assertThat(reports.findLatest().orElseThrow().skippedPrograms())
+                .singleElement()
+                .satisfies(skipped -> {
+                    assertThat(skipped.externalId()).isEqualTo("30");
+                    assertThat(skipped.url()).isEqualTo(SCALAR + "ware/30/");
+                    assertThat(skipped.title()).isEqualTo("Zone X");
+                    assertThat(skipped.reason()).isEqualTo("category");
+                    assertThat(skipped.detail()).isEqualTo("pc");
+                });
+    }
+
+    @Test
+    void endsAtTheLastProgramOfTheListItCounted() {
+        run();
+
+        ImportRunReport report = reports.findLatest().orElseThrow();
+        assertThat(report.progress().position()).isEqualTo(5);
+        assertThat(report.progress().total()).isEqualTo(5);
+        assertThat(report.progress().url()).startsWith(SCALAR + "ware/");
     }
 
     @Test

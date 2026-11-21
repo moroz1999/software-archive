@@ -86,6 +86,41 @@ class SoftwareSupplementTest {
         assertThat(software.getCategories()).isEqualTo(GAMES_AND_DEMOS);
     }
 
+    @Test
+    void tellsWhatItAddedForTheReportOfTheImport() {
+        Software software = software(null, null);
+
+        Set<SoftwareSupplement> added = software.supplement(
+                new SoftwareDescription("Theirs"),
+                ReleaseDate.ofYear(Year.of(1990)),
+                PreservationStatus.MISSING_IN_ACTION,
+                GAMES_AND_DEMOS,
+                SoftwareCredits.restore(List.of(new SoftwareCreditDraft(ZORK, List.of("unknown")))));
+
+        assertThat(added)
+                .containsExactlyInAnyOrder(
+                        SoftwareSupplement.DESCRIPTION,
+                        SoftwareSupplement.RELEASE_DATE,
+                        SoftwareSupplement.PRESERVATION,
+                        SoftwareSupplement.CATEGORIES,
+                        SoftwareSupplement.CREDITS);
+    }
+
+    @Test
+    void tellsNothingAddedWhenTheSoftwareLackedNothingTheSourceHas() {
+        Software software = software(new SoftwareDescription("Ours"), ReleaseDate.ofYear(Year.of(1987)));
+        software.changePreservation(PreservationStatus.IN_SALES);
+
+        Set<SoftwareSupplement> added = software.supplement(
+                new SoftwareDescription("Theirs"),
+                ReleaseDate.ofYear(Year.of(1990)),
+                PreservationStatus.MISSING_IN_ACTION,
+                GAMES,
+                SoftwareCredits.restore(List.of(new SoftwareCreditDraft(IVAN, List.of("unknown")))));
+
+        assertThat(added).isEmpty();
+    }
+
     private static Software software(@Nullable SoftwareDescription description, @Nullable ReleaseDate date) {
         Software software = Software.create(
                 new SoftwareId(UUID.randomUUID()),

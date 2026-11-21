@@ -12,6 +12,13 @@ const NO_RUN = json({run: null});
 const SOFTWARE = '00000000-0000-0000-0001-000000000001';
 const G_DOS = 'https://vektor-06c.ru/programmnoe-obespechenie/zagruzchiki/g-dos/';
 const BASIS_START = '/api/imports/basis';
+const MICRODOS = '00000000-0000-0000-0001-000000000003';
+const CPM = '00000000-0000-0000-0001-000000000004';
+const DEMO = 'https://vektor-06c.ru/programmnoe-obespechenie/utility-dlya-pc/512-demo/';
+const ZONE_X = 'https://caglrc.cc/scalar/ware/30/';
+const GRAFOV = '00000000-0000-0000-0004-000000000001';
+const IVAN = '00000000-0000-0000-0003-000000000001';
+const CREW = '00000000-0000-0000-0005-000000000001';
 const RUN = {
     id: '00000000-0000-0000-0000-00000000000a',
     archive: 'vektor-06c.ru',
@@ -28,6 +35,21 @@ const RUN = {
         {externalId: '595', softwareId: '00000000-0000-0000-0001-000000000002', title: 'Masterpiece Boot', exists: false},
     ],
     failedPrograms: [{externalId: '598', url: G_DOS, reason: 'Timed out'}],
+    knownPrograms: [
+        {externalId: '754', softwareId: MICRODOS, title: 'МикроДОС', exists: true, supplements: ['description', 'categories']},
+        {externalId: '753', softwareId: CPM, title: 'CP/M', exists: true, supplements: []},
+    ],
+    skippedPrograms: [
+        {externalId: '524', url: DEMO, title: '512 demo', reason: 'section', detail: 'utility-dlya-pc'},
+        {externalId: '30', url: ZONE_X, title: 'Zone X', reason: 'category', detail: 'pc'},
+    ],
+    authors: [
+        {kind: 'label', id: GRAFOV, name: 'Графов А.', created: true, exists: true},
+        {kind: 'author', id: IVAN, name: 'IVAN', created: true, exists: true},
+        {kind: 'group', id: CREW, name: 'Crew', created: false, exists: true},
+    ],
+    places: [{kind: 'city', name: 'Ковров'}, {kind: 'country', name: 'Атлантида'}],
+    progress: {position: 37, total: 512, url: G_DOS},
 };
 
 function renderImport() {
@@ -172,5 +194,90 @@ describe(SourceImport, () => {
         await userEvent.click(screen.getByRole('button', {name: 'Start'}));
 
         await expect(within(screen.getByRole('region', {name: 'Last import'})).findByText('Running')).resolves.toBeInTheDocument();
+    });
+
+    it('says which program the running import goes to now, leading to its page', async () => {
+        stubFetchRoutes(new Map([[LAST_RUN, json({run: RUN})], [SECTIONS, json(['zagruzchiki'])]]));
+        renderImport();
+
+        const report = within(await screen.findByRole('region', {name: 'Last import'}));
+
+        await expect(report.findByRole('link', {name: 'Now: program 37 of 512'})).resolves.toHaveAttribute('href', G_DOS);
+    });
+
+    it('says the running import reads the list before the first program, and counts none it was not told of', async () => {
+        stubFetchRoutes(new Map([[LAST_RUN, json({run: {...RUN, progress: {position: 0, total: null, url: null}}})], [SECTIONS, json(['zagruzchiki'])]]));
+        renderImport();
+
+        const report = within(await screen.findByRole('region', {name: 'Last import'}));
+
+        await expect(report.findByText('Now: reading the list of programs')).resolves.toBeInTheDocument();
+    });
+
+    it('counts no programs the source did not tell the number of', async () => {
+        stubFetchRoutes(new Map([[LAST_RUN, json({run: {...RUN, progress: {position: 37, total: null, url: G_DOS}}})], [SECTIONS, json(['zagruzchiki'])]]));
+        renderImport();
+
+        const report = within(await screen.findByRole('region', {name: 'Last import'}));
+
+        await expect(report.findByRole('link', {name: 'Now: program 37'})).resolves.toBeInTheDocument();
+    });
+
+    it('tells nothing of a current program once the import ended', async () => {
+        stubFetchRoutes(new Map([[LAST_RUN, json({run: {...RUN, state: 'done', endedAt: '2026-11-14T13:00:00Z'}})], [SECTIONS, json(['zagruzchiki'])]]));
+        renderImport();
+
+        const report = within(await screen.findByRole('region', {name: 'Last import'}));
+        await report.findByText('Done');
+
+        expect(report.queryByText(/^Now:/u)).not.toBeInTheDocument();
+    });
+
+    it('lists the programs it found in the archive with what it added to each', async () => {
+        stubFetchRoutes(new Map([[LAST_RUN, json({run: RUN})], [SECTIONS, json(['zagruzchiki'])]]));
+        renderImport();
+
+        const supplemented = within(await screen.findByRole('region', {name: 'Supplemented'}));
+        const unchanged = within(screen.getByRole('region', {name: 'Already there, nothing added'}));
+
+        expect(supplemented.getByRole('link', {name: 'МикроДОС'})).toHaveAttribute('href', `/software/${MICRODOS}`);
+        expect(supplemented.getByText('description, categories')).toBeInTheDocument();
+        expect(unchanged.getByRole('link', {name: 'CP/M'})).toHaveAttribute('href', `/software/${CPM}`);
+        expect(supplemented.queryByRole('link', {name: 'CP/M'})).not.toBeInTheDocument();
+    });
+
+    it('lists the programs it left out with why', async () => {
+        stubFetchRoutes(new Map([[LAST_RUN, json({run: RUN})], [SECTIONS, json(['zagruzchiki'])]]));
+        renderImport();
+
+        const skipped = within(await screen.findByRole('region', {name: 'Left out'}));
+
+        expect(skipped.getByRole('link', {name: '512 demo'})).toHaveAttribute('href', DEMO);
+        expect(skipped.getByText('The section utility-dlya-pc is not imported')).toBeInTheDocument();
+        expect(skipped.getByRole('link', {name: 'Zone X'})).toHaveAttribute('href', ZONE_X);
+        expect(skipped.getByText('The category pc is not imported')).toBeInTheDocument();
+    });
+
+    it('lists the authors it created and those it found in the archive, each leading to its page', async () => {
+        stubFetchRoutes(new Map([[LAST_RUN, json({run: RUN})], [SECTIONS, json(['zagruzchiki'])]]));
+        renderImport();
+
+        const created = within(await screen.findByRole('region', {name: 'Authors created'}));
+        const found = within(screen.getByRole('region', {name: 'Authors found in the archive'}));
+
+        expect(created.getByRole('link', {name: 'Графов А.'})).toHaveAttribute('href', `/labels/${GRAFOV}`);
+        expect(created.getByRole('link', {name: 'IVAN'})).toHaveAttribute('href', `/authors/${IVAN}`);
+        expect(created.getByText('Label')).toBeInTheDocument();
+        expect(found.getByRole('link', {name: 'Crew'})).toHaveAttribute('href', `/groups/${CREW}`);
+        expect(found.getByText('Group')).toBeInTheDocument();
+    });
+
+    it('lists the cities and countries it added', async () => {
+        stubFetchRoutes(new Map([[LAST_RUN, json({run: RUN})], [SECTIONS, json(['zagruzchiki'])]]));
+        renderImport();
+
+        const places = within(await screen.findByRole('region', {name: 'Places added'}));
+
+        expect(places.getAllByRole('listitem').map((item) => item.textContent)).toStrictEqual(['City Ковров', 'Country Атлантида']);
     });
 });

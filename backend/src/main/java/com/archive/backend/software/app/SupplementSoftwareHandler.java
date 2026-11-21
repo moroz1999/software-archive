@@ -10,6 +10,8 @@ import com.archive.backend.software.domain.Software;
 import com.archive.backend.software.domain.SoftwareCreditSets;
 import com.archive.backend.software.domain.SoftwareNotFoundException;
 import com.archive.backend.software.domain.SoftwareRepository;
+import com.archive.backend.software.domain.SoftwareSupplement;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,7 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Adds to software what an import found and it lacks, never rewriting what it has (docs/domain/imports.md):
- * categories and participants join those there, a screenshot of a size it has is not taken again.
+ * categories and participants join those there, a screenshot of a size it has is not taken again. Tells what it
+ * added.
  */
 @Service
 @RequiredArgsConstructor
@@ -34,17 +37,18 @@ public class SupplementSoftwareHandler {
     private final ApplicationEventPublisher events;
 
     @Transactional
-    public void handle(SupplementSoftwareCommand c) {
+    public Set<SoftwareSupplement> handle(SupplementSoftwareCommand c) {
         Software software = repository.findById(c.softwareId()).orElseThrow(SoftwareNotFoundException::new);
         software.requireChangeableBy(c.actor());
         Set<CategoryId> categories = new HashSet<>(software.getCategories().ids());
         categories.addAll(c.categories());
-        software.supplement(
+        Set<SoftwareSupplement> supplements = EnumSet.noneOf(SoftwareSupplement.class);
+        supplements.addAll(software.supplement(
                 c.description(),
                 c.releaseDate(),
                 c.preservation(),
                 categorySets.of(categories),
-                creditSets.of(c.credits()));
+                creditSets.of(c.credits())));
         List<ScreenshotImage> images = software.screenshotsOfNewSizes(c.screenshots());
         List<Screenshot> added = images.stream()
                 .map(image ->
@@ -52,11 +56,13 @@ public class SupplementSoftwareHandler {
                 .toList();
         if (!added.isEmpty()) {
             software.addScreenshots(null, added, c.actor());
+            supplements.add(SoftwareSupplement.SCREENSHOTS);
             for (int i = 0; i < added.size(); i++) {
                 files.store(added.get(i).id(), images.get(i));
             }
         }
         repository.save(software);
         software.pullEvents().forEach(events::publishEvent);
+        return supplements;
     }
 }

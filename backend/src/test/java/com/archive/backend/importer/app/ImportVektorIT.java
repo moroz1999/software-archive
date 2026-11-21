@@ -338,6 +338,28 @@ class ImportVektorIT {
 
         assertThat(run(null)).isEqualTo(new ImportSummary(0, 0, 1, 0));
         assertThat(importedSoftware()).isZero();
+        assertThat(reports.findLatest().orElseThrow().skippedPrograms())
+                .singleElement()
+                .satisfies(skipped -> {
+                    assertThat(skipped.externalId()).isEqualTo("524");
+                    assertThat(skipped.url()).isEqualTo("https://vektor-06c.ru" + utility);
+                    assertThat(skipped.reason()).isEqualTo("section");
+                    assertThat(skipped.detail()).isEqualTo("utility-dlya-pc");
+                    assertThat(skipped.title()).isNotBlank();
+                });
+    }
+
+    @Test
+    void endsAtTheLastProgramOfTheSiteNotCountingThemBeforehand() {
+        servePrograms();
+        http.serve(OS, list("754", MICRODOS, "753", CPM));
+
+        run(new VektorSection("operatsionnye-sistemy"));
+
+        ImportRunReport report = reports.findLatest().orElseThrow();
+        assertThat(report.progress().position()).isEqualTo(2);
+        assertThat(report.progress().total()).isNull();
+        assertThat(report.progress().url()).isEqualTo(CPM_ARCHIVE_PAGE);
     }
 
     @Test

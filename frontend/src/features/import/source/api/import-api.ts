@@ -12,7 +12,27 @@ import {
     readString,
     readStringArray,
 } from '@/shared/api';
-import {type ImportRun, isImportRunState} from '../model/import-run';
+import {
+    type ImportRun,
+    isImportRunState,
+    isPlaceKind,
+    isSkipReason,
+    isSoftwareSupplement,
+    isTakenAuthorKind,
+} from '../model/import-run';
+
+/** A code of a fixed list, refused when the client does not know it. */
+function readCode<T extends string>(object: JsonObject, key: string, isCode: (raw: string) => raw is T): T {
+    const raw = readString(object, key);
+    if (!isCode(raw)) {
+        throw new TypeError(`Unknown ${key}: ${raw}`);
+    }
+    return raw;
+}
+
+function readNullableNumber(object: JsonObject, key: string): number | null {
+    return object[key] === null || object[key] === undefined ? null : readNumber(object, key);
+}
 
 const VEKTOR_IMPORT_PATH = '/api/imports/vektor';
 
@@ -70,5 +90,52 @@ function toImportRun(dto: JsonObject): ImportRun {
             const failed = readObject(item, 'failed program');
             return {externalId: readString(failed, 'externalId'), url: readString(failed, 'url'), reason: readString(failed, 'reason')};
         }),
+        knownPrograms: readArray(dto['knownPrograms'], 'known programs').map((item) => {
+            const known = readObject(item, 'known program');
+            return {
+                externalId: readString(known, 'externalId'),
+                softwareId: toSoftwareId(readString(known, 'softwareId')),
+                title: readString(known, 'title'),
+                exists: readBoolean(known, 'exists'),
+                supplements: readStringArray(known['supplements'], 'supplements').map((code) => {
+                    if (!isSoftwareSupplement(code)) {
+                        throw new TypeError(`Unknown supplement: ${code}`);
+                    }
+                    return code;
+                }),
+            };
+        }),
+        skippedPrograms: readArray(dto['skippedPrograms'], 'skipped programs').map((item) => {
+            const skipped = readObject(item, 'skipped program');
+            return {
+                externalId: readString(skipped, 'externalId'),
+                url: readString(skipped, 'url'),
+                title: readString(skipped, 'title'),
+                reason: readCode(skipped, 'reason', isSkipReason),
+                detail: readString(skipped, 'detail'),
+            };
+        }),
+        authors: readArray(dto['authors'], 'authors').map((item) => {
+            const author = readObject(item, 'author');
+            return {
+                kind: readCode(author, 'kind', isTakenAuthorKind),
+                id: readString(author, 'id'),
+                name: readString(author, 'name'),
+                created: readBoolean(author, 'created'),
+                exists: readBoolean(author, 'exists'),
+            };
+        }),
+        places: readArray(dto['places'], 'places').map((item) => {
+            const place = readObject(item, 'place');
+            return {kind: readCode(place, 'kind', isPlaceKind), name: readString(place, 'name')};
+        }),
+        progress: (() => {
+            const progress = readObject(dto['progress'], 'progress');
+            return {
+                position: readNumber(progress, 'position'),
+                total: readNullableNumber(progress, 'total'),
+                url: readNullableString(progress, 'url'),
+            };
+        })(),
     };
 }

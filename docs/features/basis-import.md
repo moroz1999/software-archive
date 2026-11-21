@@ -5,7 +5,7 @@ A backend command that takes the card index "Базис" of software for the Vec
 ## Running
 
 - An administrator starts it on the Imports tab of management, choosing the source "caglrc.cc (Basis)"; it has no sections, a run reads the whole index. It runs in the background like every import, one at a time ([imports.md](imports.md#running)).
-- `ImportBasisHandler` takes the cards in the order of the list, each in a transaction of its own: a card in a category that is not software of the archive (PC, paper) counts as left out, a card that fails is written into the report with its page and the reason, and the run goes on. The run ends done.
+- `ImportBasisHandler` takes the cards in the order of the list, each in a transaction of its own: before each card the run writes which one of the whole list it is at; a card in a category that is not software of the archive (PC, paper) counts as left out, with the first such category, a card that fails is written into the report with its page and the reason, and the run goes on. The run ends done.
 - A rerun reads every card again; the one import finds the software each became by its origin (`caglrc.cc`, `SOFTWARE`, the card id) and adds only what it lacks.
 
 ## REST

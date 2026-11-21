@@ -9,6 +9,7 @@ import com.archive.backend.shared.domain.ddd.DomainEvent;
 import com.archive.backend.user.domain.Actor;
 import com.archive.backend.user.domain.AddedBy;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -155,32 +156,46 @@ public final class Software {
 
     /**
      * Adds what an import found and the software lacks, never rewriting what it has (docs/domain/imports.md): the
-     * description, the date and the preservation status only while empty or unknown, the categories given, and the participants not credited yet.
+     * description, the date and the preservation status only while empty or unknown, the categories given, and the participants not credited yet. Tells what it added, for the report of the import.
      */
-    public void supplement(
+    public Set<SoftwareSupplement> supplement(
             @Nullable SoftwareDescription description,
             @Nullable ReleaseDate releaseDate,
             PreservationStatus preservation,
             CategorySet categories,
             SoftwareCredits credits) {
-        if (this.description == null) {
+        Objects.requireNonNull(preservation, "preservation");
+        Objects.requireNonNull(categories, "categories");
+        Set<SoftwareSupplement> added = EnumSet.noneOf(SoftwareSupplement.class);
+        if (this.description == null && description != null) {
             this.description = description;
+            added.add(SoftwareSupplement.DESCRIPTION);
         }
-        if (this.releaseDate == null) {
+        if (this.releaseDate == null && releaseDate != null) {
             this.releaseDate = releaseDate;
+            added.add(SoftwareSupplement.RELEASE_DATE);
         }
-        if (this.preservation == PreservationStatus.UNKNOWN) {
-            this.preservation = Objects.requireNonNull(preservation, "preservation");
+        if (this.preservation == PreservationStatus.UNKNOWN && preservation != PreservationStatus.UNKNOWN) {
+            this.preservation = preservation;
+            added.add(SoftwareSupplement.PRESERVATION);
         }
-        this.categories = Objects.requireNonNull(categories, "categories");
+        if (!categories.ids().equals(this.categories.ids())) {
+            added.add(SoftwareSupplement.CATEGORIES);
+        }
+        this.categories = categories;
         Set<SoftwareReference> credited = this.credits.all().stream()
                 .map(SoftwareCreditDraft::participant)
                 .collect(Collectors.toSet());
-        this.credits = SoftwareCredits.of(Stream.concat(
-                        this.credits.all().stream(),
-                        credits.all().stream().filter(credit -> !credited.contains(credit.participant())))
-                .toList());
+        List<SoftwareCreditDraft> fresh = credits.all().stream()
+                .filter(credit -> !credited.contains(credit.participant()))
+                .toList();
+        if (!fresh.isEmpty()) {
+            added.add(SoftwareSupplement.CREDITS);
+        }
+        this.credits = SoftwareCredits.of(
+                Stream.concat(this.credits.all().stream(), fresh.stream()).toList());
         markChanged();
+        return added;
     }
 
     /** The pictures of sizes the software has no screenshot of yet, each size once (docs/domain/imports.md). */
