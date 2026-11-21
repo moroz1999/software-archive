@@ -26,10 +26,7 @@ INSERT INTO country_name (country_id, language, name)
 VALUES ('00000000-0000-0000-0000-00000000c001', 'en', 'Unknown'),
        ('00000000-0000-0000-0000-00000000c001', 'ru', 'Неизвестно');
 
--- A screenshot keeps the name of its original file and its size (docs/domain/imports.md#software). The screenshots
--- stored so far came from the import, which takes them again with what it knows of them.
-DELETE FROM software_screenshot;
-DELETE FROM software_release_screenshot;
+-- A screenshot keeps the name of its original file and its size (docs/domain/imports.md#software).
 ALTER TABLE software_screenshot
     ADD COLUMN file_name TEXT   NOT NULL,
     ADD COLUMN size      BIGINT NOT NULL;
