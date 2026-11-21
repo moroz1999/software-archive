@@ -176,6 +176,20 @@ describe('label editing routes', () => {
         });
     });
 
+    it('keeps a location in a city of no known country as it is on saving', async () => {
+        const kovrov = '00000000-0000-0000-0002-000000000013';
+        const ghost = {...GHOST, locations: [{countryId: null, country: null, cityId: kovrov, city: 'Ковров', primary: true}]};
+        const fetchMock = await openForm(ADMIN, ghost, {[`PUT ${LABEL_URL}`]: noContent()});
+
+        expect(screen.getByRole('combobox', {name: 'City 1'})).toHaveDisplayValue('Ковров');
+
+        await userEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        await screen.findByRole('heading', {level: 1, name: 'Ghost'});
+
+        expect(bodyOf(fetchMock, 'PUT')).toMatchObject({locations: [{country: null, city: kovrov, primary: true}]});
+    });
+
     it('leaves the label to nobody once the owner is taken away', async () => {
         const fetchMock = await openForm(ADMIN, GHOST, {[`PUT ${LABEL_URL}`]: noContent()});
 

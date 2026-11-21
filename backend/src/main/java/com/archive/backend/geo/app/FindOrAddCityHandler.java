@@ -1,7 +1,6 @@
 package com.archive.backend.geo.app;
 
 import com.archive.backend.geo.domain.CityId;
-import com.archive.backend.geo.domain.CountryId;
 import com.archive.backend.geo.domain.GeoNameRepository;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * The city of the archive of this name in any language; one it does not have is added with the name in the language
- * given, in the country "Unknown" (docs/domain/geo.md, docs/domain/imports.md#authors).
+ * given, in no country: its country is not known (docs/domain/geo.md, docs/domain/imports.md#authors).
  */
 @Service
 @RequiredArgsConstructor
@@ -22,7 +21,7 @@ public class FindOrAddCityHandler {
     public CityId handle(FindOrAddCityCommand c) {
         return names.cityNamed(c.name()).orElseGet(() -> {
             CityId city = new CityId(UUID.randomUUID());
-            names.addCity(city, CountryId.UNKNOWN, c.language(), c.name());
+            names.addCity(city, null, c.language(), c.name());
             return city;
         });
     }

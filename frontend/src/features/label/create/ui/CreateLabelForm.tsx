@@ -2,7 +2,7 @@ import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
 import {LABEL_NAME_PROBLEM_KEYS} from '@/entities/labels';
 import {COUNTRY_REQUIRED_KEY, LocationsEditor} from '@/entities/locations';
-import {TITLE_MAX_LENGTH} from '@/shared/lib/title';
+import {TITLE_MAX_LENGTH} from '@/shared/lib/form-rules';
 import {Button} from '@/shared/ui/button';
 import {Form, FormActions, FormField, FormMessage, FormSection} from '@/shared/ui/form';
 import {Input} from '@/shared/ui/input';

@@ -1,6 +1,6 @@
 import {type Addition, NotFoundError} from '@/shared/api';
 import {type Brand} from '@/shared/lib/brand';
-import {titleProblem} from '@/shared/lib/title';
+import {titleProblem} from '@/shared/lib/form-rules';
 import {isUuid} from '@/shared/lib/uuid';
 import type {MemberRoleValue} from '@/shared/ui/member-role-editor';
 import type {Screenshot} from './screenshot';

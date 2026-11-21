@@ -48,6 +48,11 @@ final class AuthorFixtures {
             }
 
             @Override
+            public boolean cityExists(CityId city) {
+                return city.equals(HELSINKI);
+            }
+
+            @Override
             public Optional<CountryId> countryOf(CityId city) {
                 return city.equals(HELSINKI) ? Optional.of(FINLAND) : Optional.empty();
             }

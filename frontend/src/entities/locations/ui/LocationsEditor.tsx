@@ -103,7 +103,10 @@ interface LocationRowProps {
     readonly onRemove: () => void;
 }
 
-/** One location: City offers the cities of the chosen country; another country forgets the city. */
+/**
+ * One location: City offers the cities of the chosen country; another country forgets the city. A city of no known
+ * country shows alone, the country not specified, and stays as it is until a country is chosen.
+ */
 function LocationRow({index, location, error, disabled, primaryGroup, onChange, onMark, onRemove}: LocationRowProps) {
     const {t} = useTranslation();
     const id = useId();
@@ -111,6 +114,7 @@ function LocationRow({index, location, error, disabled, primaryGroup, onChange, 
     const cities = useCities();
     const n = index + 1;
     const errorId = `${id}-error`;
+    const cityAlone = location.country === '' && location.cityName !== undefined;
     return (
         <ItemRow
             columns={2}
@@ -129,10 +133,10 @@ function LocationRow({index, location, error, disabled, primaryGroup, onChange, 
                 ariaLabel={t('location.country', {n})}
                 value={location.country}
                 onChange={(country) => {
-                    onChange({...location, country, city: ''});
+                    onChange({country, city: '', primary: location.primary});
                 }}
                 options={(countries.data ?? []).map((country) => ({value: country.id, label: country.name}))}
-                placeholder={t('location.chooseCountry')}
+                placeholder={cityAlone ? t('location.noCountry') : t('location.chooseCountry')}
                 invalid={error !== undefined}
                 describedBy={error === undefined ? undefined : errorId}
                 disabled={disabled || countries.data === undefined}
@@ -144,7 +148,9 @@ function LocationRow({index, location, error, disabled, primaryGroup, onChange, 
                 onChange={(city) => {
                     onChange({...location, city});
                 }}
-                options={(cities.data ?? []).map((city) => ({value: city.id, label: city.name}))}
+                options={location.cityName !== undefined && cityAlone
+                    ? [{value: location.city, label: location.cityName}]
+                    : (cities.data ?? []).map((city) => ({value: city.id, label: city.name}))}
                 placeholder={t('location.noCity')}
                 disabled={disabled || cities.data === undefined}
             />

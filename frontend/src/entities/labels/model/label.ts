@@ -19,10 +19,10 @@ export interface LabelGroup {
     readonly name: string;
 }
 
-/** A place the label is located in; the country of a city given alone is its country. */
+/** A place the label is located in; the country of a city given alone is its country, none while it is not known. */
 export interface LabelLocation {
-    readonly countryId: string;
-    readonly country: string;
+    readonly countryId: string | null;
+    readonly country: string | null;
     readonly cityId: string | null;
     readonly city: string | null;
     readonly primary: boolean;
@@ -67,5 +67,5 @@ export type NewLabelDraft = Omit<LabelDraft, 'owner'>;
 export interface LabelDraft {
     readonly name: string;
     readonly owner: (LabelOwner & {readonly display: boolean}) | null;
-    readonly locations: readonly {readonly country: string; readonly city: string | null; readonly primary: boolean}[];
+    readonly locations: readonly {readonly country: string | null; readonly city: string | null; readonly primary: boolean}[];
 }

@@ -37,8 +37,8 @@ public record LabelDetails(
 
     /** A place the label is located in; {@code countryId} of a city given alone is its country's. */
     public record Location(
-            UUID countryId,
-            String country,
+            @Nullable UUID countryId,
+            @Nullable String country,
             @Nullable UUID cityId,
             @Nullable String city,
             boolean primary) {}

@@ -24,8 +24,16 @@ public class JdbcGeoCatalog implements GeoCatalog {
     }
 
     @Override
+    public boolean cityExists(CityId city) {
+        return jdbc.sql("SELECT EXISTS (SELECT 1 FROM city WHERE id = :id)")
+                .param("id", city.value())
+                .query(Boolean.class)
+                .single();
+    }
+
+    @Override
     public Optional<CountryId> countryOf(CityId city) {
-        return jdbc.sql("SELECT country_id FROM city WHERE id = :id")
+        return jdbc.sql("SELECT country_id FROM city WHERE id = :id AND country_id IS NOT NULL")
                 .param("id", city.value())
                 .query(UUID.class)
                 .optional()

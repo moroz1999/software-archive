@@ -226,8 +226,8 @@ public class CreditImportedAuthorsHandler {
             country = geoCatalog.countryOf(city.get());
         }
         Optional<CityId> theirCity = city;
-        // A city of no known country tells nothing of its country.
-        Optional<CountryId> theirCountry = country.filter(known -> !known.equals(CountryId.UNKNOWN));
+        // A city of no known country tells nothing of its country: the catalog gives it none.
+        Optional<CountryId> theirCountry = country;
         return ours.all().stream()
                 .map(Location::place)
                 .anyMatch(our -> (theirCity.isPresent() && theirCity.get().equals(our.city()))

@@ -94,7 +94,6 @@ class ImportProgramIT {
     private static final HardwareCode KRISTA_2 = new HardwareCode("krista2");
     private static final HardwareCode TAPE = new HardwareCode("tape");
     private static final CategoryId ARCADE = new CategoryId(UUID.fromString("8536e450-1fc7-5985-9cd2-97b499713a67"));
-    private static final UUID UNKNOWN_COUNTRY = UUID.fromString("00000000-0000-0000-0000-00000000c001");
     private static final UUID KNOWN_CITY = UUID.fromString("00000000-0000-0000-00c1-000000000001");
     private static final byte[] ELITE_ROM = "elite program".getBytes(StandardCharsets.UTF_8);
     private static final byte[] EXTRA_ROM = "extra program".getBytes(StandardCharsets.UTF_8);
@@ -140,7 +139,8 @@ class ImportProgramIT {
     void knownCity() {
         TestActors.store(jdbc);
         cleanUp();
-        jdbc.update("INSERT INTO city (id, country_id) VALUES (?, ?)", KNOWN_CITY, UNKNOWN_COUNTRY);
+        // A city of the archive whose country is not known.
+        jdbc.update("INSERT INTO city (id) VALUES (?)", KNOWN_CITY);
         jdbc.update(
                 "INSERT INTO city_name (city_id, language, name) VALUES (?, 'en', 'Testgrad'), (?, 'ru', 'Тестоград')",
                 KNOWN_CITY,
@@ -162,7 +162,7 @@ class ImportProgramIT {
             jdbc.update("DELETE FROM \"group\" WHERE added_by = ?", adder);
         }
         jdbc.update("DELETE FROM external_origin");
-        jdbc.update("DELETE FROM city WHERE country_id = ?", UNKNOWN_COUNTRY);
+        jdbc.update("DELETE FROM city WHERE country_id IS NULL");
         jdbc.update("DELETE FROM country WHERE id IN (SELECT country_id FROM country_name WHERE name = 'Атлантида')");
         jdbc.update("DELETE FROM import_run");
     }
@@ -558,7 +558,7 @@ class ImportProgramIT {
     }
 
     @Test
-    void createsACityTheArchiveDoesNotHaveInTheCountryUnknownNamedInTheLanguageOfTheSource() {
+    void createsACityTheArchiveDoesNotHaveOfNoKnownCountryNamedInTheLanguageOfTheSource() {
         importProgram(program("1", "Elite", zip(Map.of("ELITE.ROM", ELITE_ROM)))
                 .authors(new SourceAuthor(
                         "17",
@@ -570,7 +570,12 @@ class ImportProgramIT {
 
         UUID city = cityOf(origin("AUTHOR", "17"));
         assertThat(jdbc.queryForObject("SELECT country_id FROM city WHERE id = ?", UUID.class, city))
-                .isEqualTo(UNKNOWN_COUNTRY);
+                .isNull();
+        assertThat(jdbc.queryForObject(
+                        "SELECT country_id FROM entity_location WHERE entity_type = 'PERSON' AND entity_id = ?",
+                        UUID.class,
+                        origin("AUTHOR", "17")))
+                .isNull();
         assertThat(jdbc.queryForList(
                         "SELECT language || ':' || name FROM city_name WHERE city_id = ?", String.class, city))
                 .containsExactly("ru:Новоград");

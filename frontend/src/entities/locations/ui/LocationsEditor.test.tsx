@@ -10,6 +10,8 @@ const FINLAND = '00000000-0000-0000-0002-000000000001';
 const NORWAY = '00000000-0000-0000-0002-000000000002';
 const HELSINKI = '00000000-0000-0000-0002-000000000011';
 const TAMPERE = '00000000-0000-0000-0002-000000000012';
+// A city of no known country.
+const KOVROV = '00000000-0000-0000-0002-000000000013';
 
 function answer() {
     return stubFetchRoutes(new Map([
@@ -75,6 +77,26 @@ describe(LocationsEditor, () => {
         await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Country 1'}), await screen.findByRole('option', {name: 'Norway'}));
 
         expect(value()).toStrictEqual([{country: NORWAY, city: '', primary: false}]);
+    });
+
+    it('shows a city of no known country with the country not specified', async () => {
+        answer();
+        renderWithQueries(<Harness initial={[{country: '', city: KOVROV, cityName: 'Ковров', primary: true}]}/>);
+
+        await screen.findByRole('option', {name: 'Finland'});
+
+        expect(screen.getByRole('combobox', {name: 'Country 1'})).toHaveDisplayValue('Country not specified');
+        expect(screen.getByRole('combobox', {name: 'City 1'})).toHaveDisplayValue('Ковров');
+        expect(value()).toStrictEqual([{country: '', city: KOVROV, cityName: 'Ковров', primary: true}]);
+    });
+
+    it('forgets a city of no known country once a country is chosen', async () => {
+        answer();
+        renderWithQueries(<Harness initial={[{country: '', city: KOVROV, cityName: 'Ковров', primary: true}]}/>);
+
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Country 1'}), await screen.findByRole('option', {name: 'Finland'}));
+
+        expect(value()).toStrictEqual([{country: FINLAND, city: '', primary: true}]);
     });
 
     it('passes the primary location to the first location left when it is taken away', async () => {

@@ -286,6 +286,20 @@ class JdbcAuthorReadRepositoryIT {
     }
 
     @Test
+    void readsALocationInACityOfNoKnownCountryAsTheCityAlone() {
+        UUID kovrov = id(13);
+        city(jdbc, kovrov, null, "Ковров", null);
+        jdbc.update("DELETE FROM entity_location WHERE entity_type = 'PERSON' AND entity_id = ?", ZED);
+        jdbc.update(
+                "INSERT INTO entity_location (entity_type, entity_id, city_id, is_primary) VALUES ('PERSON', ?, ?, TRUE)",
+                ZED,
+                kovrov);
+
+        assertThat(reads.findById(ZED, "en").orElseThrow().locations())
+                .containsExactly(new AuthorLocation(null, null, kovrov, "Ковров", true));
+    }
+
+    @Test
     void namesTheLocationsOfAnAuthorInTheLanguageAskedFor() {
         assertThat(reads.findById(ZED, "ru").orElseThrow().locations())
                 .containsExactly(

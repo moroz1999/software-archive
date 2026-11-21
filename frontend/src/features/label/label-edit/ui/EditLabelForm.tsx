@@ -2,7 +2,7 @@ import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
 import {fetchLabelOwners, LABEL_NAME_PROBLEM_KEYS, type LabelDetails} from '@/entities/labels';
 import {COUNTRY_REQUIRED_KEY, LocationsEditor} from '@/entities/locations';
-import {TITLE_MAX_LENGTH} from '@/shared/lib/title';
+import {TITLE_MAX_LENGTH} from '@/shared/lib/form-rules';
 import {Button} from '@/shared/ui/button';
 import {Checkbox} from '@/shared/ui/checkbox';
 import {Form, FormActions, FormField, FormFieldset, FormMessage, FormSection} from '@/shared/ui/form';

@@ -61,6 +61,11 @@ final class GroupFixtures {
             }
 
             @Override
+            public boolean cityExists(CityId city) {
+                return false;
+            }
+
+            @Override
             public Optional<CountryId> countryOf(CityId city) {
                 return Optional.empty();
             }

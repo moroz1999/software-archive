@@ -164,7 +164,7 @@ export const resources = {
             },
         },
         location: {
-            locations: 'Locations', country: 'Country {{n}}', city: 'City {{n}}', chooseCountry: 'Choose a country', noCity: 'No city',
+            locations: 'Locations', country: 'Country {{n}}', city: 'City {{n}}', chooseCountry: 'Choose a country', noCountry: 'Country not specified', noCity: 'No city',
             primary: 'Primary', remove: 'Remove location {{n}}', add: 'Add location',
         },
         group: {
@@ -383,7 +383,7 @@ export const resources = {
             },
         },
         location: {
-            locations: 'Места', country: 'Страна {{n}}', city: 'Город {{n}}', chooseCountry: 'Выберите страну', noCity: 'Без города',
+            locations: 'Места', country: 'Страна {{n}}', city: 'Город {{n}}', chooseCountry: 'Выберите страну', noCountry: 'Страна не указана', noCity: 'Без города',
             primary: 'Основное', remove: 'Убрать место {{n}}', add: 'Добавить место',
         },
         group: {

@@ -1,4 +1,4 @@
-import {type TitleProblem, titleProblem} from '@/shared/lib/title';
+import {type TitleProblem, titleProblem} from '@/shared/lib/form-rules';
 import type {MemberRoleValue} from '@/shared/ui/member-role-editor';
 import {parseReleaseDateText, releaseDateField} from '../lib/release-date';
 import {

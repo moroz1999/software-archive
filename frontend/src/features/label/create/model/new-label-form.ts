@@ -1,6 +1,6 @@
 import type {NewLabelDraft} from '@/entities/labels';
-import type {LocationValue} from '@/entities/locations';
-import {type TitleProblem, titleProblem} from '@/shared/lib/title';
+import {locationProblem, type LocationValue, toLocationDraft} from '@/entities/locations';
+import {type TitleProblem, titleProblem} from '@/shared/lib/form-rules';
 
 /** What the form of a new label holds while it is being filled. */
 export interface NewLabelFormValues {
@@ -19,7 +19,7 @@ export const EMPTY_NEW_LABEL: NewLabelFormValues = {name: '', locations: []};
 /** The format errors of the values; none means they are sent as the draft. */
 export function validateNewLabelForm(values: NewLabelFormValues): {readonly ok: true; readonly draft: NewLabelDraft} | {readonly ok: false; readonly errors: NewLabelFormErrors} {
     const name = titleProblem(values.name);
-    const locations = values.locations.map((location) => (location.country === '' ? 'country-required' : null));
+    const locations = values.locations.map(locationProblem);
     const locationsWrong = locations.some((problem) => problem !== null);
     if (name !== null || locationsWrong) {
         return {ok: false, errors: {...(name === null ? {} : {name}), ...(locationsWrong ? {locations} : {})}};
@@ -28,11 +28,7 @@ export function validateNewLabelForm(values: NewLabelFormValues): {readonly ok: 
         ok: true,
         draft: {
             name: values.name,
-            locations: values.locations.map((location) => ({
-                country: location.country,
-                city: location.city === '' ? null : location.city,
-                primary: location.primary,
-            })),
+            locations: values.locations.map(toLocationDraft),
         },
     };
 }

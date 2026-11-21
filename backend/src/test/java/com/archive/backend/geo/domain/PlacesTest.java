@@ -16,6 +16,8 @@ class PlacesTest {
     private static final CountryId FINLAND = new CountryId(UUID.fromString("00000000-0000-0000-0000-000000000001"));
     private static final CountryId NORWAY = new CountryId(UUID.fromString("00000000-0000-0000-0000-000000000002"));
     private static final CityId HELSINKI = new CityId(UUID.fromString("00000000-0000-0000-0000-000000000011"));
+    // A city of the archive whose country is not known.
+    private static final CityId KOVROV = new CityId(UUID.fromString("00000000-0000-0000-0000-000000000012"));
     private static final CityId UNKNOWN_CITY = new CityId(UUID.fromString("00000000-0000-0000-0000-000000000099"));
 
     /** Knows Finland with Helsinki, and Norway without cities. */
@@ -23,6 +25,11 @@ class PlacesTest {
         @Override
         public boolean countryExists(CountryId country) {
             return country.equals(FINLAND) || country.equals(NORWAY);
+        }
+
+        @Override
+        public boolean cityExists(CityId city) {
+            return city.equals(HELSINKI) || city.equals(KOVROV);
         }
 
         @Override
@@ -49,6 +56,21 @@ class PlacesTest {
     @Test
     void buildsACityAloneWithItsCountry() {
         assertThat(places.of(null, HELSINKI)).isEqualTo(Place.restore(FINLAND, HELSINKI));
+    }
+
+    @Test
+    void buildsACityOfNoKnownCountryAloneWithNoCountry() {
+        Place place = places.of(null, KOVROV);
+
+        assertThat(place.city()).isEqualTo(KOVROV);
+        assertThat(place.country()).isNull();
+    }
+
+    @Test
+    void refusesACityOfNoKnownCountryGivenInACountry() {
+        assertThatThrownBy(() -> places.of(FINLAND, KOVROV))
+                .isInstanceOfSatisfying(
+                        RuleViolationException.class, e -> assertThat(e.code()).isEqualTo("location.unknown"));
     }
 
     @Test

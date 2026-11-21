@@ -24,8 +24,8 @@ public record LabelDetailsDto(
     public record MemberOfDto(UUID id, String name) {}
 
     public record LocationDto(
-            UUID countryId,
-            String country,
+            @Nullable UUID countryId,
+            @Nullable String country,
             @Nullable UUID cityId,
             @Nullable String city,
             boolean primary) {}

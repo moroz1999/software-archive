@@ -1,5 +1,5 @@
 import {SUPPORTED_UI_LANGUAGES, type UiLanguage} from '@/shared/lib/i18n';
-import {type TitleProblem, titleProblem} from '@/shared/lib/title';
+import {type TitleProblem, titleProblem} from '@/shared/lib/form-rules';
 import type {CategoryDetails, CategoryTitles} from './category';
 
 /**

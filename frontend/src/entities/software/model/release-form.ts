@@ -1,4 +1,4 @@
-import {type TitleProblem, titleProblem} from '@/shared/lib/title';
+import {type TitleProblem, titleProblem} from '@/shared/lib/form-rules';
 import {type ReleaseDetails, type ReleaseType, toReleaseType} from './release';
 import {parseReleaseDateText, releaseDateField} from '../lib/release-date';
 import type {ReleaseDate} from './software';

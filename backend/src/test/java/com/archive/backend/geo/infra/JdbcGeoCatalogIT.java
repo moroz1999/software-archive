@@ -20,6 +20,7 @@ class JdbcGeoCatalogIT {
 
     private static final CountryId FINLAND = new CountryId(UUID.fromString("00000000-0000-0000-0000-000000000001"));
     private static final CityId HELSINKI = new CityId(UUID.fromString("00000000-0000-0000-0000-000000000011"));
+    private static final CityId KOVROV = new CityId(UUID.fromString("00000000-0000-0000-0000-000000000012"));
 
     @Autowired
     private JdbcGeoCatalog catalog;
@@ -31,6 +32,7 @@ class JdbcGeoCatalogIT {
     void insert() {
         country(jdbc, FINLAND.value(), "Финляндия", "Finland");
         city(jdbc, HELSINKI.value(), FINLAND.value(), "Хельсинки", "Helsinki");
+        city(jdbc, KOVROV.value(), null, "Ковров", null);
     }
 
     @Test
@@ -43,5 +45,13 @@ class JdbcGeoCatalogIT {
     void knowsTheCountryOfACity() {
         assertThat(catalog.countryOf(HELSINKI)).contains(FINLAND);
         assertThat(catalog.countryOf(new CityId(UUID.randomUUID()))).isEmpty();
+    }
+
+    @Test
+    void knowsACityOfNoKnownCountryWithoutItsCountry() {
+        assertThat(catalog.cityExists(KOVROV)).isTrue();
+        assertThat(catalog.cityExists(HELSINKI)).isTrue();
+        assertThat(catalog.cityExists(new CityId(UUID.randomUUID()))).isFalse();
+        assertThat(catalog.countryOf(KOVROV)).isEmpty();
     }
 }

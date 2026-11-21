@@ -1,10 +1,12 @@
 package com.archive.backend.geo.domain;
 
 import java.util.List;
+import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Builds places, checking them against the reference book: a city of the archive belongs to its own country.
+ * Builds places, checking them against the reference book: a city of the archive belongs to its own country, or to
+ * none while its country is not known.
  */
 public class Places {
 
@@ -15,7 +17,8 @@ public class Places {
     }
 
     /**
-     * A city given alone is placed in its country.
+     * A city given alone is placed in its country; a city of no known country stands alone, and is in no country given
+     * with it.
      */
     public Place of(@Nullable CountryId country, @Nullable CityId city) {
         if (city == null) {
@@ -27,11 +30,14 @@ public class Places {
             }
             return new Place(country, null);
         }
-        CountryId cityCountry = catalog.countryOf(city).orElseThrow(LocationUnknownException::new);
-        if (country != null && !country.equals(cityCountry)) {
+        if (!catalog.cityExists(city)) {
             throw new LocationUnknownException();
         }
-        return new Place(cityCountry, city);
+        Optional<CountryId> cityCountry = catalog.countryOf(city);
+        if (country != null && !cityCountry.equals(Optional.of(country))) {
+            throw new LocationUnknownException();
+        }
+        return new Place(cityCountry.orElse(null), city);
     }
 
     public Locations locations(List<LocationDraft> drafts) {

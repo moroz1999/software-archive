@@ -1,4 +1,5 @@
-import {type TitleProblem, titleProblem} from '@/shared/lib/title';
+import {type LocationDraft, locationProblem, type LocationValue, toLocationDraft, toLocationValue} from '@/shared/lib/form-rules';
+import {type TitleProblem, titleProblem} from '@/shared/lib/form-rules';
 import type {AuthorDetails} from './author';
 
 /** The longest real name the archive keeps. */
@@ -11,12 +12,8 @@ export interface AuthorFormLabel {
     readonly display: boolean;
 }
 
-/** A location in the form: the ids of the chosen country and city, each empty while not chosen. */
-export interface AuthorFormLocation {
-    readonly country: string;
-    readonly city: string;
-    readonly primary: boolean;
-}
+/** A location in the form (docs/domain/geo.md). */
+export type AuthorFormLocation = LocationValue;
 
 /** What the author form holds while it is being filled. */
 export interface AuthorFormValues {
@@ -31,7 +28,7 @@ export interface AuthorDraft {
     readonly realName: string | null;
     readonly notes: string | null;
     readonly labels: readonly AuthorFormLabel[];
-    readonly locations: readonly {readonly country: string; readonly city: string | null; readonly primary: boolean}[];
+    readonly locations: readonly LocationDraft[];
 }
 
 export interface AuthorFormErrors {
@@ -60,7 +57,7 @@ function realNameProblem(values: AuthorFormValues): AuthorFormErrors['realName']
 export function validateAuthorForm(values: AuthorFormValues): AuthorFormResult {
     const realName = realNameProblem(values);
     const labels = values.labels.map((label) => titleProblem(label.name));
-    const locations = values.locations.map((location) => (location.country === '' ? 'country-required' : null));
+    const locations = values.locations.map(locationProblem);
     const labelsWrong = labels.some((problem) => problem !== null);
     const locationsWrong = locations.some((problem) => problem !== null);
     if (realName !== undefined || labelsWrong || locationsWrong) {
@@ -79,11 +76,7 @@ export function validateAuthorForm(values: AuthorFormValues): AuthorFormResult {
             realName: values.realName.trim() === '' ? null : values.realName,
             notes: values.notes.trim() === '' ? null : values.notes,
             labels: values.labels,
-            locations: values.locations.map((location) => ({
-                country: location.country,
-                city: location.city === '' ? null : location.city,
-                primary: location.primary,
-            })),
+            locations: values.locations.map(toLocationDraft),
         },
     };
 }
@@ -94,10 +87,6 @@ export function toAuthorFormValues(author?: AuthorDetails): AuthorFormValues {
         realName: author?.realName ?? '',
         notes: author?.notes ?? '',
         labels: author?.labels.map((label) => ({id: label.id, name: label.name, display: label.display})) ?? [],
-        locations: author?.locations.map((location) => ({
-            country: location.countryId ?? '',
-            city: location.cityId ?? '',
-            primary: location.primary,
-        })) ?? [],
+        locations: author?.locations.map(toLocationValue) ?? [],
     };
 }

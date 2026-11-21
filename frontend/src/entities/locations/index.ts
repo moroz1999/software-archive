@@ -14,5 +14,6 @@ export {
     toCountryId,
 } from './model/geo';
 export {PlaceFilters, type PlaceFiltersProps} from './ui/PlaceFilters';
+export {type LocationDraft, locationProblem, type StoredLocation, toLocationDraft, toLocationValue} from '@/shared/lib/form-rules';
 export {type LocationValue} from './model/location-value';
 export {LocationsEditor, type LocationsEditorProps} from './ui/LocationsEditor';

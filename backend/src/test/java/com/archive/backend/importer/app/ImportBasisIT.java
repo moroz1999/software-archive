@@ -41,7 +41,6 @@ class ImportBasisIT {
     private static final String SCALAR = "https://caglrc.cc/scalar/";
     private static final String LIST = SCALAR + "categories/all/";
     private static final UUID GAMES = UUID.fromString("081bf3a1-782b-5a8b-8d12-3b155e0a58cb");
-    private static final UUID UNKNOWN_COUNTRY = UUID.fromString("00000000-0000-0000-0000-00000000c001");
     private static final UUID JAPAN = UUID.fromString("00000000-0000-0000-00b5-000000000001");
 
     @TestConfiguration(proxyBeanMethods = false)
@@ -101,7 +100,7 @@ class ImportBasisIT {
         jdbc.update("DELETE FROM \"group\" WHERE added_by = ?", importer);
         jdbc.update("DELETE FROM external_origin");
         jdbc.update("DELETE FROM entity_location WHERE country_id = ?", JAPAN);
-        jdbc.update("DELETE FROM city WHERE country_id = ?", UNKNOWN_COUNTRY);
+        jdbc.update("DELETE FROM city WHERE country_id IS NULL");
         jdbc.update("DELETE FROM country WHERE id = ?", JAPAN);
         jdbc.update("DELETE FROM import_run");
         http.clear();

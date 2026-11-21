@@ -8,6 +8,7 @@ import com.archive.backend.shared.domain.Language;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
@@ -43,10 +44,10 @@ public class JdbcGeoNameRepository implements GeoNameRepository {
     }
 
     @Override
-    public void addCity(CityId city, CountryId country, Language language, GeoName name) {
+    public void addCity(CityId city, @Nullable CountryId country, Language language, GeoName name) {
         jdbc.sql("INSERT INTO city (id, country_id) VALUES (:id, :country)")
                 .param("id", city.value())
-                .param("country", country.value())
+                .param("country", country == null ? null : country.value())
                 .update();
         jdbc.sql("INSERT INTO city_name (city_id, language, name) VALUES (:id, :language, :name)")
                 .param("id", city.value())

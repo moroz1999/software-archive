@@ -1,4 +1,5 @@
-import {type TitleProblem, titleProblem} from '@/shared/lib/title';
+import {type LocationDraft, locationProblem, type LocationValue, toLocationDraft, toLocationValue} from '@/shared/lib/form-rules';
+import {type TitleProblem, titleProblem} from '@/shared/lib/form-rules';
 import type {MemberRoleValue} from '@/shared/ui/member-role-editor';
 import type {GroupDetails} from './group';
 
@@ -15,12 +16,8 @@ export interface GroupDraftLabel {
     readonly name: string;
 }
 
-/** A location in the form: the ids of the chosen country and city, each empty while not chosen. */
-export interface GroupFormLocation {
-    readonly country: string;
-    readonly city: string;
-    readonly primary: boolean;
-}
+/** A location in the form (docs/domain/geo.md). */
+export type GroupFormLocation = LocationValue;
 
 /** What the group form holds while it is being filled. */
 export interface GroupFormValues {
@@ -39,7 +36,7 @@ export interface GroupDraft {
     readonly notes: string | null;
     readonly types: readonly string[];
     readonly labels: readonly GroupDraftLabel[];
-    readonly locations: readonly {readonly country: string; readonly city: string | null; readonly primary: boolean}[];
+    readonly locations: readonly LocationDraft[];
     readonly members?: readonly MemberRoleValue[];
 }
 
@@ -62,7 +59,7 @@ export type GroupFormResult =
 export function validateGroupForm(values: GroupFormValues): GroupFormResult {
     const name = titleProblem(values.name) ?? undefined;
     const labels = values.labels.map((label) => titleProblem(label.name));
-    const locations = values.locations.map((location) => (location.country === '' ? 'country-required' : null));
+    const locations = values.locations.map(locationProblem);
     const labelsWrong = labels.some((problem) => problem !== null);
     const locationsWrong = locations.some((problem) => problem !== null);
     if (name !== undefined || labelsWrong || locationsWrong) {
@@ -82,11 +79,7 @@ export function validateGroupForm(values: GroupFormValues): GroupFormResult {
             notes: values.notes.trim() === '' ? null : values.notes,
             types: values.types,
             labels: values.labels.map((label) => ({id: label.id, name: label.name})),
-            locations: values.locations.map((location) => ({
-                country: location.country,
-                city: location.city === '' ? null : location.city,
-                primary: location.primary,
-            })),
+            locations: values.locations.map(toLocationDraft),
             members: values.members ?? [],
         },
     };
@@ -99,11 +92,7 @@ export function toGroupFormValues(group?: GroupDetails): GroupFormValues {
         notes: group?.notes ?? '',
         types: group?.types ?? [],
         labels: group?.labels.map((label) => ({id: label.id, name: label.name, display: false})) ?? [],
-        locations: group?.locations.map((location) => ({
-            country: location.countryId ?? '',
-            city: location.cityId ?? '',
-            primary: location.primary,
-        })) ?? [],
+        locations: group?.locations.map(toLocationValue) ?? [],
         members: group?.members.flatMap((member) => member.id === null ? [] : [{
             id: member.id,
             type: member.type,

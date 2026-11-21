@@ -7,7 +7,6 @@ import com.archive.backend.geo.domain.Locations;
 import com.archive.backend.geo.domain.Place;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -42,9 +41,11 @@ public final class LocationRows {
                 .map(location -> {
                     CityId city = location.place().city();
                     T row = newRow.get();
-                    row.setCountryId(location.place().country().value());
+                    CountryId country = location.place().country();
+                    UUID countryId = country == null ? null : country.value();
+                    row.setCountryId(countryId);
                     // Read back in the same transaction before the formula runs: the country is known already.
-                    row.setPlaceCountryId(location.place().country().value());
+                    row.setPlaceCountryId(countryId);
                     row.setCityId(city == null ? null : city.value());
                     row.setPrimary(location.primary());
                     return row;
@@ -53,11 +54,11 @@ public final class LocationRows {
     }
 
     /**
-     * A city alone keeps the country it is in.
+     * A city alone keeps the country it is in, none while its country is not known.
      */
     private static Place toPlace(LocationEntity row) {
-        UUID country = Objects.requireNonNull(row.getPlaceCountryId(), "country");
+        UUID country = row.getPlaceCountryId();
         UUID city = row.getCityId();
-        return Place.restore(new CountryId(country), city == null ? null : new CityId(city));
+        return Place.restore(country == null ? null : new CountryId(country), city == null ? null : new CityId(city));
     }
 }

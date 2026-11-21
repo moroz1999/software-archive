@@ -22,8 +22,8 @@ function parseOwner(raw: unknown): NamedLabelOwner | null {
 function parseLocation(item: unknown): LabelLocation {
     const dto = readObject(item, 'location');
     return {
-        countryId: readString(dto, 'countryId'),
-        country: readString(dto, 'country'),
+        countryId: readNullableString(dto, 'countryId'),
+        country: readNullableString(dto, 'country'),
         cityId: readNullableString(dto, 'cityId'),
         city: readNullableString(dto, 'city'),
         primary: readBoolean(dto, 'primary'),

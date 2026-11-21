@@ -39,6 +39,8 @@ class JpaAuthorRepositoryIT {
     private static final CountryId FINLAND = new CountryId(id(21));
     private static final CountryId NORWAY = new CountryId(id(22));
     private static final CityId HELSINKI = new CityId(id(31));
+    // A city whose country is not known.
+    private static final CityId KOVROV = new CityId(id(32));
     private static final UUID CREW = id(41);
     private static final UUID ELITE = id(51);
 
@@ -63,6 +65,7 @@ class JpaAuthorRepositoryIT {
         country(jdbc, FINLAND.value(), "Финляндия", "Finland");
         country(jdbc, NORWAY.value(), "Норвегия", "Norway");
         city(jdbc, HELSINKI.value(), FINLAND.value(), "Хельсинки", "Helsinki");
+        city(jdbc, KOVROV.value(), null, "Ковров", null);
         jdbc.update("INSERT INTO \"group\" (id, name) VALUES (?, 'Crew')", CREW);
         jdbc.update("INSERT INTO software (id, title, platform_code) VALUES (?, 'Elite', 'vector')", ELITE);
     }
@@ -111,6 +114,21 @@ class JpaAuthorRepositoryIT {
         repository.delete(repository.findById(ID).orElseThrow());
         assertThat(count("SELECT count(*) FROM person WHERE id = ?", ID.value()))
                 .isZero();
+    }
+
+    @Test
+    void storesALocationInACityOfNoKnownCountryWithNoCountry() {
+        Locations kovrov = new Locations(List.of(new Location(Place.restore(null, KOVROV), true)));
+        repository.save(Author.create(ID, new RealName("John Doe"), null, List.of(), kovrov, BY_OTHER));
+        entityManager.flush();
+        entityManager.clear();
+
+        assertThat(repository.findById(ID).orElseThrow().getLocations()).isEqualTo(kovrov);
+        assertThat(jdbc.queryForObject(
+                        "SELECT country_id FROM entity_location WHERE entity_type = 'PERSON' AND entity_id = ?",
+                        UUID.class,
+                        ID.value()))
+                .isNull();
     }
 
     @Test

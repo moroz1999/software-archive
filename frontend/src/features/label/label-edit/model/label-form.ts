@@ -1,6 +1,6 @@
 import type {LabelDetails, LabelDraft, LabelOwnerOption} from '@/entities/labels';
-import type {LocationValue} from '@/entities/locations';
-import {type TitleProblem, titleProblem} from '@/shared/lib/title';
+import {locationProblem, type LocationValue, toLocationDraft, toLocationValue} from '@/entities/locations';
+import {type TitleProblem, titleProblem} from '@/shared/lib/form-rules';
 
 /** What the label form holds while it is being filled. */
 export interface LabelFormValues {
@@ -24,7 +24,7 @@ export function toLabelFormValues(label: LabelDetails): LabelFormValues {
         name: label.name,
         owner: label.owner === null ? null : {type: label.owner.type, id: label.owner.id, title: label.owner.name},
         display: false,
-        locations: label.locations.map((location) => ({country: location.countryId, city: location.cityId ?? '', primary: location.primary})),
+        locations: label.locations.map(toLocationValue),
     };
 }
 
@@ -40,7 +40,7 @@ export function offersDisplay(values: LabelFormValues, label: LabelDetails): boo
 /** The format errors of the values; none means they are sent as the draft. */
 export function validateLabelForm(values: LabelFormValues, label: LabelDetails): {readonly ok: true; readonly draft: LabelDraft} | {readonly ok: false; readonly errors: LabelFormErrors} {
     const name = titleProblem(values.name);
-    const locations = values.locations.map((location) => (location.country === '' ? 'country-required' : null));
+    const locations = values.locations.map(locationProblem);
     const locationsWrong = locations.some((problem) => problem !== null);
     if (name !== null || locationsWrong) {
         return {ok: false, errors: {...(name === null ? {} : {name}), ...(locationsWrong ? {locations} : {})}};
@@ -51,11 +51,7 @@ export function validateLabelForm(values: LabelFormValues, label: LabelDetails):
         draft: {
             name: values.name,
             owner: owner === null ? null : {type: owner.type, id: owner.id, display: offersDisplay(values, label) && values.display},
-            locations: values.locations.map((location) => ({
-                country: location.country,
-                city: location.city === '' ? null : location.city,
-                primary: location.primary,
-            })),
+            locations: values.locations.map(toLocationDraft),
         },
     };
 }

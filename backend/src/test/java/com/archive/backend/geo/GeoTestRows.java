@@ -14,7 +14,8 @@ public final class GeoTestRows {
         names(jdbc, "country", id, russian, english);
     }
 
-    public static void city(JdbcTemplate jdbc, UUID id, UUID country, String russian, @Nullable String english) {
+    public static void city(
+            JdbcTemplate jdbc, UUID id, @Nullable UUID country, String russian, @Nullable String english) {
         jdbc.update("INSERT INTO city (id, country_id) VALUES (?, ?)", id, country);
         names(jdbc, "city", id, russian, english);
     }
