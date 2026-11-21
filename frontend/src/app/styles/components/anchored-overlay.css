@@ -1,4 +1,7 @@
 :root {
     /* Space from the anchor to the overlay under it. */
     --anchored-overlay-gap: var(--space-4);
+
+    /* Space an overlay keeps from the viewport's edge when it would run past it. */
+    --anchored-overlay-viewport-gutter: var(--space-16);
 }

@@ -40,7 +40,7 @@ Tests run inside the `frontend` container, which owns `node_modules`: `docker co
 - System error paths are tested by subscribing with `subscribeSystemErrors` or by rendering `App`, which mounts the error dialog.
 Query elements the way a user finds them (role, label, text), not by CSS class or test id when an accessible query exists.
 - Exception: design system atoms (`shared/ui`) promise markup — the element, its classes, its attributes — so their tests may read the rendered DOM node and its classes (CSS module class names are not scoped in tests).
-- Pages are tested through a memory router with their real loader, so the preload window is part of the test: data in time means no skeleton, a slow call means a skeleton first.
+- Pages are tested through a memory router with their real loader, so the preload window is part of the test: data in time means no skeleton, a slow call means a skeleton first. The first import of a lazy page compiles all its code, which takes about a second, so `vitest.setup.ts` lets the queries that wait for what a page shows wait 3 s.
 - Timers, animation frames and intersection are faked where behaviour depends on them (`vi.useFakeTimers`, a stubbed `IntersectionObserver`).
 - The minimum skeleton time is 0 in tests (`vitest.setup.ts` mocks `shared/lib/loading/skeleton-timing`), so a block test does not wait for it; a test of that hold unmocks it in a file of its own, `{Component}.hold.test.tsx`.
 - Network helpers also include `stubFetchAround`: it answers the calls every page makes (the platform switch, a lazy block) by URL, and the others in order.

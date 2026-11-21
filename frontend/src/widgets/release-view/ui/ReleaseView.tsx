@@ -19,10 +19,12 @@ import {
     useSoftwareReleases,
 } from '@/entities/software';
 import {ReparseReleaseFilesButton} from '@/features/release/reparse-files';
+import {softwareBreadcrumbs} from '@/features/software/catalog';
 import {NotFoundError} from '@/shared/api';
 import {useSkeleton} from '@/shared/lib/loading';
 import {useInViewport} from '@/shared/lib/screen';
 import {Button} from '@/shared/ui/button';
+import {PopoverMenu, PopoverMenuItem} from '@/shared/ui/popover-menu';
 import {Badge} from '@/shared/ui/badge';
 import {AdditionNote} from '@/shared/ui/addition-note';
 import {Inline} from '@/shared/ui/inline';
@@ -72,7 +74,13 @@ function LoadedView({softwareId, releaseId}: ReleaseViewProps) {
         <ReleaseFilesProvider softwareId={softwareId} releaseId={releaseId} enabled={release.archive != null}>
             <PageLayout
                 title={release.title}
-                actions={release.canChange && <Button href={releaseEditPath(softwareId, releaseId)} color="secondary">{t('actions.edit')}</Button>}
+                tabTitle={`${release.title} (${software.data.platform.name})`}
+                breadcrumbs={[...softwareBreadcrumbs(software.data, t('pages.software')), {label: release.title}]}
+                menu={release.canChange ? (
+                    <PopoverMenu label={t('actions.menu')}>
+                        <PopoverMenuItem href={releaseEditPath(softwareId, releaseId)}>{t('actions.edit')}</PopoverMenuItem>
+                    </PopoverMenu>
+                ) : undefined}
             >
                 <Stack gap="xl">
                 <Stack gap="lg">

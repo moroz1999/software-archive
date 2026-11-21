@@ -2,7 +2,7 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
-import {json, noContent, renderWithQueries, stubFetchAround, stubFetchRoutes} from '@/shared/lib/test';
+import {breadcrumbSteps, json, noContent, renderWithQueries, stubFetchAround, stubFetchRoutes} from '@/shared/lib/test';
 import {type SoftwareId, toSoftwareId} from '@/entities/software';
 import {SoftwareEditor} from './SoftwareEditor';
 
@@ -37,6 +37,21 @@ describe(SoftwareEditor, () => {
         expect(screen.getByTestId('software-editor-skeleton')).toBeInTheDocument();
         await expect(screen.findByRole('textbox', {name: 'Title'})).resolves.toHaveValue('Elite');
         expect(screen.getByRole('button', {name: 'Delete'})).toBeInTheDocument();
+    });
+
+    it('leads back from the editing to the software and on through the catalog', async () => {
+        stubFetchAround(AROUND, json(ELITE));
+        renderWithQueries(<MemoryRouter><SoftwareEditor id={toSoftwareId(ID)} onSaved={vi.fn<(id: SoftwareId) => void>()} onDeleted={vi.fn<() => void>()}/></MemoryRouter>);
+
+        await screen.findByRole('textbox', {name: 'Title'});
+
+        expect(breadcrumbSteps()).toStrictEqual([
+            ['Software', '/software'],
+            ['Games', `/software/category/${GAMES}`],
+            ['Action', `/software/category/${ACTION}`],
+            ['Elite', `/software/${ID}`],
+            ['Editing', null],
+        ]);
     });
 
     it('offers deleting next to the page title and leads back to the software from the form', async () => {

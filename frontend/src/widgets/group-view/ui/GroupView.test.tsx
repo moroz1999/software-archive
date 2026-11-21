@@ -1,8 +1,9 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen, waitFor, within} from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
-import {json, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
+import {breadcrumbSteps, json, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
 import {toGroupId} from '@/entities/groups';
 import {GroupView} from './GroupView';
 
@@ -71,6 +72,15 @@ describe(GroupView, () => {
         expect(screen.queryByTestId('group-view-skeleton')).not.toBeInTheDocument();
     });
 
+    it('leads back from the group to the groups', async () => {
+        stubFetchAround(NO_SOFTWARE, json(CREW));
+        renderView();
+
+        await screen.findByRole('heading', {level: 1, name: 'Crew Ltd'});
+
+        expect(breadcrumbSteps()).toStrictEqual([['Groups', '/groups'], ['Crew Ltd', null]]);
+    });
+
     it('lists the software the group is credited on as cards with its roles', async () => {
         stubFetchAround(new Map([[SOFTWARE_URL, json([
             {id: ELITE, title: 'Elite', releaseDate: '1985', screenshots: [], madeBy: ['Crew'], credits: [{as: null, roles: ['developer']}]},
@@ -89,7 +99,13 @@ describe(GroupView, () => {
         stubFetchAround(NO_SOFTWARE, json(CREW));
         renderView();
 
-        await expect(screen.findByRole('link', {name: 'Edit'})).resolves.toHaveAttribute('href', `/groups/${ID}/edit`);
+        const menu = await screen.findByRole('button', {name: 'Actions'});
+
+        expect(screen.queryByRole('link', {name: 'Edit'})).not.toBeInTheDocument();
+
+        await userEvent.click(menu);
+
+        expect(screen.getByRole('link', {name: 'Edit'})).toHaveAttribute('href', `/groups/${ID}/edit`);
     });
 
     it('shows everything known about the group under the main name', async () => {
@@ -179,7 +195,8 @@ describe(GroupView, () => {
         });
 
         expect(screen.queryByText('Notes')).not.toBeInTheDocument();
-        expect(screen.queryByRole('list')).not.toBeInTheDocument();
+        // The breadcrumbs are the only list left.
+        expect(screen.getAllByRole('list')).toStrictEqual([within(screen.getByRole('navigation', {name: 'Breadcrumbs'})).getByRole('list')]);
     });
 
     it('hands a system error to the error dialog and shows nothing of its own', async () => {
@@ -205,7 +222,7 @@ describe(GroupView, () => {
 
         await screen.findByRole('heading', {level: 1, name: 'Crew Ltd'});
 
-        expect(screen.queryByRole('link', {name: 'Edit'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Actions'})).not.toBeInTheDocument();
     });
 
     it('tells who added the group and when', async () => {

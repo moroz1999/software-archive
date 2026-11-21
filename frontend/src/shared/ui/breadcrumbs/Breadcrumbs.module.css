@@ -1,0 +1,29 @@
+.trail {
+    font-size: var(--breadcrumbs-font-size);
+    line-height: var(--breadcrumbs-line-height);
+}
+
+.steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--breadcrumbs-gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.step {
+    display: inline-flex;
+    gap: var(--breadcrumbs-gap);
+    min-width: 0;
+}
+
+/* The separator is drawn, not written: the steps read as their names alone. */
+.step + .step::before {
+    content: "›";
+    color: var(--breadcrumbs-separator-color);
+}
+
+.current {
+    color: var(--breadcrumbs-current-color);
+}

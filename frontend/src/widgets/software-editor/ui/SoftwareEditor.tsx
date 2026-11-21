@@ -1,6 +1,7 @@
 import {SoftwareDetailsProvider, SoftwareForm, type SoftwareId, SoftwareFormSkeleton, softwarePath, useSoftwareDetails} from '@/entities/software';
 import {DeleteSoftwareButton} from '@/features/software/delete';
 import {EditSoftwareProvider} from '@/features/software/edit';
+import {softwareBreadcrumbs} from '@/features/software/catalog';
 import {ScreenshotsEditorSection} from '@/features/software/screenshots';
 import {useSkeleton} from '@/shared/lib/loading';
 import {Button} from '@/shared/ui/button';
@@ -42,7 +43,10 @@ function LoadedEditor({id, onSaved, onDeleted}: SoftwareEditorProps) {
         return null;
     }
     return (
-        <PageLayout title={t('actions.editSoftware')} actions={<DeleteSoftwareButton software={query.data} onDeleted={onDeleted}/>}>
+        <PageLayout
+            title={t('actions.editSoftware')}
+            breadcrumbs={[...softwareBreadcrumbs(query.data, t('pages.software')), {label: t('breadcrumbs.editing')}]}
+            actions={<DeleteSoftwareButton software={query.data} onDeleted={onDeleted}/>}>
             <Stack gap="xl">
                 <EditSoftwareProvider software={query.data} onSaved={() => {
                     onSaved(id);

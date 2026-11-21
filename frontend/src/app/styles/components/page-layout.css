@@ -5,6 +5,12 @@
     /* Space between the page content and the viewport edges. */
     --page-layout-padding: var(--space-32) var(--space-16);
 
+    /* Space between the breadcrumbs and the title under them. */
+    --page-layout-breadcrumbs-gap: var(--space-12);
+
+    /* Space above a page with breadcrumbs, smaller, so they stand close to the bar of the site. */
+    --page-layout-breadcrumbs-padding-top: var(--space-16);
+
     /* Space between the page header and the content area. */
     --page-layout-header-content-gap: var(--space-24);
 

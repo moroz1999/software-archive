@@ -1,11 +1,11 @@
 import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
-import {type AuthorDetails, AuthorDetailsProvider, authorEditPath, type AuthorId, useAuthorDetails} from '@/entities/authors';
+import {type AuthorDetails, AuthorDetailsProvider, authorEditPath, type AuthorId, AUTHORS_PATH, useAuthorDetails} from '@/entities/authors';
 import {locationText, primaryFirst} from '@/entities/locations';
 import {groupPath, toGroupId} from '@/entities/groups';
 import {labelPath, toLabelId} from '@/entities/labels';
 import {CreditedSoftwareList} from '@/entities/software';
-import {Button} from '@/shared/ui/button';
+import {PopoverMenu, PopoverMenuItem} from '@/shared/ui/popover-menu';
 import {Inline} from '@/shared/ui/inline';
 import {AdditionNote} from '@/shared/ui/addition-note';
 import {PageLayout} from '@/shared/ui/page-layout';
@@ -46,7 +46,11 @@ function LoadedView() {
         return null;
     }
     return (
-        <PageLayout title={query.data.name} actions={query.data.canChange && <Button href={authorEditPath(query.data.id)} color="secondary">{t('actions.edit')}</Button>}>
+        <PageLayout title={query.data.name} breadcrumbs={[{label: t('pages.authors'), href: AUTHORS_PATH}, {label: query.data.name}]} menu={query.data.canChange ? (
+                <PopoverMenu label={t('actions.menu')}>
+                    <PopoverMenuItem href={authorEditPath(query.data.id)}>{t('actions.edit')}</PopoverMenuItem>
+                </PopoverMenu>
+            ) : undefined}>
             <Stack gap="xl">
                 <Details author={query.data}/>
                 <CreditedSoftwareList owner={{kind: 'authors', id: query.data.id}}/>

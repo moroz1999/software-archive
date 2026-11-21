@@ -1,5 +1,5 @@
 import {useTranslation} from 'react-i18next';
-import {GroupDetailsProvider, GroupForm, GroupFormSkeleton, type GroupId, groupPath, useGroupDetails} from '@/entities/groups';
+import {GroupDetailsProvider, GroupForm, GroupFormSkeleton, type GroupId, groupPath, GROUPS_PATH, useGroupDetails} from '@/entities/groups';
 import {DeleteGroupButton} from '@/features/group/delete';
 import {EditGroupProvider} from '@/features/group/edit';
 import {useSkeleton} from '@/shared/lib/loading';
@@ -41,7 +41,10 @@ function LoadedEditor({id, onSaved, onDeleted}: GroupEditorProps) {
         return null;
     }
     return (
-        <PageLayout title={t('actions.editGroup')} actions={<DeleteGroupButton group={query.data} onDeleted={onDeleted}/>}>
+        <PageLayout
+            title={t('actions.editGroup')}
+            breadcrumbs={[{label: t('pages.groups'), href: GROUPS_PATH}, {label: query.data.name, href: groupPath(query.data.id)}, {label: t('breadcrumbs.editing')}]}
+            actions={<DeleteGroupButton group={query.data} onDeleted={onDeleted}/>}>
             <EditGroupProvider group={query.data} onSaved={onSaved}>
                 <GroupForm
                     submitLabel={t('actions.save')}

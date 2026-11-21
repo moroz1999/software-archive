@@ -1,9 +1,10 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen, within} from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
 import i18n from 'i18next';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
-import {json, noContent, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
+import {breadcrumbSteps, json, noContent, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {toSoftwareId} from '@/entities/software';
 import {CurrentUserProvider} from '@/entities/users';
 import {SoftwareView} from './SoftwareView';
@@ -111,6 +112,38 @@ describe(SoftwareView, () => {
         expect(screen.getByText('and combat')).toBeInTheDocument();
     });
 
+    it('names the browser tab after the software and its platform', async () => {
+        stubFetch(json(ELITE));
+        renderView(ID);
+
+        await expect(screen.findByRole('heading', {level: 1, name: 'Elite'})).resolves.toBeInTheDocument();
+        expect(document.title).toBe('Elite (Vector) — Ретротека');
+    });
+
+    it('leads back from the software through the catalog and the branch of its first category', async () => {
+        stubFetch(json(ELITE));
+        renderView(ID);
+
+        await screen.findByRole('heading', {level: 1, name: 'Elite'});
+
+        expect(breadcrumbSteps()).toStrictEqual([
+            ['Software', '/software'],
+            ['Games', `/software/category/${GAMES}`],
+            ['Action', `/software/category/${ACTION}`],
+            ['Shooters', `/software/category/${SHOOTERS}`],
+            ['Elite', null],
+        ]);
+    });
+
+    it('leads back from software in no category straight to the catalog', async () => {
+        stubFetch(json({...ELITE, categories: []}));
+        renderView(ID);
+
+        await screen.findByRole('heading', {level: 1, name: 'Elite'});
+
+        expect(breadcrumbSteps()).toStrictEqual([['Software', '/software'], ['Elite', null]]);
+    });
+
     it('shows the platform and the hardware of the software by group', async () => {
         stubFetch(json(ELITE));
         renderView(ID);
@@ -169,7 +202,13 @@ describe(SoftwareView, () => {
         stubFetch(json(ELITE));
         renderView(ID);
 
-        await expect(screen.findByRole('link', {name: 'Edit'})).resolves.toHaveAttribute('href', `/software/${ID}/edit`);
+        const menu = await screen.findByRole('button', {name: 'Actions'});
+
+        expect(screen.queryByRole('link', {name: 'Edit'})).not.toBeInTheDocument();
+
+        await userEvent.click(menu);
+
+        expect(screen.getByRole('link', {name: 'Edit'})).toHaveAttribute('href', `/software/${ID}/edit`);
     });
 
     it('shows every category of the software with its whole branch from the top, in their order', async () => {
@@ -379,7 +418,7 @@ describe(SoftwareView, () => {
 
         expect(reports[0]?.error.kind).toBe('server');
         expect(screen.queryByTestId('software-view-skeleton')).not.toBeInTheDocument();
-        expect(screen.queryByRole('link', {name: 'Edit'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Actions'})).not.toBeInTheDocument();
     });
 
     it('offers no editing of software the reader may not change, nor of its releases they may not change', async () => {
@@ -390,7 +429,7 @@ describe(SoftwareView, () => {
         await within(releases).findByRole('row', {name: /Elite AY/});
         await within(releases).findByRole('link', {name: 'Add release'});
 
-        expect(screen.queryByRole('link', {name: 'Edit'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Actions'})).not.toBeInTheDocument();
         expect(within(releases).queryByRole('link', {name: 'Edit Elite AY'})).not.toBeInTheDocument();
     });
 
@@ -402,7 +441,7 @@ describe(SoftwareView, () => {
         const release = await within(releases).findByRole('row', {name: /Elite AY/});
 
         expect(within(release).getByRole('link', {name: 'Edit Elite AY'})).toBeInTheDocument();
-        expect(screen.queryByRole('link', {name: 'Edit'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Actions'})).not.toBeInTheDocument();
     });
 
     it('offers a public visitor no adding of releases', async () => {

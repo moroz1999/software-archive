@@ -1,2 +1,2 @@
-export {MakeAuthorButton, type MakeAuthorButtonProps} from './ui/MakeAuthorButton';
-export {MakeGroupButton, type MakeGroupButtonProps} from './ui/MakeGroupButton';
+export {MakeAuthorDialog, type MakeAuthorDialogProps} from './ui/MakeAuthorDialog';
+export {MakeGroupDialog, type MakeGroupDialogProps} from './ui/MakeGroupDialog';

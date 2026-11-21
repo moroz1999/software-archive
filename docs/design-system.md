@@ -25,13 +25,13 @@ All components live in `frontend/src/shared/ui/`, one folder each with an `index
 
 Built:
 
-- Layout: [Stack](design-system/stack.md), [Inline](design-system/inline.md), [Inset](design-system/inset.md), [Grid, GridItem](design-system/grid.md), [CardGrid](design-system/card-grid.md), [Panel](design-system/panel.md), [PageLayout](design-system/page-layout.md)
+- Layout: [Stack](design-system/stack.md), [Inline](design-system/inline.md), [Inset](design-system/inset.md), [Grid, GridItem](design-system/grid.md), [CardGrid](design-system/card-grid.md), [Panel](design-system/panel.md), [PageLayout](design-system/page-layout.md), [Breadcrumbs](design-system/breadcrumbs.md)
 - Content: [Text, Heading, Label, TextLink](design-system/typography.md), [Badge](design-system/badge.md), [Chip](design-system/chip.md), [ImagePlaceholder](design-system/image-placeholder.md), [CardScreenshots](design-system/card-screenshots.md), [ScreenshotGallery, ScreenshotGallerySkeleton](design-system/screenshot-gallery.md), [Table](design-system/table.md), [Tree](design-system/tree.md)
 - Controls: [Button](design-system/button.md), [Toggle](design-system/toggle.md)
 - Navigation: [NavBar, NavBarLink](design-system/nav-bar.md), [NavChips, NavChip](design-system/nav-chips.md), [Tabs, Tab](design-system/tabs.md), [Pagination](design-system/pagination.md)
 - Forms: [Input, Textarea](design-system/input.md), [Select](design-system/select.md), [Form, FormSection, FormField, FormFieldset, FormRow, FormMessage, FormActions](design-system/form.md), [Checkbox](design-system/checkbox.md), [MultiSelectFilter](design-system/multi-select-filter.md), [MultiEntityAutocomplete](design-system/multi-entity-autocomplete.md), [MemberRoleEditor](design-system/member-role-editor.md), [TreeChecklist](design-system/tree-checklist.md), [FileUpload](design-system/file-upload.md)
 - Loading: [Skeleton](design-system/skeletons.md), [Spinner](design-system/spinner.md), [LoadingState](design-system/loading-states.md)
-- Errors and overlays: [ErrorState](design-system/error-state.md), [Dialog, ErrorDialog](design-system/dialog.md), [ConfirmDialog](design-system/confirm-dialog.md), [IconPopover](design-system/icon-popover.md), [AnchoredOverlay](design-system/anchored-overlay.md)
+- Errors and overlays: [ErrorState](design-system/error-state.md), [Dialog, ErrorDialog](design-system/dialog.md), [ConfirmDialog](design-system/confirm-dialog.md), [IconPopover](design-system/icon-popover.md), [PopoverMenu, PopoverMenuItem](design-system/popover-menu.md), [AnchoredOverlay](design-system/anchored-overlay.md)
 
 Planned, built when a feature first needs them (each gets its document then):
 
@@ -56,7 +56,6 @@ Planned, built when a feature first needs them (each gets its document then):
 ### Controls
 - `ButtonControls` — group of buttons
 - `CloseButton` — close control
-- `PopoverMenuItem` — item of a popover menu
 
 ### Forms
 - `CheckboxField`

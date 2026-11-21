@@ -6,9 +6,11 @@ Adding, editing and deleting authors: people known by a real name, their labels 
 
 | Page | Path | Content |
 |---|---|---|
-| Authors | `/authors` | "Add author" next to the page title ([author-catalog.md](author-catalog.md)); an author's page ([author-view.md](author-view.md)) has "Edit" next to the main name |
+| Authors | `/authors` | "Add author" next to the page title ([author-catalog.md](author-catalog.md)); an author's page ([author-view.md](author-view.md)) has "Edit" in the menu right after the main name |
 | Add author | `/authors/new` | Empty form; Cancel returns to the catalog, "Add author" submits and opens the author's page |
 | Edit author | `/authors/{id}/edit` | "Delete" next to the page title; the form with the author's values, Cancel and "Save" back to the author's page; the catalog after deleting |
+
+The edit page shows Authors › the main name, leading to the author's page, › "Editing". Adding pages have none.
 
 ## Form
 

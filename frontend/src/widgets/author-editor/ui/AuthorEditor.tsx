@@ -1,5 +1,5 @@
 import {useTranslation} from 'react-i18next';
-import {AuthorDetailsProvider, AuthorForm, AuthorFormSkeleton, type AuthorId, authorPath, useAuthorDetails} from '@/entities/authors';
+import {AuthorDetailsProvider, AuthorForm, AuthorFormSkeleton, type AuthorId, authorPath, AUTHORS_PATH, useAuthorDetails} from '@/entities/authors';
 import {DeleteAuthorButton} from '@/features/author/delete';
 import {EditAuthorProvider} from '@/features/author/edit';
 import {useSkeleton} from '@/shared/lib/loading';
@@ -41,7 +41,10 @@ function LoadedEditor({id, onSaved, onDeleted}: AuthorEditorProps) {
         return null;
     }
     return (
-        <PageLayout title={t('actions.editAuthor')} actions={<DeleteAuthorButton author={query.data} onDeleted={onDeleted}/>}>
+        <PageLayout
+            title={t('actions.editAuthor')}
+            breadcrumbs={[{label: t('pages.authors'), href: AUTHORS_PATH}, {label: query.data.name, href: authorPath(query.data.id)}, {label: t('breadcrumbs.editing')}]}
+            actions={<DeleteAuthorButton author={query.data} onDeleted={onDeleted}/>}>
             <EditAuthorProvider author={query.data} onSaved={onSaved}>
                 <AuthorForm
                     submitLabel={t('actions.save')}

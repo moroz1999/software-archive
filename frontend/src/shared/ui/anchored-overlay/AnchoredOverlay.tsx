@@ -9,9 +9,9 @@ export interface AnchoredOverlayProps {
     readonly children: ReactNode;
     /**
      * `stretch` (default): as wide as the anchor, from its left edge. `end`: as wide as its content, its right edge
-     * under the anchor's right edge.
+     * under the anchor's right edge. `start`: as wide as its content, from the anchor's left edge.
      */
-    readonly align?: 'stretch' | 'end';
+    readonly align?: 'stretch' | 'end' | 'start';
     readonly className?: string;
 }
 
@@ -56,5 +56,5 @@ export function AnchoredOverlay({anchor, open, children, align = 'stretch', clas
     if (!open) {
         return null;
     }
-    return createPortal(<div ref={overlay} popover="manual" className={classNames(styles.overlay, align === 'end' && styles.end, className)}>{children}</div>, document.body);
+    return createPortal(<div ref={overlay} popover="manual" className={classNames(styles.overlay, align === 'end' && styles.end, align === 'start' && styles.start, className)}>{children}</div>, document.body);
 }

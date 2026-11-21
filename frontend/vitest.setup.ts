@@ -1,7 +1,7 @@
 /// <reference lib="dom" />
 import '@testing-library/jest-dom/vitest';
 import {afterEach, vi} from 'vitest';
-import {cleanup} from '@testing-library/react';
+import {cleanup, configure} from '@testing-library/react';
 import i18n from 'i18next';
 import {initReactI18next} from 'react-i18next';
 import {resources} from './src/app/i18n/resources';
@@ -15,6 +15,10 @@ void i18n.use(initReactI18next).init({
     interpolation: {escapeValue: false},
     react: {useSuspense: false},
 });
+
+// A routed page is imported lazily, and its first import compiles all its code: that alone takes about a second, longer
+// under a full run. Waiting for what a page shows has to cover it, or a page that is in time fails as late.
+configure({asyncUtilTimeout: 3000});
 
 afterEach(() => {
     cleanup();

@@ -3,7 +3,6 @@ import {useQuery} from '@tanstack/react-query';
 import {useTranslation} from 'react-i18next';
 import {groupTypesQuery} from '@/entities/groups';
 import type {LabelOwner} from '@/entities/labels';
-import {Button} from '@/shared/ui/button';
 import {Checkbox} from '@/shared/ui/checkbox';
 import {FormFieldset} from '@/shared/ui/form';
 import {Inline} from '@/shared/ui/inline';
@@ -11,42 +10,38 @@ import {Skeleton} from '@/shared/ui/skeleton';
 import {type MadeOwnerLabel, useMakeOwner} from '../model/make-owner-context';
 import {MakeOwnerProvider} from '../model/MakeOwnerProvider';
 import {MakeOwnerDialog} from './MakeOwnerDialog';
-import styles from './MakeGroupButton.module.css';
+import styles from './MakeGroupDialog.module.css';
 
-export interface MakeGroupButtonProps {
+export interface MakeGroupDialogProps {
     readonly label: MadeOwnerLabel;
+    readonly open: boolean;
+    /** Asked to close: by Cancel or Escape. */
+    readonly onClose: () => void;
     readonly onMade: (owner: LabelOwner) => void;
 }
 
-/** Makes a new group under the name of the label, of the types chosen in its dialog. */
-export function MakeGroupButton({label, onMade}: MakeGroupButtonProps) {
+/** Asks for the types of a new group under the name of the label and makes it. */
+export function MakeGroupDialog({label, open, onClose, onMade}: MakeGroupDialogProps) {
     return (
         <MakeOwnerProvider label={label} onMade={onMade}>
-            <MakeGroupWithDialog/>
+            <MakeGroupWindow open={open} onClose={onClose}/>
         </MakeOwnerProvider>
     );
 }
 
-function MakeGroupWithDialog() {
+function MakeGroupWindow({open, onClose}: {readonly open: boolean; readonly onClose: () => void}) {
     const {t} = useTranslation();
     const {label, makeGroup, making, reset} = useMakeOwner();
     // What is chosen in the open dialog is its own UI state until it is sent.
-    const [open, setOpen] = useState(false);
     const [types, setTypes] = useState<readonly string[]>([]);
 
     function close() {
-        setOpen(false);
         setTypes([]);
         reset();
+        onClose();
     }
 
     return (
-        <>
-            <Button color="secondary" onClick={() => {
-                setOpen(true);
-            }}>
-                {t('label.makeGroup')}
-            </Button>
             <MakeOwnerDialog
                 open={open}
                 title={t('label.makeGroup')}
@@ -59,7 +54,6 @@ function MakeGroupWithDialog() {
             >
                 {open && <TypeChoices types={types} disabled={making} onChange={setTypes}/>}
             </MakeOwnerDialog>
-        </>
     );
 }
 

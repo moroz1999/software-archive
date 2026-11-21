@@ -1,4 +1,5 @@
 import {useTranslation} from 'react-i18next';
+import {AUTHORS_PATH} from '@/entities/authors';
 import {LabelDetailsProvider, type LabelId, labelPath, useLabelDetails} from '@/entities/labels';
 import {DeleteLabelButton} from '@/features/label/delete';
 import {EditLabelForm, EditLabelFormSkeleton, EditLabelProvider} from '@/features/label/label-edit';
@@ -41,7 +42,10 @@ function LoadedEditor({id, onSaved, onDeleted}: LabelEditorProps) {
     }
     const label = query.data;
     return (
-        <PageLayout title={t('actions.editLabel')} actions={<DeleteLabelButton label={{id: label.id, name: label.name}} onDeleted={onDeleted}/>}>
+        <PageLayout
+            title={t('actions.editLabel')}
+            breadcrumbs={[{label: t('pages.authors'), href: AUTHORS_PATH}, {label: label.name, href: labelPath(label.id)}, {label: t('breadcrumbs.editing')}]}
+            actions={<DeleteLabelButton label={{id: label.id, name: label.name}} onDeleted={onDeleted}/>}>
             <EditLabelProvider label={label} onSaved={onSaved}>
                 <EditLabelForm actions={<Button href={labelPath(id)} color="secondary">{t('actions.cancel')}</Button>}/>
             </EditLabelProvider>

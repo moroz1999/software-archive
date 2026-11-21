@@ -3,7 +3,7 @@ import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
-import {json, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
+import {breadcrumbSteps, json, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {toReleaseId, toSoftwareId} from '@/entities/software';
 import {ReleaseView} from './ReleaseView';
 
@@ -54,6 +54,21 @@ describe(ReleaseView, () => {
         renderView(AY_MOD);
 
         await expect(screen.findByText('Added by Zork on 4 March 2026')).resolves.toBeInTheDocument();
+    });
+
+    it('names the browser tab after the release and the platform of its software', async () => {
+        renderView(AY_MOD);
+
+        await expect(screen.findByRole('heading', {level: 1, name: 'Elite AY'})).resolves.toBeInTheDocument();
+        expect(document.title).toBe('Elite AY (Vector) — Ретротека');
+    });
+
+    it('leads back from the release to its software and on through the catalog', async () => {
+        renderView(AY_MOD);
+
+        await screen.findByRole('heading', {level: 1, name: 'Elite AY'});
+
+        expect(breadcrumbSteps()).toStrictEqual([['Software', '/software'], ['Elite', `/software/${ID}`], ['Elite AY', null]]);
     });
 
     it('tells only when the release was added once the account of whoever added it is gone', async () => {

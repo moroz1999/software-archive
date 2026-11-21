@@ -73,7 +73,8 @@ describe('release view routes', () => {
         await userEvent.click(await within(releases).findByRole('link', {name: 'Elite AY'}));
 
         await expect(screen.findByRole('heading', {level: 1, name: 'Elite AY'})).resolves.toBeInTheDocument();
-        expect(screen.getByRole('link', {name: 'Elite'})).toHaveAttribute('href', `/software/${SOFTWARE_ID}`);
+        // The breadcrumbs and the page itself both lead back to the software.
+        expect(screen.getAllByRole('link', {name: 'Elite'}).map((link) => link.getAttribute('href'))).toStrictEqual([`/software/${SOFTWARE_ID}`, `/software/${SOFTWARE_ID}`]);
         expect(screen.getByText('05.10.1985')).toBeInTheDocument();
         expect(screen.getByText('1.1')).toBeInTheDocument();
         expect(screen.getByText('Mod')).toBeInTheDocument();
@@ -101,6 +102,9 @@ describe('release view routes', () => {
         const screenshots = await screen.findByRole('region', {name: 'Screenshots'});
 
         expect(within(screenshots).getByRole('button', {name: 'Screenshot 1 of 1'})).toBeInTheDocument();
+
+        await userEvent.click(screen.getByRole('button', {name: 'Actions'}));
+
         expect(screen.getByRole('link', {name: 'Edit'})).toHaveAttribute('href', `/software/${SOFTWARE_ID}/releases/${RELEASE_ID}/edit`);
     });
 
@@ -119,7 +123,7 @@ describe('release view routes', () => {
 
         await screen.findByRole('heading', {level: 1, name: 'Elite AY'});
 
-        expect(screen.queryByRole('link', {name: 'Edit'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Actions'})).not.toBeInTheDocument();
     });
 
     it('shows the not found page when the software has no such release', async () => {

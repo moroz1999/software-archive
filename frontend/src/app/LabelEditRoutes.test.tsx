@@ -2,7 +2,7 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import {render, screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {createQueryClient} from '@/shared/api';
-import {json, noContent} from '@/shared/lib/test';
+import {breadcrumbSteps, json, noContent} from '@/shared/lib/test';
 import {App} from './App';
 import {type AppRouter, createAppRouter} from './router';
 
@@ -93,15 +93,28 @@ describe('label editing routes', () => {
         stubApi(MEMBER, {[`GET ${LABEL_URL}`]: json(GHOST)});
         openAt(`/labels/${ID}`);
 
-        await expect(screen.findByRole('link', {name: 'Edit'})).resolves.toHaveAttribute('href', `/labels/${ID}/edit`);
+        const menu = await screen.findByRole('button', {name: 'Actions'});
+
+        expect(screen.queryByRole('link', {name: 'Edit'})).not.toBeInTheDocument();
+
+        await userEvent.click(menu);
+
+        expect(screen.getByRole('link', {name: 'Edit'})).toHaveAttribute('href', `/labels/${ID}/edit`);
+    });
+
+    it('leads back from the editing to the label and the authors', async () => {
+        await openForm(MEMBER, GHOST);
+
+        expect(breadcrumbSteps()).toStrictEqual([['Authors', '/authors'], ['Ghost', `/labels/${ID}`], ['Editing', null]]);
     });
 
     it('offers no editing to whoever may not edit the label', async () => {
         stubApi(MEMBER, {[`GET ${LABEL_URL}`]: json({...GHOST, canEdit: false})});
         openAt(`/labels/${ID}`);
 
-        await screen.findByRole('heading', {level: 1, name: 'Ghost'});
+        await userEvent.click(await screen.findByRole('button', {name: 'Actions'}));
 
+        expect(screen.getByRole('button', {name: 'Make author'})).toBeInTheDocument();
         expect(screen.queryByRole('link', {name: 'Edit'})).not.toBeInTheDocument();
     });
 

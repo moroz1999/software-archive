@@ -3,7 +3,7 @@ import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {createMemoryRouter, RouterProvider} from 'react-router';
 import {createQueryClient} from '@/shared/api';
-import {json, noContent, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
+import {breadcrumbSteps, json, noContent, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {loadReleaseEditPage, preloadReleaseEditPage} from '../index';
 
 const ID = '00000000-0000-0000-0001-000000000001';
@@ -60,6 +60,21 @@ describe('ReleaseEditPage', () => {
         expect(screen.getAllByRole('button').at(0)).toHaveAccessibleName('Delete');
         expect(heading).toBeInTheDocument();
         expect(screen.getByRole('link', {name: 'Cancel'})).toHaveAttribute('href', `/software/${ID}/releases/${RELEASE}`);
+    });
+
+    it('leads back from the editing to the release, its software and the catalog', async () => {
+        answer();
+
+        renderRoute();
+
+        await screen.findByRole('textbox', {name: 'Version'});
+
+        expect(breadcrumbSteps()).toStrictEqual([
+            ['Software', '/software'],
+            ['Elite', `/software/${ID}`],
+            ['Elite AY', `/software/${ID}/releases/${RELEASE}`],
+            ['Editing', null],
+        ]);
     });
 
     it('offers the screenshots of the release to change below its form', async () => {

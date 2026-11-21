@@ -1,0 +1,5 @@
+:root {
+    /* While the group types load: about one line of checkboxes. */
+    --make-group-dialog-loading-width: 240px;
+    --make-group-dialog-loading-height: var(--space-24);
+}

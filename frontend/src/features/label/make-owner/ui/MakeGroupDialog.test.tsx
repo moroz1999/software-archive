@@ -5,7 +5,7 @@ import i18n from 'i18next';
 import {type LabelOwner, toLabelId} from '@/entities/labels';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
-import {MakeGroupButton} from './MakeGroupButton';
+import {MakeGroupDialog} from './MakeGroupDialog';
 
 const ID = toLabelId('00000000-0000-0000-0004-000000000001');
 const GHOST = {id: ID, name: 'Ghost', owner: null};
@@ -14,12 +14,11 @@ const MADE = '00000000-0000-0000-0005-000000000002';
 const TYPES = new Map([['/api/group-types', json(['demogroup', 'label'])]]);
 
 async function makeDemogroup() {
-    await userEvent.click(screen.getByRole('button', {name: 'Make group'}));
     await userEvent.click(await screen.findByRole('checkbox', {name: 'Demo group'}));
     await userEvent.click(within(screen.getByRole('dialog', {name: 'Make group'})).getByRole('button', {name: 'Make group'}));
 }
 
-describe(MakeGroupButton, () => {
+describe(MakeGroupDialog, () => {
     afterEach(() => {
         vi.unstubAllGlobals();
     });
@@ -27,7 +26,7 @@ describe(MakeGroupButton, () => {
     it('makes a group under the name of the label with the types chosen and hands over the new group', async () => {
         const fetchMock = stubFetchAround(TYPES, json({id: MADE}, 201));
         const onMade = vi.fn<(owner: LabelOwner) => void>();
-        renderWithQueries(<MakeGroupButton label={GHOST} onMade={onMade}/>);
+        renderWithQueries(<MakeGroupDialog open onClose={vi.fn<() => void>()} label={GHOST} onMade={onMade}/>);
 
         await makeDemogroup();
 
@@ -43,9 +42,7 @@ describe(MakeGroupButton, () => {
     it('asks for the types of the group named after the label and makes it of no known type when none is chosen', async () => {
         const fetchMock = stubFetchAround(TYPES, json({id: MADE}, 201));
         const onMade = vi.fn<(owner: LabelOwner) => void>();
-        renderWithQueries(<MakeGroupButton label={GHOST} onMade={onMade}/>);
-
-        await userEvent.click(screen.getByRole('button', {name: 'Make group'}));
+        renderWithQueries(<MakeGroupDialog open onClose={vi.fn<() => void>()} label={GHOST} onMade={onMade}/>);
 
         expect(screen.getByRole('dialog', {name: 'Make group'})).toHaveTextContent('Make a group named “Ghost”?');
         await expect(screen.findByRole('checkbox', {name: 'Label'})).resolves.not.toBeChecked();
@@ -64,9 +61,8 @@ describe(MakeGroupButton, () => {
     it('shows group types in the UI language and sends their stable codes', async () => {
         await i18n.changeLanguage('ru');
         const fetchMock = stubFetchAround(TYPES, json({id: MADE}, 201));
-        renderWithQueries(<MakeGroupButton label={GHOST} onMade={vi.fn<(owner: LabelOwner) => void>()}/>);
+        renderWithQueries(<MakeGroupDialog open onClose={vi.fn<() => void>()} label={GHOST} onMade={vi.fn<(owner: LabelOwner) => void>()}/>);
 
-        await userEvent.click(screen.getByRole('button', {name: 'Сделать группу'}));
         await userEvent.click(await screen.findByRole('checkbox', {name: 'Демо-группа'}));
         await userEvent.click(within(screen.getByRole('dialog', {name: 'Сделать группу'})).getByRole('button', {name: 'Сделать группу'}));
 
@@ -75,14 +71,14 @@ describe(MakeGroupButton, () => {
         expect(call?.[1]).toMatchObject({method: 'POST', body: JSON.stringify({types: ['demogroup']})});
     });
 
-    it('says the label is taken away from whoever has it', async () => {
+    it('says the label is taken away from whoever has it', () => {
         stubFetchAround(TYPES, json({id: MADE}, 201));
-        renderWithQueries(<MakeGroupButton
+        renderWithQueries(<MakeGroupDialog
+            open
+            onClose={vi.fn<() => void>()}
             label={{...GHOST, owner: {type: 'group', id: CREW, name: 'Crew', note: null}}}
             onMade={vi.fn<(owner: LabelOwner) => void>()}
         />);
-
-        await userEvent.click(screen.getByRole('button', {name: 'Make group'}));
 
         expect(screen.getByRole('dialog', {name: 'Make group'})).toHaveTextContent('It will no longer be a label of Crew.');
     });
@@ -98,7 +94,7 @@ describe(MakeGroupButton, () => {
             reports.push(report);
         });
         stubFetchAround(TYPES, json({status, code}, status));
-        renderWithQueries(<MakeGroupButton label={GHOST} onMade={vi.fn<(owner: LabelOwner) => void>()}/>);
+        renderWithQueries(<MakeGroupDialog open onClose={vi.fn<() => void>()} label={GHOST} onMade={vi.fn<(owner: LabelOwner) => void>()}/>);
 
         await makeDemogroup();
 
@@ -114,7 +110,7 @@ describe(MakeGroupButton, () => {
             reports.push(report);
         });
         stubFetchAround(TYPES, json({}, 500));
-        renderWithQueries(<MakeGroupButton label={GHOST} onMade={vi.fn<(owner: LabelOwner) => void>()}/>);
+        renderWithQueries(<MakeGroupDialog open onClose={vi.fn<() => void>()} label={GHOST} onMade={vi.fn<(owner: LabelOwner) => void>()}/>);
 
         await makeDemogroup();
 
@@ -123,5 +119,15 @@ describe(MakeGroupButton, () => {
         });
 
         unsubscribe();
+    });
+
+    it('asks to be closed by Cancel', async () => {
+        stubFetchAround(TYPES);
+        const onClose = vi.fn<() => void>();
+        renderWithQueries(<MakeGroupDialog label={GHOST} onMade={vi.fn<(owner: LabelOwner) => void>()} open onClose={onClose}/>);
+
+        await userEvent.click(screen.getByRole('button', {name: 'Cancel'}));
+
+        expect(onClose).toHaveBeenCalledExactlyOnceWith();
     });
 });

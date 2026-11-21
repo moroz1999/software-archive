@@ -22,9 +22,10 @@ import {
     useSoftwareDetails,
 } from '@/entities/software';
 import {toCategoryId} from '@/entities/categories';
-import {catalogHrefOf} from '@/features/software/catalog';
+import {catalogHrefOf, softwareBreadcrumbs} from '@/features/software/catalog';
 import {useInViewport} from '@/shared/lib/screen';
 import {Button} from '@/shared/ui/button';
+import {PopoverMenu, PopoverMenuItem} from '@/shared/ui/popover-menu';
 import {Chip} from '@/shared/ui/chip';
 import {Inline} from '@/shared/ui/inline';
 import {AdditionNote} from '@/shared/ui/addition-note';
@@ -67,7 +68,11 @@ function LoadedView({id}: SoftwareViewProps) {
         return null;
     }
     return (
-        <PageLayout title={query.data.title} actions={query.data.canChange && <Button href={softwareEditPath(id)} color="secondary">{t('actions.edit')}</Button>}>
+        <PageLayout title={query.data.title} tabTitle={`${query.data.title} (${query.data.platform.name})`} breadcrumbs={softwareBreadcrumbs(query.data, t('pages.software'))} menu={query.data.canChange ? (
+                <PopoverMenu label={t('actions.menu')}>
+                    <PopoverMenuItem href={softwareEditPath(id)}>{t('actions.edit')}</PopoverMenuItem>
+                </PopoverMenu>
+            ) : undefined}>
             <Stack gap="xl">
                 <Details software={query.data}/>
                 <Screenshots id={id} title={query.data.title}/>

@@ -2,7 +2,7 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
-import {json, noContent, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
+import {breadcrumbSteps, json, noContent, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
 import {toGroupId} from '@/entities/groups';
 import {GroupEditor} from './GroupEditor';
 
@@ -46,6 +46,15 @@ describe(GroupEditor, () => {
 
         await expect(screen.findByRole('checkbox', {name: 'demogroup'})).resolves.toBeChecked();
         expect(screen.getByRole('checkbox', {name: 'crack group'})).not.toBeChecked();
+    });
+
+    it('leads back from the editing to the group and the groups', async () => {
+        stubFetchAround(AROUND, json(CREW));
+        renderEditor();
+
+        await screen.findByRole('textbox', {name: 'Name'});
+
+        expect(breadcrumbSteps()).toStrictEqual([['Groups', '/groups'], ['Crew Ltd', `/groups/${ID}`], ['Editing', null]]);
     });
 
     it('shows a skeleton, then the form with the group, its types, labels and locations', async () => {

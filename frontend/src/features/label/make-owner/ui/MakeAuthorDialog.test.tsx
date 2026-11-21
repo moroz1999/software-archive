@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import {type LabelOwner, toLabelId} from '@/entities/labels';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, renderWithQueries, stubFetch} from '@/shared/lib/test';
-import {MakeAuthorButton} from './MakeAuthorButton';
+import {MakeAuthorDialog} from './MakeAuthorDialog';
 
 const ID = toLabelId('00000000-0000-0000-0004-000000000001');
 const GHOST = {id: ID, name: 'Ghost', owner: null};
@@ -12,11 +12,10 @@ const JANE = '00000000-0000-0000-0003-000000000001';
 const MADE = '00000000-0000-0000-0003-000000000002';
 
 async function makeAuthor() {
-    await userEvent.click(screen.getByRole('button', {name: 'Make author'}));
     await userEvent.click(within(screen.getByRole('dialog', {name: 'Make author'})).getByRole('button', {name: 'Make author'}));
 }
 
-describe(MakeAuthorButton, () => {
+describe(MakeAuthorDialog, () => {
     afterEach(() => {
         vi.unstubAllGlobals();
     });
@@ -24,9 +23,7 @@ describe(MakeAuthorButton, () => {
     it('replaces the label with a person and hands over the new person', async () => {
         const fetchMock = stubFetch(json({id: MADE}, 201));
         const onMade = vi.fn<(owner: LabelOwner) => void>();
-        renderWithQueries(<MakeAuthorButton label={GHOST} onMade={onMade}/>);
-
-        await userEvent.click(screen.getByRole('button', {name: 'Make author'}));
+        renderWithQueries(<MakeAuthorDialog open onClose={vi.fn<() => void>()} label={GHOST} onMade={onMade}/>);
 
         expect(screen.getByRole('dialog', {name: 'Make author'})).toHaveTextContent('Make a person known as “Ghost”?');
 
@@ -40,14 +37,14 @@ describe(MakeAuthorButton, () => {
         expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({method: 'POST'});
     });
 
-    it('says the label is taken away from whoever has it', async () => {
+    it('says the label is taken away from whoever has it', () => {
         stubFetch(json({id: MADE}, 201));
-        renderWithQueries(<MakeAuthorButton
+        renderWithQueries(<MakeAuthorDialog
+            open
+            onClose={vi.fn<() => void>()}
             label={{...GHOST, owner: {type: 'author', id: JANE, name: 'Jane Doe', note: 'JD'}}}
             onMade={vi.fn<(owner: LabelOwner) => void>()}
         />);
-
-        await userEvent.click(screen.getByRole('button', {name: 'Make author'}));
 
         expect(screen.getByRole('dialog', {name: 'Make author'})).toHaveTextContent('It will no longer be a label of Jane Doe.');
     });
@@ -62,7 +59,7 @@ describe(MakeAuthorButton, () => {
             reports.push(report);
         });
         stubFetch(json({status, code}, status));
-        renderWithQueries(<MakeAuthorButton label={GHOST} onMade={vi.fn<(owner: LabelOwner) => void>()}/>);
+        renderWithQueries(<MakeAuthorDialog open onClose={vi.fn<() => void>()} label={GHOST} onMade={vi.fn<(owner: LabelOwner) => void>()}/>);
 
         await makeAuthor();
 
@@ -78,7 +75,7 @@ describe(MakeAuthorButton, () => {
             reports.push(report);
         });
         stubFetch(json({}, 500));
-        renderWithQueries(<MakeAuthorButton label={GHOST} onMade={vi.fn<(owner: LabelOwner) => void>()}/>);
+        renderWithQueries(<MakeAuthorDialog open onClose={vi.fn<() => void>()} label={GHOST} onMade={vi.fn<(owner: LabelOwner) => void>()}/>);
 
         await makeAuthor();
 
@@ -87,5 +84,14 @@ describe(MakeAuthorButton, () => {
         });
 
         unsubscribe();
+    });
+
+    it('asks to be closed by Cancel', async () => {
+        const onClose = vi.fn<() => void>();
+        renderWithQueries(<MakeAuthorDialog label={GHOST} onMade={vi.fn<(owner: LabelOwner) => void>()} open onClose={onClose}/>);
+
+        await userEvent.click(screen.getByRole('button', {name: 'Cancel'}));
+
+        expect(onClose).toHaveBeenCalledExactlyOnceWith();
     });
 });

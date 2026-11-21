@@ -3,7 +3,7 @@ import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {createMemoryRouter, RouterProvider} from 'react-router';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
-import {json, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
+import {breadcrumbSteps, json, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
 import {toLabelId} from '@/entities/labels';
 import {LabelView} from './LabelView';
 
@@ -24,6 +24,10 @@ function openLabel() {
     renderWithQueries(<RouterProvider router={router}/>);
 }
 
+async function openActions() {
+    await userEvent.click(await screen.findByRole('button', {name: 'Actions'}));
+}
+
 describe(LabelView, () => {
     afterEach(() => {
         vi.unstubAllGlobals();
@@ -35,6 +39,15 @@ describe(LabelView, () => {
 
         await expect(screen.findByRole('heading', {level: 1, name: 'Ghost'})).resolves.toBeInTheDocument();
         expect(screen.getByText('Not known yet whose label this is')).toBeInTheDocument();
+    });
+
+    it('leads back from the label to the authors', async () => {
+        stubFetchAround(NO_SOFTWARE, json(GHOST));
+        openLabel();
+
+        await screen.findByRole('heading', {level: 1, name: 'Ghost'});
+
+        expect(breadcrumbSteps()).toStrictEqual([['Authors', '/authors'], ['Ghost', null]]);
     });
 
     it('leads to the groups the label was a member of', async () => {
@@ -61,14 +74,18 @@ describe(LabelView, () => {
         stubFetchAround(NO_SOFTWARE, json(GHOST));
         openLabel();
 
-        await expect(screen.findByRole('button', {name: 'Say whose label'})).resolves.toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Say whose label'})).not.toBeInTheDocument();
+
+        await openActions();
+
+        expect(screen.getByRole('button', {name: 'Say whose label'})).toBeInTheDocument();
     });
 
     it('offers no attaching to whoever may not do it', async () => {
         stubFetchAround(NO_SOFTWARE, json({...GHOST, canChange: false}));
         openLabel();
 
-        await screen.findByRole('heading', {level: 1, name: 'Ghost'});
+        await openActions();
 
         expect(screen.queryByRole('button', {name: 'Say whose label'})).not.toBeInTheDocument();
     });
@@ -77,7 +94,7 @@ describe(LabelView, () => {
         stubFetchAround(NO_SOFTWARE, json({...GHOST, owner: {type: 'author', id: JANE, name: 'Jane Doe', note: 'JD'}, canChange: false}));
         openLabel();
 
-        await screen.findByRole('heading', {level: 1, name: 'Ghost'});
+        await openActions();
 
         expect(screen.getByText('Whose label')).toBeInTheDocument();
         expect(screen.getByRole('link', {name: 'Jane Doe'})).toHaveAttribute('href', `/authors/${JANE}`);
@@ -99,7 +116,9 @@ describe(LabelView, () => {
         stubFetchAround(NO_SOFTWARE, json(GHOST));
         openLabel();
 
-        await expect(screen.findByRole('button', {name: 'Make author'})).resolves.toBeInTheDocument();
+        await openActions();
+
+        expect(screen.getByRole('button', {name: 'Make author'})).toBeInTheDocument();
         expect(screen.getByRole('button', {name: 'Make group'})).toBeInTheDocument();
     });
 
@@ -107,7 +126,7 @@ describe(LabelView, () => {
         stubFetchAround(NO_SOFTWARE, json({...GHOST, canMakeOwner: false}));
         openLabel();
 
-        await screen.findByRole('heading', {level: 1, name: 'Ghost'});
+        await openActions();
 
         expect(screen.queryByRole('button', {name: 'Make author'})).not.toBeInTheDocument();
         expect(screen.queryByRole('button', {name: 'Make group'})).not.toBeInTheDocument();
@@ -117,10 +136,40 @@ describe(LabelView, () => {
         stubFetchAround(NO_SOFTWARE, json(GHOST), json({id: JANE}, 201));
         openLabel();
 
-        await userEvent.click(await screen.findByRole('button', {name: 'Make author'}));
+        await openActions();
+        await userEvent.click(screen.getByRole('button', {name: 'Make author'}));
+
+        expect(screen.queryByRole('dialog', {name: 'Actions'})).not.toBeInTheDocument();
+
         await userEvent.click(within(screen.getByRole('dialog', {name: 'Make author'})).getByRole('button', {name: 'Make author'}));
 
         await expect(screen.findByText('Author page')).resolves.toBeInTheDocument();
+    });
+
+    it('opens saying whose the label is and making a group in their own windows, out of the closed menu', async () => {
+        stubFetchAround(new Map([...NO_SOFTWARE, ['/api/group-types', json([])]]), json(GHOST));
+        openLabel();
+
+        await openActions();
+        await userEvent.click(screen.getByRole('button', {name: 'Say whose label'}));
+
+        expect(screen.queryByRole('dialog', {name: 'Actions'})).not.toBeInTheDocument();
+        expect(screen.getByRole('dialog', {name: 'Say whose label'})).toBeInTheDocument();
+
+        await userEvent.click(within(screen.getByRole('dialog', {name: 'Say whose label'})).getByRole('button', {name: 'Cancel'}));
+        await openActions();
+        await userEvent.click(screen.getByRole('button', {name: 'Make group'}));
+
+        expect(screen.getByRole('dialog', {name: 'Make group'})).toBeInTheDocument();
+    });
+
+    it('offers no actions at all to whoever may do none of them', async () => {
+        stubFetchAround(NO_SOFTWARE, json({...GHOST, canChange: false, canMakeOwner: false, canEdit: false}));
+        openLabel();
+
+        await screen.findByRole('heading', {level: 1, name: 'Ghost'});
+
+        expect(screen.queryByRole('button', {name: 'Actions'})).not.toBeInTheDocument();
     });
 
     it('hands a system error to the error dialog and shows nothing of its own', async () => {

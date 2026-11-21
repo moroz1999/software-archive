@@ -6,9 +6,11 @@ Adding, editing and deleting software ([domain/software.md](../domain/software.m
 
 | Page | Path | Content |
 |---|---|---|
-| Software list | `/software` | "Add software" next to the page title; a card leads to the software's page ([software-view.md](software-view.md)), whose "Edit" leads to the editing |
+| Software list | `/software` | "Add software" next to the page title; a card leads to the software's page ([software-view.md](software-view.md)), whose menu right after the title has "Edit", leading to the editing |
 | Add software | `/software/new` | Empty form; Cancel returns to the list, "Add software" submits and returns to it |
 | Edit software | `/software/{id}/edit` | "Delete" next to the page title; the form with the software's values, Cancel and "Save" back to the software's page; back to the software's page after saving, to the list after deleting; the software's screenshots below the form ([screenshots.md](screenshots.md#pages)) |
+
+The edit page shows the breadcrumbs of the software ([software-view.md](software-view.md#page)), the software leading to its page, then "Editing". Adding pages have none.
 
 ## Form
 

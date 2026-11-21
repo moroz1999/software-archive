@@ -2,7 +2,7 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
-import {json, noContent, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
+import {breadcrumbSteps, json, noContent, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
 import {toAuthorId} from '@/entities/authors';
 import {AuthorEditor} from './AuthorEditor';
 
@@ -46,6 +46,15 @@ describe(AuthorEditor, () => {
         expect(screen.getByRole('textbox', {name: 'Label 1'})).toHaveValue('Zed');
         await expect(screen.findByRole('option', {name: 'Helsinki', selected: true})).resolves.toBeInTheDocument();
         expect(screen.getByRole('button', {name: 'Delete'})).toBeInTheDocument();
+    });
+
+    it('leads back from the editing to the author and the authors', async () => {
+        stubFetchAround(AROUND, json(ZED));
+        renderEditor();
+
+        await screen.findByRole('textbox', {name: 'Real name'});
+
+        expect(breadcrumbSteps()).toStrictEqual([['Authors', '/authors'], ['Zed', `/authors/${ID}`], ['Editing', null]]);
     });
 
     it('puts Delete next to the title and returns to the author on Cancel', async () => {

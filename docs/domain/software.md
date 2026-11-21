@@ -4,7 +4,7 @@ Software (a production) is a release of a program: the work itself, as it is kno
 
 - It is for exactly one platform and has its base hardware — see [hardware.md](hardware.md).
 - It has a title, a description and a release date — see [Release dates](#release-dates).
-- It can be in categories of the archive's tree — see [categories.md](categories.md).
+- It can be in categories of the archive's tree — see [categories.md](categories.md). The way down to software goes through the catalog and the branch of its first category from the top: Software › Games › Action › Elite; software in no category stands right under the catalog. A release is the next step under its software.
 - It has credits: who made it, published it and worked on it — see [Credits](#credits).
 - It has a preservation status, shown to everybody and chosen in its form: unknown (until it is known, and then not shown), missing in action (nobody has it; «Потеряна»), donationware (given away for a donation; «За донат») or in sales (still sold; «В продаже»).
 - The title follows the common title rules (see the domain index). The description and the release date may be unknown.

@@ -3,12 +3,12 @@ import {render, screen} from '@testing-library/react';
 import {useRef} from 'react';
 import {AnchoredOverlay} from './AnchoredOverlay';
 
-function Anchored({open}: {readonly open: boolean}) {
+function Anchored({open, align}: {readonly open: boolean; readonly align?: 'stretch' | 'end' | 'start'}) {
     const anchor = useRef<HTMLButtonElement>(null);
     return (
         <>
             <button ref={anchor} type="button">Anchor</button>
-            <AnchoredOverlay anchor={anchor} open={open}>
+            <AnchoredOverlay anchor={anchor} open={open} {...(align === undefined ? {} : {align})}>
                 <p>Floating</p>
             </AnchoredOverlay>
         </>
@@ -36,5 +36,11 @@ describe(AnchoredOverlay, () => {
 
         expect(screen.queryByText('Floating')).not.toBeInTheDocument();
         expect(showPopover).not.toHaveBeenCalled();
+    });
+
+    it('is as wide as its content from the left edge of the anchor when aligned to its start', () => {
+        render(<Anchored open align="start"/>);
+
+        expect(screen.getByText('Floating').parentElement).toHaveClass('start');
     });
 });

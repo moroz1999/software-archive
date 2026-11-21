@@ -12,10 +12,12 @@ export interface IconPopoverProps {
     /** Asked to open or to close: by the trigger, Escape or a press outside. */
     readonly onOpenChange: (open: boolean) => void;
     readonly children: ReactNode;
+    /** `end` (default): the window's right edge under the trigger's; `start`: its left edge under the trigger's. */
+    readonly align?: 'start' | 'end';
 }
 
-/** An icon button of the header with its window of contextual content, anchored under its right edge. */
-export function IconPopover({label, icon, open, onOpenChange, children}: IconPopoverProps) {
+/** An icon button with its window of contextual content, anchored under one of its edges. */
+export function IconPopover({label, icon, open, onOpenChange, children, align = 'end'}: IconPopoverProps) {
     const anchor = useRef<HTMLSpanElement>(null);
     const popup = useRef<HTMLDivElement>(null);
 
@@ -62,7 +64,7 @@ export function IconPopover({label, icon, open, onOpenChange, children}: IconPop
                     {icon}
                 </Button>
             </span>
-            <AnchoredOverlay anchor={anchor} open={open} align="end">
+            <AnchoredOverlay anchor={anchor} open={open} align={align}>
                 <div ref={popup} role="dialog" aria-label={label} className={styles.window}>
                     {children}
                 </div>

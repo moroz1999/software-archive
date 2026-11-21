@@ -6,9 +6,11 @@ Adding, editing and deleting groups: teams with a name of their own, their types
 
 | Page | Path | Content |
 |---|---|---|
-| Groups | `/groups` | "Add group" next to the page title ([group-catalog.md](group-catalog.md)); a group's page ([group-view.md](group-view.md)) has "Edit" next to its name |
+| Groups | `/groups` | "Add group" next to the page title ([group-catalog.md](group-catalog.md)); a group's page ([group-view.md](group-view.md)) has "Edit" in the menu right after its name |
 | Add group | `/groups/new` | Empty form; Cancel returns to the catalog, "Add group" submits and opens the group's page |
 | Edit group | `/groups/{id}/edit` | "Delete" next to the page title; the form with the group's values, Cancel and "Save" back to the group's page; the catalog after deleting |
+
+The edit page shows Groups › the name, leading to the group's page, › "Editing". Adding pages have none.
 
 ## Form
 

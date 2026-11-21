@@ -22,6 +22,8 @@ import {CreateReleaseProvider} from '@/features/release/create';
 import {DeleteReleaseButton} from '@/features/release/delete';
 import {EditReleaseProvider} from '@/features/release/edit';
 import {ScreenshotsEditorSection} from '@/features/software/screenshots';
+import {softwareBreadcrumbs} from '@/features/software/catalog';
+import type {Crumb} from '@/shared/ui/breadcrumbs';
 import {useSkeleton} from '@/shared/lib/loading';
 import {Button} from '@/shared/ui/button';
 import {PageLayout} from '@/shared/ui/page-layout';
@@ -58,14 +60,27 @@ export interface ReleaseEditorProps {
 }
 
 /** The page of editing one release: deleting next to its title, its form, and its screenshots below. */
-export function ReleaseEditor({softwareId, releaseId, onDone}: ReleaseEditorProps) {
-    const {t} = useTranslation();
+export function ReleaseEditor(props: ReleaseEditorProps) {
     return (
-        <ReleaseDetailsProvider softwareId={softwareId} releaseId={releaseId}>
+        <ReleaseDetailsProvider softwareId={props.softwareId} releaseId={props.releaseId}>
+            <ReleaseEditorPage {...props}/>
+        </ReleaseDetailsProvider>
+    );
+}
+
+function ReleaseEditorPage({softwareId, releaseId, onDone}: ReleaseEditorProps) {
+    const {t} = useTranslation();
+    const release = useReleaseDetails().data;
+    return (
             <WithSoftwareAndHardware
                 id={softwareId}
                 title={t('release.edit')}
                 titleOf={(software) => t('release.editOf', {title: software.title})}
+                breadcrumbsOf={release === undefined ? undefined : (software) => [
+                    ...softwareBreadcrumbs(software, t('pages.software')),
+                    {label: release.title ?? software.title, href: releasePath(softwareId, releaseId)},
+                    {label: t('breadcrumbs.editing')},
+                ]}
                 actions={(software) => <DeleteAction software={software} onDone={onDone}/>}
             >
                 {(software, hardware) => (
@@ -84,7 +99,6 @@ export function ReleaseEditor({softwareId, releaseId, onDone}: ReleaseEditorProp
                     </ReleaseGate>
                 )}
             </WithSoftwareAndHardware>
-        </ReleaseDetailsProvider>
     );
 }
 
@@ -99,18 +113,20 @@ interface WithSoftwareAndHardwareProps {
     /** The page title until the software arrives. */
     readonly title: string;
     readonly titleOf: (software: SoftwareDetails) => string;
+    /** The way down to the page, once what it names is there. */
+    readonly breadcrumbsOf?: ((software: SoftwareDetails) => readonly Crumb[]) | undefined;
     /** What is offered next to the page title. */
     readonly actions?: (software: SoftwareDetails) => ReactNode;
     readonly children: (software: SoftwareDetails, hardware: readonly Hardware[]) => ReactNode;
 }
 
 /** The software and the hardware of its platform, which every form of a release needs; the page is titled by the software. */
-function WithSoftwareAndHardware({id, title, titleOf, actions, children}: WithSoftwareAndHardwareProps) {
+function WithSoftwareAndHardware({id, title, titleOf, breadcrumbsOf, actions, children}: WithSoftwareAndHardwareProps) {
     return (
         <SoftwareDetailsProvider key={id} id={id}>
             <SoftwareGate title={title}>
                 {(software) => (
-                    <PageLayout title={titleOf(software)} actions={actions?.(software)}>
+                    <PageLayout title={titleOf(software)} breadcrumbs={breadcrumbsOf?.(software)} actions={actions?.(software)}>
                         <PlatformHardwareProvider platform={software.platform.code}>
                             <HardwareGate>{(hardware) => children(software, hardware)}</HardwareGate>
                         </PlatformHardwareProvider>

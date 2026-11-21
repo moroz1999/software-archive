@@ -4,7 +4,7 @@ The page of one release ([domain/software.md](../domain/software.md#releases)) a
 
 ## Page
 
-- The release title is the page heading. "Edit" leads to its editing page when the visitor may change the release.
+- The release title is the page heading. The menu right after its text ([PopoverMenu](../design-system/popover-menu.md)) has "Edit", leading to its editing page, when the visitor may change the release. Over the heading, the breadcrumbs of its software ([software-view.md](software-view.md#page)), the software leading to its page, then the release. The browser tab reads the release title and the platform of its software: "Elite AY (Vector) — Ретротека".
 - The software is named first and links back to its page.
 - Release date (a year, or a day as dd.mm.yyyy), version and description are left out when unknown. Description lines stay separate.
 - Type is always shown. Hardware is the effective hardware returned for the release, grouped in the archive's fixed hardware-group order.

@@ -4,23 +4,25 @@ The page of a label at `/labels/{id}` ([domain/authors.md](../domain/authors.md#
 
 ## Page
 
+- Over the heading, the breadcrumbs: Authors, leading to the catalog, then the label.
 - The label's name is the page heading; under it "Whose label": a person by the real name with the main name muted next to it (by the main name without a real name), a group by its name, leading to their page, or "Not known yet whose label this is" for a label of nobody; then Member of: the groups it was a member of, each leading to its page ([group-view.md](group-view.md)).
 - Software below: the software it is credited on, as on an author's page ([author-view.md](author-view.md)).
 - Last: who added the label and on which day ("Added by Zork on 4 March 2026"), only the day once their account is gone ([domain/users.md](../domain/users.md#who-added-an-entry)).
 
 ## Editing
 
-- "Edit" next to the heading, for whoever added the label and administrators, opens its editing ([label-editing.md](label-editing.md)).
+- What can be done with the label is in the menu right after the heading ([PopoverMenu](../design-system/popover-menu.md)), each item only for whoever may do it; without any, there is no menu. An item that asks something opens its dialog, and the menu closes.
+- "Edit" in the menu, for whoever added the label and administrators, opens its editing ([label-editing.md](label-editing.md)).
 
 ## Attaching to the owner
 
-- "Say whose label" next to the heading, for administrators only, opens a dialog: "Whose label is “{name}”?", "Person or group" searching people and groups by name, and "Display name", unchecked, which is not offered once a group is chosen; "Save" is locked until an owner is chosen. The wording never calls anyone an owner: it asks whose the label is.
+- "Say whose label" in the menu, for administrators only, opens a dialog: "Whose label is “{name}”?", "Person or group" searching people and groups by name, and "Display name", unchecked, which is not offered once a group is chosen; "Save" is locked until an owner is chosen. The wording never calls anyone an owner: it asks whose the label is.
 - After attaching, the page of the owner opens; the owner's names, the catalogs and the lists of software read again.
 - Refusals show inside the dialog: the label got an owner meanwhile, the owner is gone, a person without labels and the label not marked as the display name, a missing sign-in, no right to change the owner. A label deleted meanwhile shows the not found page; system errors go to the error dialog ([error-handling.md](../error-handling.md)).
 
 ## Making a person or a group
 
-- "Make author" and "Make group" next to the heading, for whoever added the label and administrators; on a label with an owner, only when they may change that owner too.
+- "Make author" and "Make group" in the menu, for whoever added the label and administrators; on a label with an owner, only when they may change that owner too.
 - "Make author" asks "Make a person known as “{name}”?"; "Make group" asks "Make a group named “{name}”?" with the group types to choose, its button locked until one is chosen. The name is the label's, not editable. A label with an owner adds "It will no longer be a label of {owner}."
 - Making a person replaces the label: the person gets its name, locations, external origin, software credits and group memberships directly, and the label no longer exists. The new person tells the label is replaced (`LabelReplacedByAuthor`); the software, group and importer modules move the credits, memberships and origin in answer, in the same transaction, then the label's repository deletes it with its locations. Making a group keeps the label as one of the new group's names.
 - After making, the page of the new person or group opens; the old owner, the catalogs and the lists of software read again.

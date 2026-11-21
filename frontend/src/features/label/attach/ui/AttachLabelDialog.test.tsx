@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import {toLabelId} from '@/entities/labels';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, noContent, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
-import {AttachLabelButton, type LabelOwner} from './AttachLabelButton';
+import {AttachLabelDialog, type LabelOwner} from './AttachLabelDialog';
 
 const LABEL = {id: toLabelId('00000000-0000-0000-0004-000000000001'), name: 'Ghost'};
 const JANE = '00000000-0000-0000-0003-000000000001';
@@ -15,7 +15,6 @@ const LOOKUP = new Map([
 ]);
 
 async function chooseJane() {
-    await userEvent.click(screen.getByRole('button', {name: 'Say whose label'}));
     await userEvent.type(screen.getByRole('combobox', {name: 'Person or group'}), 'jane');
     await userEvent.click(await screen.findByRole('option', {name: 'Jane Doe'}));
 }
@@ -25,7 +24,7 @@ async function chooseJaneAndAttach() {
     await userEvent.click(screen.getByRole('button', {name: 'Save'}));
 }
 
-describe(AttachLabelButton, () => {
+describe(AttachLabelDialog, () => {
     afterEach(() => {
         vi.unstubAllGlobals();
         vi.restoreAllMocks();
@@ -34,10 +33,9 @@ describe(AttachLabelButton, () => {
     it('shows the owners found above its window, in the top layer', async () => {
         stubFetchAround(LOOKUP, noContent());
         const showPopover = vi.spyOn(HTMLElement.prototype, 'showPopover');
-        renderWithQueries(<AttachLabelButton label={LABEL} onAttached={vi.fn<(owner: LabelOwner) => void>()}/>);
+        renderWithQueries(<AttachLabelDialog open onClose={vi.fn<() => void>()} label={LABEL} onAttached={vi.fn<(owner: LabelOwner) => void>()}/>);
 
-        await userEvent.click(screen.getByRole('button', {name: 'Say whose label'}));
-        await userEvent.type(screen.getByRole('combobox', {name: 'Person or group'}), 'jane');
+            await userEvent.type(screen.getByRole('combobox', {name: 'Person or group'}), 'jane');
         const option = await screen.findByRole('option', {name: 'Jane Doe'});
 
         expect(showPopover.mock.contexts.at(-1)).toContainElement(option);
@@ -46,7 +44,7 @@ describe(AttachLabelButton, () => {
     it('attaches the label to the person or group chosen and hands over the owner', async () => {
         const fetchMock = stubFetchAround(LOOKUP, noContent());
         const onAttached = vi.fn<(owner: LabelOwner) => void>();
-        renderWithQueries(<AttachLabelButton label={LABEL} onAttached={onAttached}/>);
+        renderWithQueries(<AttachLabelDialog open onClose={vi.fn<() => void>()} label={LABEL} onAttached={onAttached}/>);
 
         await chooseJaneAndAttach();
 
@@ -60,7 +58,7 @@ describe(AttachLabelButton, () => {
 
     it('makes the label the display name of its owner only when told to', async () => {
         const fetchMock = stubFetchAround(LOOKUP, noContent());
-        renderWithQueries(<AttachLabelButton label={LABEL} onAttached={vi.fn<(owner: LabelOwner) => void>()}/>);
+        renderWithQueries(<AttachLabelDialog open onClose={vi.fn<() => void>()} label={LABEL} onAttached={vi.fn<(owner: LabelOwner) => void>()}/>);
 
         await chooseJane();
 
@@ -76,10 +74,9 @@ describe(AttachLabelButton, () => {
 
     it('offers no display name for a group, which has none, and attaches the label to it', async () => {
         const fetchMock = stubFetchAround(LOOKUP, noContent());
-        renderWithQueries(<AttachLabelButton label={LABEL} onAttached={vi.fn<(owner: LabelOwner) => void>()}/>);
+        renderWithQueries(<AttachLabelDialog open onClose={vi.fn<() => void>()} label={LABEL} onAttached={vi.fn<(owner: LabelOwner) => void>()}/>);
 
-        await userEvent.click(screen.getByRole('button', {name: 'Say whose label'}));
-        await userEvent.type(screen.getByRole('combobox', {name: 'Person or group'}), 'crew');
+            await userEvent.type(screen.getByRole('combobox', {name: 'Person or group'}), 'crew');
         await userEvent.click(await screen.findByRole('option', {name: 'Crew'}));
 
         expect(screen.queryByRole('checkbox', {name: 'Display name'})).not.toBeInTheDocument();
@@ -91,11 +88,9 @@ describe(AttachLabelButton, () => {
         });
     });
 
-    it('asks whose the label is and lets nothing be attached before an owner is chosen', async () => {
+    it('asks whose the label is and lets nothing be attached before an owner is chosen', () => {
         stubFetchAround(LOOKUP, noContent());
-        renderWithQueries(<AttachLabelButton label={LABEL} onAttached={vi.fn<(owner: LabelOwner) => void>()}/>);
-
-        await userEvent.click(screen.getByRole('button', {name: 'Say whose label'}));
+        renderWithQueries(<AttachLabelDialog open onClose={vi.fn<() => void>()} label={LABEL} onAttached={vi.fn<(owner: LabelOwner) => void>()}/>);
 
         expect(screen.getByRole('dialog', {name: 'Say whose label'})).toHaveTextContent('Whose label is “Ghost”?');
         expect(screen.getByRole('button', {name: 'Save'})).toBeDisabled();
@@ -112,7 +107,7 @@ describe(AttachLabelButton, () => {
             reports.push(report);
         });
         stubFetchAround(LOOKUP, json({status, code}, status));
-        renderWithQueries(<AttachLabelButton label={LABEL} onAttached={vi.fn<(owner: LabelOwner) => void>()}/>);
+        renderWithQueries(<AttachLabelDialog open onClose={vi.fn<() => void>()} label={LABEL} onAttached={vi.fn<(owner: LabelOwner) => void>()}/>);
 
         await chooseJaneAndAttach();
 
@@ -128,7 +123,7 @@ describe(AttachLabelButton, () => {
             reports.push(report);
         });
         stubFetchAround(LOOKUP, json({}, 500));
-        renderWithQueries(<AttachLabelButton label={LABEL} onAttached={vi.fn<(owner: LabelOwner) => void>()}/>);
+        renderWithQueries(<AttachLabelDialog open onClose={vi.fn<() => void>()} label={LABEL} onAttached={vi.fn<(owner: LabelOwner) => void>()}/>);
 
         await chooseJaneAndAttach();
 
@@ -137,5 +132,14 @@ describe(AttachLabelButton, () => {
         });
 
         unsubscribe();
+    });
+
+    it('asks to be closed by Cancel', async () => {
+        const onClose = vi.fn<() => void>();
+        renderWithQueries(<AttachLabelDialog label={LABEL} onAttached={vi.fn<(owner: LabelOwner) => void>()} open onClose={onClose}/>);
+
+        await userEvent.click(screen.getByRole('button', {name: 'Cancel'}));
+
+        expect(onClose).toHaveBeenCalledExactlyOnceWith();
     });
 });

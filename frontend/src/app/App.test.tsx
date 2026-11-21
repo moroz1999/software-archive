@@ -183,7 +183,8 @@ describe(App, () => {
 
         render(<App router={appRouter()} queryClient={queryClient}/>);
 
-        await userEvent.click(await screen.findByRole('link', {name: 'Edit'}));
+        await userEvent.click(await screen.findByRole('button', {name: 'Actions'}));
+        await userEvent.click(screen.getByRole('link', {name: 'Edit'}));
         const title = await screen.findByRole('textbox', {name: 'Title'});
         await userEvent.clear(title);
         await userEvent.type(title, 'Fixture Software Alpha Plus');

@@ -44,7 +44,8 @@ describe('SoftwareViewPage', () => {
         stubFetch(json(ELITE));
         renderRoute(ID);
 
-        await userEvent.click(await screen.findByRole('link', {name: 'Edit'}));
+        await userEvent.click(await screen.findByRole('button', {name: 'Actions'}));
+        await userEvent.click(screen.getByRole('link', {name: 'Edit'}));
 
         await expect(screen.findByText('Software editing')).resolves.toBeInTheDocument();
     });

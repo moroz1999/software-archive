@@ -1,16 +1,17 @@
+import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router';
-import {authorPath, toAuthorId} from '@/entities/authors';
+import {authorPath, AUTHORS_PATH, toAuthorId} from '@/entities/authors';
 import {groupPath, toGroupId} from '@/entities/groups';
 import {type LabelDetails, LabelDetailsProvider, labelEditPath, type LabelId, type LabelOwner, useLabelDetails} from '@/entities/labels';
 import {CreditedSoftwareList} from '@/entities/software';
-import {AttachLabelButton} from '@/features/label/attach';
-import {MakeAuthorButton, MakeGroupButton} from '@/features/label/make-owner';
+import {AttachLabelDialog} from '@/features/label/attach';
+import {MakeAuthorDialog, MakeGroupDialog} from '@/features/label/make-owner';
 import {useSkeleton} from '@/shared/lib/loading';
-import {Button} from '@/shared/ui/button';
 import {Inline} from '@/shared/ui/inline';
 import {AdditionNote} from '@/shared/ui/addition-note';
 import {PageLayout} from '@/shared/ui/page-layout';
+import {PopoverMenu, PopoverMenuItem} from '@/shared/ui/popover-menu';
 import {Skeleton} from '@/shared/ui/skeleton';
 import {Stack} from '@/shared/ui/stack';
 import {Text, TextLink} from '@/shared/ui/typography';
@@ -42,6 +43,8 @@ function LoadedView() {
     const navigate = useNavigate();
     const query = useLabelDetails();
     const skeleton = useSkeleton(query);
+    // Which window the menu opened is UI state: the menu closes while the window stays.
+    const [dialog, setDialog] = useState<'attach' | 'author' | 'group' | null>(null);
 
     if (skeleton || query.isPending) {
         return (
@@ -63,27 +66,38 @@ function LoadedView() {
     const openOwner = (owner: LabelOwner) => {
         void navigate(ownerPath(owner));
     };
+    const close = () => {
+        setDialog(null);
+    };
     return (
         <PageLayout
             title={label.name}
-            actions={(label.canEdit || label.canChange || label.canMakeOwner) && (
-                <Inline gap="sm" wrap>
-                    {label.canEdit && <Button href={labelEditPath(label.id)} color="secondary">{t('actions.edit')}</Button>}
-                    {label.canChange && <AttachLabelButton label={{id: label.id, name: label.name}} onAttached={openOwner}/>}
+            breadcrumbs={[{label: t('pages.authors'), href: AUTHORS_PATH}, {label: label.name}]}
+            menu={label.canEdit || label.canChange || label.canMakeOwner ? (
+                <PopoverMenu label={t('actions.menu')}>
+                    {label.canEdit && <PopoverMenuItem href={labelEditPath(label.id)}>{t('actions.edit')}</PopoverMenuItem>}
+                    {label.canChange && <PopoverMenuItem onClick={() => { setDialog('attach'); }}>{t('label.attach')}</PopoverMenuItem>}
                     {label.canMakeOwner && (
                         <>
-                            <MakeAuthorButton label={label} onMade={openOwner}/>
-                            <MakeGroupButton label={label} onMade={openOwner}/>
+                            <PopoverMenuItem onClick={() => { setDialog('author'); }}>{t('label.makeAuthor')}</PopoverMenuItem>
+                            <PopoverMenuItem onClick={() => { setDialog('group'); }}>{t('label.makeGroup')}</PopoverMenuItem>
                         </>
                     )}
-                </Inline>
-            )}
+                </PopoverMenu>
+            ) : undefined}
         >
             <Stack gap="xl">
                 <Details label={label}/>
                 <CreditedSoftwareList owner={{kind: 'labels', id: label.id}}/>
                 <AdditionNote addition={label.added}/>
             </Stack>
+            {label.canChange && <AttachLabelDialog label={{id: label.id, name: label.name}} open={dialog === 'attach'} onClose={close} onAttached={openOwner}/>}
+            {label.canMakeOwner && (
+                <>
+                    <MakeAuthorDialog label={label} open={dialog === 'author'} onClose={close} onMade={openOwner}/>
+                    <MakeGroupDialog label={label} open={dialog === 'group'} onClose={close} onMade={openOwner}/>
+                </>
+            )}
         </PageLayout>
     );
 }

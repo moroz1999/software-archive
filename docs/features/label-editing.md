@@ -8,8 +8,10 @@ Adding a label of nobody, and editing and deleting a label on a page of its own:
 |---|---|---|
 | Authors | `/authors` | "Add label" next to the page title, for signed-in users ([author-catalog.md](author-catalog.md)) |
 | Add label | `/labels/new` | Empty form of Main (Name) and Geography (Locations), with no Whose label and no Sources; Cancel returns to the author catalog, "Add label" adds a label of nobody and opens its page |
-| Label | `/labels/{id}` | "Edit" next to the heading, for whoever may edit the label ([label-view.md](label-view.md)) |
+| Label | `/labels/{id}` | "Edit" in the menu right after the heading, for whoever may edit the label ([label-view.md](label-view.md)) |
 | Edit label | `/labels/{id}/edit` | "Delete" next to the page title; the form with the label's values, Cancel and "Save" back to the label's page; the author catalog after deleting |
+
+The edit page shows Authors › the label, leading to its page, › "Editing". Adding pages have none.
 
 ## Form
 

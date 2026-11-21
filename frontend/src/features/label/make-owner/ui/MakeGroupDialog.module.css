@@ -1,0 +1,4 @@
+.loading {
+    width: var(--make-group-dialog-loading-width);
+    height: var(--make-group-dialog-loading-height);
+}

@@ -35,7 +35,7 @@ Every task follows these stages in order. Do not merge stages or continue past a
 
 1. The user provides a task.
 2. Research the relevant code without changing project files. Briefly describe the essence of the proposed fix as clear implementation steps, then wait for approval.
-3. **Red.** After approval, add or update tests for the requested behavior and run only those tests. Confirm that they fail for the expected reason, then wait for approval of the tests. If no meaningful automated test can be written, explain why and wait for explicit approval to proceed without one. See [docs/testing.md](docs/testing.md).
+3. **Red.** After approval, add or update tests for the requested behavior and run only those tests. Confirm that they fail for the expected reason, then wait for approval of the tests. With the request for approval, list every test briefly by what it checks for the business, not by its name: "the button works", "this action leads to that page". If no meaningful automated test can be written, explain why and wait for explicit approval to proceed without one. See [docs/testing.md](docs/testing.md).
 4. **Green.** After test approval, implement the minimum change that makes the new tests pass, run those tests, refactor with them green, and run only the relevant linters. Do not run the full test suites or other validation commands at this stage.
 5. The user tests and reviews the implementation. Apply their feedback within the same implementation stage and run only the relevant linters after each code update.
 6. After the user explicitly approves the implementation, run the relevant test suites, builds, and any other checks mandated by the task-specific documentation.

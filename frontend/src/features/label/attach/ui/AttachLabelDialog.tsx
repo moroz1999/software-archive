@@ -13,8 +13,11 @@ import {AttachLabelProvider} from '../model/AttachLabelProvider';
 
 export type {LabelOwner} from '@/entities/labels';
 
-export interface AttachLabelButtonProps {
+export interface AttachLabelDialogProps {
     readonly label: AttachedLabel;
+    readonly open: boolean;
+    /** Asked to close: by Cancel or Escape. */
+    readonly onClose: () => void;
     readonly onAttached: (owner: LabelOwner) => void;
 }
 
@@ -22,36 +25,29 @@ export interface AttachLabelButtonProps {
  * Attaches a label of nobody to the person or group found out to be its owner; whoever attaches it to a person says
  * whether it is their display name, a group has none.
  */
-export function AttachLabelButton({label, onAttached}: AttachLabelButtonProps) {
+export function AttachLabelDialog({label, open, onClose, onAttached}: AttachLabelDialogProps) {
     return (
         <AttachLabelProvider label={label} onAttached={onAttached}>
-            <AttachWithDialog/>
+            <AttachWindow open={open} onClose={onClose}/>
         </AttachLabelProvider>
     );
 }
 
-function AttachWithDialog() {
+function AttachWindow({open, onClose}: {readonly open: boolean; readonly onClose: () => void}) {
     const {t} = useTranslation();
     const {label, attach, attaching, error, reset} = useAttachLabel();
     // What is chosen in the open dialog is its own UI state until it is sent.
-    const [open, setOpen] = useState(false);
     const [owner, setOwner] = useState<LabelOwnerOption | null>(null);
     const [display, setDisplay] = useState(false);
 
     function close() {
-        setOpen(false);
         setOwner(null);
         setDisplay(false);
         reset();
+        onClose();
     }
 
     return (
-        <>
-            <Button color="secondary" onClick={() => {
-                setOpen(true);
-            }}>
-                {t('label.attach')}
-            </Button>
             <Dialog
                 open={open}
                 title={t('label.attach')}
@@ -94,7 +90,6 @@ function AttachWithDialog() {
                     {error !== undefined && <Text role="alert" tone="danger">{error}</Text>}
                 </Stack>
             </Dialog>
-        </>
     );
 }
 

@@ -4,7 +4,7 @@ The page of one software ([domain/software.md](../domain/software.md)) at `/soft
 
 ## Page
 
-- The software's title is the page heading; "Edit" next to it leads to `/software/{id}/edit`.
+- The software's title is the page heading; the menu right after its text ([PopoverMenu](../design-system/popover-menu.md)) holds "Edit", leading to `/software/{id}/edit`, for whoever may change the software. Over the heading, the breadcrumbs: Software, the branch of its first category from the top, each step leading to the catalog of that category, then the software itself ([domain/software.md](../domain/software.md)). The browser tab reads the title and the platform: "Elite (Vector) — Ретротека".
 - Under it: the release date, a year ("1987") or a day ("20.09.1984"), and the description, line by line. Unknown values are left out.
 - What the catalog is filtered by leads to the catalog filtered by it alone ([software-list.md](software-list.md#address)): the release date to the catalog of its year, each chip of a category branch to the catalog of that category.
 - Platform: the software's platform.

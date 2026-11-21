@@ -12,3 +12,14 @@
     flex-direction: column;
     gap: var(--page-layout-content-block-gap);
 }
+
+.header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--page-layout-breadcrumbs-gap);
+}
+
+/* The breadcrumbs keep close to the bar of the site over them: the page starts higher. */
+.withBreadcrumbs {
+    padding-top: var(--page-layout-breadcrumbs-padding-top);
+}

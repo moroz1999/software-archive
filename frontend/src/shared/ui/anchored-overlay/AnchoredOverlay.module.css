@@ -24,3 +24,9 @@
     left: auto;
     width: auto;
 }
+
+.start {
+    /* Growing to the right from its trigger, it stops a gutter short of the viewport's right edge. */
+    width: auto;
+    max-width: calc(100vw - var(--anchored-overlay-left) - var(--anchored-overlay-viewport-gutter));
+}

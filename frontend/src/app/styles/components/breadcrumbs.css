@@ -1,0 +1,12 @@
+:root {
+    /* Text of the steps: small, under the weight of the page title. */
+    --breadcrumbs-font-size: var(--font-size-xs);
+    --breadcrumbs-line-height: var(--line-height-compact);
+
+    /* Space between a step and the separator. */
+    --breadcrumbs-gap: var(--space-4);
+
+    /* The separator and the page itself, muted like the links of the steps. */
+    --breadcrumbs-separator-color: var(--text-light-color);
+    --breadcrumbs-current-color: var(--text-light-color);
+}

@@ -4,7 +4,8 @@ The page of one group at `/groups/{id}` ([domain/authors.md](../domain/authors.m
 
 ## Page
 
-- The group's name is the page heading, with "Edit" next to it leading to the editing ([group-editing.md](group-editing.md)).
+- Over the heading, the breadcrumbs: Groups, leading to the catalog, then the name.
+- The group's name is the page heading, with the menu right after its text ([PopoverMenu](../design-system/popover-menu.md)) holding "Edit", leading to the editing ([group-editing.md](group-editing.md)).
 - Under it, each when known: Types, Labels (each leading to its page, [label-view.md](label-view.md)), Locations ("City, Country", the primary one first), Members, Member groups, Member of, Notes line by line.
 - A member is the label they were a member under, leading to its own page ([label-view.md](label-view.md)), with the person's main name muted next to it, leading to the person, when it is another one; a person recorded by themselves leads to the person. Their role chips follow; an unknown role is not shown, it tells the reader nothing.
 - Member groups and Member of lead to the pages of those groups.

@@ -1,1 +1,1 @@
-export {AttachLabelButton, type AttachLabelButtonProps, type LabelOwner} from './ui/AttachLabelButton';
+export {AttachLabelDialog, type AttachLabelDialogProps, type LabelOwner} from './ui/AttachLabelDialog';
