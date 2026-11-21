@@ -306,21 +306,51 @@ class LabelIT {
     }
 
     @Test
-    void makesAGroupOfALabelOfNobodyUnderItsNameWithItsCreditsAndMemberships() throws Exception {
+    void replacesALabelOfNobodyWithAGroupKeepingItsExternalOriginCreditsAndMemberships() throws Exception {
         String id = idOf(makeGroup(GHOST, ADMIN, "[\"demogroup\"]").andExpect(status().isCreated()));
 
         mvc.perform(get("/api/groups/{id}", id).with(TestActors.bearer(accessTokens, ADMIN)))
                 .andExpect(jsonPath("$.name").value("Ghost"))
                 .andExpect(jsonPath("$.types").value(contains("demogroup")))
-                .andExpect(jsonPath("$.labels[*].name").value(contains("Ghost")))
+                .andExpect(jsonPath("$.labels").isEmpty())
+                .andExpect(jsonPath("$.groups[*].id").value(contains(CREW.toString())))
                 .andExpect(jsonPath("$.canChange").value(true));
-        mvc.perform(get("/api/groups/{id}/software", id))
-                .andExpect(jsonPath("$[*].title").value(contains("Elite")));
+        mvc.perform(get("/api/software/{id}", ELITE))
+                .andExpect(jsonPath("$.credits[0].id").value(id))
+                .andExpect(jsonPath("$.credits[0].type").value("group"));
+        // The label was a member of Crew; the group it became is a group member of Crew, without roles or dates.
         mvc.perform(get("/api/groups/{id}", CREW))
-                .andExpect(jsonPath("$.members[*].name").value(contains("Ghost")));
-        mvc.perform(get("/api/labels/{id}", GHOST))
-                .andExpect(jsonPath("$.owner.type").value("group"))
-                .andExpect(jsonPath("$.owner.id").value(id));
+                .andExpect(jsonPath("$.members").isEmpty())
+                .andExpect(jsonPath("$.memberGroups[*].id").value(contains(id)));
+        mvc.perform(get("/api/labels/{id}", GHOST)).andExpect(status().isNotFound());
+        assertThat(jdbc.queryForObject(
+                        "SELECT kind FROM external_origin WHERE origin = 'vektor-06c.ru' AND external_id = 'Ghost'",
+                        String.class))
+                .isEqualTo("GROUP");
+        assertThat(jdbc.queryForObject(
+                        "SELECT entity_id FROM external_origin WHERE origin = 'vektor-06c.ru' AND external_id = 'Ghost'",
+                        UUID.class))
+                .isEqualTo(UUID.fromString(id));
+    }
+
+    @Test
+    void replacesALabelWithAGroupLocatedWhereTheLabelWas() throws Exception {
+        insertGeo();
+        edit(GHOST, ADMIN, """
+                        {"name": "Ghost", "owner": null,
+                         "locations": [{"country": "%s", "city": "%s", "primary": true}]}
+                        """.formatted(FINLAND, HELSINKI)).andExpect(status().isNoContent());
+
+        String id = idOf(makeGroup(GHOST, ADMIN, "[\"demogroup\"]").andExpect(status().isCreated()));
+
+        mvc.perform(get("/api/groups/{id}", id))
+                .andExpect(jsonPath("$.locations[*].city").value(contains("Helsinki")))
+                .andExpect(jsonPath("$.locations[0].primary").value(true));
+        assertThat(jdbc.queryForObject(
+                        "SELECT count(*) FROM entity_location WHERE entity_type = 'LABEL' AND entity_id = ?",
+                        Integer.class,
+                        GHOST))
+                .isZero();
     }
 
     @Test
@@ -338,7 +368,7 @@ class LabelIT {
     }
 
     @Test
-    void takesTheLabelAwayFromTheGroupItWasAttachedTo() throws Exception {
+    void replacesALabelTakenAwayFromTheGroupItWasAttachedTo() throws Exception {
         jdbc.update("INSERT INTO label (id, name, group_id, is_display_name) VALUES (?, 'CRW', ?, false)", CRW, CREW);
 
         String id = idOf(makeGroup(CRW, ADMIN, "[\"label\"]").andExpect(status().isCreated()));
@@ -346,6 +376,7 @@ class LabelIT {
         mvc.perform(get("/api/groups/{id}", CREW))
                 .andExpect(jsonPath("$.labels").isEmpty());
         mvc.perform(get("/api/groups/{id}", id)).andExpect(jsonPath("$.name").value("CRW"));
+        mvc.perform(get("/api/labels/{id}", CRW)).andExpect(status().isNotFound());
     }
 
     @Test

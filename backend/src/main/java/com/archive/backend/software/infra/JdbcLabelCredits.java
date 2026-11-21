@@ -1,6 +1,7 @@
 package com.archive.backend.software.infra;
 
 import com.archive.backend.author.domain.AuthorId;
+import com.archive.backend.group.domain.GroupId;
 import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.software.domain.LabelCredits;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,14 @@ public class JdbcLabelCredits implements LabelCredits {
     public void transfer(LabelId label, AuthorId author) {
         jdbc.sql("UPDATE software_contribution SET person_id = :author, label_id = NULL WHERE label_id = :label")
                 .param("author", author.value())
+                .param("label", label.value())
+                .update();
+    }
+
+    @Override
+    public void transfer(LabelId label, GroupId group) {
+        jdbc.sql("UPDATE software_contribution SET group_id = :group, label_id = NULL WHERE label_id = :label")
+                .param("group", group.value())
                 .param("label", label.value())
                 .update();
     }

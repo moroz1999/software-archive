@@ -120,21 +120,18 @@ public final class Group {
         markChanged();
     }
 
-    /**
-     * A new group under the name of a label, which becomes one of its names; it goes over with its works.
-     */
-    public static Group namedAfter(GroupId id, Label label, GroupTypeSet types, AddedBy addedBy) {
-        UnmarkedLabels labels = UnmarkedLabels.of(List.of(), addedBy)
-                .adopt(new OwnLabel(label.getId(), label.getName(), label.getAddedBy()));
+    /** A new group replacing a label under its name, of the types chosen, located where the label was. */
+    public static Group replacing(GroupId id, Label label, GroupTypeSet types, AddedBy addedBy) {
         Group group = new Group(
                 id,
                 new GroupName(label.getName().value()),
                 null,
                 types,
-                labels,
-                new Locations(List.of()),
+                UnmarkedLabels.of(List.of(), addedBy),
+                label.getLocations(),
                 GroupMembers.EMPTY,
                 addedBy);
+        group.events.add(new LabelReplacedByGroup(label.getId(), id));
         group.events.add(new OwnerOfLabelsChanged(Set.of(label.getId())));
         group.markChanged();
         return group;

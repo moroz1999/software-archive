@@ -16,8 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Makes a new group under the name of a label, taking it away from whoever had it; the group is added by the user who
- * makes it (docs/domain/authors.md#label).
+ * Replaces a label with a group of the same name, taking it away from whoever had it, and transfers its relations; the
+ * group is added by the user who makes it (docs/domain/authors.md#label).
  */
 @Service
 @RequiredArgsConstructor
@@ -34,9 +34,11 @@ public class MakeGroupOfLabelHandler {
         AddedBy addedBy = AddedBy.of(c.actor());
         GroupTypeSet types = groupTypes.of(c.types());
         Label label = LabelHandOver.takeAway(c.label(), c.actor(), authors, groups, labels, events);
-        Group group = Group.namedAfter(new GroupId(UUID.randomUUID()), label, types, addedBy);
+        Group group = Group.replacing(new GroupId(UUID.randomUUID()), label, types, addedBy);
         groups.save(group);
+        // The answers move the label's credits, memberships and origin to the group before the label goes.
         group.pullEvents().forEach(events::publishEvent);
+        labels.delete(label);
         return group.getId();
     }
 }
