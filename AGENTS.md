@@ -3,6 +3,14 @@
 This file contains the most CRITICAL rules that ALL agents must follow.
 You MUST read the MD files linked in this document which are relevant to the current task.
 
+## WHY THIS PROJECT MATTERS
+
+This archive saves a cultural heritage from disappearing: software, and the work of generations of people who wrote it, drew for it and kept it, much of it surviving nowhere else. Its sources go offline, its people pass away; what the archive loses may be lost for good. Careless work here is unacceptable.
+
+- Data is never lost, deleted, or put at risk to make a change easier. When in doubt, stop and ask.
+- Nothing is done to a database the user runs — local or production — without the user's explicit approval: no rows changed or deleted, no schema history repaired, no migrations applied by hand. Report what broke and propose the fix; the user decides.
+- A migration file is written once, in its final form, at the Green stage. Never create placeholder migrations: a running backend applies them at once. An applied migration is never edited ([docs/backend.md](docs/backend.md)).
+
 ## CRITICAL RULES
 
 ### General

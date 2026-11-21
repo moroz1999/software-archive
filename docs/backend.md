@@ -75,6 +75,8 @@ Use cases and the domain signal failures by throwing business exceptions; one `@
 - The schema is owned by Flyway (`src/main/resources/db/migration`), applied on application start.
 - Hibernate runs with `ddl-auto: validate`: an entity that does not match the schema stops the application from starting.
 - Schema changes are versioned migrations only (`V{n}__…`). Repeatable migrations (`R__…`) are reserved for fixtures — see [testing.md](testing.md#fixtures).
+- A migration never deletes business data to make a schema change easier, and never counts on an import to bring it back: a source may be gone tomorrow, and the archive is the reference. A new required column of existing rows is filled from what is known; when nothing known can fill it, the agent writing the migration stops and asks the user what to do before writing it. SQL run by a migration also bypasses the domain events, so files and the search index would keep what the rows lost.
+- An applied migration is never edited: every database that applied it stops starting on the checksum mismatch. A migration that must change anyway comes with the checksum update for each of those databases, applied before the new version is deployed.
 
 ## Static checks
 
