@@ -7,6 +7,7 @@ import com.archive.backend.TestcontainersConfiguration;
 import com.archive.backend.TypesenseTestConfiguration;
 import com.archive.backend.importer.domain.ImportSummary;
 import com.archive.backend.importer.domain.Importer;
+import com.archive.backend.importer.domain.basis.BasisCategory;
 import com.archive.backend.importer.domain.run.ImportRun;
 import com.archive.backend.importer.domain.run.ImportRunId;
 import com.archive.backend.importer.domain.run.ImportRunRepository;
@@ -25,6 +26,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import org.assertj.core.api.InstanceOfAssertFactories;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,6 +48,7 @@ class ImportBasisIT {
 
     private static final String SCALAR = "https://caglrc.cc/scalar/";
     private static final String LIST = SCALAR + "categories/all/";
+    private static final String ARCADE = SCALAR + "categories/arcade/";
     private static final UUID GAMES = UUID.fromString("081bf3a1-782b-5a8b-8d12-3b155e0a58cb");
     private static final UUID JAPAN = UUID.fromString("00000000-0000-0000-00b5-000000000001");
 
@@ -138,6 +141,21 @@ class ImportBasisIT {
                                 + " AND external_id = '30'",
                         String.class))
                 .isEqualTo(SCALAR + "ware/30/");
+    }
+
+    @Test
+    void importsOnlyTheCardsListedInTheChosenCategory() {
+        http.serve(ARCADE, """
+                <table class="waretable"><tbody><tr>
+                    <td class="col1"><a class="wareref" href="/scalar/ware/30/">Zone X</a></td>
+                </tr></tbody></table>
+                """);
+
+        assertThat(run(new BasisCategory("arcade"))).isEqualTo(new ImportSummary(1, 0, 0, 0));
+        assertThat(http.asked()).contains(ARCADE).doesNotContain(LIST);
+        assertThat(jdbc.queryForObject(
+                        "SELECT count(*) FROM software WHERE added_by = ?", Integer.class, Importer.ID.value()))
+                .isEqualTo(1);
     }
 
     @Test
@@ -307,9 +325,13 @@ class ImportBasisIT {
     }
 
     private ImportSummary run() {
+        return run(null);
+    }
+
+    private ImportSummary run(@Nullable BasisCategory category) {
         ImportRunId id = new ImportRunId(UUID.randomUUID());
-        runs.save(ImportRun.start(id, new ImportScope("caglrc.cc", null), Instant.now()));
-        return handler.handle(new ImportBasisCommand(id));
+        runs.save(ImportRun.start(id, new ImportScope("caglrc.cc", category), Instant.now()));
+        return handler.handle(new ImportBasisCommand(id, category));
     }
 
     private UUID software(String title) {

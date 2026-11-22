@@ -190,11 +190,9 @@ function Section({label, children}: {readonly label: string; readonly children: 
 function ReleaseScreenshots({softwareId, releaseId, title}: ReleaseViewProps & {readonly title: string}) {
     const [ref, visible] = useInViewport();
     return (
-        <div ref={ref}>
-            <ScreenshotsProvider softwareId={softwareId} releaseId={releaseId} enabled={visible}>
-                <SoftwareScreenshots title={title}/>
-            </ScreenshotsProvider>
-        </div>
+        <ScreenshotsProvider softwareId={softwareId} releaseId={releaseId} enabled={visible}>
+            <SoftwareScreenshots title={title} viewportRef={ref}/>
+        </ScreenshotsProvider>
     );
 }
 

@@ -24,8 +24,8 @@ Every source archive has a parser of its own that only reads the source and hand
 
 ## Running
 
-- An administrator starts an import on the Imports tab of management (`/management/imports`, `features/import/source`): the source first, then for vektor-06c.ru the whole site or one section. `StartImportHandler` starts every source (`ImportSource`), so only one import runs at a time, whatever its source; a start while one runs answers `409 import.running`.
-- The report of the run started last names its archive: "vektor-06c.ru · section" (or the whole site) and "caglrc.cc (Basis)".
+- An administrator starts an import on the Imports tab of management (`/management/imports`, `features/import/source`): the source first, then the whole source or one of its sections or categories. `StartImportHandler` starts every source (`ImportSource`), so only one import runs at a time, whatever its source; a start while one runs answers `409 import.running`.
+- The report of the run started last names its archive: "vektor-06c.ru · section" or "caglrc.cc (Basis) · category", without the second part for the whole source.
 - Both parsers read through one polite client, `SourceHttp` (`JdkSourceHttp`): one request at a time, a pause before each, a server failure or a broken connection tried up to three times, a missing page once.
 
 ## Sources

@@ -1,5 +1,5 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {screen, within} from '@testing-library/react';
+import {screen, waitFor, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
 import i18n from 'i18next';
@@ -161,7 +161,7 @@ describe(SoftwareView, () => {
 
         const screenshots = await screen.findByRole('region', {name: 'Screenshots'});
 
-        expect(within(screenshots).getAllByRole('button', {name: /^Screenshot \d of 2$/u})).toHaveLength(2);
+        await expect(within(screenshots).findAllByRole('button', {name: /^Screenshot \d of 2$/u})).resolves.toHaveLength(2);
 
         const releases = screen.getByRole('region', {name: 'Releases'});
 
@@ -169,12 +169,14 @@ describe(SoftwareView, () => {
     });
 
     it('shows no screenshots section for software without screenshots', async () => {
-        stubFetch(json(ELITE));
+        stubFetch(json(ELITE), json([AY_MOD]), json(MEMBER), json([]));
         renderView(ID);
 
         await screen.findByRole('region', {name: 'Releases'});
 
-        expect(screen.queryByRole('region', {name: 'Screenshots'})).not.toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.queryByRole('region', {name: 'Screenshots'})).not.toBeInTheDocument();
+        });
     });
 
     it('shows the releases of the software with the hardware each one shows', async () => {

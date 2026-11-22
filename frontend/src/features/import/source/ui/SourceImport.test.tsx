@@ -2,6 +2,7 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen, waitFor, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
+import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {SourceImport} from './SourceImport';
 
@@ -12,6 +13,7 @@ const NO_RUN = json({run: null});
 const SOFTWARE = '00000000-0000-0000-0001-000000000001';
 const G_DOS = 'https://vektor-06c.ru/programmnoe-obespechenie/zagruzchiki/g-dos/';
 const BASIS_START = '/api/imports/basis';
+const BASIS_CATEGORIES = '/api/imports/basis/categories';
 const MICRODOS = '00000000-0000-0000-0001-000000000003';
 const CPM = '00000000-0000-0000-0001-000000000004';
 const DEMO = 'https://vektor-06c.ru/programmnoe-obespechenie/utility-dlya-pc/512-demo/';
@@ -38,6 +40,7 @@ const LOG = [
     {seq: 14, at: AT, kind: 'failed', entry: {externalId: '598', url: G_DOS, reason: 'Timed out'}},
     {seq: 15, at: null, kind: 'place', entry: {kind: 'country', name: 'Атлантида'}},
 ];
+const unsubscribers: (() => void)[] = [];
 const RUN = {
     id: '00000000-0000-0000-0000-00000000000a',
     archive: 'vektor-06c.ru',
@@ -69,6 +72,9 @@ function accepted(): () => Response {
 
 describe(SourceImport, () => {
     afterEach(() => {
+        unsubscribers.splice(0).forEach((unsubscribe) => {
+            unsubscribe();
+        });
         vi.unstubAllGlobals();
     });
 
@@ -82,19 +88,76 @@ describe(SourceImport, () => {
         expect(within(source).getAllByRole('option').map((option) => option.textContent)).toStrictEqual(['vektor-06c.ru', 'caglrc.cc (Basis)']);
     });
 
-    it('starts the import of the whole card index of Basis, which has no sections', async () => {
-        const fetchMock = stubFetchRoutes(new Map([[LAST_RUN, NO_RUN], [SECTIONS, json(['zagruzchiki'])], [BASIS_START, accepted()]]));
+    it('offers the whole card index and every category of Basis', async () => {
+        stubFetchRoutes(new Map([[LAST_RUN, NO_RUN], [SECTIONS, json(['zagruzchiki'])], [BASIS_CATEGORIES, json(['arcade', 'demo'])]]));
         renderImport();
 
         await screen.findByRole('option', {name: 'zagruzchiki'});
         await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Source'}), 'caglrc.cc (Basis)');
 
-        expect(screen.queryByRole('combobox', {name: 'Section'})).not.toBeInTheDocument();
+        const category = await screen.findByRole('combobox', {name: 'Category'});
+
+        expect(within(category).getAllByRole('option').map((option) => option.textContent)).toStrictEqual(['Whole card index', 'arcade', 'demo']);
+    });
+
+    it('starts the import of the chosen category of Basis', async () => {
+        const fetchMock = stubFetchRoutes(new Map([
+            [LAST_RUN, NO_RUN],
+            [SECTIONS, json(['zagruzchiki'])],
+            [BASIS_CATEGORIES, json(['arcade', 'demo'])],
+            [`${BASIS_START}?category=arcade`, accepted()],
+        ]));
+        renderImport();
+
+        await screen.findByRole('option', {name: 'zagruzchiki'});
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Source'}), 'caglrc.cc (Basis)');
+        await userEvent.selectOptions(await screen.findByRole('combobox', {name: 'Category'}), 'arcade');
+
+        await userEvent.click(screen.getByRole('button', {name: 'Start'}));
+
+        await expect(screen.findByRole('status')).resolves.toHaveTextContent('The import has started.');
+        expect(fetchMock).toHaveBeenCalledWith(`${BASIS_START}?category=arcade`, expect.objectContaining({method: 'POST'}));
+    });
+
+    it('starts the import of the whole card index of Basis when no category is chosen', async () => {
+        const fetchMock = stubFetchRoutes(new Map([
+            [LAST_RUN, NO_RUN],
+            [SECTIONS, json(['zagruzchiki'])],
+            [BASIS_CATEGORIES, json(['arcade'])],
+            [BASIS_START, accepted()],
+        ]));
+        renderImport();
+
+        await screen.findByRole('option', {name: 'zagruzchiki'});
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Source'}), 'caglrc.cc (Basis)');
+        await screen.findByRole('combobox', {name: 'Category'});
 
         await userEvent.click(screen.getByRole('button', {name: 'Start'}));
 
         await expect(screen.findByRole('status')).resolves.toHaveTextContent('The import has started.');
         expect(fetchMock).toHaveBeenCalledWith(BASIS_START, expect.objectContaining({method: 'POST'}));
+    });
+
+    it('hands a failure to load the Basis categories to the system error dialog', async () => {
+        const reports: SystemErrorReport[] = [];
+        unsubscribers.push(subscribeSystemErrors((report) => {
+            reports.push(report);
+        }));
+        stubFetchRoutes(new Map([
+            [LAST_RUN, NO_RUN],
+            [SECTIONS, json(['zagruzchiki'])],
+            [BASIS_CATEGORIES, json({status: 500}, 500)],
+        ]));
+        renderImport();
+
+        await screen.findByRole('option', {name: 'zagruzchiki'});
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Source'}), 'caglrc.cc (Basis)');
+
+        await waitFor(() => {
+            expect(reports).toHaveLength(1);
+        });
+
+        expect(reports[0]?.error.kind).toBe('server');
     });
 
     it('names the archive the last import read', async () => {

@@ -9,8 +9,8 @@ import {SourceImportProvider} from '../model/SourceImportProvider';
 import {ImportRunReport} from './ImportRunReport';
 
 /**
- * Starts the import of a source archive — vektor-06c.ru whole or one section of it, or the card index "Базис" — and
- * reports what the import started last did.
+ * Starts the import of a source archive — whole or one section or category — and reports what the import started last
+ * did.
  */
 export function SourceImport() {
     return (
@@ -25,9 +25,9 @@ export function SourceImport() {
 
 function SourceImportForm() {
     const {t} = useTranslation();
-    const {sections, source, chooseSource, section, choose, start, starting, started, error} = useSourceImport();
-    // Only vektor-06c.ru has sections; its list is read before a start either way.
+    const {sections, basisCategories, source, chooseSource, section, choose, start, starting, started, error} = useSourceImport();
     const vektor = source === 'vektor';
+    const choices = vektor ? sections : basisCategories;
 
     return (
         <Form onSubmit={start}>
@@ -49,21 +49,21 @@ function SourceImportForm() {
                         />
                     )}
                 </FormField>
-                {vektor && <FormField label={t('imports.section')}>
+                <FormField label={t(vektor ? 'imports.section' : 'imports.category')}>
                     {(control) => (
                         <Select
                             {...control}
                             value={section}
                             onChange={choose}
-                            options={(sections.data ?? []).map((code) => ({value: code, label: code}))}
-                            placeholder={t('imports.wholeSite')}
-                            disabled={starting || sections.data === undefined}
+                            options={(choices.data ?? []).map((code) => ({value: code, label: code}))}
+                            placeholder={t(vektor ? 'imports.wholeSite' : 'imports.wholeCardIndex')}
+                            disabled={starting || choices.data === undefined}
                         />
                     )}
-                </FormField>}
+                </FormField>
             </FormSection>
             <FormActions>
-                <Button type="submit" loading={starting} disabled={sections.data === undefined}>{t('imports.start')}</Button>
+                <Button type="submit" loading={starting} disabled={choices.data === undefined}>{t('imports.start')}</Button>
             </FormActions>
         </Form>
     );

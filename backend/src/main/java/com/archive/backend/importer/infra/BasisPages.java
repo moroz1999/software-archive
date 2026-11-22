@@ -11,7 +11,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-/** Reads the pages of the card index "Базис": its whole list of cards, the card of a program and an author page. */
+/** Reads the pages of the card index "Базис": lists of cards, a program and an author. */
 public final class BasisPages {
 
     public static final String SITE = "https://caglrc.cc";

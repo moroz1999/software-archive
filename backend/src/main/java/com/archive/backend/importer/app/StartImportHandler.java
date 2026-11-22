@@ -1,15 +1,19 @@
 package com.archive.backend.importer.app;
 
 import com.archive.backend.importer.domain.ImportRunningException;
+import com.archive.backend.importer.domain.basis.BasisCategory;
 import com.archive.backend.importer.domain.run.ImportRun;
 import com.archive.backend.importer.domain.run.ImportRunId;
 import com.archive.backend.importer.domain.run.ImportRunRepository;
 import com.archive.backend.importer.domain.run.ImportRunState;
 import com.archive.backend.importer.domain.run.ImportScope;
+import com.archive.backend.importer.domain.run.ImportSection;
+import com.archive.backend.importer.domain.vektor.VektorSection;
 import java.time.Clock;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -61,8 +65,8 @@ public class StartImportHandler {
             executor.execute(() -> {
                 try {
                     switch (c.source()) {
-                        case VEKTOR -> vektor.handle(new ImportVektorCommand(id, c.section()));
-                        case BASIS -> basis.handle(new ImportBasisCommand(id));
+                        case VEKTOR -> vektor.handle(new ImportVektorCommand(id, vektorSection(c.section())));
+                        case BASIS -> basis.handle(new ImportBasisCommand(id, basisCategory(c.section())));
                     }
                 } catch (RuntimeException e) {
                     log.error("The import of {} stopped", c.source().archive(), e);
@@ -75,5 +79,13 @@ public class StartImportHandler {
             running.set(false);
             throw e;
         }
+    }
+
+    private static @Nullable VektorSection vektorSection(@Nullable ImportSection section) {
+        return (VektorSection) section;
+    }
+
+    private static @Nullable BasisCategory basisCategory(@Nullable ImportSection section) {
+        return (BasisCategory) section;
     }
 }

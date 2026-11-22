@@ -1,6 +1,6 @@
 import {queryOptions} from '@tanstack/react-query';
 import {type ImportRun, lastSeq, runRefreshInterval, withNewLines} from '../model/import-run';
-import {fetchLastImportRun, fetchVektorSections} from './import-api';
+import {fetchBasisCategories, fetchLastImportRun, fetchVektorSections} from './import-api';
 
 /** The common prefix of every import query. */
 export const IMPORTS_QUERY_KEY = ['imports'] as const;
@@ -10,6 +10,14 @@ export function vektorSectionsQuery() {
     return queryOptions({
         queryKey: [...IMPORTS_QUERY_KEY, 'vektor', 'sections'],
         queryFn: ({signal}) => fetchVektorSections(signal),
+    });
+}
+
+/** The categories of "Базис" whose cards can be imported. */
+export function basisCategoriesQuery() {
+    return queryOptions({
+        queryKey: [...IMPORTS_QUERY_KEY, 'basis', 'categories'],
+        queryFn: ({signal}) => fetchBasisCategories(signal),
     });
 }
 

@@ -11,11 +11,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.archive.backend.importer.app.GetLastImportRunHandler;
 import com.archive.backend.importer.app.GetLastImportRunQuery;
+import com.archive.backend.importer.app.ListBasisCategoriesHandler;
+import com.archive.backend.importer.app.ListBasisCategoriesQuery;
 import com.archive.backend.importer.app.ListVektorSectionsHandler;
 import com.archive.backend.importer.app.ListVektorSectionsQuery;
 import com.archive.backend.importer.app.StartImportCommand;
 import com.archive.backend.importer.app.StartImportHandler;
 import com.archive.backend.importer.domain.ImportRunningException;
+import com.archive.backend.importer.domain.basis.BasisCategory;
 import com.archive.backend.importer.domain.run.ImportLogSeq;
 import com.archive.backend.importer.domain.run.ImportSource;
 import com.archive.backend.importer.domain.vektor.VektorSection;
@@ -60,6 +63,9 @@ class ImportControllerTest {
 
     @MockitoBean
     private ListVektorSectionsHandler sectionsHandler;
+
+    @MockitoBean
+    private ListBasisCategoriesHandler basisCategoriesHandler;
 
     @MockitoBean
     private GetLastImportRunHandler lastRunHandler;
@@ -195,6 +201,24 @@ class ImportControllerTest {
     }
 
     @Test
+    void listsTheCategoriesOfBasisThatCanBeImported() throws Exception {
+        when(basisCategoriesHandler.handle(new ListBasisCategoriesQuery(Actor.anonymous())))
+                .thenReturn(List.of("arcade", "demo"));
+
+        mvc.perform(get("/api/imports/basis/categories"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0]").value("arcade"))
+                .andExpect(jsonPath("$[1]").value("demo"));
+    }
+
+    @Test
+    void forbidsTheBasisCategoriesToAMemberWhoIsNotAnAdministrator() throws Exception {
+        doThrow(new ChangeForbiddenException()).when(basisCategoriesHandler).handle(any());
+
+        mvc.perform(get("/api/imports/basis/categories")).andExpect(status().isForbidden());
+    }
+
+    @Test
     void startsTheImportOfASectionAndAnswersAccepted() throws Exception {
         mvc.perform(post("/api/imports/vektor").param("section", "zagruzchiki")).andExpect(status().isAccepted());
 
@@ -215,6 +239,14 @@ class ImportControllerTest {
         mvc.perform(post("/api/imports/basis")).andExpect(status().isAccepted());
 
         verify(startHandler).handle(new StartImportCommand(Actor.anonymous(), ImportSource.BASIS, null));
+    }
+
+    @Test
+    void startsTheImportOfOneCategoryOfBasis() throws Exception {
+        mvc.perform(post("/api/imports/basis").param("category", "arcade")).andExpect(status().isAccepted());
+
+        verify(startHandler)
+                .handle(new StartImportCommand(Actor.anonymous(), ImportSource.BASIS, new BasisCategory("arcade")));
     }
 
     @Test

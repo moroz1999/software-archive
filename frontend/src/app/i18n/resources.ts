@@ -17,7 +17,7 @@ export const resources = {
         pages: {recentlyAdded: 'Recently added', software: 'Software', authors: 'Authors', groups: 'Groups', categories: 'Categories', geography: 'Geography', search: 'Search', users: 'Users', imports: 'Imports'},
         imports: {
             whatToImport: 'What to import', source: 'Source', sources: {vektor: 'vektor-06c.ru', basis: 'caglrc.cc (Basis)'},
-            section: 'Section', wholeSite: 'Whole site', start: 'Start',
+            section: 'Section', category: 'Category', wholeSite: 'Whole site', wholeCardIndex: 'Whole card index', start: 'Start',
             started: 'The import has started.',
             errors: {running: 'An import is already running.', forbidden: 'Only an administrator starts an import.'},
             lastRun: 'Last import', noRun: 'Nothing has been imported yet.',
@@ -279,7 +279,7 @@ export const resources = {
         pages: {recentlyAdded: 'Недавно добавленное', software: 'Программы', authors: 'Авторы', groups: 'Группы', categories: 'Категории', geography: 'География', search: 'Поиск', users: 'Пользователи', imports: 'Импорт'},
         imports: {
             whatToImport: 'Что импортировать', source: 'Источник', sources: {vektor: 'vektor-06c.ru', basis: 'caglrc.cc («Базис»)'},
-            section: 'Раздел', wholeSite: 'Весь сайт', start: 'Запустить',
+            section: 'Раздел', category: 'Категория', wholeSite: 'Весь сайт', wholeCardIndex: 'Вся картотека', start: 'Запустить',
             started: 'Импорт запущен.',
             errors: {running: 'Импорт уже идёт.', forbidden: 'Импорт запускает только администратор.'},
             lastRun: 'Последний импорт', noRun: 'Импортов ещё не было.',

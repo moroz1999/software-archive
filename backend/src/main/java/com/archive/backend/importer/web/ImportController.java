@@ -2,10 +2,13 @@ package com.archive.backend.importer.web;
 
 import com.archive.backend.importer.app.GetLastImportRunHandler;
 import com.archive.backend.importer.app.GetLastImportRunQuery;
+import com.archive.backend.importer.app.ListBasisCategoriesHandler;
+import com.archive.backend.importer.app.ListBasisCategoriesQuery;
 import com.archive.backend.importer.app.ListVektorSectionsHandler;
 import com.archive.backend.importer.app.ListVektorSectionsQuery;
 import com.archive.backend.importer.app.StartImportCommand;
 import com.archive.backend.importer.app.StartImportHandler;
+import com.archive.backend.importer.domain.basis.BasisCategory;
 import com.archive.backend.importer.domain.run.ImportLogSeq;
 import com.archive.backend.importer.domain.run.ImportSource;
 import com.archive.backend.importer.domain.vektor.VektorSection;
@@ -28,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ImportController {
 
     private final StartImportHandler startImport;
+    private final ListBasisCategoriesHandler listBasisCategories;
     private final ListVektorSectionsHandler listVektorSections;
     private final GetLastImportRunHandler getLastImportRun;
     private final ImportWebMapper mapper;
@@ -50,6 +54,12 @@ public class ImportController {
         return listVektorSections.handle(new ListVektorSectionsQuery(actor));
     }
 
+    /** The categories of "Базис" an import can be started for, in the order of the source. */
+    @GetMapping("/basis/categories")
+    public List<String> basisCategories(Actor actor) {
+        return listBasisCategories.handle(new ListBasisCategoriesQuery(actor));
+    }
+
     /** Starts the import of vektor-06c.ru, or of one section of it by the code in its address; it runs on alone. */
     @PostMapping("/vektor")
     public ResponseEntity<Void> startVektor(Actor actor, @RequestParam(required = false) @Nullable String section) {
@@ -58,10 +68,11 @@ public class ImportController {
         return ResponseEntity.accepted().build();
     }
 
-    /** Starts the import of the whole card index "Базис" at caglrc.cc; it runs on alone. */
+    /** Starts the import of the whole card index "Базис", or of one category; it runs on alone. */
     @PostMapping("/basis")
-    public ResponseEntity<Void> startBasis(Actor actor) {
-        startImport.handle(new StartImportCommand(actor, ImportSource.BASIS, null));
+    public ResponseEntity<Void> startBasis(Actor actor, @RequestParam(required = false) @Nullable String category) {
+        startImport.handle(new StartImportCommand(
+                actor, ImportSource.BASIS, category == null ? null : new BasisCategory(category)));
         return ResponseEntity.accepted().build();
     }
 }

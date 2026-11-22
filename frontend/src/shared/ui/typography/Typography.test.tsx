@@ -62,4 +62,22 @@ describe(TextLink, () => {
 
         expect(screen.getByRole('link', {name: 'Site'})).toHaveClass('toneInherit');
     });
+
+    it('opens an external href in a new tab that gets no access to this page', () => {
+        render(<TextLink href="https://example.com">Site</TextLink>);
+
+        const link = screen.getByRole('link', {name: 'Site'});
+
+        expect(link).toHaveAttribute('target', '_blank');
+        expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    });
+
+    it('opens an in-app href in the same tab', () => {
+        render(<MemoryRouter><TextLink href="/software/1">Elite</TextLink></MemoryRouter>);
+
+        const link = screen.getByRole('link', {name: 'Elite'});
+
+        expect(link).not.toHaveAttribute('target');
+        expect(link).not.toHaveAttribute('rel');
+    });
 });

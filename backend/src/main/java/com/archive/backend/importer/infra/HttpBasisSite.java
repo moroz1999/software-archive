@@ -1,6 +1,7 @@
 package com.archive.backend.importer.infra;
 
 import com.archive.backend.importer.domain.basis.BasisAuthor;
+import com.archive.backend.importer.domain.basis.BasisCategory;
 import com.archive.backend.importer.domain.basis.BasisListing;
 import com.archive.backend.importer.domain.basis.BasisProgram;
 import com.archive.backend.importer.domain.basis.BasisSite;
@@ -9,11 +10,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 /**
- * "Базис" read page by page over HTTP. The whole index is one list; the page of an author is read once and kept for
- * the programs that credit them, until the next run.
+ * "Базис" read page by page over HTTP. The whole index and each category are one list; the page of an author is read
+ * once and kept for the programs that credit them, until the next run.
  */
 @Component
 @RequiredArgsConstructor
@@ -23,9 +25,9 @@ public class HttpBasisSite implements BasisSite {
     private final Map<String, BasisAuthor> authors = new ConcurrentHashMap<>();
 
     @Override
-    public List<BasisListing> listings() {
+    public List<BasisListing> listings(@Nullable BasisCategory category) {
         authors.clear();
-        return BasisPages.listings(text(BasisSite.LIST));
+        return BasisPages.listings(text(BasisSite.listUrl(category)));
     }
 
     @Override

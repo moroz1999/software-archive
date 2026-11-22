@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 /** A program of "Базис" read by the rules of the site (docs/domain/imports.md#caglrccc-scalar). */
@@ -43,6 +44,13 @@ class BasisSourceProgramsTest {
             "10", new BasisAuthor("10", "Triangle Union", "Triangle Union", "Днестровск"),
             "20", new BasisAuthor("20", "Неизвестный Автор", null, "Нигде"),
             "77", new BasisAuthor("77", "Безвестный", null, "Нигде")));
+
+    @Test
+    void offersEveryCategoryThatCanContainImportedSoftware() {
+        assertThat(BasisCategory.importable())
+                .contains(new BasisCategory("arcade"), new BasisCategory("3D"))
+                .doesNotContain(new BasisCategory("pc"), new BasisCategory("document"));
+    }
 
     @Test
     void takesTheTitleTheYearTheDescriptionAndThePageOfTheProgram() {
@@ -235,7 +243,7 @@ class BasisSourceProgramsTest {
         }
 
         @Override
-        public List<BasisListing> listings() {
+        public List<BasisListing> listings(@Nullable BasisCategory category) {
             return List.of();
         }
 

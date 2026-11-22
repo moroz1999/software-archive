@@ -2,11 +2,14 @@ package com.archive.backend.importer.infra;
 
 import com.archive.backend.importer.domain.ExternalPage;
 import com.archive.backend.importer.domain.ImportSummary;
+import com.archive.backend.importer.domain.basis.BasisCategory;
+import com.archive.backend.importer.domain.basis.BasisSite;
 import com.archive.backend.importer.domain.run.ImportProgress;
 import com.archive.backend.importer.domain.run.ImportRun;
 import com.archive.backend.importer.domain.run.ImportRunId;
 import com.archive.backend.importer.domain.run.ImportRunState;
 import com.archive.backend.importer.domain.run.ImportScope;
+import com.archive.backend.importer.domain.run.ImportSection;
 import com.archive.backend.importer.domain.vektor.VektorSection;
 import org.jspecify.annotations.Nullable;
 import org.mapstruct.Mapper;
@@ -19,7 +22,7 @@ public interface ImportRunMapper {
         String section = entity.getSection();
         return new ImportRun(
                 new ImportRunId(entity.getId()),
-                new ImportScope(entity.getArchive(), section == null ? null : new VektorSection(section)),
+                new ImportScope(entity.getArchive(), section(entity.getArchive(), section)),
                 entity.getStartedAt(),
                 ImportRunState.valueOf(entity.getState()),
                 entity.getEndedAt(),
@@ -30,7 +33,7 @@ public interface ImportRunMapper {
 
     default ImportRunEntity toEntity(ImportRun run) {
         ImportRunEntity entity = new ImportRunEntity();
-        VektorSection section = run.getScope().section();
+        ImportSection section = run.getScope().section();
         ImportSummary counts = run.summary();
         entity.setId(run.getId().value());
         entity.setArchive(run.getScope().archive());
@@ -51,5 +54,12 @@ public interface ImportRunMapper {
 
     private static @Nullable ExternalPage page(@Nullable String url) {
         return url == null ? null : new ExternalPage(url);
+    }
+
+    private static @Nullable ImportSection section(String archive, @Nullable String code) {
+        if (code == null) {
+            return null;
+        }
+        return archive.equals(BasisSite.ARCHIVE) ? new BasisCategory(code) : new VektorSection(code);
     }
 }

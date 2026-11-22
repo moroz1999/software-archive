@@ -5,7 +5,7 @@ import {type TypographyTone, typographyToneClassName} from './typography';
 
 export interface TextLinkProps {
     readonly children: ReactNode;
-    /** A path of this app is navigated client-side; anything else is a plain link. */
+    /** A path of this app is navigated client-side; anything else opens in a new tab. */
     readonly href: string;
     readonly tone?: TypographyTone;
     /** The link of the page shown: marked as current and set off from the others. */
@@ -21,5 +21,5 @@ export function TextLink({children, href, tone = 'link', current = false, classN
     if (isAppHref(href)) {
         return <Link to={href} aria-current={ariaCurrent} className={linkClass}>{children}</Link>;
     }
-    return <a href={href} aria-current={ariaCurrent} className={linkClass}>{children}</a>;
+    return <a href={href} target="_blank" rel="noopener noreferrer" aria-current={ariaCurrent} className={linkClass}>{children}</a>;
 }

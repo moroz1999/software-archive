@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 
 import com.archive.backend.importer.domain.ImportRunningException;
 import com.archive.backend.importer.domain.ImportSummary;
+import com.archive.backend.importer.domain.basis.BasisCategory;
 import com.archive.backend.importer.domain.run.ImportRun;
 import com.archive.backend.importer.domain.run.ImportRunRepository;
 import com.archive.backend.importer.domain.run.ImportRunState;
@@ -155,7 +156,21 @@ class StartImportHandlerTest {
         verify(runs).save(saved.capture());
         assertThat(saved.getValue().getScope()).isEqualTo(new ImportScope("caglrc.cc", null));
         background.poll().run();
-        verify(basisImporter).handle(new ImportBasisCommand(saved.getValue().getId()));
+        verify(basisImporter).handle(new ImportBasisCommand(saved.getValue().getId(), null));
+        verify(importer, never()).handle(any());
+    }
+
+    @Test
+    void importsOneCategoryOfBasisAndWritesItInTheRunScope() {
+        BasisCategory arcade = new BasisCategory("arcade");
+
+        handler.handle(new StartImportCommand(ADMIN, ImportSource.BASIS, arcade));
+
+        ArgumentCaptor<ImportRun> saved = ArgumentCaptor.forClass(ImportRun.class);
+        verify(runs).save(saved.capture());
+        assertThat(saved.getValue().getScope()).isEqualTo(new ImportScope("caglrc.cc", arcade));
+        background.poll().run();
+        verify(basisImporter).handle(new ImportBasisCommand(saved.getValue().getId(), arcade));
         verify(importer, never()).handle(any());
     }
 

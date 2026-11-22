@@ -4,11 +4,12 @@ import type {ImportRun, ImportSource} from './import-run';
 
 export interface SourceImportState {
     readonly sections: UseQueryResult<readonly string[]>;
+    readonly basisCategories: UseQueryResult<readonly string[]>;
     /** The report of the import started last; null before the first one. */
     readonly lastRun: UseQueryResult<ImportRun | null>;
     readonly source: ImportSource;
     readonly chooseSource: (source: ImportSource) => void;
-    /** The code of the chosen section of vektor-06c.ru; empty for the whole site. */
+    /** The code of the chosen section or category; empty for the whole source. */
     readonly section: string;
     readonly choose: (section: string) => void;
     readonly start: () => void;

@@ -31,7 +31,7 @@ describe(SoftwareScreenshots, () => {
 
         const section = await screen.findByRole('region', {name: 'Screenshots'});
 
-        expect(within(section).getAllByRole('button', {name: /^Screenshot \d of 2$/u})).toHaveLength(2);
+        await expect(within(section).findAllByRole('button', {name: /^Screenshot \d of 2$/u})).resolves.toHaveLength(2);
         expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/software/${ID}/screenshots`);
     });
 

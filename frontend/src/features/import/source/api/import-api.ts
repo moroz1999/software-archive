@@ -38,6 +38,7 @@ function readNullableNumber(object: JsonObject, key: string): number | null {
 }
 
 const VEKTOR_IMPORT_PATH = '/api/imports/vektor';
+const BASIS_IMPORT_PATH = '/api/imports/basis';
 
 /** The codes of the sections of vektor-06c.ru an import can be started for: `GET /api/imports/vektor/sections`. */
 export async function fetchVektorSections(signal: AbortSignal): Promise<readonly string[]> {
@@ -50,9 +51,15 @@ export function startVektorImport(section: string | null): Promise<void> {
     return postNoContent(section === null ? VEKTOR_IMPORT_PATH : `${VEKTOR_IMPORT_PATH}?${new URLSearchParams({section}).toString()}`);
 }
 
-/** Starts the import of the whole card index "Базис" at caglrc.cc; it has no sections. */
-export function startBasisImport(): Promise<void> {
-    return postNoContent('/api/imports/basis');
+/** The categories of "Базис" whose cards can be imported. */
+export async function fetchBasisCategories(signal: AbortSignal): Promise<readonly string[]> {
+    const json = await getJson(`${BASIS_IMPORT_PATH}/categories`, signal);
+    return mapResponse(() => readStringArray(json, 'Basis categories'));
+}
+
+/** Starts the import of one category of "Базис", or of the whole card index without one. */
+export function startBasisImport(category: string | null): Promise<void> {
+    return postNoContent(category === null ? BASIS_IMPORT_PATH : `${BASIS_IMPORT_PATH}?${new URLSearchParams({category}).toString()}`);
 }
 
 /**

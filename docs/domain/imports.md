@@ -12,9 +12,10 @@ The archive takes in software from other archives so that it does not have to be
 - Imported software links back to its page in the source archive, so anybody can compare it with the original.
 - Whatever an import added and the archive deleted since — software, a label, a person, a group — is forgotten with it: the archive keeps no trace of where a deleted entry came from, and the next run meeting it takes it again, as new. Deleting software forgets only the software: the authors and labels it credited stay, and so does where they came from. Deleting a person, a group or a label forgets only them, with what is known of them, such as their locations: the software they were credited on, its releases and the places they were from stay.
 - An author is remembered by its origin, so a later import of the same author from the same source first looks for whom it belongs to in the archive, and creates nothing new when it is there: it credits that subject. A label IVAN A imported from a source and made into the person Ivan Andreev in the archive stays remembered as Ivan Andreev; the next run meeting IVAN A on that source credits Ivan Andreev, a program added there under IVAN A since included.
+- A label an import took and the archive merged into a group since is remembered as that group: the next run meeting the name credits the group.
 - A label an import took and the archive attached to a person or a group since, or took away from them, stays the same label: the next run meeting its name credits that label, and finds it already credited on the software it brought before.
 - What an import adds is added by one fixed user of the archive, the importer.
-- Only an administrator starts an import, from the management of the archive: a whole source archive or one of its sections. Only one runs at a time, so that two runs never add the same entries.
+- Only an administrator starts an import, from the management of the archive: a whole source archive or one of its sections or categories. Only one runs at a time, so that two runs never add the same entries.
 - Every run leaves a report for the administrator: what it imported, whether it went through to the end or was stopped (by a failure of the whole run or a restart of the archive), how many programs it added, found already there, left out and failed, and what it does now: reading the list of programs, or which program of how many it is at, when the source tells how many there are.
 - The report keeps a log of the run: every step it took, one line after another in the order it went and with the time of each, growing while the run goes on, so the administrator follows the run as it goes:
   - every page of the list of programs read, of how many pages, and how many programs it lists;
@@ -54,6 +55,7 @@ The archive of software for the Vector-06C.
 
 ## caglrc.cc/scalar
 "Базис", the card index of software for the Vector-06C.
+- An administrator can import the whole card index or one category of it. Choosing a category limits which cards are read; every chosen card still brings all the categories and hardware marks it has. Categories containing only PC software or paper are not offered.
 - A program there has a title, a year, categories, a description, screenshots, its authors and its file.
 - Its authors have ids and pages of their own there, with the full name, the nickname and the place the author is from; an author is remembered by that id.
 - An author page that gives a nickname apart from the name is a person: the name is the real name, the nickname is the person's label. When the two are the same, the author is a group. An author page without a nickname is a label of nobody under that name, located in its place. "Неизвестный Автор" credits nobody, and its place "Нигде" is no place.

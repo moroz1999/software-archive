@@ -43,10 +43,11 @@ public class ImportBasisHandler {
         int known = 0;
         int skipped = 0;
         int failed = 0;
-        List<BasisListing> listings = site.listings();
+        List<BasisListing> listings = site.listings(c.category());
         logged.handle(new RecordImportLogCommand(
                 c.run(),
-                List.of(new ImportLogEntry.ListRead(new ExternalPage(BasisSite.LIST), 1, 1, listings.size()))));
+                List.of(new ImportLogEntry.ListRead(
+                        new ExternalPage(BasisSite.listUrl(c.category())), 1, 1, listings.size()))));
         int position = 0;
         for (BasisListing listing : listings) {
             position++;
