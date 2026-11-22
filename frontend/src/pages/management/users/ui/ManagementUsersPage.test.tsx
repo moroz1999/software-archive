@@ -70,7 +70,7 @@ describe('ManagementUsersPage', () => {
         expect(management.getByRole('link', {name: 'Users'})).toHaveAttribute('aria-current', 'page');
         expect(management.getByRole('link', {name: 'Categories'})).toHaveAttribute('href', '/management/categories');
         expect(management.getByRole('link', {name: 'Imports'})).toHaveAttribute('href', '/management/imports');
-        expect(management.getAllByRole('link')).toHaveLength(3);
+        expect(management.getAllByRole('link')).toHaveLength(4);
     });
 
     it('leads to the editing of every user, confirmed or not', async () => {

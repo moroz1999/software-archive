@@ -1,6 +1,7 @@
 package com.archive.backend.geo.read;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -18,4 +19,14 @@ public interface GeoReadRepository {
      * The cities of a country, named as countries are, by that name; none for an unknown country.
      */
     List<CityItem> findCities(UUID countryId, String language);
+
+    /**
+     * Every country with its cities, named as countries are, both by that name, each with how many places of people,
+     * groups and labels are in it.
+     */
+    List<GeographyCountry> findGeography(String language);
+
+    Optional<CountryDetails> findCountry(UUID id);
+
+    Optional<CityDetails> findCity(UUID id);
 }

@@ -23,7 +23,7 @@ What a user may do comes from their groups, and for the entries of the archive a
 | Moderator | Given on purpose | Delete comments |
 | Administrator | Given on purpose | Everything |
 
-A member adds releases to any software. A release can be edited and deleted by whoever added it and by whoever added its software. Categories are kept by administrators only. Every entry is added by a signed-in user, who is remembered as its adder. An entry whose adder's account was deleted keeps no adder: only administrators change it. A label is edited, deleted and made into a new person or group by whoever added it and by administrators; one taken away from an owner, only when they may change that owner too. Only administrators say whose a label is: they attach labels to existing owners and take them away.
+A member adds releases to any software. A release can be edited and deleted by whoever added it and by whoever added its software. Categories, countries and cities are kept by administrators only. Every entry is added by a signed-in user, who is remembered as its adder. An entry whose adder's account was deleted keeps no adder: only administrators change it. A label is edited, deleted and made into a new person or group by whoever added it and by administrators; one taken away from an owner, only when they may change that owner too. Only administrators say whose a label is: they attach labels to existing owners and take them away.
 
 The first confirmed account of the archive becomes an administrator.
 

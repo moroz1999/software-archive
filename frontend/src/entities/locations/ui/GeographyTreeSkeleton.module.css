@@ -1,0 +1,4 @@
+.row {
+    width: var(--geography-tree-skeleton-row-width);
+    height: var(--geography-tree-skeleton-row-height);
+}

@@ -3,6 +3,7 @@ package com.archive.backend.search.app;
 import com.archive.backend.author.domain.AuthorChanged;
 import com.archive.backend.category.domain.CategoryDeleted;
 import com.archive.backend.category.domain.CategoryMoved;
+import com.archive.backend.geo.domain.CityMoved;
 import com.archive.backend.group.domain.GroupChanged;
 import com.archive.backend.label.domain.LabelChanged;
 import com.archive.backend.label.domain.LabelCreated;
@@ -86,6 +87,12 @@ public class EnqueueSearchDocumentsHandler {
         UUID group = event.group().value();
         enqueue(SearchEntityType.GROUP, List.of(group));
         enqueueSoftware(affected.creditingGroup(group));
+    }
+
+    /** A city put in another country changes the country of the software made by whoever is located in it. */
+    @EventListener
+    public void on(CityMoved event) {
+        enqueueSoftware(affected.creditedFromCity(event.city().value()));
     }
 
     @EventListener

@@ -47,4 +47,17 @@ public class JdbcAffectedSoftware implements AffectedSoftware {
                 .query(UUID.class)
                 .list();
     }
+
+    @Override
+    public List<UUID> creditedFromCity(UUID city) {
+        return jdbc.sql("""
+                        SELECT DISTINCT sc.software_id
+                        FROM software_contribution sc
+                        LEFT JOIN label l ON l.id = sc.label_id
+                        JOIN entity_location el
+                          ON (el.entity_type = 'PERSON' AND el.entity_id = COALESCE(sc.person_id, l.person_id))
+                          OR (el.entity_type = 'GROUP' AND el.entity_id = COALESCE(sc.group_id, l.group_id))
+                        WHERE el.city_id = :city
+                        """).param("city", city).query(UUID.class).list();
+    }
 }

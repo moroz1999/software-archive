@@ -6,6 +6,7 @@ import com.archive.backend.category.domain.CategoryHierarchy;
 import com.archive.backend.category.domain.CategoryParents;
 import com.archive.backend.category.domain.CategorySets;
 import com.archive.backend.geo.domain.GeoCatalog;
+import com.archive.backend.geo.domain.KnownCountries;
 import com.archive.backend.geo.domain.Places;
 import com.archive.backend.group.domain.GroupMemberSets;
 import com.archive.backend.group.domain.GroupTypeCatalog;
@@ -54,6 +55,11 @@ public class DomainServicesConfig {
     @Bean
     public HardwareSets hardwareSets(HardwareCatalog catalog) {
         return new HardwareSets(catalog);
+    }
+
+    @Bean
+    public KnownCountries knownCountries(GeoCatalog catalog) {
+        return new KnownCountries(catalog);
     }
 
     @Bean

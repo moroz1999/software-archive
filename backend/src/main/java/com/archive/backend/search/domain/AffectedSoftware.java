@@ -18,4 +18,10 @@ public interface AffectedSoftware {
 
     /** The software the group is credited on by itself, not by a label. */
     List<UUID> creditingGroup(UUID group);
+
+    /**
+     * The software credited, by themselves or by one of their labels, on the people and the groups located in the city:
+     * the search tells its country by their places.
+     */
+    List<UUID> creditedFromCity(UUID city);
 }

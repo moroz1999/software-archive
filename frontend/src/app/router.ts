@@ -2,6 +2,7 @@ import type {QueryClient} from '@tanstack/react-query';
 import {createBrowserRouter, type RouteObject} from 'react-router';
 import {AUTHOR_EDIT_ROUTE, AUTHOR_NEW_PATH, AUTHOR_ROUTE, AUTHORS_PATH} from '@/entities/authors';
 import {CATEGORIES_PATH, CATEGORY_EDIT_ROUTE, CATEGORY_NEW_PATH} from '@/entities/categories';
+import {CITY_EDIT_ROUTE, CITY_NEW_PATH, COUNTRY_EDIT_ROUTE, COUNTRY_NEW_PATH, GEOGRAPHY_PATH} from '@/entities/locations';
 import {GROUP_EDIT_ROUTE, GROUP_NEW_PATH, GROUP_ROUTE, GROUPS_PATH} from '@/entities/groups';
 import {LABEL_EDIT_ROUTE, LABEL_NEW_PATH, LABEL_ROUTE} from '@/entities/labels';
 import {MANAGEMENT_USER_EDIT_ROUTE, MANAGEMENT_USERS_PATH, REGISTER_PATH, VERIFY_EMAIL_PATH} from '@/entities/users';
@@ -13,7 +14,10 @@ import {loadAuthorsPage, preloadAuthorsPage, shouldPreloadAuthorsPage} from '@/p
 import {loadCategoriesPage, preloadCategoriesPage} from '@/pages/categories';
 import {loadCategoryEditPage, preloadCategoryEditPage} from '@/pages/category-edit';
 import {loadCategoryNewPage, preloadCategoryNewPage} from '@/pages/category-new';
+import {loadManagementGeographyPage, preloadManagementGeographyPage} from '@/pages/management/geography';
 import {loadManagementImportsPage, preloadManagementImportsPage} from '@/pages/management/imports';
+import {loadCityEditPage, loadCountryEditPage, preloadCityEditPage, preloadCountryEditPage} from '@/pages/management/place-edit';
+import {loadCityNewPage, loadCountryNewPage, preloadCityNewPage} from '@/pages/management/place-new';
 import {loadManagementUserEditPage, preloadManagementUserEditPage} from '@/pages/management/user-edit';
 import {loadManagementUsersPage, preloadManagementUsersPage, shouldPreloadManagementUsersPage} from '@/pages/management/users';
 import {loadGroupEditPage, preloadGroupEditPage} from '@/pages/group-edit';
@@ -107,6 +111,11 @@ const routes = (queryClient: QueryClient): RouteObject[] => [{Component: AppLayo
                 HydrateFallback: nothing,
             },
             {path: MANAGEMENT_USER_EDIT_ROUTE, loader: preloadManagementUserEditPage(queryClient), lazy: {Component: loadManagementUserEditPage}, HydrateFallback: nothing},
+            {path: GEOGRAPHY_PATH, loader: preloadManagementGeographyPage(queryClient), lazy: {Component: loadManagementGeographyPage}, HydrateFallback: nothing},
+            {path: COUNTRY_NEW_PATH, lazy: {Component: loadCountryNewPage}, HydrateFallback: nothing},
+            {path: COUNTRY_EDIT_ROUTE, loader: preloadCountryEditPage(queryClient), lazy: {Component: loadCountryEditPage}, HydrateFallback: nothing},
+            {path: CITY_NEW_PATH, loader: preloadCityNewPage(queryClient), lazy: {Component: loadCityNewPage}, HydrateFallback: nothing},
+            {path: CITY_EDIT_ROUTE, loader: preloadCityEditPage(queryClient), lazy: {Component: loadCityEditPage}, HydrateFallback: nothing},
             {path: MANAGEMENT_IMPORTS_PATH, loader: preloadManagementImportsPage(queryClient), lazy: {Component: loadManagementImportsPage}, HydrateFallback: nothing},
         ]},
         {

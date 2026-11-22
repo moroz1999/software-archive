@@ -1,0 +1,5 @@
+:root {
+    /* Row bone: a name of a country at the top of the tree. */
+    --geography-tree-skeleton-row-width: 180px;
+    --geography-tree-skeleton-row-height: var(--space-24);
+}

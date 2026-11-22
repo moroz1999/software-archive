@@ -62,6 +62,13 @@ public record Actor(@Nullable UserId id, Set<UserGroup> groups) {
     }
 
     /**
+     * Whether they may keep the countries and the cities: administrators only.
+     */
+    public boolean mayKeepPlaces() {
+        return isAdministrator();
+    }
+
+    /**
      * Lets an action through only when it is allowed: otherwise a public visitor is told to sign in, and a signed-in
      * user that they may not.
      */

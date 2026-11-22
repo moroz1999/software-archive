@@ -1,9 +1,11 @@
 import {queryOptions, skipToken} from '@tanstack/react-query';
-import type {CountryId} from '../model/geo';
+import type {CityId, CountryId} from '../model/geo';
+import type {PlaceKind} from '../model/geography';
+import {fetchGeography, fetchPlace} from './geography-api';
 import {fetchCities, fetchCountries} from './geo-api';
 
-/** The common prefix of the countries and cities to choose from. */
-const GEO_QUERY_KEY = ['geo'] as const;
+/** The common prefix of every query of countries and cities: a change of one makes them all stale. */
+export const GEO_QUERY_KEY = ['geo'] as const;
 
 export function countriesQuery() {
     return queryOptions({
@@ -17,5 +19,21 @@ export function citiesQuery(country: CountryId | null) {
     return queryOptions({
         queryKey: [...GEO_QUERY_KEY, 'cities', country],
         queryFn: country === null ? skipToken : ({signal}) => fetchCities(country, signal),
+    });
+}
+
+/** Every country with its cities, the tree of the management. */
+export function geographyQuery() {
+    return queryOptions({
+        queryKey: [...GEO_QUERY_KEY, 'geography'],
+        queryFn: ({signal}) => fetchGeography(signal),
+    });
+}
+
+/** One country or city, the block of its form. */
+export function placeDetailsQuery(kind: PlaceKind, id: CountryId | CityId) {
+    return queryOptions({
+        queryKey: [...GEO_QUERY_KEY, kind, id],
+        queryFn: ({signal}) => fetchPlace(kind, id, signal),
     });
 }
