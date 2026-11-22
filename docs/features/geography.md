@@ -6,7 +6,7 @@ Keeping the countries and the cities from the management ([domain/geo.md](../dom
 
 | Page | Path | Content |
 |---|---|---|
-| Geography | `/management/geography` | "Add country" and "Add city" next to the title; the management tabs; "Cities of no country" with a choice of country and "Put in the country" for each, "Every city is in a country." without them; then "Possible duplicates", "No possible duplicates." without them; under it the tree of countries, folded to them, each country and city leading to its editing with the count of places in it |
+| Geography | `/management/geography` | "Add country" and "Add city" next to the title; the management tabs; "Cities of no country" as a table of City, Places, Country — a choice of country and "Put in the country" — and "Make a country" for each, "Every city is in a country." without them; then "Possible duplicates", "No possible duplicates." without them; under it the tree of countries, folded to them, each country and city leading to its editing with the count of places in it |
 | Add country, Add city | `/management/geography/countries/new`, `/management/geography/cities/new` | Management tabs and an empty form; Cancel and the submit button both return to the tree |
 | Edit country, Edit city | `/management/geography/countries/{id}/edit`, `/management/geography/cities/{id}/edit` | Management tabs; "Merge into another" and "Delete" next to the title; the form with Cancel and "Save" back to the tree; the tree after merging or deleting |
 
@@ -14,6 +14,8 @@ Keeping the countries and the cities from the management ([domain/geo.md](../dom
 
 - Each city leads to its editing and shows its count of places; "Put in the country" stays locked until a country is chosen.
 - Once a city is put in a country, the list and the tree are read again, and the city leaves the list. A country gone in the meantime is refused next to the city ("The country is not in the archive any more. Reload and try again."); choosing another country clears it.
+- The columns keep their widths, so the choices line up whatever the length of a name; the skeleton is the same table.
+- "Make a country" asks "Make “{name}” a country? Its places move to the new country, and the city is deleted."; once made, the lists of places are read again and the city leaves the list. A refusal shows inside the dialog: a city put in a country in the meantime ("The city is in a country already. Reload and try again."), a city an old label record names ("An old record of a label names the city: it cannot become a country.").
 
 ## Possible duplicates
 
@@ -50,6 +52,7 @@ Keeping the countries and the cities from the management ([domain/geo.md](../dom
 | `GET /api/geography/duplicates` | `200`, `{countries: [[{id, name, country: null, places}]], cities: [{country, cities: [{id, name, country, places}]}]}`: groups of what may be one, cities by the name of their country, `null` for a group of cities of no country only | |
 | `POST /api/countries/{id}/merge`, `POST /api/cities/{id}/merge` `{into}` | `204`; the one merged is deleted | `400 geo.merge-target-required` without `into`, `422 geo.merge-into-itself`, `422 geo.country-unknown` / `422 geo.city-unknown` (field `into`), `404` for the one merged; `401`/`403` for anyone but an administrator |
 | `PUT /api/cities/{id}/country` `{countryId}` | `204`; the city keeps its names and coordinates | `400 geo.country-required` without a country, `422 geo.country-unknown`, `404 geo.city-not-found`; `401`/`403` for anyone but an administrator |
+| `POST /api/cities/{id}/to-country` | `201`, `Location`, `{id}` of the country; the city is deleted | `422 geo.city-has-country`, `422 geo.city-in-use-by-label`, `404 geo.city-not-found`; `401`/`403` for anyone but an administrator |
 | `GET /api/countries/{id}`, `GET /api/cities/{id}` | `200`, `{id, names, latitude, longitude}`, a city with `countryId` too; `names` by language code, the Russian one always there | `404 geo.country-not-found`, `404 geo.city-not-found` |
 | `POST /api/countries`, `POST /api/cities` `{names, latitude, longitude}`, a city with `countryId` | `201`, `Location`, `{id}` | `400 geo.name-required` without a Russian name (a blank one is none), `400 geo.coordinates-invalid`, `400 language.unknown`; `422 geo.country-unknown` (field `countryId`); `401`/`403` for anyone but an administrator |
 | `PUT /api/countries/{id}`, `PUT /api/cities/{id}` (same body) | `204` | The errors of `POST`; `404` |
@@ -58,5 +61,7 @@ Keeping the countries and the cities from the management ([domain/geo.md](../dom
 ## Moving and merging
 
 A city put in another country, from its form or from the cities of no country (`CityMoved`), has every place in it moved there in the same transaction, as a place keeps the country of its city; the software credited on the people and groups located in it, by themselves or by a label of theirs, goes to the search again, whose documents tell the countries of software by their places.
+
+A city made a country (`CityTurnedIntoCountry`) has every place in it put in that country, out of any city, in the same transaction before it is deleted; the software credited on the people and groups located in it goes to the search again.
 
 A merged city (`CityMerged`) or country (`CountryMerged`) has its places, and a country its cities, moved the same way before it is deleted, an owner who then has a place twice keeping it once, primary when either was; the software credited on the people and groups located in either of the two goes to the search again.

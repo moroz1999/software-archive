@@ -18,7 +18,7 @@ One document per entity, with the entity's id as the document id. Facet values a
 
 | Collection | Matched by the keyword | Filters and facets |
 |---|---|---|
-| `software` | title, alternative titles | platform; release year; categories (each one of the software with all its ancestors); countries. Beside them, for the card only: the release date, the screenshots ([screenshots.md](screenshots.md#card)) and who made it ([domain/software.md](../domain/software.md#card)) |
+| `software` | title, alternative titles | platform; release year; categories (each one of the software with all its ancestors); countries; cities; the hardware of the software and of its releases, a field per hardware group (`hardware_computers`, `hardware_sound`, …). Beside them, for the card only: the release date, the screenshots ([screenshots.md](screenshots.md#card)) and who made it ([domain/software.md](../domain/software.md#card)) |
 | `authors` | every label of the person, real name | platforms |
 | `groups` | every label of the group, name | platforms |
 
@@ -39,7 +39,7 @@ Platforms of people and groups are those of the software they are credited on, b
 1. **Outbox.** In the same transaction as a change, the type and id of every entity whose document changed go to `search_outbox`, written by in-transaction listeners of the domain events ([backend.md](../backend.md)). One row per entity: a new change of a waiting entity renews its row instead of adding one, and the worker removes a row only if it was not renewed while being processed, so no change is lost. Changes reach other documents:
    - software saved or deleted → the software, and the people and groups of its credits before and after (platforms);
    - a label attached to or taken from an owner, deleted → its old and new owner, and the software it is credited on (countries);
-   - locations of a person or a group changed → the software they are credited on, by themselves or by their labels;
+   - locations of a person or a group changed, as by an import filling them → the software they are credited on, by themselves or by their labels (countries, cities);
    - a person or a group edited or deleted → the software whose card names them: credited on by themselves or by a label.
    - a category moved or deleted → the software in it and in its subtree.
 2. **Worker.** One background worker takes the due tasks after commit. For each it reads the current state from PostgreSQL and upserts the full document under its stable id. A missing entity deletes its document; a document already missing counts as deleted.
@@ -47,7 +47,7 @@ Platforms of people and groups are those of the software they are credited on, b
 
 ### As built
 
-- The changes are told by domain events, published by the use cases: `SoftwareChanged`, `AuthorChanged` and `GroupChanged` (added, edited, deleted), `CategoryMoved`, `CategoryDeleted`, and `OwnerOfLabelsChanged` from a person or a group edited or deleted, with the labels it had before (new labels have no credits yet). A deletion tells before it deletes, while the subtree and the credits can still be found. `search/app/EnqueueSearchDocumentsHandler` answers them all.
+- The changes are told by domain events, published by the use cases: `SoftwareChanged` (also when a release is added with hardware, or its hardware is edited, since the software is found by it), `AuthorChanged` and `GroupChanged` (added, edited, deleted), `CategoryMoved`, `CategoryDeleted`, and `OwnerOfLabelsChanged` from a person or a group edited or deleted, with the labels it had before (new labels have no credits yet). A deletion tells before it deletes, while the subtree and the credits can still be found. `search/app/EnqueueSearchDocumentsHandler` answers them all.
 - A row of `search_outbox` carries a renewal number from a sequence: a new change renews it, and the worker removes the row only with the number it took.
 - The worker (`ProcessSearchOutboxHandler`) runs every `search.worker.delay`; the retry delay doubles from 1 s to at most 10 minutes. Each call to Typesense is itself made up to `search.typesense.attempts` times, `search.typesense.retry-interval` apart, before the worker counts it failed. A call to Typesense that timed out may still be applied once Typesense answers again: a retry then only upserts the same document once more.
 - A software document leaves the roles of work on a copy out of its countries; the list of those roles is in `JdbcSoftwareDocuments`.

@@ -19,6 +19,9 @@ const PUZZLE = '00000000-0000-0000-00fd-0000000000c4';
 const DEMOSCENE = '00000000-0000-0000-00fd-0000000000c5';
 const FINLAND = '00000000-0000-0000-00fd-0000000000f1';
 const BRITAIN = '00000000-0000-0000-00fd-0000000000f2';
+const HELSINKI = '00000000-0000-0000-00fd-0000000000e1';
+const ESPOO = '00000000-0000-0000-00fd-0000000000e2';
+const STOCKHOLM = '00000000-0000-0000-00fd-0000000000e3';
 
 const TREE = [
     {id: GAMES, title: 'Games', children: [
@@ -32,7 +35,13 @@ const COUNTRIES = [{id: BRITAIN, name: 'Britain'}, {id: FINLAND, name: 'Finland'
 const FACETS = {
     years: [{value: 1987, count: 2}, {value: 1989, count: 1}],
     countries: [{value: FINLAND, count: 2}, {value: BRITAIN, count: 1}],
+    // Stockholm comes with software also made in Finland; Espoo has none left.
+    cities: [{value: HELSINKI, count: 2}, {value: STOCKHOLM, count: 1}],
+    platforms: [{value: 'bk', count: 1}, {value: 'msx', count: 3}],
+    hardware: [{value: 'vector06c', name: 'Vector-06C', group: 'computers', count: 2}, {value: 'ay8910', name: 'AY-3-8910', group: 'sound', count: 1}],
 };
+const FINNISH_CITIES = [{id: ESPOO, name: 'Espoo'}, {id: HELSINKI, name: 'Helsinki'}];
+
 
 const ALL = '/api/software?page=0&size=20';
 
@@ -45,6 +54,7 @@ function routes(catalogs: Record<string, () => Response>): Map<string, () => Res
         ['/api/platforms', json([{code: 'bk', name: 'BK'}, {code: 'msx', name: 'MSX'}])],
         ['/api/categories', json(TREE)],
         ['/api/countries', json(COUNTRIES)],
+        [`/api/countries/${FINLAND}/cities`, json(FINNISH_CITIES)],
         ...Object.entries(catalogs),
     ]);
 }
@@ -140,6 +150,128 @@ describe(SoftwareCatalog, () => {
         expect(router.state.location.search).toBe(`?country=${BRITAIN}`);
     });
 
+    it('locks the city until a country is chosen', async () => {
+        stubFetchRoutes(routes({[ALL]: catalog([ELITE])}));
+        openCatalog();
+
+        const city = await screen.findByRole('combobox', {name: 'City'});
+
+        expect(city).toBeDisabled();
+        expect(within(city).getAllByRole('option').map((option) => option.textContent)).toStrictEqual(['Any city']);
+    });
+
+    it('offers the cities of the chosen country with their counts and goes to the first page of the chosen one', async () => {
+        stubFetchRoutes(routes({
+            [`/api/software?page=1&size=20&country=${FINLAND}`]: catalog([ELITE], {number: 1, totalPages: 2}),
+            [`${ALL}&country=${FINLAND}&city=${HELSINKI}`]: catalog([ELITE]),
+        }));
+        const router = openCatalog(`/software?country=${FINLAND}&page=2`);
+
+        const city = await screen.findByRole('combobox', {name: 'City'});
+        await within(city).findByRole('option', {name: 'Helsinki (2)'});
+
+        expect(city).toBeEnabled();
+        expect(within(city).getAllByRole('option').map((option) => option.textContent)).toStrictEqual(['Any city', 'Helsinki (2)']);
+
+        await userEvent.selectOptions(city, HELSINKI);
+
+        expect(router.state.location.search).toBe(`?country=${FINLAND}&city=${HELSINKI}`);
+    });
+
+    it('forgets the city once another country is chosen', async () => {
+        stubFetchRoutes(routes({
+            [`${ALL}&country=${FINLAND}&city=${HELSINKI}`]: catalog([ELITE]),
+            [`${ALL}&country=${BRITAIN}`]: catalog([EXOLON]),
+        }));
+        const router = openCatalog(`/software?country=${FINLAND}&city=${HELSINKI}`);
+
+        await screen.findByRole('option', {name: 'Britain (1)'});
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Country'}), BRITAIN);
+
+        expect(router.state.location.search).toBe(`?country=${BRITAIN}`);
+    });
+
+    async function openHardware() {
+        await userEvent.click(await screen.findByRole('button', {name: 'Hardware'}));
+        return screen.findByRole('dialog', {name: 'Hardware'});
+    }
+
+    function checkboxNames(within_: HTMLElement): string[] {
+        return within(within_).getAllByRole<HTMLInputElement>('checkbox').map((box) => box.labels?.[0]?.textContent ?? '');
+    }
+
+    it('offers the platforms and the hardware of every platform with their counts while all platforms are shown', async () => {
+        stubFetchRoutes(routes({[ALL]: catalog([ELITE])}));
+        openCatalog();
+
+        const dialog = await openHardware();
+
+        await expect(within(dialog).findByRole('group', {name: 'Platforms'})).resolves.toBeInTheDocument();
+        expect(checkboxNames(within(dialog).getByRole('group', {name: 'Platforms'}))).toStrictEqual(['BK (1)', 'MSX (3)']);
+        expect(checkboxNames(within(dialog).getByRole('group', {name: 'Computers'}))).toStrictEqual(['Vector-06C (2)']);
+        expect(checkboxNames(within(dialog).getByRole('group', {name: 'Sound'}))).toStrictEqual(['AY-3-8910 (1)']);
+    });
+
+    it('offers only the hardware of the platform chosen in the switch, without the platforms', async () => {
+        localStorage.setItem('archive.platform', 'bk');
+        // The index offers only the hardware of the software of the platform.
+        const ofBk = {...FACETS, hardware: FACETS.hardware.slice(1)};
+        stubFetchRoutes(routes({[`${ALL}&platform=bk`]: catalog([ELITE], {facets: ofBk})}));
+        openCatalog();
+
+        const dialog = await openHardware();
+
+        await expect(within(dialog).findByRole('group', {name: 'Sound'})).resolves.toBeInTheDocument();
+        expect(within(dialog).queryByRole('group', {name: 'Platforms'})).not.toBeInTheDocument();
+        expect(within(dialog).queryByRole('group', {name: 'Computers'})).not.toBeInTheDocument();
+    });
+
+    it('applies the platforms and the hardware checked from the first page, and names them on the button', async () => {
+        stubFetchRoutes(routes({
+            '/api/software?page=1&size=20': catalog([ELITE], {number: 1, totalPages: 2}),
+            [`${ALL}&platforms=bk&hardware=ay8910`]: catalog([ELITE]),
+        }));
+        const router = openCatalog('/software?page=2');
+
+        const dialog = await openHardware();
+        await userEvent.click(await within(dialog).findByRole('checkbox', {name: 'BK (1)'}));
+        await userEvent.click(within(dialog).getByRole('checkbox', {name: 'AY-3-8910 (1)'}));
+
+        expect(router.state.location.search).toBe('?page=2');
+
+        await userEvent.click(within(dialog).getByRole('button', {name: 'Apply'}));
+
+        expect(router.state.location.search).toBe('?platforms=bk&hardware=ay8910');
+        expect(screen.queryByRole('dialog', {name: 'Hardware'})).not.toBeInTheDocument();
+        await expect(screen.findByRole('button', {name: 'Hardware: BK, AY-3-8910'})).resolves.toBeInTheDocument();
+    });
+
+    it('keeps the hardware checked in the address shown checked, and resets it all', async () => {
+        stubFetchRoutes(routes({[`${ALL}&hardware=ay8910`]: catalog([ELITE]), [ALL]: catalog([ELITE])}));
+        const router = openCatalog('/software?hardware=ay8910');
+
+        await userEvent.click(await screen.findByRole('button', {name: 'Hardware: AY-3-8910'}));
+        const dialog = await screen.findByRole('dialog', {name: 'Hardware'});
+
+        await expect(within(dialog).findByRole('checkbox', {name: 'AY-3-8910 (1)'})).resolves.toBeChecked();
+
+        await userEvent.click(within(dialog).getByRole('button', {name: 'Reset'}));
+
+        expect(router.state.location.search).toBe('');
+    });
+
+    it('changes nothing when the hardware window is closed without applying', async () => {
+        stubFetchRoutes(routes({[ALL]: catalog([ELITE])}));
+        const router = openCatalog();
+
+        const dialog = await openHardware();
+        await userEvent.click(await within(dialog).findByRole('checkbox', {name: 'AY-3-8910 (1)'}));
+        await userEvent.keyboard('{Escape}');
+
+        expect(router.state.location.search).toBe('');
+        expect(screen.getByRole('button', {name: 'Hardware'})).toBeInTheDocument();
+    });
+
     it('offers the whole category tree to go through, folded, without counts', async () => {
         stubFetchRoutes(routes({[ALL]: catalog([ELITE])}));
 
@@ -219,7 +351,7 @@ describe(SoftwareCatalog, () => {
     });
 
     it('says when nothing is found', async () => {
-        stubFetchRoutes(routes({[`${ALL}&q=zzz`]: catalog([], {facets: {years: [], countries: []}})}));
+        stubFetchRoutes(routes({[`${ALL}&q=zzz`]: catalog([], {facets: {years: [], countries: [], cities: [], platforms: [], hardware: []}})}));
 
         openCatalog('/software?q=zzz');
 

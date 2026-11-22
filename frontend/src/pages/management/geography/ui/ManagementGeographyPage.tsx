@@ -10,6 +10,7 @@ import {
     GeographyProvider,
     GeographyTree,
 } from '@/entities/locations';
+import {MakeCountryButton} from '@/features/geography/make-country';
 import {PutCityInCountry} from '@/features/geography/put-in-country';
 import {Stack} from '@/shared/ui/stack';
 import {ManagementTabs} from '@/features/user/management-navigation';
@@ -33,7 +34,7 @@ export function ManagementGeographyPage() {
             <Stack gap="lg">
                 <CountriesProvider>
                     <CitiesOfNoCountryProvider>
-                        <CitiesOfNoCountry action={(city) => <PutCityInCountry city={city}/>}/>
+                        <CitiesOfNoCountry country={(city) => <PutCityInCountry city={city}/>} action={(city) => <MakeCountryButton city={city}/>}/>
                     </CitiesOfNoCountryProvider>
                 </CountriesProvider>
                 <GeoDuplicatesProvider>

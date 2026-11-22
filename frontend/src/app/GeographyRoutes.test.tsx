@@ -13,6 +13,7 @@ const FINLAND = '00000000-0000-0000-0010-000000000001';
 const SWEDEN = '00000000-0000-0000-0010-000000000002';
 const HELSINKI = '00000000-0000-0000-0010-000000000011';
 const KOVROV = '00000000-0000-0000-0010-000000000021';
+const ABAKAN = '00000000-0000-0000-0010-000000000022';
 const NEW_ID = '00000000-0000-0000-0010-000000000099';
 const SUOMI = '00000000-0000-0000-0010-000000000003';
 const HELSINGFORS = '00000000-0000-0000-0010-000000000012';
@@ -256,8 +257,61 @@ describe('geography routes', () => {
         const block = within(await screen.findByRole('region', {name: 'Cities of no country'}));
 
         expect(block.getByRole('link', {name: 'Kovrov'})).toHaveAttribute('href', `/management/geography/cities/${KOVROV}/edit`);
-        expect(block.getByText('2 places')).toBeInTheDocument();
+        expect(block.getByRole('cell', {name: '2'})).toBeInTheDocument();
         expect(screen.getByRole('region', {name: 'Cities of no country'}).compareDocumentPosition(screen.getByRole('list', {name: 'Geography'}))).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+
+    it('lines the cities of no country up in a table: the city, its places, its country to choose and what else can be done', async () => {
+        stubApi(ADMIN, {[CITIES_OF_NO_COUNTRY]: json([{id: KOVROV, name: 'Kovrov', places: 2}, {id: ABAKAN, name: 'Abakan', places: 0}])});
+        openAt('/management/geography');
+
+        const table = await screen.findByRole('table', {name: 'Cities of no country'});
+
+        expect(within(table).getAllByRole('columnheader').map((header) => header.textContent)).toStrictEqual(['City', 'Places', 'Country', '']);
+
+        const rows = within(table).getAllByRole('row').slice(1);
+
+        expect(rows.map((row) => within(row).getAllByRole('cell').length)).toStrictEqual([4, 4]);
+        expect(within(rows[1] ?? table).getByRole('combobox', {name: 'Country for Abakan'})).toBeInTheDocument();
+        expect(within(rows[1] ?? table).getByRole('button', {name: 'Make Abakan a country'})).toBeInTheDocument();
+    });
+
+    it('makes a city of no country a country once asked, and the city leaves the list', async () => {
+        let made = false;
+        const fetchMock = stubApi(ADMIN, {
+            [CITIES_OF_NO_COUNTRY]: () => json(made ? [] : [{id: KOVROV, name: 'Kovrov', places: 2}])(),
+            [`POST /api/cities/${KOVROV}/to-country`]: () => {
+                made = true;
+                return json({id: NEW_ID}, 201)();
+            },
+        });
+        openAt('/management/geography');
+
+        await userEvent.click(await screen.findByRole('button', {name: 'Make Kovrov a country'}));
+
+        expect(screen.getByRole('alertdialog')).toHaveTextContent('Make “Kovrov” a country? Its places move to the new country, and the city is deleted.');
+
+        await userEvent.click(within(screen.getByRole('alertdialog')).getByRole('button', {name: 'Make a country'}));
+
+        await expect(screen.findByText('Every city is in a country.')).resolves.toBeInTheDocument();
+        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+        expect(fetchMock.mock.calls.some(([input, init]) => urlOf(input) === `/api/cities/${KOVROV}/to-country` && init?.method === 'POST')).toBe(true);
+    });
+
+    it.each([
+        ['geo.city-has-country', 'The city is in a country already. Reload and try again.'],
+        ['geo.city-in-use-by-label', 'An old record of a label names the city: it cannot become a country.'],
+    ])('says inside the confirmation why a city is not made a country (%s)', async (code, message) => {
+        stubApi(ADMIN, {
+            [CITIES_OF_NO_COUNTRY]: json([{id: KOVROV, name: 'Kovrov', places: 2}]),
+            [`POST /api/cities/${KOVROV}/to-country`]: refusal(422, code),
+        });
+        openAt('/management/geography');
+
+        await userEvent.click(await screen.findByRole('button', {name: 'Make Kovrov a country'}));
+        await userEvent.click(within(screen.getByRole('alertdialog')).getByRole('button', {name: 'Make a country'}));
+
+        await expect(within(screen.getByRole('alertdialog')).findByText(message)).resolves.toBeInTheDocument();
     });
 
     it('says when every city is in a country', async () => {

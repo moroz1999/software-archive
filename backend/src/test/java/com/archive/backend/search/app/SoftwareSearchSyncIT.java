@@ -1,6 +1,7 @@
 package com.archive.backend.search.app;
 
 import static com.archive.backend.category.domain.CategoryTitleFixtures.titles;
+import static com.archive.backend.geo.GeoTestRows.city;
 import static com.archive.backend.geo.GeoTestRows.country;
 import static com.archive.backend.user.TestActors.ADMIN;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -10,6 +11,8 @@ import com.archive.backend.author.app.CreateAuthorCommand;
 import com.archive.backend.author.app.CreateAuthorHandler;
 import com.archive.backend.author.app.DeleteAuthorCommand;
 import com.archive.backend.author.app.DeleteAuthorHandler;
+import com.archive.backend.author.app.SupplementAuthorCommand;
+import com.archive.backend.author.app.SupplementAuthorHandler;
 import com.archive.backend.author.app.UpdateAuthorCommand;
 import com.archive.backend.author.app.UpdateAuthorHandler;
 import com.archive.backend.author.domain.AuthorId;
@@ -21,21 +24,30 @@ import com.archive.backend.category.app.DeleteCategoryHandler;
 import com.archive.backend.category.app.UpdateCategoryCommand;
 import com.archive.backend.category.app.UpdateCategoryHandler;
 import com.archive.backend.category.domain.CategoryId;
+import com.archive.backend.geo.domain.CityId;
 import com.archive.backend.geo.domain.CountryId;
 import com.archive.backend.geo.domain.LocationDraft;
 import com.archive.backend.group.app.CreateGroupCommand;
 import com.archive.backend.group.app.CreateGroupHandler;
+import com.archive.backend.group.app.SupplementGroupCommand;
+import com.archive.backend.group.app.SupplementGroupHandler;
 import com.archive.backend.group.app.UpdateGroupCommand;
 import com.archive.backend.group.app.UpdateGroupHandler;
 import com.archive.backend.group.domain.GroupId;
 import com.archive.backend.group.domain.GroupName;
 import com.archive.backend.group.domain.GroupTypeCode;
+import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.label.domain.LabelDraft;
 import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.label.domain.UnmarkedLabelDraft;
 import com.archive.backend.search.TypesenseProbe;
+import com.archive.backend.search.domain.CatalogKeyword;
+import com.archive.backend.search.read.HardwareCount;
+import com.archive.backend.search.read.SoftwareCatalogAnswer;
+import com.archive.backend.search.read.SoftwareCatalogItem;
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.software.app.AddScreenshotsCommand;
 import com.archive.backend.software.app.AddScreenshotsHandler;
 import com.archive.backend.software.app.CreateReleaseCommand;
@@ -70,6 +82,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.testcontainers.typesense.TypesenseContainer;
 
@@ -88,6 +101,7 @@ class SoftwareSearchSyncIT {
 
     private static final UUID FINLAND = UUID.fromString("00000000-0000-0000-00ff-000000000001");
     private static final UUID LATVIA = UUID.fromString("00000000-0000-0000-00ff-000000000002");
+    private static final UUID HELSINKI = UUID.fromString("00000000-0000-0000-00ff-000000000011");
 
     @Autowired
     private ProcessSearchOutboxHandler worker;
@@ -135,6 +149,15 @@ class SoftwareSearchSyncIT {
     private UpdateGroupHandler updateGroup;
 
     @Autowired
+    private SupplementAuthorHandler supplementAuthor;
+
+    @Autowired
+    private SupplementGroupHandler supplementGroup;
+
+    @Autowired
+    private ListSoftwareCatalogHandler catalog;
+
+    @Autowired
     private JdbcTemplate jdbc;
 
     @Autowired
@@ -150,6 +173,7 @@ class SoftwareSearchSyncIT {
         TestActors.store(jdbc);
         country(jdbc, FINLAND, "Финляндия", "Finland");
         country(jdbc, LATVIA, "Латвия", "Latvia");
+        city(jdbc, HELSINKI, FINLAND, "Хельсинки", "Helsinki");
     }
 
     /** Puts back what the tests committed. */
@@ -165,6 +189,7 @@ class SoftwareSearchSyncIT {
         jdbc.update(
                 "DELETE FROM group_group_type WHERE group_id IN (SELECT id FROM \"group\" WHERE name = 'Zed Squad')");
         jdbc.update("DELETE FROM \"group\" WHERE name = 'Zed Squad'");
+        jdbc.update("DELETE FROM city WHERE id = ?", HELSINKI);
         jdbc.update("DELETE FROM country WHERE id IN (?, ?)", FINLAND, LATVIA);
         jdbc.update("DELETE FROM search_outbox");
     }
@@ -365,6 +390,108 @@ class SoftwareSearchSyncIT {
     }
 
     @Test
+    void theCitiesOfSoftwareAreWhereTheOwnersOfItsCreditedLabelsAre() throws Exception {
+        createAuthor.handle(new CreateAuthorCommand(
+                ADMIN,
+                new RealName("Zed Zedson"),
+                null,
+                List.of(zed(null)),
+                List.of(new LocationDraft(new CountryId(FINLAND), new CityId(HELSINKI), true))));
+        SoftwareId elite = create("Elite");
+        credit(elite, labelNamed("Zed"));
+
+        worker.handle();
+
+        assertThat(listIn(document(elite), "cities")).containsExactly(HELSINKI.toString());
+        assertThat(listIn(document(elite), "countries")).containsExactly(FINLAND.toString());
+    }
+
+    private SoftwareId createWithHardware(String title, String... hardware) {
+        SoftwareId id = createSoftware.handle(new CreateSoftwareCommand(
+                ADMIN, new SoftwareTitle(title), null, null, new PlatformCode("vector"), codes(hardware), Set.of()));
+        software.add(id.value());
+        return id;
+    }
+
+    private static Set<HardwareCode> codes(String... hardware) {
+        return java.util.Arrays.stream(hardware).map(HardwareCode::new).collect(java.util.stream.Collectors.toSet());
+    }
+
+    @Test
+    void indexesTheHardwareOfSoftwareAndOfEveryReleaseOfItByGroup() throws Exception {
+        SoftwareId elite = createWithHardware("Elite", "vector06c", "tape");
+        worker.handle();
+        assertThat(listIn(document(elite), "hardware_computers")).containsExactly("vector06c");
+
+        createRelease.handle(new CreateReleaseCommand(
+                ADMIN,
+                elite,
+                new ReleaseContent(null, null, ReleaseType.MOD, null, null),
+                codes("krista2", "ay8910"),
+                null));
+        worker.handle();
+
+        Map<String, Object> doc = document(elite);
+        assertThat(listIn(doc, "hardware_computers")).containsExactlyInAnyOrder("vector06c", "krista2");
+        assertThat(listIn(doc, "hardware_storage")).containsExactly("tape");
+        assertThat(listIn(doc, "hardware_sound")).containsExactly("ay8910");
+    }
+
+    private SoftwareCatalogAnswer withHardware(String keyword, Language language, String... hardware) {
+        return catalog.handle(new ListSoftwareCatalogQuery(
+                new CatalogKeyword(keyword),
+                new PlatformCode("vector"),
+                null,
+                null,
+                null,
+                null,
+                List.of(),
+                java.util.Arrays.stream(hardware).map(HardwareCode::new).toList(),
+                language,
+                PageRequest.of(0, 20)));
+    }
+
+    private List<String> foundWithHardware(String keyword, String... hardware) {
+        return withHardware(keyword, Language.EN, hardware).catalog().items().getContent().stream()
+                .map(SoftwareCatalogItem::title)
+                .toList();
+    }
+
+    @Test
+    void theCatalogTellsTheGroupsOfTheHardwareChosenByTheReferenceBook() throws Exception {
+        createWithHardware("Kappa One", "vector06c", "ay8910");
+        createWithHardware("Kappa Two", "krista2");
+        worker.handle();
+
+        assertThat(foundWithHardware("Kappa", "vector06c", "krista2")).containsExactly("Kappa One", "Kappa Two");
+        assertThat(foundWithHardware("Kappa", "vector06c", "krista2", "ay8910")).containsExactly("Kappa One");
+    }
+
+    @Test
+    void offersTheHardwareOfTheSoftwareFoundNamedByTheReferenceBookAndKeepsTheChosenWithoutAny() throws Exception {
+        createWithHardware("Lambda One", "vector06c", "ay8910");
+        createWithHardware("Lambda Two", "vector06c");
+        createWithHardware("Sigma", "vector06c");
+        worker.handle();
+
+        assertThat(withHardware("Lambda", Language.RU).hardware())
+                .containsExactly(
+                        new HardwareCount("vector06c", "Вектор-06Ц", "computers", 2),
+                        new HardwareCount("ay8910", "AY-3-8910", "sound", 1));
+        assertThat(withHardware("Sigma", Language.EN, "ay8910").hardware())
+                .containsExactly(new HardwareCount("ay8910", "AY-3-8910", "sound", 0));
+    }
+
+    @Test
+    void hardwareTheArchiveDoesNotHaveFindsNothing() throws Exception {
+        createWithHardware("Omicron", "vector06c");
+        worker.handle();
+
+        assertThat(foundWithHardware("Omicron", "vector06c")).containsExactly("Omicron");
+        assertThat(foundWithHardware("Omicron", "vector06c", "zx-interface")).isEmpty();
+    }
+
+    @Test
     void theCountriesOfSoftwareLeaveOutWhoOnlyCrackedAdaptedTranslatedOrHelpedWithIt() throws Exception {
         createAuthor.handle(new CreateAuthorCommand(
                 ADMIN, new RealName("Zed Zedson"), null, List.of(zed(null)), List.of(in(FINLAND))));
@@ -394,6 +521,37 @@ class SoftwareSearchSyncIT {
         worker.handle();
 
         assertThat(listIn(document(elite), "countries")).containsExactly(LATVIA.toString());
+    }
+
+    @Test
+    void placesAnImportGivesAPersonReachTheSoftwareCreditedUnderTheirLabels() throws Exception {
+        AuthorId author = createAuthor.handle(
+                new CreateAuthorCommand(ADMIN, new RealName("Zed Zedson"), null, List.of(zed(null)), List.of()));
+        SoftwareId elite = create("Elite");
+        credit(elite, labelNamed("Zed"));
+        worker.handle();
+
+        supplementAuthor.handle(new SupplementAuthorCommand(
+                ADMIN, author, null, List.of(new LocationDraft(new CountryId(FINLAND), new CityId(HELSINKI), true))));
+        worker.handle();
+
+        assertThat(listIn(document(elite), "countries")).containsExactly(FINLAND.toString());
+        assertThat(listIn(document(elite), "cities")).containsExactly(HELSINKI.toString());
+    }
+
+    @Test
+    void placesAnImportGivesAGroupReachTheSoftwareCreditedUnderItsLabels() throws Exception {
+        GroupId group = zedSquad();
+        SoftwareId elite = create("Elite");
+        credit(elite, labelNamed("ZS"));
+        worker.handle();
+
+        supplementGroup.handle(new SupplementGroupCommand(
+                ADMIN, group, List.of(new LocationDraft(new CountryId(FINLAND), new CityId(HELSINKI), true))));
+        worker.handle();
+
+        assertThat(listIn(document(elite), "countries")).containsExactly(FINLAND.toString());
+        assertThat(listIn(document(elite), "cities")).containsExactly(HELSINKI.toString());
     }
 
     @Test

@@ -20,6 +20,9 @@ The software list is the catalog of software. Visitors go through it by the cate
 Within a category the catalog is narrowed by a word and by filters:
 - **year** — the year of the software's release date; software with an unknown date has none;
 - **country** — where the software comes from: every country where a person or a group credited on it, by themselves or by a label, is located, by any of their locations. Only the roles of the software itself count: who only cracked, adapted, translated or helped with it brings no country ([software.md](software.md#credits)). Labels of nobody bring no country.
+- **city** — chosen within the chosen country only: the cities of those same locations that are cities of it. Without a country there is no city to choose.
+- **platforms** — while the switch shows every platform ([platform-switch.md](../features/platform-switch.md)): software of any of the platforms checked. With one platform in the switch the catalog is of it alone and offers no platforms.
+- **hardware** — the hardware of the software itself and of every one of its releases ([hardware.md](hardware.md)). The items checked in one group, as two computers, are any of them; every group checked is needed, and the platforms are a group of their own: "BK, Vector-06C and AY-3-8910" finds software for the BK or the Vector-06C that has the AY-3-8910. The hardware offered is only of the platform in the switch, since the software found is; a code the archive has no hardware for finds nothing.
 
 A fact of software that the catalog goes through or is narrowed by — its year, each of its categories and the categories above them — leads from the page of the software to the catalog of that value alone. A release has no such facts: its own year is not the year of its software.
 

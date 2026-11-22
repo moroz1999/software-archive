@@ -1,11 +1,11 @@
 # Software List
 
-The software page ("Software" in the main menu, [main-menu.md](main-menu.md)) is the catalog of software ([domain/search.md](../domain/search.md#software-catalog)): a grid of cards, 20 to a page, sorted by title whatever the case, of the platform chosen in the switch ([platform-switch.md](platform-switch.md)), gone through by categories and narrowed by a keyword, a year and a country. It is read from the search index ([search.md](search.md)).
+The software page ("Software" in the main menu, [main-menu.md](main-menu.md)) is the catalog of software ([domain/search.md](../domain/search.md#software-catalog)): a grid of cards, 20 to a page, sorted by title whatever the case, of the platform chosen in the switch ([platform-switch.md](platform-switch.md)), gone through by categories and narrowed by a keyword, a year, a country with its city, and the platforms and hardware. It is read from the search index ([search.md](search.md)).
 
 ## Address
 
 - `/software` — every category; `/software/category/{categoryId}` — the software of the category and its whole subtree.
-- The rest is in the query: `q` the keyword, `year`, `country` (an id), `page` counted from 1; what is not chosen and the first page are left out. Every filter is changed by going to its address, so a filter can be shared and the back button works.
+- The rest is in the query: `q` the keyword, `year`, `country` (an id), `city` (an id, only with a country), `platforms` and `hardware` (codes joined by commas, as `platforms=bk,vector&hardware=ay8910`), `page` counted from 1; what is not chosen and the first page are left out. Every filter is changed by going to its address, so a filter can be shared and the back button works.
 - A query value that cannot be a filter is ignored. A category in the path that is not an id is the not found page; an id that no category has finds nothing.
 
 ## Page
@@ -17,6 +17,8 @@ The software page ("Software" in the main menu, [main-menu.md](main-menu.md)) is
 
 - **Search** — a field over the cards. The keyword finds software by the beginning of the words of its title and alternative titles; it is looked for once the visitor stops typing for 300 ms, from the first page.
 - **Year** and **Country** — selects with "Any year" and "Any country", each value with its count, as "1987 (2)"; years go in order, countries by count. Choosing a value goes to its first page and keeps the category and the other filters.
+- **City** — a select with "Any city", locked until a country is chosen: the cities of that country with software, each with its count. Another country forgets the city.
+- **Hardware** — a button that opens a window of checkboxes, one per value with its count, as "AY-3-8910 (1)", grouped in columns under the group names: "Platforms" first while the switch shows every platform, then the groups of the hardware in their fixed order ([domain/hardware.md](../domain/hardware.md)); a group with nothing to offer is left out. The hardware is named in the interface language. "Apply" goes to the first page of what is checked, "Reset" to the first page with none of it; closing the window otherwise, as by Escape, changes nothing. The button names what is chosen, as "Hardware: BK, AY-3-8910"; an item chosen that leaves nothing stays offered with 0, so it can be unchecked.
 
 ## Categories
 
@@ -33,15 +35,15 @@ The way through the catalog, not a filter ([domain/search.md](../domain/search.m
 
 ## Loading and errors
 
-- Entering the catalog preloads its page of the address with the category tree and the countries ([data-loading.md](../data-loading.md)): within 300 ms the page appears with them, otherwise with card skeletons in the same grid.
+- Entering the catalog preloads its page of the address with the category tree, the countries, the cities of the chosen country and the platforms ([data-loading.md](../data-loading.md)): within 300 ms the page appears with them, otherwise with card skeletons in the same grid.
 - Another filter, category or page loads with the current cards kept under a spinner; the selects, chips and pages are locked until it arrives. The search field never is, so typing goes on.
 - When nothing matches: "Nothing found." in place of the grid.
 - A failed read, as with the search index down, is a system error and goes to the error dialog ([error-handling.md](../error-handling.md)); no cards are shown.
 
 ## REST
 
-`GET /api/software?q={keyword}&platform={code}&year={year}&category={categoryId}&country={countryId}&page={n}&size={size}` — every parameter optional; a blank keyword is none.
+`GET /api/software?q={keyword}&platform={code}&year={year}&category={categoryId}&country={countryId}&city={cityId}&platforms={codes}&hardware={codes}&page={n}&size={size}` — every parameter optional; a blank keyword is none; `platforms` and `hardware` are codes joined by commas. Hardware is named in the language of `Accept-Language`.
 
 - `content` — the page of software (`id`, `title`, `releaseDate` as a year (`1987`), an ISO day or `null`, `screenshots` of the card as `[{id, url}]`, `madeBy` — the names of who made it, in their order); `page` — `size`, `number`, `totalElements`, `totalPages`.
-- `facets` — `years`, `countries`: the values of each filter, `{value, count}`, counted over the whole result in the category. The values of a chosen filter are counted without its own condition. Categories are not counted.
-- 400 for an invalid platform code (`platform.code-invalid`) or a year, category or country that is not a number or an id.
+- `facets` — `years`, `countries`, `cities`, `platforms`: the values of each filter, `{value, count}`; `hardware`: `{value, name, group, count}`, by group then by name, a chosen code no software has any more with count 0. Each is counted over the whole result in the category. The values of a chosen filter are counted without its own condition. Categories are not counted.
+- 400 for an invalid platform code (`platform.code-invalid`), an invalid hardware code (`hardware.code-invalid`), or a year, category, country or city that is not a number or an id.

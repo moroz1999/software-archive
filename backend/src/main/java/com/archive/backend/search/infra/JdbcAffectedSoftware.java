@@ -34,18 +34,20 @@ public class JdbcAffectedSoftware implements AffectedSoftware {
 
     @Override
     public List<UUID> creditingPerson(UUID person) {
-        return jdbc.sql("SELECT DISTINCT software_id FROM software_contribution WHERE person_id = :person")
-                .param("person", person)
-                .query(UUID.class)
-                .list();
+        // Credits under a label of theirs reach them too: their places are the places of that software.
+        return jdbc.sql("""
+                        SELECT DISTINCT software_id FROM software_contribution
+                        WHERE person_id = :person OR label_id IN (SELECT id FROM label WHERE person_id = :person)
+                        """).param("person", person).query(UUID.class).list();
     }
 
     @Override
     public List<UUID> creditingGroup(UUID group) {
-        return jdbc.sql("SELECT DISTINCT software_id FROM software_contribution WHERE group_id = :group")
-                .param("group", group)
-                .query(UUID.class)
-                .list();
+        // Credits under a label of theirs reach them too: their places are the places of that software.
+        return jdbc.sql("""
+                        SELECT DISTINCT software_id FROM software_contribution
+                        WHERE group_id = :group OR label_id IN (SELECT id FROM label WHERE group_id = :group)
+                        """).param("group", group).query(UUID.class).list();
     }
 
     @Override

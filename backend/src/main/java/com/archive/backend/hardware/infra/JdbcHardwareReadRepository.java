@@ -3,6 +3,7 @@ package com.archive.backend.hardware.infra;
 import com.archive.backend.hardware.read.HardwareItem;
 import com.archive.backend.hardware.read.HardwareNameSql;
 import com.archive.backend.hardware.read.HardwareReadRepository;
+import java.util.Collection;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -26,6 +27,26 @@ public class JdbcHardwareReadRepository implements HardwareReadRepository {
                                  h.hardware_group), lower(h.name), h.code
                         """.formatted(HardwareNameSql.hardware("hw.code")))
                 .param("platform", platform)
+                .param("language", language)
+                .query((rs, row) ->
+                        new HardwareItem(rs.getString("code"), rs.getString("name"), rs.getString("hardware_group")))
+                .list();
+    }
+
+    @Override
+    public List<HardwareItem> findByCodes(Collection<String> codes, String language) {
+        if (codes.isEmpty()) {
+            return List.of();
+        }
+        return jdbc.sql("""
+                        SELECT h.code, h.name, h.hardware_group
+                        FROM (SELECT hw.code, %s AS name, hw.hardware_group
+                              FROM hardware hw
+                              WHERE hw.code IN (:codes)) h
+                        ORDER BY array_position(ARRAY['computers', 'storage', 'dos', 'sound', 'controls', 'expansion'],
+                                 h.hardware_group), lower(h.name), h.code
+                        """.formatted(HardwareNameSql.hardware("hw.code")))
+                .param("codes", List.copyOf(codes))
                 .param("language", language)
                 .query((rs, row) ->
                         new HardwareItem(rs.getString("code"), rs.getString("name"), rs.getString("hardware_group")))

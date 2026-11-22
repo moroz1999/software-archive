@@ -71,6 +71,17 @@ class JdbcHardwareReadRepositoryIT {
     }
 
     @Test
+    void readsTheHardwareOfTheCodesByGroupLeavingOutCodesTheReferenceBookDoesNotHave() {
+        assertThat(reads.findByCodes(List.of("ay8910", "zx-interface", "vector06c"), "en"))
+                .containsExactly(
+                        new HardwareItem("vector06c", "Vector-06C", "computers"),
+                        new HardwareItem("ay8910", "AY-3-8910", "sound"));
+        assertThat(reads.findByCodes(List.of("vector06c"), "ru"))
+                .containsExactly(new HardwareItem("vector06c", "Вектор-06Ц", "computers"));
+        assertThat(reads.findByCodes(List.of(), "en")).isEmpty();
+    }
+
+    @Test
     void readsNothingForAnUnknownPlatform() {
         assertThat(reads.findByPlatform("zx", "en")).isEmpty();
     }

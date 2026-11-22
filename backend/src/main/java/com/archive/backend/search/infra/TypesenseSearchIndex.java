@@ -12,6 +12,7 @@ import com.archive.backend.search.domain.SearchIndex;
 import com.archive.backend.search.domain.SoftwareDocument;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -52,8 +53,8 @@ public class TypesenseSearchIndex implements SearchIndex {
 
     private static List<Field> fields(SearchEntityType type) {
         return switch (type) {
-            case SOFTWARE ->
-                List.of(
+            case SOFTWARE -> {
+                List<Field> software = new ArrayList<>(List.of(
                         new Field().name("title").type(FieldTypes.STRING),
                         // The catalog's order: by title, whatever the case.
                         new Field().name("title_sort").type(FieldTypes.STRING).sort(true),
@@ -78,6 +79,11 @@ public class TypesenseSearchIndex implements SearchIndex {
                                 .name("countries")
                                 .type(FieldTypes.STRING_ARRAY)
                                 .facet(true),
+                        new Field()
+                                .name("cities")
+                                .type(FieldTypes.STRING_ARRAY)
+                                .facet(true)
+                                .optional(true),
                         // Shown on the card only.
                         new Field()
                                 .name("screenshots")
@@ -89,7 +95,15 @@ public class TypesenseSearchIndex implements SearchIndex {
                                 .name("made_by")
                                 .type(FieldTypes.STRING_ARRAY)
                                 .index(false)
-                                .optional(true));
+                                .optional(true)));
+                // The hardware of the software and of its releases, a field for each group it is filtered by.
+                SoftwareDocument.HARDWARE_GROUPS.forEach(group -> software.add(new Field()
+                        .name(hardwareField(group))
+                        .type(FieldTypes.STRING_ARRAY)
+                        .facet(true)
+                        .optional(true)));
+                yield List.copyOf(software);
+            }
             case AUTHOR ->
                 List.of(
                         new Field().name("name").type(FieldTypes.STRING),
@@ -150,6 +164,11 @@ public class TypesenseSearchIndex implements SearchIndex {
         return doc;
     }
 
+    /** The field of the software documents holding the hardware of the group. */
+    static String hardwareField(String group) {
+        return "hardware_" + group;
+    }
+
     private static Map<String, Object> toMap(SoftwareDocument d) {
         Map<String, Object> doc = new HashMap<>();
         doc.put("id", d.id().toString());
@@ -167,6 +186,8 @@ public class TypesenseSearchIndex implements SearchIndex {
         doc.put("countries", d.countries().stream().map(UUID::toString).toList());
         doc.put("screenshots", d.screenshots().stream().map(UUID::toString).toList());
         doc.put("made_by", d.madeBy());
+        doc.put("cities", d.cities().stream().map(UUID::toString).toList());
+        d.hardware().forEach((group, codes) -> doc.put(hardwareField(group), codes));
         return doc;
     }
 

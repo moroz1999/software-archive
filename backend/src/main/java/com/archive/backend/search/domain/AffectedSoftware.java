@@ -13,10 +13,10 @@ public interface AffectedSoftware {
     /** The software any of the labels is credited on. */
     List<UUID> creditedOn(Collection<UUID> labels);
 
-    /** The software the person is credited on by themselves, not by a label. */
+    /** The software the person is credited on, by themselves or by a label of theirs. */
     List<UUID> creditingPerson(UUID person);
 
-    /** The software the group is credited on by itself, not by a label. */
+    /** The software the group is credited on, by itself or by a label of it. */
     List<UUID> creditingGroup(UUID group);
 
     /**

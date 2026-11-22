@@ -10,8 +10,10 @@ import com.archive.backend.software.read.ReleaseDateSql;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -19,8 +21,9 @@ import org.springframework.stereotype.Repository;
 
 /**
  * Builds the software documents of the search with plain SQL: the categories of software with every category above
- * them, and the countries of the people and groups credited on it by themselves or by a label, by any of their
- * locations, for the roles of the software itself (docs/domain/search.md#software-catalog); and what its card shows.
+ * them; the countries and the cities of the people and groups credited on it by themselves or by a label, by any of
+ * their locations, for the roles of the software itself; its hardware and that of every release of it, by group
+ * (docs/domain/search.md#software-catalog); and what its card shows.
  */
 @Repository
 @RequiredArgsConstructor
@@ -33,7 +36,8 @@ public class JdbcSoftwareDocuments implements SoftwareDocuments {
     private static final String UNOFFICIAL_ROLES = "'release', 'intro_code', 'intro_graphics', 'intro_music',"
             + " 'adaptation', 'restoring', 'localization', 'translation', 'guest', 'support', 'testing'";
 
-    private static final String SELECT = """
+    private static final String SELECT =
+            """
             SELECT s.id, s.title, s.platform_code, s.release_year AS year,
             """ + ReleaseDateSql.of("s") + """
              AS release_date,
@@ -57,8 +61,26 @@ public class JdbcSoftwareDocuments implements SoftwareDocuments {
                            AND NOT sc.role_codes <@ ARRAY[""" + UNOFFICIAL_ROLES + """
             ]
                            AND COALESCE(el.country_id, city.country_id) IS NOT NULL) AS countries,
+                   ARRAY(SELECT DISTINCT el.city_id
+                         FROM software_contribution sc
+                         LEFT JOIN label l ON l.id = sc.label_id
+                         JOIN entity_location el
+                           ON (el.entity_type = 'PERSON' AND el.entity_id = COALESCE(sc.person_id, l.person_id))
+                           OR (el.entity_type = 'GROUP' AND el.entity_id = COALESCE(sc.group_id, l.group_id))
+                         WHERE sc.software_id = s.id
+                           AND NOT sc.role_codes <@ ARRAY[""" + UNOFFICIAL_ROLES + """
+            ]
+                           AND el.city_id IS NOT NULL) AS cities,
+                   ARRAY(SELECT DISTINCT h.hardware_group || ':' || h.code
+                         FROM hardware h
+                         WHERE h.code IN (SELECT sh.hardware_code FROM software_hardware sh
+                                          WHERE sh.software_id = s.id
+                                          UNION
+                                          SELECT rh.hardware_code FROM software_release r
+                                          JOIN software_release_hardware rh ON rh.release_id = r.id
+                                          WHERE r.software_id = s.id)) AS hardware,
             """
-            + CardScreenshotsSql.of("s") + """
+                    + CardScreenshotsSql.of("s") + """
              AS screenshots,
             """ + CardMadeBySql.of("s") + """
              AS made_by
@@ -95,6 +117,16 @@ public class JdbcSoftwareDocuments implements SoftwareDocuments {
                 list(rs.getArray("categories"), UUID.class),
                 list(rs.getArray("countries"), UUID.class),
                 list(rs.getArray("screenshots"), UUID.class),
-                list(rs.getArray("made_by"), String.class));
+                list(rs.getArray("made_by"), String.class),
+                list(rs.getArray("cities"), UUID.class),
+                byGroup(list(rs.getArray("hardware"), String.class)));
+    }
+
+    /** The codes of hardware by their group, from {@code group:code}. */
+    private static Map<String, List<String>> byGroup(List<String> hardware) {
+        return hardware.stream()
+                .map(item -> item.split(":", 2))
+                .collect(Collectors.groupingBy(
+                        item -> item[0], Collectors.mapping(item -> item[1], Collectors.toList())));
     }
 }

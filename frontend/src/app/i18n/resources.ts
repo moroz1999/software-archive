@@ -60,6 +60,7 @@ export const resources = {
             anyCity: 'Any city', firstLetter: 'First letter', all: 'All', filter: 'Filter', filterLabel: 'Filter {{label}}',
             search: 'Search', year: 'Year', anyYear: 'Any year', allCategories: 'All categories',
             withCount: '{{label}} ({{count}})',
+            hardware: 'Hardware', hardwareChosen: 'Hardware: {{names}}', platforms: 'Platforms', apply: 'Apply', reset: 'Reset',
         },
         formSections: {main: 'Main', classification: 'Classification', credits: 'Credits', hardwareAndArchive: 'Hardware and archive', names: 'Names', geography: 'Geography', members: 'Members', account: 'Account', groups: 'Groups', sources: 'Sources'},
         fields: {
@@ -106,6 +107,8 @@ export const resources = {
             geoCountryInUse: 'The country has cities or places in it: it cannot be deleted.',
             geoCityInUse: 'People, groups or labels are located in the city: it cannot be deleted.',
             geoCityUnknown: 'The city is not in the archive any more. Reload and try again.',
+            geoCityHasCountry: 'The city is in a country already. Reload and try again.',
+            geoCityInUseByLabel: 'An old record of a label names the city: it cannot become a country.',
             geoMergeIntoItself: 'Choose another one to merge into.',
             categoryParentInside: 'A category cannot go under itself or its own subcategory.',
             groupMemberUnknown: 'One of the members is no longer in the archive: choose again.',
@@ -238,6 +241,8 @@ export const resources = {
             mergeInto: 'Merge into another', merge: 'Merge', mergeCountry: 'Merge country', mergeCity: 'Merge city',
             mergeCountryQuestion: 'Its cities and places move to the country chosen, and “{{name}}” is deleted.',
             mergeCityQuestion: 'Its places move to the city chosen, and “{{name}}” is deleted.',
+            placesColumn: 'Places', makeCountry: 'Make a country', makeCountryOf: 'Make {{name}} a country',
+            makeCountryQuestion: 'Make “{{name}}” a country? Its places move to the new country, and the city is deleted.',
         },
         category: {
             titleIn: {ru: 'Title in Russian', en: 'Title in English'},
@@ -322,6 +327,7 @@ export const resources = {
             anyCity: 'Любой город', firstLetter: 'Первая буква', all: 'Все', filter: 'Фильтр', filterLabel: 'Фильтр: {{label}}',
             search: 'Поиск', year: 'Год', anyYear: 'Любой год', allCategories: 'Все категории',
             withCount: '{{label}} ({{count}})',
+            hardware: 'Железо', hardwareChosen: 'Железо: {{names}}', platforms: 'Платформы', apply: 'Применить', reset: 'Сбросить',
         },
         formSections: {main: 'Основное', classification: 'Классификация', credits: 'Авторы', hardwareAndArchive: 'Оборудование и архив', names: 'Имена', geography: 'География', members: 'Участники', account: 'Учётная запись', groups: 'Группы', sources: 'Источники'},
         fields: {
@@ -369,6 +375,8 @@ export const resources = {
             geoCountryInUse: 'В стране есть города или места: её нельзя удалить.',
             geoCityInUse: 'В городе находятся люди, группы или псевдонимы: его нельзя удалить.',
             geoCityUnknown: 'Этого города больше нет в архиве. Перезагрузите страницу и попробуйте ещё раз.',
+            geoCityHasCountry: 'Город уже в стране. Перезагрузите страницу и попробуйте ещё раз.',
+            geoCityInUseByLabel: 'Город называет старая запись псевдонима: он не может стать страной.',
             geoMergeIntoItself: 'Выберите другую страну или город, чтобы слить.',
             categoryParentInside: 'Категорию нельзя поместить в неё саму или в её подкатегорию.',
             groupMemberUnknown: 'Одного из участников больше нет в архиве: выберите заново.',
@@ -505,6 +513,8 @@ export const resources = {
             mergeInto: 'Слить с другим', merge: 'Слить', mergeCountry: 'Слить страну', mergeCity: 'Слить город',
             mergeCountryQuestion: 'Её города и места перейдут в выбранную страну, а «{{name}}» будет удалена.',
             mergeCityQuestion: 'Его места перейдут в выбранный город, а «{{name}}» будет удалён.',
+            placesColumn: 'Мест', makeCountry: 'Сделать страной', makeCountryOf: 'Сделать {{name}} страной',
+            makeCountryQuestion: 'Сделать «{{name}}» страной? Его места перейдут в новую страну, а город будет удалён.',
         },
         category: {
             titleIn: {ru: 'Название на русском', en: 'Название на английском'},

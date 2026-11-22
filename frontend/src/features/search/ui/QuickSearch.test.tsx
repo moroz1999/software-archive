@@ -297,6 +297,21 @@ describe(QuickSearch, () => {
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
+    it('lets the link of every match cover its whole row, so the row is clicked wherever it is lit', async () => {
+        stubFetchRoutes(routes({'/api/search/quick?q=ze': json(FOUND)}));
+        openPage();
+        const window = await search('ze');
+
+        const options = await within(window).findAllByRole('option');
+
+        expect(options).toHaveLength(4);
+
+        for (const option of options) {
+            // Layout is not computed in tests: the covering link is the design system's promise (docs/design-system/typography.md).
+            expect(within(option).getByRole('link')).toHaveClass('cover');
+        }
+    });
+
     it('closes on Escape and opens again with an empty field', async () => {
         stubFetchRoutes(routes({'/api/search/quick?q=ze': json(FOUND)}));
         openPage();

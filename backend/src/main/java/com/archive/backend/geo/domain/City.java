@@ -58,6 +58,21 @@ public final class City {
         events.add(new CityMerged(id, other.id, other.countryId()));
     }
 
+    /**
+     * The city of no known country turns out to be a country: one of its names and coordinates, which its places go
+     * to; then the city goes. An old record of a label naming it has nowhere to go, so such a city stays.
+     */
+    public Country turnIntoCountry(CountryId country, GeoUses uses) {
+        if (this.country != null) {
+            throw new CityHasCountryException();
+        }
+        if (uses.cityNamedByOldLabelRecord(id)) {
+            throw new CityInUseByLabelException();
+        }
+        events.add(new CityTurnedIntoCountry(id, country));
+        return new Country(country, names, coordinates);
+    }
+
     public @Nullable CountryId countryId() {
         return countryId(country);
     }

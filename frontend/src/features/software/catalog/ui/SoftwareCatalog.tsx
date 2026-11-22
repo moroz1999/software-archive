@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import type {CategoryId, CategoryNode} from '@/entities/categories';
-import {toCountryId} from '@/entities/locations';
+import {toCityId, toCountryId} from '@/entities/locations';
 import {SoftwareCard, SoftwareCardSkeleton, softwarePath} from '@/entities/software';
 import {useSkeleton} from '@/shared/lib/loading';
 import {CardGrid} from '@/shared/ui/card-grid';
@@ -19,6 +19,7 @@ import {branchTo} from '../lib/category-branch';
 import type {FacetCount} from '../model/catalog';
 import {catalogHref} from '../model/catalog-filter';
 import {useSoftwareCatalog} from '../model/software-catalog-context';
+import {HardwareFilter} from './HardwareFilter';
 import styles from './SoftwareCatalog.module.css';
 
 const SKELETON_CARDS = [1, 2, 3, 4, 5, 6, 7, 8];
@@ -86,7 +87,7 @@ function withChosen<T>(counts: readonly FacetCount<T>[], chosen: T | null): read
 
 function Filters() {
     const {t} = useTranslation();
-    const {filter, catalog, countries, changing, show} = useSoftwareCatalog();
+    const {filter, catalog, countries, cities, changing, show} = useSoftwareCatalog();
     const facets = catalog.data?.facets;
     const years = [...withChosen(facets?.years ?? [], filter.year)].sort((a, b) => a.value - b.value);
     const names = new Map((countries.data ?? []).map((country) => [country.id, country.name]));
@@ -94,8 +95,14 @@ function Filters() {
         const name = names.get(value);
         return name === undefined ? [] : [{value, label: t('filters.withCount', {label: name, count})}];
     });
+    // Only the cities of the chosen country: the counts of the others are of software also made elsewhere.
+    const cityNames = new Map((cities.data ?? []).map((city) => [city.id, city.name]));
+    const cityOptions = filter.country === null ? [] : withChosen(facets?.cities ?? [], filter.city).flatMap(({value, count}) => {
+        const name = cityNames.get(value);
+        return name === undefined ? [] : [{value, label: t('filters.withCount', {label: name, count})}];
+    });
     return (
-        <Inline gap="md" wrap>
+        <Inline gap="md" align="end" wrap>
             <KeywordFilter/>
             <FormField label={t('filters.year')} className={styles.filter}>
                 {(control) => (
@@ -117,7 +124,7 @@ function Filters() {
                         id={control.id}
                         value={filter.country ?? ''}
                         onChange={(value) => {
-                            show({...filter, country: value === '' ? null : toCountryId(value), page: 0});
+                            show({...filter, country: value === '' ? null : toCountryId(value), city: null, page: 0});
                         }}
                         options={countryOptions}
                         placeholder={t('filters.anyCountry')}
@@ -125,6 +132,21 @@ function Filters() {
                     />
                 )}
             </FormField>
+            <FormField label={t('filters.city')} className={styles.filter}>
+                {(control) => (
+                    <Select
+                        id={control.id}
+                        value={filter.city ?? ''}
+                        onChange={(value) => {
+                            show({...filter, city: value === '' ? null : toCityId(value), page: 0});
+                        }}
+                        options={cityOptions}
+                        placeholder={t('filters.anyCity')}
+                        disabled={changing || facets === undefined || filter.country === null || cities.data === undefined}
+                    />
+                )}
+            </FormField>
+            <HardwareFilter/>
         </Inline>
     );
 }

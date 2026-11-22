@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -326,6 +327,72 @@ class GeographyIT {
                         {"countryId": "%s"}
                         """.formatted(FINLAND))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void turnsACityOfNoCountryIntoACountryWithItsNamesCoordinatesAndPlacesAndSendsTheirSoftwareToTheSearch()
+            throws Exception {
+        insertCitiesOfNoCountry();
+        jdbc.update("INSERT INTO city_name (city_id, language, name) VALUES (?, 'en', 'Kovrov')", KOVROV);
+        jdbc.update("UPDATE city SET latitude = 56.4, longitude = 41.3 WHERE id = ?", KOVROV);
+        jdbc.update(
+                "INSERT INTO entity_location (entity_type, entity_id, country_id, city_id, is_primary)"
+                        + " VALUES ('PERSON', ?, ?, NULL, false)",
+                IVAN,
+                FINLAND);
+
+        ResultActions turned =
+                send(post("/api/cities/{id}/to-country", KOVROV), ADMIN, null).andExpect(status().isCreated());
+        String country = idOf(turned);
+        turned.andExpect(header().string("Location", "/api/countries/" + country));
+
+        mvc.perform(get("/api/countries/{id}", country))
+                .andExpect(jsonPath("$.names.ru").value("Ковров"))
+                .andExpect(jsonPath("$.names.en").value("Kovrov"))
+                .andExpect(jsonPath("$.latitude").value(56.4))
+                .andExpect(jsonPath("$.longitude").value(41.3));
+        mvc.perform(get("/api/cities/{id}", KOVROV)).andExpect(status().isNotFound());
+        assertThat(placesOf(IVAN)).containsExactlyInAnyOrder(country + "/null*", FINLAND + "/null");
+        mvc.perform(get("/api/geography/cities-of-no-country"))
+                .andExpect(jsonPath("$[*].id").value(contains(ABAKAN.toString())));
+        assertThat(jdbc.queryForObject(
+                        "SELECT count(*) FROM search_outbox WHERE entity_type = 'SOFTWARE' AND entity_id = ?",
+                        Integer.class,
+                        TETRIS))
+                .isOne();
+    }
+
+    @Test
+    void refusesTurningACityOfACountryOrOneAnOldLabelRecordNamesIntoACountry() throws Exception {
+        insertCitiesOfNoCountry();
+        jdbc.update("INSERT INTO label (id, name) VALUES (?, 'Old')", id(51));
+        jdbc.update("INSERT INTO label_city (label_id, city_id) VALUES (?, ?)", id(51), ABAKAN);
+        Integer countries = jdbc.queryForObject("SELECT count(*) FROM country", Integer.class);
+
+        send(post("/api/cities/{id}/to-country", HELSINKI), ADMIN, null)
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code").value("geo.city-has-country"));
+        send(post("/api/cities/{id}/to-country", ABAKAN), ADMIN, null)
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code").value("geo.city-in-use-by-label"));
+
+        mvc.perform(get("/api/cities/{id}", HELSINKI)).andExpect(status().isOk());
+        mvc.perform(get("/api/cities/{id}", ABAKAN)).andExpect(status().isOk());
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM country", Integer.class))
+                .isEqualTo(countries);
+    }
+
+    @Test
+    void refusesTurningIntoACountryACityNotInTheArchiveOrForAnyoneButAnAdministrator() throws Exception {
+        insertCitiesOfNoCountry();
+
+        send(post("/api/cities/{id}/to-country", id(99)), ADMIN, null)
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("geo.city-not-found"));
+        send(post("/api/cities/{id}/to-country", KOVROV), MEMBER, null).andExpect(status().isForbidden());
+        mvc.perform(post("/api/cities/{id}/to-country", KOVROV)).andExpect(status().isUnauthorized());
+
+        mvc.perform(get("/api/cities/{id}", KOVROV)).andExpect(status().isOk());
     }
 
     /** The locations of the owner, each as its country and its city, the primary one marked with a star. */

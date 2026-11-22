@@ -19,6 +19,8 @@ import com.archive.backend.geo.app.ListGeographyQuery;
 import com.archive.backend.geo.app.MergeCityHandler;
 import com.archive.backend.geo.app.MergeCountryHandler;
 import com.archive.backend.geo.app.PutCityInCountryHandler;
+import com.archive.backend.geo.app.TurnCityIntoCountryCommand;
+import com.archive.backend.geo.app.TurnCityIntoCountryHandler;
 import com.archive.backend.geo.app.UpdateCityHandler;
 import com.archive.backend.geo.app.UpdateCountryHandler;
 import com.archive.backend.geo.domain.CityId;
@@ -66,6 +68,7 @@ public class GeographyController {
     private final DeleteCityHandler deleteCityHandler;
     private final ListCitiesOfNoCountryHandler citiesOfNoCountryHandler;
     private final PutCityInCountryHandler putCityInCountryHandler;
+    private final TurnCityIntoCountryHandler turnCityIntoCountryHandler;
     private final ListGeoDuplicatesHandler duplicatesHandler;
     private final MergeCityHandler mergeCityHandler;
     private final MergeCountryHandler mergeCountryHandler;
@@ -151,6 +154,15 @@ public class GeographyController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void putCityInCountry(Actor actor, @PathVariable UUID id, @RequestBody CityCountryRequestDto request) {
         putCityInCountryHandler.handle(webMapper.toPutInCountry(actor, id, request));
+    }
+
+    /** Turns a city of no known country into a country of its names and coordinates; the city goes. */
+    @PostMapping("/api/cities/{id}/to-country")
+    public ResponseEntity<PlaceCreatedDto> turnCityIntoCountry(Actor actor, @PathVariable UUID id) {
+        UUID country = turnCityIntoCountryHandler
+                .handle(new TurnCityIntoCountryCommand(actor, new CityId(id)))
+                .value();
+        return ResponseEntity.created(URI.create("/api/countries/" + country)).body(new PlaceCreatedDto(country));
     }
 
     @DeleteMapping("/api/cities/{id}")

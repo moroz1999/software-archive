@@ -13,4 +13,7 @@ public interface CityLocations {
      * owner then has twice is kept once, primary when either was.
      */
     void mergeInto(CityId city, CityId into, @Nullable CountryId country);
+
+    /** Puts every place in the city in the country alone, out of any city. */
+    void moveOutTo(CityId city, CountryId country);
 }

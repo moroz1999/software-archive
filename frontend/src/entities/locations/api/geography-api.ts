@@ -99,6 +99,12 @@ export async function putCityInCountry(city: CityId, country: CountryId): Promis
     await putJson(`/api/cities/${city}/country`, {countryId: country});
 }
 
+/** Turns a city of no known country into a country of its names and coordinates; the city goes. Returns the country's id. */
+export async function turnCityIntoCountry(city: CityId): Promise<CountryId> {
+    const json = await postJson(`/api/cities/${city}/to-country`, {});
+    return mapResponse(() => toCountryId(readString(readObject(json, 'created country'), 'id')));
+}
+
 function parseDuplicate(item: unknown): GeoDuplicate {
     const dto = readObject(item, 'duplicate');
     return {id: readString(dto, 'id'), name: readString(dto, 'name'), country: readNullableString(dto, 'country'), places: readNumber(dto, 'places')};

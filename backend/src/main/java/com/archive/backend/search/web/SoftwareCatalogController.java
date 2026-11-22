@@ -2,7 +2,10 @@ package com.archive.backend.search.web;
 
 import com.archive.backend.search.app.ListSoftwareCatalogHandler;
 import com.archive.backend.search.web.dto.SoftwareCatalogDto;
+import com.archive.backend.search.web.dto.SoftwareCatalogParams;
 import com.archive.backend.search.web.mapper.SoftwareCatalogWebMapper;
+import com.archive.backend.shared.domain.Language;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
@@ -26,8 +29,14 @@ public class SoftwareCatalogController {
             @RequestParam(required = false) @Nullable Integer year,
             @RequestParam(required = false) @Nullable UUID category,
             @RequestParam(required = false) @Nullable UUID country,
+            @RequestParam(required = false) @Nullable UUID city,
+            @RequestParam(required = false) @Nullable List<String> platforms,
+            @RequestParam(required = false) @Nullable List<String> hardware,
+            Language language,
             Pageable pageable) {
-        return webMapper.toCatalog(
-                handler.handle(webMapper.toQuery(keyword, platform, year, category, country, pageable)));
+        return webMapper.toCatalog(handler.handle(webMapper.toQuery(
+                new SoftwareCatalogParams(keyword, platform, year, category, country, city, platforms, hardware),
+                language,
+                pageable)));
     }
 }

@@ -143,7 +143,7 @@ function Kind({kind}: {readonly kind: QuickKind}) {
                     <Inset padding="sm">
                         <Inline gap="sm" align="center">
                             <Icon className={styles.icon}/>
-                            <Text as="span" truncate className={styles.title}><TextLink href={match.href}>{match.title}</TextLink></Text>
+                            <Text as="span" truncate className={styles.title}><TextLink href={match.href} cover>{match.title}</TextLink></Text>
                         </Inline>
                     </Inset>
                 </div>

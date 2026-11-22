@@ -23,6 +23,14 @@ public class JdbcCityLocations implements CityLocations {
     }
 
     @Override
+    public void moveOutTo(CityId city, CountryId country) {
+        jdbc.sql("UPDATE entity_location SET city_id = NULL, country_id = :country WHERE city_id = :city")
+                .param("country", country.value())
+                .param("city", city.value())
+                .update();
+    }
+
+    @Override
     public void mergeInto(CityId city, CityId into, @Nullable CountryId country) {
         // An owner in both cities keeps the place of the one that stays, primary when either was.
         jdbc.sql("""

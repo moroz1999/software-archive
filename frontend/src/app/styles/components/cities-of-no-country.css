@@ -1,0 +1,9 @@
+:root {
+    /* The columns of the city, of its count of places and of making it a country; the choice of a country takes the rest. */
+    --cities-of-no-country-city-width: 28%;
+    --cities-of-no-country-places-width: 10%;
+    --cities-of-no-country-action-width: 18%;
+
+    /* A bone of a cell of the skeleton. */
+    --cities-of-no-country-bone-height: var(--space-24);
+}

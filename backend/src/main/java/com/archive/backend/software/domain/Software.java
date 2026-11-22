@@ -262,6 +262,10 @@ public final class Software {
             AddedBy addedBy,
             @Nullable ReleaseArchive archive) {
         releases.add(new Release(releaseId, content, requireOwn(hardware), addedBy, Screenshots.EMPTY, archive));
+        // The search finds software by the hardware of its releases too.
+        if (!hardware.isEmpty()) {
+            markChanged();
+        }
         if (archive != null) {
             outdateFileStructures(List.of(releaseId));
         }
@@ -283,7 +287,12 @@ public final class Software {
         }
         Release release = release(releaseId).orElseThrow(ReleaseNotFoundException::new);
         requireReleaseChangeableBy(release, actor);
+        boolean hardwareChanged = !release.hardware().equals(hardware);
         release.edit(content, requireOwn(hardware));
+        // The search finds software by the hardware of its releases too.
+        if (hardwareChanged) {
+            markChanged();
+        }
         ReleaseArchive old = release.archive();
         if (replacement != null) {
             release.changeArchive(replacement);

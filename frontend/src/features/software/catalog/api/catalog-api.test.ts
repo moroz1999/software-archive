@@ -8,10 +8,14 @@ import {fetchSoftwareCatalog} from './catalog-api';
 const ELITE = '00000000-0000-0000-00fd-000000000001';
 const GAMES = '00000000-0000-0000-00fd-0000000000c1';
 const FINLAND = '00000000-0000-0000-00fd-0000000000f1';
+const HELSINKI = '00000000-0000-0000-00fd-0000000000e1';
 
 const FACETS = {
     years: [{value: 1987, count: 2}],
     countries: [{value: FINLAND, count: 1}],
+    cities: [{value: HELSINKI, count: 1}],
+    platforms: [{value: 'vector', count: 4}],
+    hardware: [{value: 'ay8910', name: 'AY-3-8910', group: 'sound', count: 2}],
 };
 
 function catalogResponse(items: readonly unknown[], facets: unknown = FACETS) {
@@ -47,6 +51,28 @@ describe(fetchSoftwareCatalog, () => {
         expect(fetchMock.mock.calls[0]?.[0]).toBe(
             `/api/software?page=1&size=20&q=elite+2&year=1987&category=${GAMES}&country=${FINLAND}&platform=bk`,
         );
+    });
+
+    it('asks with the city, the platforms and the hardware chosen', async () => {
+        const fetchMock = stubFetch(catalogResponse([]));
+
+        await fetchSoftwareCatalog(
+            filterOf(`country=${FINLAND}&city=${HELSINKI}&platforms=bk,vector&hardware=ay8910,z80`),
+            null,
+            new AbortController().signal,
+        );
+
+        expect(fetchMock.mock.calls[0]?.[0]).toBe(
+            `/api/software?page=0&size=20&country=${FINLAND}&city=${HELSINKI}&platforms=bk%2Cvector&hardware=ay8910%2Cz80`,
+        );
+    });
+
+    it('asks for no platforms of the filter once a platform is chosen in the switch', async () => {
+        const fetchMock = stubFetch(catalogResponse([]));
+
+        await fetchSoftwareCatalog(filterOf('platforms=bk&hardware=ay8910'), toPlatformCode('vector'), new AbortController().signal);
+
+        expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/software?page=0&size=20&platform=vector&hardware=ay8910');
     });
 
     it('reads the cards, the page and the values of every filter', async () => {

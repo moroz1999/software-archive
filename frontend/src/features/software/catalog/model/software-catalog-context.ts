@@ -1,6 +1,7 @@
 import type {UseQueryResult} from '@tanstack/react-query';
 import type {CategoryNode} from '@/entities/categories';
-import type {Country} from '@/entities/locations';
+import type {City, Country} from '@/entities/locations';
+import type {Platform} from '@/entities/platforms';
 import {createRequiredContext} from '@/shared/lib/context';
 import type {SoftwareCatalogPage} from './catalog';
 import type {SoftwareCatalogFilter} from './catalog-filter';
@@ -13,6 +14,10 @@ export interface SoftwareCatalogState {
     readonly categories: UseQueryResult<readonly CategoryNode[]>;
     /** The countries the country filter is named by. */
     readonly countries: UseQueryResult<readonly Country[]>;
+    /** The cities of the chosen country, the only ones the city filter offers; none is asked without a country. */
+    readonly cities: UseQueryResult<readonly City[]>;
+    /** The platforms the platforms of the hardware filter are named by. */
+    readonly platforms: UseQueryResult<readonly Platform[]>;
     /** Another filter or page has been loading over the shown cards for a while: the controls are locked. */
     readonly changing: boolean;
     /** Goes to the address of another filter. */

@@ -90,3 +90,10 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+/* The link stretches over the nearest positioned box around it: the whole box is clicked, the link stays its text. */
+.cover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+}

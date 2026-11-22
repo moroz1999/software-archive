@@ -9,13 +9,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.archive.backend.category.domain.CategoryId;
+import com.archive.backend.geo.domain.CityId;
 import com.archive.backend.geo.domain.CountryId;
+import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.search.app.ListSoftwareCatalogHandler;
 import com.archive.backend.search.app.ListSoftwareCatalogQuery;
 import com.archive.backend.search.domain.CatalogKeyword;
 import com.archive.backend.search.domain.ReleaseYear;
+import com.archive.backend.search.read.CodeCount;
+import com.archive.backend.search.read.HardwareCount;
 import com.archive.backend.search.read.IdCount;
+import com.archive.backend.search.read.SoftwareCatalogAnswer;
 import com.archive.backend.search.read.SoftwareCatalogFacets;
 import com.archive.backend.search.read.SoftwareCatalogItem;
 import com.archive.backend.search.read.SoftwareCatalogPage;
@@ -23,6 +28,7 @@ import com.archive.backend.search.read.YearCount;
 import com.archive.backend.search.web.mapper.SoftwareCatalogWebMapperImpl;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
+import com.archive.backend.shared.domain.Language;
 import com.archive.backend.shared.web.ApiExceptionHandler;
 import java.util.List;
 import java.util.UUID;
@@ -46,6 +52,7 @@ class SoftwareCatalogControllerTest {
     private static final UUID TITLE_SCREEN = UUID.fromString("00000000-0000-0000-0055-000000000001");
     private static final UUID GAMES = UUID.fromString("00000000-0000-0000-0000-000000000020");
     private static final UUID FINLAND = UUID.fromString("00000000-0000-0000-0000-000000000030");
+    private static final UUID HELSINKI = UUID.fromString("00000000-0000-0000-0000-000000000031");
 
     @Autowired
     private MockMvc mvc;
@@ -56,14 +63,20 @@ class SoftwareCatalogControllerTest {
     @BeforeEach
     void answer() {
         when(handler.handle(any(ListSoftwareCatalogQuery.class)))
-                .thenReturn(new SoftwareCatalogPage(
-                        new PageImpl<>(
-                                List.of(new SoftwareCatalogItem(ELITE, "Elite", "1987-05-01", List.of(TITLE_SCREEN))),
-                                PageRequest.of(0, 20),
-                                41),
-                        new SoftwareCatalogFacets(
-                                List.of(new YearCount(1987, 30), new YearCount(1989, 11)),
-                                List.of(new IdCount(FINLAND, 7)))));
+                .thenReturn(new SoftwareCatalogAnswer(
+                        new SoftwareCatalogPage(
+                                new PageImpl<>(
+                                        List.of(new SoftwareCatalogItem(
+                                                ELITE, "Elite", "1987-05-01", List.of(TITLE_SCREEN))),
+                                        PageRequest.of(0, 20),
+                                        41),
+                                new SoftwareCatalogFacets(
+                                        List.of(new YearCount(1987, 30), new YearCount(1989, 11)),
+                                        List.of(new IdCount(FINLAND, 7)),
+                                        List.of(new IdCount(HELSINKI, 4)),
+                                        List.of(new CodeCount("vector", 40), new CodeCount("bk", 1)),
+                                        List.of(new CodeCount("ay8910", 12)))),
+                        List.of(new HardwareCount("ay8910", "AY-3-8910", "sound", 12))));
     }
 
     private ListSoftwareCatalogQuery asked() {
@@ -127,6 +140,62 @@ class SoftwareCatalogControllerTest {
                         new CategoryId(GAMES),
                         new CountryId(FINLAND),
                         PageRequest.of(2, 20)));
+    }
+
+    @Test
+    void answersTheValuesOfTheCityPlatformAndHardwareFilters() throws Exception {
+        mvc.perform(get("/api/software"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.facets.cities[0].value").value(HELSINKI.toString()))
+                .andExpect(jsonPath("$.facets.cities[0].count").value(4))
+                .andExpect(jsonPath("$.facets.platforms[0].value").value("vector"))
+                .andExpect(jsonPath("$.facets.platforms[0].count").value(40))
+                .andExpect(jsonPath("$.facets.platforms[1].value").value("bk"))
+                .andExpect(jsonPath("$.facets.hardware[0].value").value("ay8910"))
+                .andExpect(jsonPath("$.facets.hardware[0].name").value("AY-3-8910"))
+                .andExpect(jsonPath("$.facets.hardware[0].group").value("sound"))
+                .andExpect(jsonPath("$.facets.hardware[0].count").value(12));
+    }
+
+    @Test
+    void asksForTheCityThePlatformsAndTheHardwareChosen() throws Exception {
+        mvc.perform(get("/api/software")
+                        .param("country", FINLAND.toString())
+                        .param("city", HELSINKI.toString())
+                        .param("platforms", "bk,vector")
+                        .param("hardware", "ay8910,z80"))
+                .andExpect(status().isOk());
+
+        assertThat(asked())
+                .isEqualTo(new ListSoftwareCatalogQuery(
+                        null,
+                        null,
+                        null,
+                        null,
+                        new CountryId(FINLAND),
+                        new CityId(HELSINKI),
+                        List.of(new PlatformCode("bk"), new PlatformCode("vector")),
+                        List.of(new HardwareCode("ay8910"), new HardwareCode("z80")),
+                        Language.EN,
+                        PageRequest.of(0, 20)));
+    }
+
+    @Test
+    void asksForTheHardwareNamedInTheLanguageAskedFor() throws Exception {
+        mvc.perform(get("/api/software").header("Accept-Language", "ru")).andExpect(status().isOk());
+
+        assertThat(asked().language()).isEqualTo(Language.RU);
+    }
+
+    @Test
+    void answers400ForAMalformedCityPlatformsOrHardware() throws Exception {
+        mvc.perform(get("/api/software").param("city", "not-a-uuid")).andExpect(status().isBadRequest());
+        mvc.perform(get("/api/software").param("platforms", "bk,BK!"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("platform.code-invalid"));
+        mvc.perform(get("/api/software").param("hardware", "AY 8910"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("hardware.code-invalid"));
     }
 
     @Test

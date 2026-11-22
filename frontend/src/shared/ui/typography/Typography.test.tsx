@@ -72,6 +72,13 @@ describe(TextLink, () => {
         expect(link).toHaveAttribute('rel', 'noopener noreferrer');
     });
 
+    it('covers the nearest box around it when asked, staying a link of its own text', () => {
+        render(<MemoryRouter><TextLink href="/software/1" cover>Elite</TextLink><TextLink href="/software/2">Exolon</TextLink></MemoryRouter>);
+
+        expect(screen.getByRole('link', {name: 'Elite'})).toHaveClass('cover');
+        expect(screen.getByRole('link', {name: 'Exolon'})).not.toHaveClass('cover');
+    });
+
     it('opens an in-app href in the same tab', () => {
         render(<MemoryRouter><TextLink href="/software/1">Elite</TextLink></MemoryRouter>);
 

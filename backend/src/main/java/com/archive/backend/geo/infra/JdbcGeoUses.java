@@ -28,4 +28,12 @@ public class JdbcGeoUses implements GeoUses {
                             OR EXISTS (SELECT 1 FROM label_city WHERE city_id = :id)
                         """).param("id", city.value()).query(Boolean.class).single();
     }
+
+    @Override
+    public boolean cityNamedByOldLabelRecord(CityId city) {
+        return jdbc.sql("SELECT EXISTS (SELECT 1 FROM label_city WHERE city_id = :id)")
+                .param("id", city.value())
+                .query(Boolean.class)
+                .single();
+    }
 }

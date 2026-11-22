@@ -10,7 +10,7 @@ import {loadSoftwarePage, preloadSoftwarePage} from '../index';
 
 const ALPHA = {id: '00000000-0000-0000-0001-000000000001', title: 'Fixture Software Alpha', releaseDate: '1985-03-02'};
 const GAMES = '00000000-0000-0000-00fd-0000000000c1';
-const FACETS = {years: [{value: 1985, count: 1}], countries: []};
+const FACETS = {years: [{value: 1985, count: 1}], countries: [], cities: [], platforms: [], hardware: []};
 
 function catalog() {
     return json({...pageResponse([ALPHA]), facets: FACETS});
@@ -21,6 +21,7 @@ const MEMBER = {id: '00000000-0000-0000-0009-000000000001', name: 'Zed', email: 
 const ROUTES = new Map([
     ['/api/categories', json([{id: GAMES, title: 'Games', children: []}])],
     ['/api/countries', json([])],
+    ['/api/platforms', json([])],
     ['/api/auth/me', json(MEMBER)],
 ]);
 

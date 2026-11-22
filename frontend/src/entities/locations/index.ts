@@ -1,6 +1,6 @@
 export {fetchCities, fetchCountries} from './api/geo-api';
 export {citiesOfNoCountryQuery, citiesQuery, geoDuplicatesQuery, countriesQuery, GEO_QUERY_KEY, geographyQuery, placeDetailsQuery} from './api/geo-queries';
-export {createPlace, deletePlace, mergePlace, putCityInCountry, updatePlace} from './api/geography-api';
+export {createPlace, deletePlace, mergePlace, putCityInCountry, turnCityIntoCountry, updatePlace} from './api/geography-api';
 export {CITY_EDIT_ROUTE, CITY_NEW_PATH, cityEditPath, COUNTRY_EDIT_ROUTE, COUNTRY_NEW_PATH, countryEditPath, GEOGRAPHY_PATH} from './config/paths';
 export {type GeographyCity, type GeographyCountry, type PlaceDetails, type PlaceKind, type PlaceNames, placeName, requirePlaceId} from './model/geography';
 export {usePlaceDetails} from './model/geography-context';

@@ -1,0 +1,15 @@
+.city {
+    width: var(--cities-of-no-country-city-width);
+}
+
+.places {
+    width: var(--cities-of-no-country-places-width);
+}
+
+.action {
+    width: var(--cities-of-no-country-action-width);
+}
+
+.bone {
+    height: var(--cities-of-no-country-bone-height);
+}

@@ -8,4 +8,7 @@ public interface GeoUses {
 
     /** Whether a place of a person, a group or a label, or an old record of a label, is in the city. */
     boolean cityInUse(CityId city);
+
+    /** Whether an old record of a label names the city. */
+    boolean cityNamedByOldLabelRecord(CityId city);
 }

@@ -2,8 +2,8 @@ import {type ReactNode, useMemo} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {useNavigate, useParams, useSearchParams} from 'react-router';
 import {categoryTreeQuery} from '@/entities/categories';
-import {countriesQuery} from '@/entities/locations';
-import {usePlatformSelection} from '@/entities/platforms';
+import {citiesQuery, countriesQuery} from '@/entities/locations';
+import {platformsQuery, usePlatformSelection} from '@/entities/platforms';
 import {useLoadingLock} from '@/shared/lib/loading';
 import {softwareCatalogQuery} from '../api/catalog-queries';
 import {catalogHref, parseCatalogFilter, type SoftwareCatalogFilter} from './catalog-filter';
@@ -22,6 +22,8 @@ export function SoftwareCatalogProvider({children}: {readonly children: ReactNod
     const catalog = useQuery(softwareCatalogQuery(filter, platform));
     const categories = useQuery(categoryTreeQuery());
     const countries = useQuery(countriesQuery());
+    const cities = useQuery(citiesQuery(filter.country));
+    const platforms = useQuery(platformsQuery());
 
     const changing = useLoadingLock(catalog.isPlaceholderData || catalog.isRefetching);
     const state = useMemo(() => ({
@@ -29,11 +31,13 @@ export function SoftwareCatalogProvider({children}: {readonly children: ReactNod
         catalog,
         categories,
         countries,
+        cities,
+        platforms,
         changing,
         show: (next: SoftwareCatalogFilter) => {
             void navigate(catalogHref(next));
         },
-    }), [filter, changing, catalog, categories, countries, navigate]);
+    }), [filter, changing, catalog, categories, countries, cities, platforms, navigate]);
 
     return <SoftwareCatalogContext value={state}>{children}</SoftwareCatalogContext>;
 }

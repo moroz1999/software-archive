@@ -3,7 +3,9 @@
     letter-spacing: var(--quick-search-caption-letter-spacing);
 }
 
+/* The link of the match covers the whole row (TextLink cover). */
 .option {
+    position: relative;
     border-radius: var(--quick-search-option-radius);
 }
 

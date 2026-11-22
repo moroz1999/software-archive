@@ -5,6 +5,7 @@ import com.archive.backend.category.domain.CategoryDeleted;
 import com.archive.backend.category.domain.CategoryMoved;
 import com.archive.backend.geo.domain.CityMerged;
 import com.archive.backend.geo.domain.CityMoved;
+import com.archive.backend.geo.domain.CityTurnedIntoCountry;
 import com.archive.backend.geo.domain.CountryMerged;
 import com.archive.backend.group.domain.GroupChanged;
 import com.archive.backend.label.domain.LabelChanged;
@@ -75,7 +76,10 @@ public class EnqueueSearchDocumentsHandler {
         enqueue(SearchEntityType.GROUP, owners.groupsOwning(label));
     }
 
-    /** The person, and the software crediting them by themselves: its card names them. */
+    /**
+     * The person, and the software crediting them, by themselves or by a label: its card names them, its countries and
+     * cities are where they are.
+     */
     @EventListener
     public void on(AuthorChanged event) {
         UUID author = event.author().value();
@@ -83,7 +87,10 @@ public class EnqueueSearchDocumentsHandler {
         enqueueSoftware(affected.creditingPerson(author));
     }
 
-    /** The group, and the software crediting it by itself: its card names it, its countries may have changed. */
+    /**
+     * The group, and the software crediting it, by itself or by a label: its card names it, its countries and cities
+     * are where it is.
+     */
     @EventListener
     public void on(GroupChanged event) {
         UUID group = event.group().value();
@@ -105,6 +112,16 @@ public class EnqueueSearchDocumentsHandler {
     public void on(CityMerged event) {
         enqueueSoftware(affected.creditedFromCity(event.city().value()));
         enqueueSoftware(affected.creditedFromCity(event.into().value()));
+    }
+
+    /**
+     * A city turned into a country leaves the software made in it in that country; both are asked, as the places may
+     * have moved already.
+     */
+    @EventListener
+    public void on(CityTurnedIntoCountry event) {
+        enqueueSoftware(affected.creditedFromCity(event.city().value()));
+        enqueueSoftware(affected.creditedFromCountry(event.country().value()));
     }
 
     /**
