@@ -120,6 +120,47 @@ export interface ImportRunProgress {
     readonly url: string | null;
 }
 
+/** A page of the list of programs a run read: its number, of how many pages when known, and how many programs it lists. */
+export interface ImportRunListPage {
+    readonly url: string;
+    readonly number: number;
+    readonly pages: number | null;
+    readonly programs: number;
+}
+
+const DOWNLOADED_FILES = ['archive', 'screenshot'] as const;
+
+export type DownloadedFile = (typeof DOWNLOADED_FILES)[number];
+
+export const isDownloadedFile = isOneOf(DOWNLOADED_FILES);
+
+/** A file of a program a run downloaded from the source: its name there and its size in bytes. */
+export interface ImportRunDownload {
+    readonly externalId: string;
+    readonly title: string;
+    readonly file: DownloadedFile;
+    readonly name: string;
+    readonly size: number;
+}
+
+/** What one line of the log of a run tells. */
+export type ImportLogEntry =
+    | {readonly kind: 'list'; readonly page: ImportRunListPage}
+    | {readonly kind: 'download'; readonly download: ImportRunDownload}
+    | {readonly kind: 'added'; readonly program: ImportRunAdded}
+    | {readonly kind: 'known'; readonly program: ImportRunKnown}
+    | {readonly kind: 'skipped'; readonly program: ImportRunSkipped}
+    | {readonly kind: 'failed'; readonly program: ImportRunFailed}
+    | {readonly kind: 'author'; readonly author: ImportRunAuthor}
+    | {readonly kind: 'place'; readonly place: ImportRunPlace};
+
+/** A line of the log of a run: a later line has a greater seq; a line carried over from before the log has no time. */
+export interface ImportLogLine {
+    readonly seq: number;
+    readonly at: string | null;
+    readonly entry: ImportLogEntry;
+}
+
 /** The report of a run of an import (docs/features/imports.md). */
 export interface ImportRun {
     readonly id: string;
@@ -134,11 +175,23 @@ export interface ImportRun {
     readonly known: number;
     readonly skipped: number;
     readonly failed: number;
-    readonly addedPrograms: readonly ImportRunAdded[];
-    readonly failedPrograms: readonly ImportRunFailed[];
-    readonly knownPrograms: readonly ImportRunKnown[];
-    readonly skippedPrograms: readonly ImportRunSkipped[];
-    readonly authors: readonly ImportRunAuthor[];
-    readonly places: readonly ImportRunPlace[];
     readonly progress: ImportRunProgress;
+    /** Every step the run took, in the order it went. */
+    readonly log: readonly ImportLogLine[];
+}
+
+/**
+ * The report read again over the one already there: the new lines of the log come after those it had, as long as it
+ * is the same run; a run started since comes whole, its lines being all after those of an earlier one.
+ */
+export function withNewLines(previous: ImportRun | null | undefined, next: ImportRun | null): ImportRun | null {
+    if (next === null || previous === null || previous === undefined || previous.id !== next.id) {
+        return next;
+    }
+    return {...next, log: [...previous.log, ...next.log]};
+}
+
+/** The seq of the last line of the log already read, which the report read again starts after; none to read it all. */
+export function lastSeq(run: ImportRun | null | undefined): number | undefined {
+    return run?.log.at(-1)?.seq;
 }

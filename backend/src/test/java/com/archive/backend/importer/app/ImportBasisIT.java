@@ -12,13 +12,19 @@ import com.archive.backend.importer.domain.run.ImportRunId;
 import com.archive.backend.importer.domain.run.ImportRunRepository;
 import com.archive.backend.importer.domain.run.ImportScope;
 import com.archive.backend.importer.infra.FakeSourceHttp;
+import com.archive.backend.importer.read.ImportRunAddedEntry;
+import com.archive.backend.importer.read.ImportRunDownloadedEntry;
+import com.archive.backend.importer.read.ImportRunListReadEntry;
+import com.archive.backend.importer.read.ImportRunLogLine;
 import com.archive.backend.importer.read.ImportRunReadRepository;
 import com.archive.backend.importer.read.ImportRunReport;
+import com.archive.backend.importer.read.ImportRunSkippedEntry;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -233,8 +239,11 @@ class ImportBasisIT {
         assertThat(run()).isEqualTo(new ImportSummary(4, 0, 1, 0));
         assertThat(jdbc.queryForObject("SELECT count(*) FROM software WHERE title = 'Zone X'", Integer.class))
                 .isZero();
-        assertThat(reports.findLatest().orElseThrow().skippedPrograms())
+        assertThat(reports.findLatest(null).orElseThrow().log())
+                .filteredOn(line -> line.kind().equals("skipped"))
+                .extracting(ImportRunLogLine::entry)
                 .singleElement()
+                .asInstanceOf(InstanceOfAssertFactories.type(ImportRunSkippedEntry.class))
                 .satisfies(skipped -> {
                     assertThat(skipped.externalId()).isEqualTo("30");
                     assertThat(skipped.url()).isEqualTo(SCALAR + "ware/30/");
@@ -248,10 +257,46 @@ class ImportBasisIT {
     void endsAtTheLastProgramOfTheListItCounted() {
         run();
 
-        ImportRunReport report = reports.findLatest().orElseThrow();
+        ImportRunReport report = reports.findLatest(null).orElseThrow();
         assertThat(report.progress().position()).isEqualTo(5);
         assertThat(report.progress().total()).isEqualTo(5);
         assertThat(report.progress().url()).startsWith(SCALAR + "ware/");
+    }
+
+    @Test
+    void logsTheListAndThenTheFilesDownloadedAndWhatEachProgramCameTo() {
+        run();
+
+        List<ImportRunLogLine> log = reports.findLatest(null).orElseThrow().log();
+        assertThat(log.get(0).entry()).isEqualTo(new ImportRunListReadEntry(LIST, 1, 1, 5));
+        assertThat(log)
+                .extracting(ImportRunLogLine::entry)
+                .filteredOn(entry -> switch (entry) {
+                    case ImportRunDownloadedEntry downloaded ->
+                        downloaded.externalId().equals("30");
+                    case ImportRunAddedEntry added -> added.externalId().equals("30");
+                    default -> false;
+                })
+                .satisfiesExactly(
+                        archive -> assertThat(archive)
+                                .asInstanceOf(InstanceOfAssertFactories.type(ImportRunDownloadedEntry.class))
+                                .satisfies(file -> {
+                                    assertThat(file.title()).isEqualTo("Zone X");
+                                    assertThat(file.file()).isEqualTo("archive");
+                                    assertThat(file.name()).isEqualTo("xzone.com");
+                                    assertThat(file.size()).isPositive();
+                                }),
+                        screenshot -> assertThat(screenshot)
+                                .asInstanceOf(InstanceOfAssertFactories.type(ImportRunDownloadedEntry.class))
+                                .satisfies(file -> {
+                                    assertThat(file.file()).isEqualTo("screenshot");
+                                    assertThat(file.name()).isEqualTo("xzone.png");
+                                }),
+                        added -> assertThat(added)
+                                .asInstanceOf(InstanceOfAssertFactories.type(ImportRunAddedEntry.class))
+                                .satisfies(
+                                        program -> assertThat(program.title()).isEqualTo("Zone X")));
+        assertThat(log).extracting(ImportRunLogLine::at).doesNotContainNull();
     }
 
     @Test

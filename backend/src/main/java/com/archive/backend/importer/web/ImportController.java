@@ -6,6 +6,7 @@ import com.archive.backend.importer.app.ListVektorSectionsHandler;
 import com.archive.backend.importer.app.ListVektorSectionsQuery;
 import com.archive.backend.importer.app.StartImportCommand;
 import com.archive.backend.importer.app.StartImportHandler;
+import com.archive.backend.importer.domain.run.ImportLogSeq;
 import com.archive.backend.importer.domain.run.ImportSource;
 import com.archive.backend.importer.domain.vektor.VektorSection;
 import com.archive.backend.importer.web.dto.LastImportRunDto;
@@ -31,11 +32,14 @@ public class ImportController {
     private final GetLastImportRunHandler getLastImportRun;
     private final ImportWebMapper mapper;
 
-    /** The report of the import started last, whether it goes on or has ended. */
+    /**
+     * The report of the import started last, whether it goes on or has ended, with the lines of its log after the one
+     * given; all of them without one.
+     */
     @GetMapping("/last-run")
-    public LastImportRunDto lastRun(Actor actor) {
+    public LastImportRunDto lastRun(Actor actor, @RequestParam(required = false) @Nullable Long after) {
         return new LastImportRunDto(getLastImportRun
-                .handle(new GetLastImportRunQuery(actor))
+                .handle(new GetLastImportRunQuery(actor, after == null ? null : new ImportLogSeq(after)))
                 .map(mapper::toDto)
                 .orElse(null));
     }

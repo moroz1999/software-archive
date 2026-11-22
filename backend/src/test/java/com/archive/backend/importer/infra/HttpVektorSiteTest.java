@@ -4,6 +4,7 @@ import static com.archive.backend.importer.infra.FakeSourceHttp.list;
 import static com.archive.backend.importer.infra.FakeSourceHttp.page;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.archive.backend.importer.domain.vektor.VektorListPage;
 import com.archive.backend.importer.domain.vektor.VektorListing;
 import com.archive.backend.importer.domain.vektor.VektorSection;
 import java.nio.charset.StandardCharsets;
@@ -17,46 +18,55 @@ class HttpVektorSiteTest {
     private final HttpVektorSite site = new HttpVektorSite(http);
 
     @Test
-    void walksEveryPageOfTheWholeCatalog() {
+    void readsTheFirstPageOfTheWholeCatalogWithTheAddressesOfTheOthers() {
         http.serve(CATALOG + "?PAGEN_2=1", page("list-1.html"));
-        for (int number = 2; number <= 85; number++) {
-            http.serve(
-                    CATALOG + "?PAGEN_2=" + number, list("1" + number, "/programmnoe-obespechenie/x/p" + number + "/"));
-        }
 
-        assertThat(site.listings(null))
-                .hasSize(10 + 84)
+        VektorListPage first = site.firstPage(null);
+
+        assertThat(first.url()).isEqualTo(CATALOG + "?PAGEN_2=1");
+        assertThat(first.listings())
+                .hasSize(10)
                 .first()
                 .isEqualTo(new VektorListing("408", CATALOG + "kartochnye-igry_/101-ochko/"));
-        assertThat(http.asked()).hasSize(85);
+        assertThat(first.otherPages()).hasSize(84).startsWith(CATALOG + "?PAGEN_2=2");
     }
 
     @Test
-    void walksTheListOfOneSection() {
+    void readsTheFirstPageOfASectionWithTheAddressesItsPaginationGives() {
+        http.serve(CATALOG + "arkadnye-igry/", page("section-arkadnye-igry.html"));
+
+        VektorListPage first = site.firstPage(new VektorSection("arkadnye-igry"));
+
+        assertThat(first.listings())
+                .extracting(VektorListing::id)
+                .startsWith("49")
+                .hasSize(10);
+        assertThat(first.otherPages())
+                .hasSize(23)
+                .startsWith(CATALOG + "arkadnye-igry/?PAGEN_1=2")
+                .endsWith(CATALOG + "arkadnye-igry/?PAGEN_1=24");
+    }
+
+    @Test
+    void readsASectionOfOnePage() {
         http.serve(CATALOG + "zagruzchiki/", page("section-zagruzchiki.html"));
 
-        assertThat(site.listings(new VektorSection("zagruzchiki")))
-                .extracting(VektorListing::id)
-                .containsExactly("599", "598", "595");
+        VektorListPage first = site.firstPage(new VektorSection("zagruzchiki"));
+
+        assertThat(first.listings()).extracting(VektorListing::id).containsExactly("599", "598", "595");
+        assertThat(first.otherPages()).isEmpty();
         assertThat(http.asked()).containsExactly(CATALOG + "zagruzchiki/");
     }
 
     @Test
-    void walksEveryPageOfASectionByTheAddressesItsPaginationGives() {
-        http.serve(CATALOG + "arkadnye-igry/", page("section-arkadnye-igry.html"));
-        for (int number = 2; number <= 24; number++) {
-            http.serve(
-                    CATALOG + "arkadnye-igry/?PAGEN_1=" + number,
-                    list("2" + number, "/programmnoe-obespechenie/arkadnye-igry/p" + number + "/"));
-        }
+    void readsAnotherPageOfAListByItsAddress() {
+        String second = CATALOG + "arkadnye-igry/?PAGEN_1=2";
+        http.serve(second, list("736", "/programmnoe-obespechenie/arkadnye-igry/athletic-land/"));
 
-        assertThat(site.listings(new VektorSection("arkadnye-igry")))
-                .hasSize(10 + 23)
-                .extracting(VektorListing::id)
-                .startsWith("49")
-                .endsWith("224")
-                .doesNotHaveDuplicates();
-        assertThat(http.asked()).hasSize(24);
+        VektorListPage page = site.page(second);
+
+        assertThat(page.url()).isEqualTo(second);
+        assertThat(page.listings()).extracting(VektorListing::id).containsExactly("736");
     }
 
     @Test

@@ -7,4 +7,5 @@ import java.util.UUID;
  *
  * @param exists whether the software is still in the archive
  */
-public record ImportRunAddedEntry(String externalId, UUID softwareId, String title, boolean exists) {}
+public record ImportRunAddedEntry(String externalId, UUID softwareId, String title, boolean exists)
+        implements ImportRunLogEntry {}

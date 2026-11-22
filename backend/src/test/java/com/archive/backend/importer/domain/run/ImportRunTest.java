@@ -20,7 +20,11 @@ class ImportRunTest {
     private static final ImportRunId ID = new ImportRunId(UUID.randomUUID());
     private static final ImportScope LOADERS = new ImportScope("vektor-06c.ru", new VektorSection("zagruzchiki"));
     private static final Instant START = Instant.parse("2026-11-14T10:00:00Z");
+    private static final Instant AT = Instant.parse("2026-11-14T10:01:00Z");
+    private static final Instant LATER = Instant.parse("2026-11-14T10:02:00Z");
     private static final Instant END = Instant.parse("2026-11-14T10:05:00Z");
+    private static final ExternalPage LIST_PAGE =
+            new ExternalPage("https://vektor-06c.ru/programmnoe-obespechenie/zagruzchiki/");
     private static final AddedProgram DISK_LOADER =
             new AddedProgram("599", new ImportedEntryId(UUID.randomUUID()), "Disk Loader");
     private static final FailedProgram G_DOS = new FailedProgram(
@@ -55,31 +59,53 @@ class ImportRunTest {
     }
 
     @Test
-    void tellsWhatEachProgramCameTo() {
+    void countsWhatEachProgramCameTo() {
         ImportRun run = ImportRun.start(ID, LOADERS, START);
 
-        run.record(new ImportOutcome.Added(DISK_LOADER, TakenAuthors.NONE));
-        run.record(new ImportOutcome.Known(MICRODOS, TakenAuthors.NONE));
-        run.record(new ImportOutcome.Known(CPM, TakenAuthors.NONE));
-        run.record(new ImportOutcome.Skipped(DEMO));
-        run.record(new ImportOutcome.Failed(G_DOS));
+        run.record(new ImportOutcome.Added(DISK_LOADER, TakenAuthors.NONE), AT);
+        run.record(new ImportOutcome.Known(MICRODOS, TakenAuthors.NONE), AT);
+        run.record(new ImportOutcome.Known(CPM, TakenAuthors.NONE), AT);
+        run.record(new ImportOutcome.Skipped(DEMO), AT);
+        run.record(new ImportOutcome.Failed(G_DOS), AT);
 
         assertThat(run.summary()).isEqualTo(new ImportSummary(1, 2, 1, 1));
-        assertThat(run.getAdded()).containsExactly(DISK_LOADER);
-        assertThat(run.getKnown()).containsExactly(MICRODOS, CPM);
-        assertThat(run.getSkipped()).containsExactly(DEMO);
-        assertThat(run.getFailed()).containsExactly(G_DOS);
     }
 
     @Test
-    void gathersTheAuthorsAndPlacesTheProgramsTookInTheirOrder() {
+    void logsEveryStepInTheOrderItWentAtTheTimeGiven() {
+        ImportRun run = ImportRun.start(ID, LOADERS, START);
+        ImportLogEntry list = new ImportLogEntry.ListRead(LIST_PAGE, 1, 2, 10);
+        ImportLogEntry archive = new ImportLogEntry.Downloaded(
+                "599", "Disk Loader", ImportLogEntry.DownloadedFile.ARCHIVE, "disk-loader.zip", 2048);
+
+        run.log(list, START);
+        run.log(archive, AT);
+        run.record(new ImportOutcome.Added(DISK_LOADER, TakenAuthors.NONE), AT);
+        run.record(new ImportOutcome.Skipped(DEMO), LATER);
+
+        assertThat(run.getNewLog())
+                .containsExactly(
+                        new ImportLogLine(START, list),
+                        new ImportLogLine(AT, archive),
+                        new ImportLogLine(AT, new ImportLogEntry.Added(DISK_LOADER)),
+                        new ImportLogLine(LATER, new ImportLogEntry.Skipped(DEMO)));
+    }
+
+    @Test
+    void logsTheAuthorsAndPlacesAProgramTookAfterWhatItCameTo() {
         ImportRun run = ImportRun.start(ID, LOADERS, START);
 
-        run.record(new ImportOutcome.Added(DISK_LOADER, new TakenAuthors(List.of(GRAFOV), List.of(KOVROV))));
-        run.record(new ImportOutcome.Known(CPM, new TakenAuthors(List.of(CREW), List.of())));
+        run.record(new ImportOutcome.Known(CPM, new TakenAuthors(List.of(GRAFOV, CREW), List.of(KOVROV))), AT);
+        run.record(new ImportOutcome.Failed(G_DOS), LATER);
 
-        assertThat(run.getAuthors()).containsExactly(GRAFOV, CREW);
-        assertThat(run.getPlaces()).containsExactly(KOVROV);
+        assertThat(run.getNewLog())
+                .extracting(ImportLogLine::entry)
+                .containsExactly(
+                        new ImportLogEntry.Known(CPM),
+                        new ImportLogEntry.Author(GRAFOV),
+                        new ImportLogEntry.Author(CREW),
+                        new ImportLogEntry.Place(KOVROV),
+                        new ImportLogEntry.Failed(G_DOS));
     }
 
     @Test
@@ -112,9 +138,11 @@ class ImportRunTest {
         ImportRun run = ImportRun.start(ID, LOADERS, START);
         run.end(ImportRunState.DONE, END);
 
-        assertThatThrownBy(() -> run.record(new ImportOutcome.Known(CPM, TakenAuthors.NONE)))
+        assertThatThrownBy(() -> run.record(new ImportOutcome.Known(CPM, TakenAuthors.NONE), END))
                 .isInstanceOf(IllegalStateException.class);
         assertThatThrownBy(() -> run.advance(ImportProgress.READING_LIST)).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> run.log(new ImportLogEntry.Failed(G_DOS), END))
+                .isInstanceOf(IllegalStateException.class);
         assertThatThrownBy(() -> run.end(ImportRunState.STOPPED, END)).isInstanceOf(IllegalStateException.class);
     }
 

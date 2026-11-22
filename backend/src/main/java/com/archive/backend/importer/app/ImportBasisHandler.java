@@ -7,11 +7,13 @@ import com.archive.backend.importer.domain.basis.BasisProgram;
 import com.archive.backend.importer.domain.basis.BasisSite;
 import com.archive.backend.importer.domain.basis.BasisSourcePrograms;
 import com.archive.backend.importer.domain.run.FailedProgram;
+import com.archive.backend.importer.domain.run.ImportLogEntry;
 import com.archive.backend.importer.domain.run.ImportOutcome;
 import com.archive.backend.importer.domain.run.ImportProgress;
 import com.archive.backend.importer.domain.run.ImportRunState;
 import com.archive.backend.importer.domain.run.SkipReason;
 import com.archive.backend.importer.domain.run.SkippedProgram;
+import com.archive.backend.importer.domain.source.SourceProgram;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +35,7 @@ public class ImportBasisHandler {
     private final ImportProgramHandler importProgram;
     private final RecordImportOutcomeHandler recordOutcome;
     private final RecordImportProgressHandler progress;
+    private final RecordImportLogHandler logged;
     private final EndImportRunHandler endRun;
 
     public ImportSummary handle(ImportBasisCommand c) {
@@ -41,6 +44,9 @@ public class ImportBasisHandler {
         int skipped = 0;
         int failed = 0;
         List<BasisListing> listings = site.listings();
+        logged.handle(new RecordImportLogCommand(
+                c.run(),
+                List.of(new ImportLogEntry.ListRead(new ExternalPage(BasisSite.LIST), 1, 1, listings.size()))));
         int position = 0;
         for (BasisListing listing : listings) {
             position++;
@@ -61,8 +67,9 @@ public class ImportBasisHandler {
                                     leftOut.get())));
                     continue;
                 }
-                ImportProgramResult result =
-                        importProgram.handle(new ImportProgramCommand(c.run(), BasisSourcePrograms.of(program, site)));
+                SourceProgram source = BasisSourcePrograms.of(program, site);
+                logged.handle(new RecordImportLogCommand(c.run(), ImportLogEntry.downloadsOf(source)));
+                ImportProgramResult result = importProgram.handle(new ImportProgramCommand(c.run(), source));
                 if (result == ImportProgramResult.ADDED) {
                     added++;
                     log.info("Imported {} {}", listing.id(), program.title());

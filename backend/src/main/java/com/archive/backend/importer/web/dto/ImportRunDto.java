@@ -17,10 +17,5 @@ public record ImportRunDto(
         int known,
         int skipped,
         int failed,
-        List<ImportRunAddedDto> addedPrograms,
-        List<ImportRunFailedDto> failedPrograms,
-        List<ImportRunKnownDto> knownPrograms,
-        List<ImportRunSkippedDto> skippedPrograms,
-        List<ImportRunAuthorDto> authors,
-        List<ImportRunPlaceDto> places,
-        ImportRunProgressDto progress) {}
+        ImportRunProgressDto progress,
+        List<ImportRunLogLineDto> log) {}

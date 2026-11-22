@@ -1,11 +1,11 @@
 package com.archive.backend.importer.infra;
 
+import com.archive.backend.importer.domain.vektor.VektorListPage;
 import com.archive.backend.importer.domain.vektor.VektorListing;
 import com.archive.backend.importer.domain.vektor.VektorProgram;
 import com.archive.backend.importer.domain.vektor.VektorSection;
 import com.archive.backend.importer.domain.vektor.VektorSite;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
@@ -25,15 +25,15 @@ public class HttpVektorSite implements VektorSite {
     private final SourceHttp http;
 
     @Override
-    public Iterable<VektorListing> listings(@Nullable VektorSection section) {
-        String base = section == null ? CATALOG : CATALOG + section.code() + "/";
-        String first = section == null ? base + "?PAGEN_2=1" : base;
-        String firstPage = text(first);
-        List<VektorListing> listings = new ArrayList<>(VektorPages.listings(firstPage));
-        for (String page : VektorPages.otherPages(firstPage)) {
-            listings.addAll(VektorPages.listings(text(page)));
-        }
-        return listings;
+    public VektorListPage firstPage(@Nullable VektorSection section) {
+        String url = section == null ? CATALOG + "?PAGEN_2=1" : CATALOG + section.code() + "/";
+        String html = text(url);
+        return new VektorListPage(url, VektorPages.listings(html), VektorPages.otherPages(html));
+    }
+
+    @Override
+    public VektorListPage page(String url) {
+        return new VektorListPage(url, VektorPages.listings(text(url)), List.of());
     }
 
     @Override

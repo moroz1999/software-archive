@@ -1,5 +1,6 @@
 package com.archive.backend.importer.app;
 
+import com.archive.backend.importer.domain.run.ImportLogSeq;
 import com.archive.backend.importer.read.ImportRunReadRepository;
 import com.archive.backend.importer.read.ImportRunReport;
 import java.util.Optional;
@@ -17,6 +18,7 @@ public class GetLastImportRunHandler {
     @Transactional(readOnly = true)
     public Optional<ImportRunReport> handle(GetLastImportRunQuery q) {
         q.actor().administrator();
-        return reads.findLatest();
+        ImportLogSeq after = q.after();
+        return reads.findLatest(after == null ? null : after.value());
     }
 }

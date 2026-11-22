@@ -1,5 +1,5 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {screen, within} from '@testing-library/react';
+import {screen, waitFor, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
 import {json, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
@@ -16,9 +16,28 @@ const MICRODOS = '00000000-0000-0000-0001-000000000003';
 const CPM = '00000000-0000-0000-0001-000000000004';
 const DEMO = 'https://vektor-06c.ru/programmnoe-obespechenie/utility-dlya-pc/512-demo/';
 const ZONE_X = 'https://caglrc.cc/scalar/ware/30/';
+const LIST_PAGE = 'https://vektor-06c.ru/programmnoe-obespechenie/zagruzchiki/';
 const GRAFOV = '00000000-0000-0000-0004-000000000001';
 const IVAN = '00000000-0000-0000-0003-000000000001';
 const CREW = '00000000-0000-0000-0005-000000000001';
+const AT = '2026-11-14T12:01:00Z';
+const LOG = [
+    {seq: 1, at: AT, kind: 'list', entry: {url: LIST_PAGE, number: 1, pages: 24, programs: 10}},
+    {seq: 2, at: AT, kind: 'download', entry: {externalId: '599', title: 'Disk Loader', file: 'archive', name: 'disk.zip', size: 2048}},
+    {seq: 3, at: AT, kind: 'download', entry: {externalId: '599', title: 'Disk Loader', file: 'screenshot', name: 'disk.png', size: 5120}},
+    {seq: 4, at: AT, kind: 'added', entry: {externalId: '599', softwareId: SOFTWARE, title: 'Disk Loader', exists: true}},
+    {seq: 5, at: AT, kind: 'author', entry: {kind: 'label', id: GRAFOV, name: 'Графов А.', created: true, exists: true}},
+    {seq: 6, at: AT, kind: 'author', entry: {kind: 'author', id: IVAN, name: 'IVAN', created: true, exists: true}},
+    {seq: 7, at: AT, kind: 'place', entry: {kind: 'city', name: 'Ковров'}},
+    {seq: 8, at: AT, kind: 'added', entry: {externalId: '595', softwareId: '00000000-0000-0000-0001-000000000002', title: 'Masterpiece Boot', exists: false}},
+    {seq: 9, at: AT, kind: 'known', entry: {externalId: '754', softwareId: MICRODOS, title: 'МикроДОС', exists: true, supplements: ['description', 'categories']}},
+    {seq: 10, at: AT, kind: 'author', entry: {kind: 'group', id: CREW, name: 'Crew', created: false, exists: true}},
+    {seq: 11, at: AT, kind: 'known', entry: {externalId: '753', softwareId: CPM, title: 'CP/M', exists: true, supplements: []}},
+    {seq: 12, at: AT, kind: 'skipped', entry: {externalId: '524', url: DEMO, title: '512 demo', reason: 'section', detail: 'utility-dlya-pc'}},
+    {seq: 13, at: AT, kind: 'skipped', entry: {externalId: '30', url: ZONE_X, title: 'Zone X', reason: 'category', detail: 'pc'}},
+    {seq: 14, at: AT, kind: 'failed', entry: {externalId: '598', url: G_DOS, reason: 'Timed out'}},
+    {seq: 15, at: null, kind: 'place', entry: {kind: 'country', name: 'Атлантида'}},
+];
 const RUN = {
     id: '00000000-0000-0000-0000-00000000000a',
     archive: 'vektor-06c.ru',
@@ -27,30 +46,18 @@ const RUN = {
     startedAt: '2026-11-14T12:00:00Z',
     endedAt: null,
     added: 2,
-    known: 3,
-    skipped: 0,
+    known: 2,
+    skipped: 2,
     failed: 1,
-    addedPrograms: [
-        {externalId: '599', softwareId: SOFTWARE, title: 'Disk Loader', exists: true},
-        {externalId: '595', softwareId: '00000000-0000-0000-0001-000000000002', title: 'Masterpiece Boot', exists: false},
-    ],
-    failedPrograms: [{externalId: '598', url: G_DOS, reason: 'Timed out'}],
-    knownPrograms: [
-        {externalId: '754', softwareId: MICRODOS, title: 'МикроДОС', exists: true, supplements: ['description', 'categories']},
-        {externalId: '753', softwareId: CPM, title: 'CP/M', exists: true, supplements: []},
-    ],
-    skippedPrograms: [
-        {externalId: '524', url: DEMO, title: '512 demo', reason: 'section', detail: 'utility-dlya-pc'},
-        {externalId: '30', url: ZONE_X, title: 'Zone X', reason: 'category', detail: 'pc'},
-    ],
-    authors: [
-        {kind: 'label', id: GRAFOV, name: 'Графов А.', created: true, exists: true},
-        {kind: 'author', id: IVAN, name: 'IVAN', created: true, exists: true},
-        {kind: 'group', id: CREW, name: 'Crew', created: false, exists: true},
-    ],
-    places: [{kind: 'city', name: 'Ковров'}, {kind: 'country', name: 'Атлантида'}],
     progress: {position: 37, total: 512, url: G_DOS},
+    log: LOG,
 };
+
+/** The lines of the log of the last import, as a visitor reads them. */
+async function logLines(): Promise<string[]> {
+    const log = await screen.findByRole('list', {name: 'Log'});
+    return within(log).getAllByRole('listitem').map((item) => item.textContent);
+}
 
 function renderImport() {
     renderWithQueries(<MemoryRouter><SourceImport/></MemoryRouter>);
@@ -162,20 +169,7 @@ describe(SourceImport, () => {
         await expect(report.findByText('vektor-06c.ru · zagruzchiki')).resolves.toBeInTheDocument();
         expect(report.getByText('Running')).toBeInTheDocument();
         expect(report.getByText(/Started 14\.11\.2026/u)).toBeInTheDocument();
-        expect(report.getByText('Added 2 · already there 3 · left out 0 · failed 1')).toBeInTheDocument();
-    });
-
-    it('leads to the software it added and to the pages of the programs that failed', async () => {
-        stubFetchRoutes(new Map([[LAST_RUN, json({run: RUN})], [SECTIONS, json(['zagruzchiki'])]]));
-        renderImport();
-
-        const added = within(await screen.findByRole('region', {name: 'Added'}));
-        const failed = within(screen.getByRole('region', {name: 'Failed'}));
-
-        expect(added.getByRole('link', {name: 'Disk Loader'})).toHaveAttribute('href', `/software/${SOFTWARE}`);
-        expect(added.getByText('Masterpiece Boot (deleted since)')).toBeInTheDocument();
-        expect(failed.getByRole('link', {name: G_DOS})).toHaveAttribute('href', G_DOS);
-        expect(failed.getByText('Timed out')).toBeInTheDocument();
+        expect(report.getByText('Added 2 · already there 2 · left out 2 · failed 1')).toBeInTheDocument();
     });
 
     it('shows the report of the import it has just started', async () => {
@@ -233,51 +227,86 @@ describe(SourceImport, () => {
         expect(report.queryByText(/^Now:/u)).not.toBeInTheDocument();
     });
 
-    it('lists the programs it found in the archive with what it added to each', async () => {
+    it('tells every step of the import line by line in the order it went', async () => {
         stubFetchRoutes(new Map([[LAST_RUN, json({run: RUN})], [SECTIONS, json(['zagruzchiki'])]]));
         renderImport();
 
-        const supplemented = within(await screen.findByRole('region', {name: 'Supplemented'}));
-        const unchanged = within(screen.getByRole('region', {name: 'Already there, nothing added'}));
+        const lines = await logLines();
 
-        expect(supplemented.getByRole('link', {name: 'МикроДОС'})).toHaveAttribute('href', `/software/${MICRODOS}`);
-        expect(supplemented.getByText('description, categories')).toBeInTheDocument();
-        expect(unchanged.getByRole('link', {name: 'CP/M'})).toHaveAttribute('href', `/software/${CPM}`);
-        expect(supplemented.queryByRole('link', {name: 'CP/M'})).not.toBeInTheDocument();
+        expect(lines.map((line) => line.replace(/^\d{2}:\d{2}:\d{2}/u, ''))).toStrictEqual([
+            'Read the list: page 1 of 24, 10 programs',
+            'Disk Loader: downloaded the archive disk.zip (2 KB)',
+            'Disk Loader: downloaded the screenshot disk.png (5 KB)',
+            'Disk Loader: added',
+            'Created the label Графов А.',
+            'Created the person IVAN',
+            'Added the city Ковров',
+            'Masterpiece Boot (deleted since): added',
+            'МикроДОС: already there, added description, categories',
+            'Found the group Crew in the archive',
+            'CP/M: already there, nothing to add',
+            '512 demo: left out, the section utility-dlya-pc is not imported',
+            'Zone X: left out, the category pc is not imported',
+            `${G_DOS}: failed: Timed out`,
+            'Added the country Атлантида',
+        ]);
     });
 
-    it('lists the programs it left out with why', async () => {
+    it('tells when each step was done, and no time for a line carried over from before the log', async () => {
         stubFetchRoutes(new Map([[LAST_RUN, json({run: RUN})], [SECTIONS, json(['zagruzchiki'])]]));
         renderImport();
 
-        const skipped = within(await screen.findByRole('region', {name: 'Left out'}));
+        const lines = await logLines();
 
-        expect(skipped.getByRole('link', {name: '512 demo'})).toHaveAttribute('href', DEMO);
-        expect(skipped.getByText('The section utility-dlya-pc is not imported')).toBeInTheDocument();
-        expect(skipped.getByRole('link', {name: 'Zone X'})).toHaveAttribute('href', ZONE_X);
-        expect(skipped.getByText('The category pc is not imported')).toBeInTheDocument();
+        expect(lines[0]).toMatch(/^\d{2}:\d{2}:\d{2}Read the list/u);
+        expect(lines.at(-1)).toBe('Added the country Атлантида');
     });
 
-    it('lists the authors it created and those it found in the archive, each leading to its page', async () => {
+    it('leads from the log to the software and the pages of the source', async () => {
         stubFetchRoutes(new Map([[LAST_RUN, json({run: RUN})], [SECTIONS, json(['zagruzchiki'])]]));
         renderImport();
 
-        const created = within(await screen.findByRole('region', {name: 'Authors created'}));
-        const found = within(screen.getByRole('region', {name: 'Authors found in the archive'}));
+        const log = within(await screen.findByRole('list', {name: 'Log'}));
 
-        expect(created.getByRole('link', {name: 'Графов А.'})).toHaveAttribute('href', `/labels/${GRAFOV}`);
-        expect(created.getByRole('link', {name: 'IVAN'})).toHaveAttribute('href', `/authors/${IVAN}`);
-        expect(created.getByText('Label')).toBeInTheDocument();
-        expect(found.getByRole('link', {name: 'Crew'})).toHaveAttribute('href', `/groups/${CREW}`);
-        expect(found.getByText('Group')).toBeInTheDocument();
+        expect(log.getByRole('link', {name: 'page 1 of 24'})).toHaveAttribute('href', LIST_PAGE);
+        expect(log.getAllByRole('link', {name: 'Disk Loader'}).at(-1)).toHaveAttribute('href', `/software/${SOFTWARE}`);
+        expect(log.queryByRole('link', {name: 'Masterpiece Boot'})).not.toBeInTheDocument();
+        expect(log.getByRole('link', {name: 'МикроДОС'})).toHaveAttribute('href', `/software/${MICRODOS}`);
+        expect(log.getByRole('link', {name: '512 demo'})).toHaveAttribute('href', DEMO);
     });
 
-    it('lists the cities and countries it added', async () => {
+    it('leads from the log to the pages of the programs that failed and to the authors', async () => {
         stubFetchRoutes(new Map([[LAST_RUN, json({run: RUN})], [SECTIONS, json(['zagruzchiki'])]]));
         renderImport();
 
-        const places = within(await screen.findByRole('region', {name: 'Places added'}));
+        const log = within(await screen.findByRole('list', {name: 'Log'}));
 
-        expect(places.getAllByRole('listitem').map((item) => item.textContent)).toStrictEqual(['City Ковров', 'Country Атлантида']);
+        expect(log.getByRole('link', {name: G_DOS})).toHaveAttribute('href', G_DOS);
+        expect(log.getByRole('link', {name: 'Графов А.'})).toHaveAttribute('href', `/labels/${GRAFOV}`);
+        expect(log.getByRole('link', {name: 'IVAN'})).toHaveAttribute('href', `/authors/${IVAN}`);
+        expect(log.getByRole('link', {name: 'Crew'})).toHaveAttribute('href', `/groups/${CREW}`);
+    });
+
+    it('reads only the new lines of the log while the import goes on and adds them after those it has', async () => {
+        vi.useFakeTimers({shouldAdvanceTime: true});
+        const next = {seq: 16, at: AT, kind: 'list', entry: {url: `${LIST_PAGE}?PAGEN_1=2`, number: 2, pages: 24, programs: 10}};
+        const fetchMock = stubFetchRoutes(new Map([
+            [LAST_RUN, json({run: RUN})],
+            [`${LAST_RUN}?after=15`, json({run: {...RUN, log: [next]}})],
+            [SECTIONS, json(['zagruzchiki'])],
+        ]));
+        renderImport();
+        await logLines();
+
+        await vi.advanceTimersByTimeAsync(5000);
+
+        await waitFor(async () => {
+            await expect(logLines()).resolves.toHaveLength(LOG.length + 1);
+        });
+
+        expect((await logLines()).at(-1)).toMatch(/Read the list: page 2 of 24, 10 programs$/u);
+        expect(fetchMock).toHaveBeenCalledWith(`${LAST_RUN}?after=15`, expect.anything());
+
+        vi.useRealTimers();
     });
 });

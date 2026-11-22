@@ -1,22 +1,21 @@
-import {useId} from 'react';
+import {type ReactNode, useId} from 'react';
 import type {TFunction} from 'i18next';
-import {useTranslation} from 'react-i18next';
+import {Trans, useTranslation} from 'react-i18next';
 import {authorPath, toAuthorId} from '@/entities/authors';
 import {groupPath, toGroupId} from '@/entities/groups';
 import {labelPath, toLabelId} from '@/entities/labels';
-import {softwarePath} from '@/entities/software';
+import {fileSizeText, type SoftwareId, softwarePath} from '@/entities/software';
 import {Chip} from '@/shared/ui/chip';
 import {Inline} from '@/shared/ui/inline';
 import {Skeleton} from '@/shared/ui/skeleton';
 import {Stack} from '@/shared/ui/stack';
 import {Heading, Text, TextLink} from '@/shared/ui/typography';
-import type {ReactNode} from 'react';
-import {runTimeText} from '../lib/run-time';
-import {type ImportRun, type ImportRunAuthor, type ImportRunProgress, importSourceOf, SOFTWARE_SUPPLEMENTS} from '../model/import-run';
+import {logTimeText, runTimeText} from '../lib/run-time';
+import {type ImportLogEntry, type ImportRun, type ImportRunAuthor, type ImportRunProgress, importSourceOf, SOFTWARE_SUPPLEMENTS} from '../model/import-run';
 import {useSourceImport} from '../model/source-import-context';
 import styles from './ImportRunReport.module.css';
 
-/** What the import started last did: read again while it goes on. */
+/** What the import started last did, step by step: read again while it goes on. */
 export function ImportRunReport() {
     const {t} = useTranslation();
     const {lastRun} = useSourceImport();
@@ -38,10 +37,6 @@ export function ImportRunReport() {
 
 function Report({run}: {readonly run: ImportRun}) {
     const {t} = useTranslation();
-    const supplemented = run.knownPrograms.filter((program) => program.supplements.length > 0);
-    const unchanged = run.knownPrograms.filter((program) => program.supplements.length === 0);
-    const created = run.authors.filter((author) => author.created);
-    const found = run.authors.filter((author) => !author.created);
     return (
         <Stack gap="lg">
             <Stack gap="xs">
@@ -57,51 +52,20 @@ function Report({run}: {readonly run: ImportRun}) {
                 <Text>{t('imports.counts', {added: run.added, known: run.known, skipped: run.skipped, failed: run.failed})}</Text>
                 {run.state === 'running' && <Progress progress={run.progress}/>}
             </Stack>
-            <ReportSection label={t('imports.addedPrograms')} items={run.addedPrograms.map((program) => ({
-                key: program.externalId,
-                content: <SoftwareLink title={program.title} href={softwarePath(program.softwareId)} exists={program.exists}/>,
-            }))}/>
-            <ReportSection label={t('imports.supplementedPrograms')} items={supplemented.map((program) => ({
-                key: program.externalId,
-                content: (
-                    <Stack gap="xs">
-                        <SoftwareLink title={program.title} href={softwarePath(program.softwareId)} exists={program.exists}/>
-                        <Text variant="caption" tone="muted">
-                            {SOFTWARE_SUPPLEMENTS.filter((code) => program.supplements.includes(code))
-                                .map((code) => t(`imports.supplements.${code}`))
-                                .join(', ')}
-                        </Text>
-                    </Stack>
-                ),
-            }))}/>
-            <ReportSection label={t('imports.unchangedPrograms')} items={unchanged.map((program) => ({
-                key: program.externalId,
-                content: <SoftwareLink title={program.title} href={softwarePath(program.softwareId)} exists={program.exists}/>,
-            }))}/>
-            <ReportSection label={t('imports.skippedPrograms')} items={run.skippedPrograms.map((program) => ({
-                key: program.externalId,
-                content: (
-                    <Stack gap="xs">
-                        <TextLink href={program.url}>{program.title}</TextLink>
-                        <Text variant="caption" tone="muted">{t(`imports.skipReasons.${program.reason}`, {detail: program.detail})}</Text>
-                    </Stack>
-                ),
-            }))}/>
-            <ReportSection label={t('imports.failedPrograms')} items={run.failedPrograms.map((program) => ({
-                key: program.externalId,
-                content: (
-                    <Stack gap="xs">
-                        <TextLink href={program.url}>{program.url}</TextLink>
-                        <Text variant="caption" tone="danger">{program.reason}</Text>
-                    </Stack>
-                ),
-            }))}/>
-            <ReportSection label={t('imports.createdAuthors')} items={created.map((author) => ({key: author.id, content: <AuthorLine author={author}/>}))}/>
-            <ReportSection label={t('imports.foundAuthors')} items={found.map((author) => ({key: author.id, content: <AuthorLine author={author}/>}))}/>
-            <ReportSection label={t('imports.addedPlaces')} items={run.places.map((place, index) => ({
-                key: String(index),
-                content: <Text as="span">{`${t(`imports.placeKinds.${place.kind}`)} ${place.name}`}</Text>,
-            }))}/>
+            {run.log.length > 0 && (
+                <Stack as="ol" gap="xs" ariaLabel={t('imports.log')}>
+                    {run.log.map((line) => (
+                        <Stack as="li" key={line.seq} gap="xs">
+                            <Inline gap="sm" wrap>
+                                {line.at !== null && (
+                                    <Text as="span" variant="caption" tone="muted"><time dateTime={line.at}>{logTimeText(line.at)}</time></Text>
+                                )}
+                                <Text as="span"><LogEntryText entry={line.entry}/></Text>
+                            </Inline>
+                        </Stack>
+                    ))}
+                </Stack>
+            )}
         </Stack>
     );
 }
@@ -118,42 +82,90 @@ function Progress({progress}: {readonly progress: ImportRunProgress}) {
     return progress.url === null ? <Text>{text}</Text> : <TextLink href={progress.url}>{text}</TextLink>;
 }
 
-interface ReportItem {
-    readonly key: string;
-    readonly content: ReactNode;
-}
-
-/** A titled list of the report; left out while it has nothing. */
-function ReportSection({label, items}: {readonly label: string; readonly items: readonly ReportItem[]}) {
-    if (items.length === 0) {
-        return null;
+/** What a line of the log tells, leading to what it names: software, a page of the source, an author. */
+function LogEntryText({entry}: {readonly entry: ImportLogEntry}) {
+    const {t} = useTranslation();
+    switch (entry.kind) {
+        case 'list':
+            return (
+                <Trans
+                    i18nKey={entry.page.pages === null ? 'imports.lines.listUncounted' : 'imports.lines.list'}
+                    values={{number: entry.page.number, pages: entry.page.pages, programs: entry.page.programs}}
+                    components={{page: <LinkTo href={entry.page.url}/>}}
+                />
+            );
+        case 'download':
+            return (
+                <Trans
+                    i18nKey={`imports.lines.${entry.download.file}`}
+                    values={{title: entry.download.title, name: entry.download.name, size: fileSizeText(entry.download.size)}}
+                    components={{program: <span/>}}
+                />
+            );
+        case 'added':
+            return <SoftwareLine program={entry.program} i18nKey="imports.lines.added"/>;
+        case 'known':
+            return entry.program.supplements.length === 0
+                ? <SoftwareLine program={entry.program} i18nKey="imports.lines.unchanged"/>
+                : (
+                    <SoftwareLine
+                        program={entry.program}
+                        i18nKey="imports.lines.supplemented"
+                        supplements={SOFTWARE_SUPPLEMENTS.filter((code) => entry.program.supplements.includes(code))
+                            .map((code) => t(`imports.supplements.${code}`))
+                            .join(', ')}
+                    />
+                );
+        case 'skipped':
+            return (
+                <Trans
+                    i18nKey={`imports.lines.skipped.${entry.program.reason}`}
+                    values={{title: entry.program.title, detail: entry.program.detail}}
+                    components={{program: <LinkTo href={entry.program.url}/>}}
+                />
+            );
+        case 'failed':
+            return (
+                <Trans
+                    i18nKey="imports.lines.failed"
+                    values={{url: entry.program.url, reason: entry.program.reason}}
+                    components={{page: <LinkTo href={entry.program.url}/>}}
+                />
+            );
+        case 'author':
+            return (
+                <Trans
+                    i18nKey={`imports.lines.${entry.author.created ? 'created' : 'found'}.${entry.author.kind}`}
+                    values={{name: entry.author.exists ? entry.author.name : t('imports.deleted', {title: entry.author.name})}}
+                    components={{author: entry.author.exists ? <LinkTo href={authorHref(entry.author)}/> : <span/>}}
+                />
+            );
+        case 'place':
+            return t(`imports.lines.place.${entry.place.kind}`, {name: entry.place.name});
     }
+}
+
+interface SoftwareLineProps {
+    readonly program: {readonly softwareId: SoftwareId; readonly title: string; readonly exists: boolean};
+    readonly i18nKey: 'imports.lines.added' | 'imports.lines.unchanged' | 'imports.lines.supplemented';
+    readonly supplements?: string;
+}
+
+/** A line naming software of the archive, leading to it while it is there. */
+function SoftwareLine({program, i18nKey, supplements}: SoftwareLineProps) {
+    const {t} = useTranslation();
     return (
-        <Stack as="section" gap="xs" ariaLabel={label}>
-            <Text variant="label" tone="muted">{label}</Text>
-            <Stack as="ul" gap="sm">
-                {items.map((item) => <li key={item.key}>{item.content}</li>)}
-            </Stack>
-        </Stack>
+        <Trans
+            i18nKey={i18nKey}
+            values={{title: program.exists ? program.title : t('imports.deleted', {title: program.title}), supplements}}
+            components={{program: program.exists ? <LinkTo href={softwarePath(program.softwareId)}/> : <span/>}}
+        />
     );
 }
 
-function SoftwareLink({title, href, exists}: {readonly title: string; readonly href: string; readonly exists: boolean}) {
-    const {t} = useTranslation();
-    return exists ? <TextLink href={href}>{title}</TextLink> : <Text as="span" tone="muted">{t('imports.deleted', {title})}</Text>;
-}
-
-/** An author the run took, leading to its page while it is there, with what it is. */
-function AuthorLine({author}: {readonly author: ImportRunAuthor}) {
-    const {t} = useTranslation();
-    return (
-        <Inline gap="sm" align="center" wrap>
-            {author.exists
-                ? <TextLink href={authorHref(author)}>{author.name}</TextLink>
-                : <Text as="span" tone="muted">{t('imports.deleted', {title: author.name})}</Text>}
-            <Chip size="sm">{t(`imports.authorKinds.${author.kind}`)}</Chip>
-        </Inline>
-    );
+/** A link a line of the log puts around the words its text marks: the text gives the words. */
+function LinkTo({href, children}: {readonly href: string; readonly children?: ReactNode}) {
+    return <TextLink href={href}>{children}</TextLink>;
 }
 
 function authorHref(author: ImportRunAuthor): string {

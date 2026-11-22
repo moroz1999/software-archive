@@ -9,10 +9,11 @@ public interface VektorSite {
 
     String ARCHIVE = "vektor-06c.ru";
 
-    /**
-     * Every program of the site, or of one of its sections, in the order of its lists.
-     */
-    Iterable<VektorListing> listings(@Nullable VektorSection section);
+    /** The first page of the list of the whole site, or of one of its sections, with the addresses of the others. */
+    VektorListPage firstPage(@Nullable VektorSection section);
+
+    /** Another page of a list, by the address the first one gave. */
+    VektorListPage page(String url);
 
     VektorProgram program(VektorListing listing);
 

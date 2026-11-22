@@ -14,8 +14,17 @@ import com.archive.backend.importer.domain.run.ImportRunRepository;
 import com.archive.backend.importer.domain.run.ImportScope;
 import com.archive.backend.importer.domain.vektor.VektorSection;
 import com.archive.backend.importer.infra.FakeSourceHttp;
+import com.archive.backend.importer.read.ImportRunAddedEntry;
+import com.archive.backend.importer.read.ImportRunAuthorEntry;
+import com.archive.backend.importer.read.ImportRunDownloadedEntry;
+import com.archive.backend.importer.read.ImportRunFailedEntry;
+import com.archive.backend.importer.read.ImportRunKnownEntry;
+import com.archive.backend.importer.read.ImportRunListReadEntry;
+import com.archive.backend.importer.read.ImportRunLogEntry;
+import com.archive.backend.importer.read.ImportRunLogLine;
 import com.archive.backend.importer.read.ImportRunReadRepository;
 import com.archive.backend.importer.read.ImportRunReport;
+import com.archive.backend.importer.read.ImportRunSkippedEntry;
 import com.archive.backend.software.app.DeleteSoftwareCommand;
 import com.archive.backend.software.app.DeleteSoftwareHandler;
 import com.archive.backend.software.domain.SoftwareId;
@@ -24,6 +33,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -53,6 +63,7 @@ class ImportVektorIT {
     private static final String CPM = "/programmnoe-obespechenie/operatsionnye-sistemy/cpm-59/";
     private static final String BOLDBIOS = "/programmnoe-obespechenie/operatsionnye-sistemy/boldbios/";
     private static final String CPM_ARCHIVE_PAGE = "https://vektor-06c.ru" + CPM;
+    private static final String OS_PAGE_2 = "/programmnoe-obespechenie/operatsionnye-sistemy/?PAGEN_1=2";
 
     private static final UUID ARCADE = UUID.fromString("8536e450-1fc7-5985-9cd2-97b499713a67");
     private static final UUID KNOWN_AUTHOR = UUID.fromString("00000000-0000-0000-00ee-000000000001");
@@ -302,12 +313,12 @@ class ImportVektorIT {
 
         run(new VektorSection("operatsionnye-sistemy"));
 
-        ImportRunReport report = reports.findLatest().orElseThrow();
+        ImportRunReport report = reports.findLatest(null).orElseThrow();
         assertThat(report.state()).isEqualTo("DONE");
         assertThat(report.endedAt()).isNotNull();
         assertThat(List.of(report.added(), report.known(), report.skipped(), report.failed()))
                 .containsExactly(0, 1, 0, 1);
-        assertThat(report.failedPrograms()).singleElement().satisfies(failed -> {
+        assertThat(entries(report, ImportRunFailedEntry.class)).singleElement().satisfies(failed -> {
             assertThat(failed.externalId()).isEqualTo("753");
             assertThat(failed.url()).isEqualTo(CPM_ARCHIVE_PAGE);
             assertThat(failed.reason()).isNotBlank();
@@ -321,7 +332,7 @@ class ImportVektorIT {
 
         run(new VektorSection("operatsionnye-sistemy"));
 
-        assertThat(reports.findLatest().orElseThrow().addedPrograms())
+        assertThat(entries(reports.findLatest(null).orElseThrow(), ImportRunAddedEntry.class))
                 .singleElement()
                 .satisfies(added -> {
                     assertThat(added.externalId()).isEqualTo("754");
@@ -338,7 +349,7 @@ class ImportVektorIT {
 
         assertThat(run(null)).isEqualTo(new ImportSummary(0, 0, 1, 0));
         assertThat(importedSoftware()).isZero();
-        assertThat(reports.findLatest().orElseThrow().skippedPrograms())
+        assertThat(entries(reports.findLatest(null).orElseThrow(), ImportRunSkippedEntry.class))
                 .singleElement()
                 .satisfies(skipped -> {
                     assertThat(skipped.externalId()).isEqualTo("524");
@@ -356,7 +367,7 @@ class ImportVektorIT {
 
         run(new VektorSection("operatsionnye-sistemy"));
 
-        ImportRunReport report = reports.findLatest().orElseThrow();
+        ImportRunReport report = reports.findLatest(null).orElseThrow();
         assertThat(report.progress().position()).isEqualTo(2);
         assertThat(report.progress().total()).isNull();
         assertThat(report.progress().url()).isEqualTo(CPM_ARCHIVE_PAGE);
@@ -386,6 +397,86 @@ class ImportVektorIT {
                 .isZero();
     }
 
+    @Test
+    void logsEachPageOfTheListReadAndThenTheFilesAndWhatEachOfItsProgramsCameTo() {
+        servePrograms();
+        http.serve(OS, paged(list("754", MICRODOS), OS_PAGE_2));
+        http.serve("https://vektor-06c.ru" + OS_PAGE_2, list("753", CPM));
+
+        run(new VektorSection("operatsionnye-sistemy"));
+
+        List<ImportRunLogLine> log = reports.findLatest(null).orElseThrow().log();
+        assertThat(log)
+                .extracting(ImportRunLogLine::kind)
+                .containsExactly(
+                        "list",
+                        "download",
+                        "download",
+                        "added",
+                        "author",
+                        "list",
+                        "download",
+                        "download",
+                        "added",
+                        "author",
+                        "author");
+        assertThat(log.get(0).entry()).isEqualTo(new ImportRunListReadEntry(OS, 1, 2, 1));
+        assertThat(log.get(1).entry())
+                .asInstanceOf(InstanceOfAssertFactories.type(ImportRunDownloadedEntry.class))
+                .satisfies(archive -> {
+                    assertThat(archive.externalId()).isEqualTo("754");
+                    assertThat(archive.title()).isEqualTo("МикроДОС 3.1 (BIOS 3.11.F.11)");
+                    assertThat(archive.file()).isEqualTo("archive");
+                    assertThat(archive.size()).isPositive();
+                });
+        assertThat(log.get(2).entry())
+                .asInstanceOf(InstanceOfAssertFactories.type(ImportRunDownloadedEntry.class))
+                .satisfies(screenshot -> assertThat(screenshot.file()).isEqualTo("screenshot"));
+        assertThat(log.get(4).entry())
+                .asInstanceOf(InstanceOfAssertFactories.type(ImportRunAuthorEntry.class))
+                .satisfies(author -> {
+                    assertThat(author.name()).isEqualTo("Филиппов Е.В.");
+                    assertThat(author.created()).isTrue();
+                });
+        assertThat(log.get(5).entry())
+                .isEqualTo(new ImportRunListReadEntry("https://vektor-06c.ru" + OS_PAGE_2, 2, 2, 1));
+        assertThat(log).extracting(ImportRunLogLine::at).doesNotContainNull().isSorted();
+    }
+
+    @Test
+    void logsAProgramFoundAgainWithNothingAddedToIt() {
+        servePrograms();
+        VektorSection section = new VektorSection("operatsionnye-sistemy");
+        http.serve(OS, list("754", MICRODOS));
+        run(section);
+
+        run(section);
+
+        assertThat(entries(reports.findLatest(null).orElseThrow(), ImportRunKnownEntry.class))
+                .singleElement()
+                .satisfies(known -> {
+                    assertThat(known.externalId()).isEqualTo("754");
+                    assertThat(known.supplements()).isEmpty();
+                });
+    }
+
+    @Test
+    void logsTheFailureOfAProgramWithoutWhatItWouldHaveBrought() {
+        servePrograms();
+        http.fail("https://vektor-06c.ru/upload/iblock/archive-of-cpm.zip");
+        http.serve(
+                CPM_ARCHIVE_PAGE,
+                page("program-753.html")
+                        .replaceAll("href=\"(/upload/[^\"]+\\.zip)\"", "href=\"/upload/iblock/archive-of-cpm.zip\""));
+        http.serve(OS, list("753", CPM));
+
+        run(new VektorSection("operatsionnye-sistemy"));
+
+        assertThat(reports.findLatest(null).orElseThrow().log())
+                .extracting(ImportRunLogLine::kind)
+                .containsExactly("list", "failed");
+    }
+
     /** Runs the import as a start does: in a run of its own, whose report it writes. */
     private ImportSummary run(@Nullable VektorSection section) {
         ImportRunId id = new ImportRunId(UUID.randomUUID());
@@ -398,6 +489,23 @@ class ImportVektorIT {
         http.serve("https://vektor-06c.ru" + MICRODOS, page("program-754.html"));
         http.serve("https://vektor-06c.ru" + CPM, page("program-753.html"));
         http.serve("https://vektor-06c.ru" + BOLDBIOS, page("program-763.html"));
+    }
+
+    /** The lines of the log of a run telling of one kind, in their order. */
+    private static <T extends ImportRunLogEntry> List<T> entries(ImportRunReport report, Class<T> kind) {
+        return report.log().stream()
+                .map(ImportRunLogLine::entry)
+                .filter(kind::isInstance)
+                .map(kind::cast)
+                .toList();
+    }
+
+    /** A list page with the pagination of a section leading to another page of it. */
+    private static String paged(String list, String next) {
+        return list.replace(
+                "</body>",
+                "<div class=\"bx-pagination\"><ul><li class=\"bx-active\"><span>1</span></li>" + "<li><a href=\"" + next
+                        + "\"><span>2</span></a></li></ul></div></body>");
     }
 
     private int importedSoftware() {

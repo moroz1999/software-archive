@@ -19,15 +19,13 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class HttpBasisSite implements BasisSite {
 
-    private static final String LIST = BasisPages.SCALAR + "categories/all/";
-
     private final SourceHttp http;
     private final Map<String, BasisAuthor> authors = new ConcurrentHashMap<>();
 
     @Override
     public List<BasisListing> listings() {
         authors.clear();
-        return BasisPages.listings(text(LIST));
+        return BasisPages.listings(text(BasisSite.LIST));
     }
 
     @Override

@@ -9,4 +9,5 @@ import java.util.UUID;
  * @param created whether the run created it; otherwise it found it in the archive
  * @param exists whether it is still in the archive
  */
-public record ImportRunAuthorEntry(String kind, UUID id, String name, boolean created, boolean exists) {}
+public record ImportRunAuthorEntry(String kind, UUID id, String name, boolean created, boolean exists)
+        implements ImportRunLogEntry {}

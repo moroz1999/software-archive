@@ -7,6 +7,9 @@ public interface BasisSite {
 
     String ARCHIVE = "caglrc.cc";
 
+    /** The one list of every card of the index. */
+    String LIST = "https://caglrc.cc/scalar/categories/all/";
+
     /** Every card of the index, in the order of its whole list. */
     List<BasisListing> listings();
 

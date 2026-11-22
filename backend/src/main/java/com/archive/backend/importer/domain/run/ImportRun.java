@@ -10,9 +10,9 @@ import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
 /**
- * One run of an import and its report: what it imported, when, where it is, what each program came to — added, found
- * and what was added to it, left out and why, failed and why — and the authors and places it took for the first time
- * (docs/domain/imports.md).
+ * One run of an import and its report: what it imported, when, where it is, how many programs came to each outcome,
+ * and the log of every step it took in the order it went (docs/domain/imports.md). The log only grows: a run read
+ * back holds none of it, and keeps the lines logged since, for its repository to append.
  */
 @Getter
 @AggregateRoot
@@ -24,13 +24,8 @@ public final class ImportRun {
     private ImportRunState state;
     private @Nullable Instant endedAt;
     private ImportSummary counts;
-    private final List<AddedProgram> added;
-    private final List<FailedProgram> failed;
-    private final List<KnownProgram> known;
-    private final List<SkippedProgram> skipped;
-    private final List<TakenAuthor> authors;
-    private final List<AddedPlace> places;
     private ImportProgress progress;
+    private final List<ImportLogLine> newLog = new ArrayList<>();
 
     /** A run as it is stored. */
     public ImportRun(
@@ -40,12 +35,6 @@ public final class ImportRun {
             ImportRunState state,
             @Nullable Instant endedAt,
             ImportSummary counts,
-            List<AddedProgram> added,
-            List<FailedProgram> failed,
-            List<KnownProgram> known,
-            List<SkippedProgram> skipped,
-            List<TakenAuthor> authors,
-            List<AddedPlace> places,
             ImportProgress progress) {
         this.id = Objects.requireNonNull(id, "id");
         this.scope = Objects.requireNonNull(scope, "scope");
@@ -53,12 +42,6 @@ public final class ImportRun {
         this.state = Objects.requireNonNull(state, "state");
         this.endedAt = endedAt;
         this.counts = Objects.requireNonNull(counts, "counts");
-        this.added = new ArrayList<>(added);
-        this.failed = new ArrayList<>(failed);
-        this.known = new ArrayList<>(known);
-        this.skipped = new ArrayList<>(skipped);
-        this.authors = new ArrayList<>(authors);
-        this.places = new ArrayList<>(places);
         this.progress = Objects.requireNonNull(progress, "progress");
     }
 
@@ -70,37 +53,19 @@ public final class ImportRun {
                 ImportRunState.RUNNING,
                 null,
                 new ImportSummary(0, 0, 0, 0),
-                List.of(),
-                List.of(),
-                List.of(),
-                List.of(),
-                List.of(),
-                List.of(),
                 ImportProgress.READING_LIST);
     }
 
-    public List<AddedProgram> getAdded() {
-        return List.copyOf(added);
+    /** The lines logged since the run was read, in the order they were logged. */
+    public List<ImportLogLine> getNewLog() {
+        return List.copyOf(newLog);
     }
 
-    public List<FailedProgram> getFailed() {
-        return List.copyOf(failed);
-    }
-
-    public List<KnownProgram> getKnown() {
-        return List.copyOf(known);
-    }
-
-    public List<SkippedProgram> getSkipped() {
-        return List.copyOf(skipped);
-    }
-
-    public List<TakenAuthor> getAuthors() {
-        return List.copyOf(authors);
-    }
-
-    public List<AddedPlace> getPlaces() {
-        return List.copyOf(places);
+    /** Hands the lines logged since over to be stored, once: they are not new any more. */
+    public List<ImportLogLine> pullNewLog() {
+        List<ImportLogLine> lines = List.copyOf(newLog);
+        newLog.clear();
+        return lines;
     }
 
     /** Tells which program of the source the run goes to now. */
@@ -109,39 +74,39 @@ public final class ImportRun {
         progress = Objects.requireNonNull(next, "next");
     }
 
+    /** Logs a step that is not what a program came to: a page of the list read, a file downloaded. */
+    public void log(ImportLogEntry entry, Instant now) {
+        requireRunning();
+        newLog.add(new ImportLogLine(now, entry));
+    }
+
     /** How many programs came to each outcome so far. */
     public ImportSummary summary() {
         return counts;
     }
 
-    public void record(ImportOutcome outcome) {
+    /** Counts and logs what a program came to, and after it the authors and places it took. */
+    public void record(ImportOutcome outcome, Instant now) {
         requireRunning();
         ImportSummary c = counts;
         counts = switch (outcome) {
-            case ImportOutcome.Added a -> {
-                added.add(a.program());
-                take(a.taken());
-                yield new ImportSummary(c.added() + 1, c.known(), c.skipped(), c.failed());
-            }
-            case ImportOutcome.Known k -> {
-                known.add(k.program());
-                take(k.taken());
-                yield new ImportSummary(c.added(), c.known() + 1, c.skipped(), c.failed());
-            }
-            case ImportOutcome.Skipped s -> {
-                skipped.add(s.program());
-                yield new ImportSummary(c.added(), c.known(), c.skipped() + 1, c.failed());
-            }
-            case ImportOutcome.Failed f -> {
-                failed.add(f.program());
-                yield new ImportSummary(c.added(), c.known(), c.skipped(), c.failed() + 1);
-            }
+            case ImportOutcome.Added a -> new ImportSummary(c.added() + 1, c.known(), c.skipped(), c.failed());
+            case ImportOutcome.Known k -> new ImportSummary(c.added(), c.known() + 1, c.skipped(), c.failed());
+            case ImportOutcome.Skipped s -> new ImportSummary(c.added(), c.known(), c.skipped() + 1, c.failed());
+            case ImportOutcome.Failed f -> new ImportSummary(c.added(), c.known(), c.skipped(), c.failed() + 1);
         };
+        switch (outcome) {
+            case ImportOutcome.Added a -> logWithTaken(new ImportLogEntry.Added(a.program()), a.taken(), now);
+            case ImportOutcome.Known k -> logWithTaken(new ImportLogEntry.Known(k.program()), k.taken(), now);
+            case ImportOutcome.Skipped s -> newLog.add(new ImportLogLine(now, new ImportLogEntry.Skipped(s.program())));
+            case ImportOutcome.Failed f -> newLog.add(new ImportLogLine(now, new ImportLogEntry.Failed(f.program())));
+        }
     }
 
-    private void take(TakenAuthors taken) {
-        authors.addAll(taken.authors());
-        places.addAll(taken.places());
+    private void logWithTaken(ImportLogEntry outcome, TakenAuthors taken, Instant now) {
+        newLog.add(new ImportLogLine(now, outcome));
+        taken.authors().forEach(author -> newLog.add(new ImportLogLine(now, new ImportLogEntry.Author(author))));
+        taken.places().forEach(place -> newLog.add(new ImportLogLine(now, new ImportLogEntry.Place(place))));
     }
 
     /** Ends the run: through to the end, or stopped before it by a failure of the whole run or a restart. */

@@ -5,4 +5,4 @@ package com.archive.backend.importer.read;
  *
  * @param kind {@code city} or {@code country}
  */
-public record ImportRunPlaceEntry(String kind, String name) {}
+public record ImportRunPlaceEntry(String kind, String name) implements ImportRunLogEntry {}

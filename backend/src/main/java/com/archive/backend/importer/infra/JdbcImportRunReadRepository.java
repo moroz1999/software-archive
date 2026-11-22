@@ -2,20 +2,28 @@ package com.archive.backend.importer.infra;
 
 import com.archive.backend.importer.read.ImportRunAddedEntry;
 import com.archive.backend.importer.read.ImportRunAuthorEntry;
+import com.archive.backend.importer.read.ImportRunDownloadedEntry;
 import com.archive.backend.importer.read.ImportRunFailedEntry;
 import com.archive.backend.importer.read.ImportRunKnownEntry;
+import com.archive.backend.importer.read.ImportRunListReadEntry;
+import com.archive.backend.importer.read.ImportRunLogEntry;
+import com.archive.backend.importer.read.ImportRunLogLine;
 import com.archive.backend.importer.read.ImportRunPlaceEntry;
 import com.archive.backend.importer.read.ImportRunProgressEntry;
 import com.archive.backend.importer.read.ImportRunReadRepository;
 import com.archive.backend.importer.read.ImportRunReport;
 import com.archive.backend.importer.read.ImportRunSkippedEntry;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.sql.Timestamp;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
@@ -24,9 +32,10 @@ import org.springframework.stereotype.Repository;
 public class JdbcImportRunReadRepository implements ImportRunReadRepository {
 
     private final JdbcClient jdbc;
+    private final ObjectMapper json;
 
     @Override
-    public Optional<ImportRunReport> findLatest() {
+    public Optional<ImportRunReport> findLatest(@Nullable Long after) {
         return jdbc.sql("""
                         SELECT id, archive, section, state, started_at, ended_at, added, known, skipped, failed,
                                progress_position, progress_total, progress_url
@@ -46,111 +55,107 @@ public class JdbcImportRunReadRepository implements ImportRunReadRepository {
                             rs.getInt("known"),
                             rs.getInt("skipped"),
                             rs.getInt("failed"),
-                            added(id),
-                            failed(id),
-                            known(id),
-                            skipped(id),
-                            authors(id),
-                            places(id),
                             new ImportRunProgressEntry(
                                     rs.getInt("progress_position"),
                                     rs.getObject("progress_total", Integer.class),
-                                    rs.getString("progress_url")));
+                                    rs.getString("progress_url")),
+                            log(id, after));
                 })
                 .optional();
     }
 
-    private List<ImportRunAddedEntry> added(UUID run) {
+    private List<ImportRunLogLine> log(UUID run, @Nullable Long after) {
         return jdbc.sql("""
-                        SELECT a.external_id, a.software_id, a.title, s.id IS NOT NULL AS present
-                        FROM import_run_added a LEFT JOIN software s ON s.id = a.software_id
-                        WHERE a.run_id = :run ORDER BY a.position
-                        """)
-                .param("run", run)
-                .query((rs, row) -> new ImportRunAddedEntry(
-                        rs.getString("external_id"),
-                        rs.getObject("software_id", UUID.class),
-                        rs.getString("title"),
-                        rs.getBoolean("present")))
-                .list();
-    }
-
-    private List<ImportRunFailedEntry> failed(UUID run) {
-        return jdbc.sql("""
-                        SELECT external_id, url, reason FROM import_run_failed
-                        WHERE run_id = :run ORDER BY position
-                        """)
-                .param("run", run)
-                .query((rs, row) -> new ImportRunFailedEntry(
-                        rs.getString("external_id"), rs.getString("url"), rs.getString("reason")))
-                .list();
-    }
-
-    private List<ImportRunKnownEntry> known(UUID run) {
-        return jdbc.sql("""
-                        SELECT k.external_id, k.software_id, k.title, k.supplements, s.id IS NOT NULL AS present
-                        FROM import_run_known k LEFT JOIN software s ON s.id = k.software_id
-                        WHERE k.run_id = :run ORDER BY k.position
-                        """)
-                .param("run", run)
-                .query((rs, row) -> new ImportRunKnownEntry(
-                        rs.getString("external_id"),
-                        rs.getObject("software_id", UUID.class),
-                        rs.getString("title"),
-                        rs.getBoolean("present"),
-                        supplements(rs.getString("supplements"))))
-                .list();
-    }
-
-    private List<ImportRunSkippedEntry> skipped(UUID run) {
-        return jdbc.sql("""
-                        SELECT external_id, url, title, reason, detail FROM import_run_skipped
-                        WHERE run_id = :run ORDER BY position
-                        """)
-                .param("run", run)
-                .query((rs, row) -> new ImportRunSkippedEntry(
-                        rs.getString("external_id"),
-                        rs.getString("url"),
-                        rs.getString("title"),
-                        code(rs.getString("reason")),
-                        rs.getString("detail")))
-                .list();
-    }
-
-    private List<ImportRunAuthorEntry> authors(UUID run) {
-        return jdbc.sql("""
-                        SELECT a.kind, a.entity_id, a.name, a.created,
-                               CASE a.kind
-                                   WHEN 'AUTHOR' THEN EXISTS (SELECT 1 FROM person p WHERE p.id = a.entity_id)
-                                   WHEN 'GROUP' THEN EXISTS (SELECT 1 FROM "group" g WHERE g.id = a.entity_id)
-                                   ELSE EXISTS (SELECT 1 FROM label l WHERE l.id = a.entity_id)
+                        SELECT l.seq, l.at, l.kind, l.entry::text AS entry,
+                               CASE
+                                   WHEN l.kind IN ('ADDED', 'KNOWN') THEN EXISTS (
+                                       SELECT 1 FROM software s WHERE s.id = (l.entry ->> 'softwareId')::uuid)
+                                   WHEN l.kind = 'AUTHOR' THEN CASE l.entry ->> 'kind'
+                                       WHEN 'AUTHOR' THEN EXISTS (
+                                           SELECT 1 FROM person p WHERE p.id = (l.entry ->> 'entityId')::uuid)
+                                       WHEN 'GROUP' THEN EXISTS (
+                                           SELECT 1 FROM "group" g WHERE g.id = (l.entry ->> 'entityId')::uuid)
+                                       ELSE EXISTS (
+                                           SELECT 1 FROM label b WHERE b.id = (l.entry ->> 'entityId')::uuid)
+                                   END
+                                   ELSE false
                                END AS present
-                        FROM import_run_author a
-                        WHERE a.run_id = :run ORDER BY a.position
+                        FROM import_run_log l
+                        WHERE l.run_id = :run AND (CAST(:after AS bigint) IS NULL OR l.seq > CAST(:after AS bigint))
+                        ORDER BY l.seq
                         """)
                 .param("run", run)
-                .query((rs, row) -> new ImportRunAuthorEntry(
-                        code(rs.getString("kind")),
-                        rs.getObject("entity_id", UUID.class),
-                        rs.getString("name"),
-                        rs.getBoolean("created"),
-                        rs.getBoolean("present")))
+                .param("after", after)
+                .query((rs, row) -> {
+                    Timestamp at = rs.getTimestamp("at");
+                    String kind = rs.getString("kind");
+                    return new ImportRunLogLine(
+                            rs.getLong("seq"),
+                            at == null ? null : at.toInstant(),
+                            code(kind),
+                            entry(kind, tree(rs.getString("entry")), rs.getBoolean("present")));
+                })
                 .list();
     }
 
-    private List<ImportRunPlaceEntry> places(UUID run) {
-        return jdbc.sql("SELECT kind, name FROM import_run_place WHERE run_id = :run ORDER BY position")
-                .param("run", run)
-                .query((rs, row) -> new ImportRunPlaceEntry(code(rs.getString("kind")), rs.getString("name")))
-                .list();
+    private JsonNode tree(String entry) {
+        try {
+            return json.readTree(entry);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("A stored log line is not JSON", e);
+        }
     }
 
-    private static List<String> supplements(String stored) {
-        return stored.isEmpty()
-                ? List.of()
-                : Arrays.stream(stored.split(","))
-                        .map(JdbcImportRunReadRepository::code)
-                        .toList();
+    private static ImportRunLogEntry entry(String kind, JsonNode e, boolean present) {
+        return switch (kind) {
+            case "LIST" ->
+                new ImportRunListReadEntry(
+                        text(e, "url"),
+                        e.get("number").asInt(),
+                        e.hasNonNull("pages") ? e.get("pages").asInt() : null,
+                        e.get("programs").asInt());
+            case "DOWNLOAD" ->
+                new ImportRunDownloadedEntry(
+                        text(e, "externalId"),
+                        text(e, "title"),
+                        code(text(e, "file")),
+                        text(e, "name"),
+                        e.get("size").asLong());
+            case "ADDED" ->
+                new ImportRunAddedEntry(
+                        text(e, "externalId"), UUID.fromString(text(e, "softwareId")), text(e, "title"), present);
+            case "KNOWN" -> {
+                List<String> supplements = new ArrayList<>();
+                e.get("supplements").forEach(code -> supplements.add(code(code.asText())));
+                yield new ImportRunKnownEntry(
+                        text(e, "externalId"),
+                        UUID.fromString(text(e, "softwareId")),
+                        text(e, "title"),
+                        present,
+                        supplements);
+            }
+            case "SKIPPED" ->
+                new ImportRunSkippedEntry(
+                        text(e, "externalId"),
+                        text(e, "url"),
+                        text(e, "title"),
+                        code(text(e, "reason")),
+                        text(e, "detail"));
+            case "FAILED" -> new ImportRunFailedEntry(text(e, "externalId"), text(e, "url"), text(e, "reason"));
+            case "AUTHOR" ->
+                new ImportRunAuthorEntry(
+                        code(text(e, "kind")),
+                        UUID.fromString(text(e, "entityId")),
+                        text(e, "name"),
+                        e.get("created").asBoolean(),
+                        present);
+            case "PLACE" -> new ImportRunPlaceEntry(code(text(e, "kind")), text(e, "name"));
+            default -> throw new IllegalStateException("Unknown kind of a log line: " + kind);
+        };
+    }
+
+    private static String text(JsonNode entry, String field) {
+        return entry.get(field).asText();
     }
 
     /** RELEASE_DATE → release-date: codes go to the frontend in lower case, words joined by hyphens. */

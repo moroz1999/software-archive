@@ -13,7 +13,10 @@ import {
     readStringArray,
 } from '@/shared/api';
 import {
+    type ImportLogEntry,
+    type ImportLogLine,
     type ImportRun,
+    isDownloadedFile,
     isImportRunState,
     isPlaceKind,
     isSkipReason,
@@ -52,14 +55,19 @@ export function startBasisImport(): Promise<void> {
     return postNoContent('/api/imports/basis');
 }
 
-/** The report of the import started last, null before the first one: `GET /api/imports/last-run`. */
-export async function fetchLastImportRun(signal: AbortSignal): Promise<ImportRun | null> {
-    const json = await getJson('/api/imports/last-run', signal);
+/**
+ * The report of the import started last, null before the first one: `GET /api/imports/last-run`; with the lines of its
+ * log after the one given only, all of them without one.
+ */
+export async function fetchLastImportRun(after: number | undefined, signal: AbortSignal): Promise<ImportRun | null> {
+    const json = await getJson(after === undefined ? LAST_RUN_PATH : `${LAST_RUN_PATH}?${new URLSearchParams({after: String(after)}).toString()}`, signal);
     return mapResponse(() => {
         const run = readObject(json, 'last run')['run'];
         return run === null || run === undefined ? null : toImportRun(readObject(run, 'run'));
     });
 }
+
+const LAST_RUN_PATH = '/api/imports/last-run';
 
 function toImportRun(dto: JsonObject): ImportRun {
     const state = readString(dto, 'state');
@@ -77,58 +85,6 @@ function toImportRun(dto: JsonObject): ImportRun {
         known: readNumber(dto, 'known'),
         skipped: readNumber(dto, 'skipped'),
         failed: readNumber(dto, 'failed'),
-        addedPrograms: readArray(dto['addedPrograms'], 'added programs').map((item) => {
-            const added = readObject(item, 'added program');
-            return {
-                externalId: readString(added, 'externalId'),
-                softwareId: toSoftwareId(readString(added, 'softwareId')),
-                title: readString(added, 'title'),
-                exists: readBoolean(added, 'exists'),
-            };
-        }),
-        failedPrograms: readArray(dto['failedPrograms'], 'failed programs').map((item) => {
-            const failed = readObject(item, 'failed program');
-            return {externalId: readString(failed, 'externalId'), url: readString(failed, 'url'), reason: readString(failed, 'reason')};
-        }),
-        knownPrograms: readArray(dto['knownPrograms'], 'known programs').map((item) => {
-            const known = readObject(item, 'known program');
-            return {
-                externalId: readString(known, 'externalId'),
-                softwareId: toSoftwareId(readString(known, 'softwareId')),
-                title: readString(known, 'title'),
-                exists: readBoolean(known, 'exists'),
-                supplements: readStringArray(known['supplements'], 'supplements').map((code) => {
-                    if (!isSoftwareSupplement(code)) {
-                        throw new TypeError(`Unknown supplement: ${code}`);
-                    }
-                    return code;
-                }),
-            };
-        }),
-        skippedPrograms: readArray(dto['skippedPrograms'], 'skipped programs').map((item) => {
-            const skipped = readObject(item, 'skipped program');
-            return {
-                externalId: readString(skipped, 'externalId'),
-                url: readString(skipped, 'url'),
-                title: readString(skipped, 'title'),
-                reason: readCode(skipped, 'reason', isSkipReason),
-                detail: readString(skipped, 'detail'),
-            };
-        }),
-        authors: readArray(dto['authors'], 'authors').map((item) => {
-            const author = readObject(item, 'author');
-            return {
-                kind: readCode(author, 'kind', isTakenAuthorKind),
-                id: readString(author, 'id'),
-                name: readString(author, 'name'),
-                created: readBoolean(author, 'created'),
-                exists: readBoolean(author, 'exists'),
-            };
-        }),
-        places: readArray(dto['places'], 'places').map((item) => {
-            const place = readObject(item, 'place');
-            return {kind: readCode(place, 'kind', isPlaceKind), name: readString(place, 'name')};
-        }),
         progress: (() => {
             const progress = readObject(dto['progress'], 'progress');
             return {
@@ -137,5 +93,85 @@ function toImportRun(dto: JsonObject): ImportRun {
                 url: readNullableString(progress, 'url'),
             };
         })(),
+        log: readArray(dto['log'], 'log').map((item) => toLogLine(readObject(item, 'log line'))),
     };
+}
+
+function toLogLine(dto: JsonObject): ImportLogLine {
+    return {seq: readNumber(dto, 'seq'), at: readNullableString(dto, 'at'), entry: toLogEntry(readString(dto, 'kind'), readObject(dto['entry'], 'log entry'))};
+}
+
+function toLogEntry(kind: string, entry: JsonObject): ImportLogEntry {
+    switch (kind) {
+        case 'list':
+            return {
+                kind,
+                page: {url: readString(entry, 'url'), number: readNumber(entry, 'number'), pages: readNullableNumber(entry, 'pages'), programs: readNumber(entry, 'programs')},
+            };
+        case 'download':
+            return {
+                kind,
+                download: {
+                    externalId: readString(entry, 'externalId'),
+                    title: readString(entry, 'title'),
+                    file: readCode(entry, 'file', isDownloadedFile),
+                    name: readString(entry, 'name'),
+                    size: readNumber(entry, 'size'),
+                },
+            };
+        case 'added':
+            return {
+                kind,
+                program: {
+                    externalId: readString(entry, 'externalId'),
+                    softwareId: toSoftwareId(readString(entry, 'softwareId')),
+                    title: readString(entry, 'title'),
+                    exists: readBoolean(entry, 'exists'),
+                },
+            };
+        case 'known':
+            return {
+                kind,
+                program: {
+                    externalId: readString(entry, 'externalId'),
+                    softwareId: toSoftwareId(readString(entry, 'softwareId')),
+                    title: readString(entry, 'title'),
+                    exists: readBoolean(entry, 'exists'),
+                    supplements: readStringArray(entry['supplements'], 'supplements').map((code) => {
+                        if (!isSoftwareSupplement(code)) {
+                            throw new TypeError(`Unknown supplement: ${code}`);
+                        }
+                        return code;
+                    }),
+                },
+            };
+        case 'skipped':
+            return {
+                kind,
+                program: {
+                    externalId: readString(entry, 'externalId'),
+                    url: readString(entry, 'url'),
+                    title: readString(entry, 'title'),
+                    reason: readCode(entry, 'reason', isSkipReason),
+                    detail: readString(entry, 'detail'),
+                },
+            };
+        case 'failed':
+            return {kind, program: {externalId: readString(entry, 'externalId'), url: readString(entry, 'url'), reason: readString(entry, 'reason')}};
+        case 'author':
+            return {
+                kind,
+                author: {
+                    kind: readCode(entry, 'kind', isTakenAuthorKind),
+                    id: readString(entry, 'id'),
+                    name: readString(entry, 'name'),
+                    created: readBoolean(entry, 'created'),
+                    exists: readBoolean(entry, 'exists'),
+                },
+            };
+        case 'place':
+            return {kind, place: {kind: readCode(entry, 'kind', isPlaceKind), name: readString(entry, 'name')}};
+        default:
+            throw new TypeError(`Unknown kind of a log line: ${kind}`);
+    }
 }

@@ -32,6 +32,10 @@ import com.archive.backend.importer.domain.source.SourcePlace;
 import com.archive.backend.importer.domain.source.SourcePlaceKind;
 import com.archive.backend.importer.domain.source.SourceProgram;
 import com.archive.backend.importer.read.ImportRunAuthorEntry;
+import com.archive.backend.importer.read.ImportRunKnownEntry;
+import com.archive.backend.importer.read.ImportRunLogEntry;
+import com.archive.backend.importer.read.ImportRunLogLine;
+import com.archive.backend.importer.read.ImportRunPlaceEntry;
 import com.archive.backend.importer.read.ImportRunReadRepository;
 import com.archive.backend.importer.read.ImportRunReport;
 import com.archive.backend.label.app.MakeAuthorOfLabelCommand;
@@ -224,7 +228,7 @@ class ImportProgramIT {
         assertThat(origin("SOFTWARE", "1")).isEqualTo(ours.value());
         ImportRunReport report = lastReport();
         assertThat(List.of(report.added(), report.known())).containsExactly(0, 1);
-        assertThat(report.knownPrograms()).singleElement().satisfies(known -> {
+        assertThat(entries(report, ImportRunKnownEntry.class)).singleElement().satisfies(known -> {
             assertThat(known.externalId()).isEqualTo("1");
             assertThat(known.softwareId()).isEqualTo(ours.value());
             assertThat(known.title()).isEqualTo("Elite (other title)");
@@ -244,7 +248,7 @@ class ImportProgramIT {
 
         importProgram(elite);
 
-        assertThat(lastReport().knownPrograms())
+        assertThat(entries(lastReport(), ImportRunKnownEntry.class))
                 .singleElement()
                 .satisfies(known -> assertThat(known.supplements()).isEmpty());
     }
@@ -257,7 +261,7 @@ class ImportProgramIT {
                 .screenshots(screenshot("elite.png", 100))
                 .build());
 
-        assertThat(lastReport().knownPrograms())
+        assertThat(entries(lastReport(), ImportRunKnownEntry.class))
                 .singleElement()
                 .satisfies(known -> assertThat(known.supplements()).containsExactly("screenshots"));
     }
@@ -281,17 +285,17 @@ class ImportProgramIT {
                 .build());
 
         ImportRunReport report = lastReport();
-        assertThat(report.authors())
+        assertThat(entries(report, ImportRunAuthorEntry.class))
                 .extracting(
                         author -> author.kind() + ":" + author.name() + ":" + author.created() + ":" + author.exists())
                 .containsExactly("label:IVAN A:true:true", "author:IVAN:true:true", "group:Fenomen:true:true");
-        assertThat(report.authors())
+        assertThat(entries(report, ImportRunAuthorEntry.class))
                 .extracting(ImportRunAuthorEntry::id)
                 .containsExactly(
                         jdbc.queryForObject("SELECT id FROM label WHERE name = 'IVAN A'", UUID.class),
                         origin("AUTHOR", "17"),
                         origin("GROUP", "18"));
-        assertThat(report.places())
+        assertThat(entries(report, ImportRunPlaceEntry.class))
                 .extracting(place -> place.kind() + ":" + place.name())
                 .containsExactly("city:Новоград", "country:Атлантида");
     }
@@ -307,19 +311,19 @@ class ImportProgramIT {
                 .build());
 
         ImportRunReport first = lastReport();
-        assertThat(first.authors()).singleElement().satisfies(author -> {
+        assertThat(entries(first, ImportRunAuthorEntry.class)).singleElement().satisfies(author -> {
             assertThat(author.kind()).isEqualTo("author");
             assertThat(author.id()).isEqualTo(ours);
             assertThat(author.name()).isEqualTo("IVAN");
             assertThat(author.created()).isFalse();
         });
-        assertThat(first.places()).isEmpty();
+        assertThat(entries(first, ImportRunPlaceEntry.class)).isEmpty();
 
         importProgram(program("2", "Exolon", zip(Map.of("EXOLON.ROM", EXTRA_ROM)))
                 .authors(ivan)
                 .build());
 
-        assertThat(lastReport().authors()).isEmpty();
+        assertThat(entries(lastReport(), ImportRunAuthorEntry.class)).isEmpty();
     }
 
     @Test
@@ -880,7 +884,16 @@ class ImportProgramIT {
     }
 
     private ImportRunReport lastReport() {
-        return reports.findLatest().orElseThrow();
+        return reports.findLatest(null).orElseThrow();
+    }
+
+    /** The lines of the log of a run telling of one kind, in their order. */
+    private static <T extends ImportRunLogEntry> List<T> entries(ImportRunReport report, Class<T> kind) {
+        return report.log().stream()
+                .map(ImportRunLogLine::entry)
+                .filter(kind::isInstance)
+                .map(kind::cast)
+                .toList();
     }
 
     private String preservation(UUID software) {

@@ -14,14 +14,14 @@ The archive takes in software from other archives so that it does not have to be
 - An author is remembered by its origin, so a later import of the same author from the same source first looks for whom it belongs to in the archive, and creates nothing new when it is there: it credits that subject. A label IVAN A imported from a source and made into the person Ivan Andreev in the archive stays remembered as Ivan Andreev; the next run meeting IVAN A on that source credits Ivan Andreev, a program added there under IVAN A since included.
 - What an import adds is added by one fixed user of the archive, the importer.
 - Only an administrator starts an import, from the management of the archive: a whole source archive or one of its sections. Only one runs at a time, so that two runs never add the same entries.
-- Every run leaves a report for the administrator: what it imported, whether it went through to the end or was stopped (by a failure of the whole run or a restart of the archive), and the report grows while the run goes on. It says plainly what happened:
-  - while the run goes on, what it does now: reading the list of programs, or which program of how many it is at, when the source tells how many there are;
-  - every program added;
-  - every program already there, with what was added to it — its description, release date, preservation status, categories, authors, screenshots — or that it lacked nothing;
-  - every program left out, with the section or the category of the source it was left out by;
-  - every program that failed, and why;
-  - every author it took for the first time: a person, a group or a label it created, or a person or a group of the archive it found to be them; and every city and country it added.
-- What a program that failed brought is not in the report: it never reached the archive.
+- Every run leaves a report for the administrator: what it imported, whether it went through to the end or was stopped (by a failure of the whole run or a restart of the archive), how many programs it added, found already there, left out and failed, and what it does now: reading the list of programs, or which program of how many it is at, when the source tells how many there are.
+- The report keeps a log of the run: every step it took, one line after another in the order it went and with the time of each, growing while the run goes on, so the administrator follows the run as it goes:
+  - every page of the list of programs read, of how many pages, and how many programs it lists;
+  - every file of a program downloaded: its archive and its screenshots, with their names and sizes;
+  - then what the program came to: added; already there, with what was added to it — its description, release date, preservation status, categories, authors, screenshots — or that there was nothing to add; left out, with the section or the category of the source it was left out by; or failed, and why;
+  - after it, every author the program took for the first time: a person, a group or a label created, or a person or a group of the archive found to be them; and every city and country it added.
+- The reports of the runs made before the log became their logs as they were, without the time of their lines, which nobody wrote down.
+- What a program that failed brought — its authors and places — is not in the log: it never reached the archive. The files it downloaded before it failed are.
 
 ## Software
 - A program is matched by the files of its release, compared by MD5. Which files make a release is told by the platform: on Vector, its executable files (ROM, COM, R0M, VEC), floppy images and tape recordings (CAS and WAV). A release of the archive whose such files are exactly the files of the source's release — all of them, none more — is the same release, and the program is the same software, whichever source it came from; a ZIP of the archive holding the same ROMs as a ZIP of the source is the same release. Software that already came from the same source, under another id there, is never the match: two entries of one source stay two programs, even with the same files. Anything else is another program and is added as new. Duplicate software made this way is merged by hand later.

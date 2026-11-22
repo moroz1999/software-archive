@@ -11,4 +11,5 @@ import java.util.UUID;
  *     {@code categories}, {@code credits}, {@code screenshots}; none when it lacked nothing
  */
 public record ImportRunKnownEntry(
-        String externalId, UUID softwareId, String title, boolean exists, List<String> supplements) {}
+        String externalId, UUID softwareId, String title, boolean exists, List<String> supplements)
+        implements ImportRunLogEntry {}

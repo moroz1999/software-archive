@@ -3,8 +3,7 @@ import {type ImportRun, runRefreshInterval} from './import-run';
 
 const RUN: ImportRun = {
     id: '1', archive: 'vektor-06c.ru', section: null, state: 'running', startedAt: '2026-11-14T12:00:00Z', endedAt: null,
-    added: 0, known: 0, skipped: 0, failed: 0, addedPrograms: [], failedPrograms: [],
-    knownPrograms: [], skippedPrograms: [], authors: [], places: [], progress: {position: 0, total: null, url: null},
+    added: 0, known: 0, skipped: 0, failed: 0, progress: {position: 0, total: null, url: null}, log: [],
 };
 
 describe(runRefreshInterval, () => {

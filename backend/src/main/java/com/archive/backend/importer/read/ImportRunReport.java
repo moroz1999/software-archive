@@ -10,8 +10,7 @@ import org.jspecify.annotations.Nullable;
  *
  * @param section the code of the section imported; the whole archive without one
  * @param state {@code RUNNING}, {@code DONE} or {@code STOPPED}
- * @param authors the authors taken for the first time, in the order the run took them
- * @param places the places added, in the order the run added them
+ * @param log the lines of its log in the order the run went: all of them, or those after the line asked for
  */
 public record ImportRunReport(
         UUID id,
@@ -24,10 +23,5 @@ public record ImportRunReport(
         int known,
         int skipped,
         int failed,
-        List<ImportRunAddedEntry> addedPrograms,
-        List<ImportRunFailedEntry> failedPrograms,
-        List<ImportRunKnownEntry> knownPrograms,
-        List<ImportRunSkippedEntry> skippedPrograms,
-        List<ImportRunAuthorEntry> authors,
-        List<ImportRunPlaceEntry> places,
-        ImportRunProgressEntry progress) {}
+        ImportRunProgressEntry progress,
+        List<ImportRunLogLine> log) {}
