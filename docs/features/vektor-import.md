@@ -27,7 +27,7 @@ A backend command that takes the software of vektor-06c.ru into the archive ([do
 
 ## Reading the site
 
-- `VektorSite` is the port the run reads through; `HttpVektorSite` walks the list pages (`?PAGEN_2=N` up to the last page the first one names) and parses pages with `VektorPages`.
+- `VektorSite` is the port the run reads through; `HttpVektorSite` walks the list pages by the addresses the pagination of the first one gives, up to the last page it names: the whole catalog numbers its pages by `PAGEN_2`, a section by `PAGEN_1`. It parses pages with `VektorPages`.
 - `JdkSourceHttp`, shared with every source, asks one thing at a time with a pause before each request, growing with every retry; a server failure (5xx, 429) or a broken connection is tried up to three times, a missing page once.
 - The archive and the picture are downloaded whole into memory: the site's files are far below the limits of release archives and screenshots.
 - The picture the site shows when it has no screenshot (`Skrinshota-net…`) is not taken.

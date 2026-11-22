@@ -42,6 +42,24 @@ class HttpVektorSiteTest {
     }
 
     @Test
+    void walksEveryPageOfASectionByTheAddressesItsPaginationGives() {
+        http.serve(CATALOG + "arkadnye-igry/", page("section-arkadnye-igry.html"));
+        for (int number = 2; number <= 24; number++) {
+            http.serve(
+                    CATALOG + "arkadnye-igry/?PAGEN_1=" + number,
+                    list("2" + number, "/programmnoe-obespechenie/arkadnye-igry/p" + number + "/"));
+        }
+
+        assertThat(site.listings(new VektorSection("arkadnye-igry")))
+                .hasSize(10 + 23)
+                .extracting(VektorListing::id)
+                .startsWith("49")
+                .endsWith("224")
+                .doesNotHaveDuplicates();
+        assertThat(http.asked()).hasSize(24);
+    }
+
+    @Test
     void readsThePageOfAProgram() {
         VektorListing listing = new VektorListing("524", CATALOG + "demo-programmy/512-demo/");
         http.serve(listing.url(), page("program-524.html"));

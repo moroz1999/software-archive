@@ -20,6 +20,9 @@ public final class VektorPages {
     public static final String SITE = "https://vektor-06c.ru";
     private static final String CATALOG = "/programmnoe-obespechenie/";
     private static final Pattern ELEMENT_ID = Pattern.compile("bx_\\d+_(\\d+)");
+    /** A link of the pagination: the address up to the number of the page, and the number. */
+    private static final Pattern PAGE_LINK = Pattern.compile("(.*[?&]PAGEN_\\d+=)(\\d+)");
+
     private static final Pattern BACKGROUND = Pattern.compile("url\\('([^']+)'\\)");
     /** The picture the site shows for a program without a screenshot: "Скриншота нет". */
     private static final String NO_SCREENSHOT = "Skrinshota-net";
@@ -39,17 +42,24 @@ public final class VektorPages {
     }
 
     /**
-     * The number of the last page of a list; a list without pages has one.
+     * The addresses of the pages of a list after its first one, as its pagination links them: the catalog and a section
+     * number their pages by parameters of their own. A list without pages has none.
      */
-    public static int lastPage(String html) {
+    public static List<String> otherPages(String html) {
+        String lastLink = null;
         int last = 1;
-        for (Element page : Jsoup.parse(html).select(".bx-pagination li span")) {
-            String number = page.text().trim();
-            if (number.matches("\\d+")) {
-                last = Math.max(last, Integer.parseInt(number));
+        for (Element link : Jsoup.parse(html).select(".bx-pagination li a[href]")) {
+            Matcher page = PAGE_LINK.matcher(link.attr("href"));
+            if (page.matches() && Integer.parseInt(page.group(2)) > last) {
+                last = Integer.parseInt(page.group(2));
+                lastLink = page.group(1);
             }
         }
-        return last;
+        List<String> pages = new ArrayList<>();
+        for (int number = 2; number <= last; number++) {
+            pages.add(SITE + lastLink + number);
+        }
+        return pages;
     }
 
     public static VektorProgram program(String html, VektorListing listing) {

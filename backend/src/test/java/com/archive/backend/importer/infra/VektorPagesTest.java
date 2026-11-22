@@ -37,10 +37,25 @@ class VektorPagesTest {
     }
 
     @Test
-    void readsTheNumberOfTheLastPage() {
-        assertThat(VektorPages.lastPage(page("list-1.html"))).isEqualTo(85);
-        assertThat(VektorPages.lastPage(page("list-85.html"))).isEqualTo(85);
-        assertThat(VektorPages.lastPage(page("section-zagruzchiki.html"))).isEqualTo(1);
+    void readsTheOtherPagesOfTheCatalogAsItsPaginationLinksThem() {
+        List<String> pages = VektorPages.otherPages(page("list-1.html"));
+
+        assertThat(pages).hasSize(84).startsWith(LIST + "?PAGEN_2=2").endsWith(LIST + "?PAGEN_2=85");
+    }
+
+    @Test
+    void readsTheOtherPagesOfASectionAsItsPaginationLinksThem() {
+        List<String> pages = VektorPages.otherPages(page("section-arkadnye-igry.html"));
+
+        assertThat(pages)
+                .hasSize(23)
+                .startsWith(LIST + "arkadnye-igry/?PAGEN_1=2")
+                .endsWith(LIST + "arkadnye-igry/?PAGEN_1=24");
+    }
+
+    @Test
+    void aListWithoutPaginationHasNoOtherPages() {
+        assertThat(VektorPages.otherPages(page("section-zagruzchiki.html"))).isEmpty();
     }
 
     @Test

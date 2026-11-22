@@ -13,7 +13,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * vektor-06c.ru read page by page over HTTP. The whole catalog is a list of numbered pages; a section is read from
- * its own list.
+ * its own list. The other pages of a list are reached by the addresses its pagination gives, as the catalog and a
+ * section number their pages by parameters of their own.
  */
 @Component
 @RequiredArgsConstructor
@@ -29,9 +30,8 @@ public class HttpVektorSite implements VektorSite {
         String first = section == null ? base + "?PAGEN_2=1" : base;
         String firstPage = text(first);
         List<VektorListing> listings = new ArrayList<>(VektorPages.listings(firstPage));
-        int last = VektorPages.lastPage(firstPage);
-        for (int number = 2; number <= last; number++) {
-            listings.addAll(VektorPages.listings(text(base + "?PAGEN_2=" + number)));
+        for (String page : VektorPages.otherPages(firstPage)) {
+            listings.addAll(VektorPages.listings(text(page)));
         }
         return listings;
     }
