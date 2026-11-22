@@ -23,9 +23,9 @@ public class JdbcGeoUses implements GeoUses {
 
     @Override
     public boolean cityInUse(CityId city) {
-        return jdbc.sql("SELECT EXISTS (SELECT 1 FROM entity_location WHERE city_id = :id)")
-                .param("id", city.value())
-                .query(Boolean.class)
-                .single();
+        return jdbc.sql("""
+                        SELECT EXISTS (SELECT 1 FROM entity_location WHERE city_id = :id)
+                            OR EXISTS (SELECT 1 FROM label_city WHERE city_id = :id)
+                        """).param("id", city.value()).query(Boolean.class).single();
     }
 }

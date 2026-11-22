@@ -6,7 +6,9 @@ import static com.archive.backend.user.TestActors.ADMIN;
 import static com.archive.backend.user.TestActors.MEMBER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -42,6 +44,9 @@ class GeographyIT {
     private static final UUID ESPOO = id(12);
     private static final UUID KOVROV = id(13);
     private static final UUID ABAKAN = id(14);
+    private static final UUID HELSINGFORS = id(15);
+    private static final UUID STOCKHOLM = id(16);
+    private static final UUID GHOST = id(41);
     private static final UUID JANE = id(21);
     private static final UUID IVAN = id(22);
     private static final UUID ELITE = id(31);
@@ -321,6 +326,172 @@ class GeographyIT {
                         {"countryId": "%s"}
                         """.formatted(FINLAND))
                 .andExpect(status().isForbidden());
+    }
+
+    /** The locations of the owner, each as its country and its city, the primary one marked with a star. */
+    private java.util.List<String> placesOf(UUID owner) {
+        return jdbc.query(
+                "SELECT country_id, city_id, is_primary FROM entity_location WHERE entity_id = ? ORDER BY city_id",
+                (rs, row) -> rs.getObject("country_id") + "/" + rs.getObject("city_id")
+                        + (rs.getBoolean("is_primary") ? "*" : ""),
+                owner);
+    }
+
+    @Test
+    void showsTheCountriesAndTheCitiesThatMayBeDuplicates() throws Exception {
+        country(jdbc, id(3), "Суоми", "finland ");
+        city(jdbc, HELSINGFORS, FINLAND, "Хель-синки", null);
+        city(jdbc, KOVROV, null, "Хельсинки", null);
+        city(jdbc, STOCKHOLM, SWEDEN, "Хельсинки", null);
+
+        String finnish = "$.cities[?(@.country == 'Финляндия')]";
+        String swedish = "$.cities[?(@.country == 'Швеция')]";
+        mvc.perform(get("/api/geography/duplicates").header("Accept-Language", "ru"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.countries[*][*].id")
+                        .value(containsInAnyOrder(FINLAND.toString(), id(3).toString())))
+                .andExpect(jsonPath("$.cities.length()").value(2))
+                .andExpect(jsonPath(finnish + ".cities[*].id")
+                        .value(containsInAnyOrder(HELSINKI.toString(), HELSINGFORS.toString(), KOVROV.toString())))
+                .andExpect(jsonPath(finnish + ".cities[?(@.id == '" + HELSINKI + "')].places")
+                        .value(contains(1)))
+                .andExpect(jsonPath(finnish + ".cities[?(@.id == '" + KOVROV + "')].country")
+                        .value(contains(nullValue())))
+                .andExpect(jsonPath(swedish + ".cities[*].id")
+                        .value(containsInAnyOrder(STOCKHOLM.toString(), KOVROV.toString())));
+    }
+
+    @Test
+    void mergesACityIntoAnotherWithEveryPlaceInIt() throws Exception {
+        city(jdbc, HELSINGFORS, SWEDEN, "Гельсингфорс", null);
+        jdbc.update("INSERT INTO person (id, real_name) VALUES (?, 'Ghost')", GHOST);
+        jdbc.update(
+                "INSERT INTO entity_location (entity_type, entity_id, country_id, city_id, is_primary) VALUES"
+                        + " ('PERSON', ?, ?, ?, true), ('PERSON', ?, ?, ?, false), ('PERSON', ?, ?, ?, true)",
+                IVAN,
+                SWEDEN,
+                HELSINGFORS,
+                JANE,
+                SWEDEN,
+                HELSINGFORS,
+                GHOST,
+                SWEDEN,
+                HELSINGFORS);
+        jdbc.update(
+                "UPDATE entity_location SET is_primary = false WHERE entity_id = ? AND city_id = ?", JANE, HELSINKI);
+        jdbc.update(
+                "UPDATE entity_location SET is_primary = true WHERE entity_id = ? AND city_id = ?", JANE, HELSINGFORS);
+        jdbc.update("INSERT INTO label (id, name) VALUES (?, 'Old')", id(51));
+        jdbc.update("INSERT INTO label_city (label_id, city_id) VALUES (?, ?)", id(51), HELSINGFORS);
+
+        send(post("/api/cities/{id}/merge", HELSINGFORS), ADMIN, """
+                        {"into": "%s"}
+                        """.formatted(HELSINKI))
+                .andExpect(status().isNoContent());
+
+        mvc.perform(get("/api/cities/{id}", HELSINGFORS)).andExpect(status().isNotFound());
+        mvc.perform(get("/api/cities/{id}", HELSINKI))
+                .andExpect(jsonPath("$.names.ru").value("Хельсинки"));
+        assertThat(placesOf(IVAN)).containsExactly(FINLAND + "/" + HELSINKI + "*");
+        assertThat(placesOf(JANE)).containsExactly(FINLAND + "/" + HELSINKI + "*");
+        assertThat(jdbc.queryForObject("SELECT city_id FROM label_city WHERE label_id = ?", UUID.class, id(51)))
+                .isEqualTo(HELSINKI);
+        assertThat(jdbc.queryForObject(
+                        "SELECT count(*) FROM search_outbox WHERE entity_type = 'SOFTWARE' AND entity_id = ?",
+                        Integer.class,
+                        ELITE))
+                .isOne();
+    }
+
+    @Test
+    void refusesMergingACityIntoItselfOrIntoOneNotInTheArchive() throws Exception {
+        send(post("/api/cities/{id}/merge", ESPOO), ADMIN, """
+                        {"into": "%s"}
+                        """.formatted(ESPOO))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code").value("geo.merge-into-itself"));
+        send(post("/api/cities/{id}/merge", ESPOO), ADMIN, """
+                        {"into": "%s"}
+                        """.formatted(id(99)))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code").value("geo.city-unknown"))
+                .andExpect(jsonPath("$.errors[0].field").value("into"));
+        send(post("/api/cities/{id}/merge", id(99)), ADMIN, """
+                        {"into": "%s"}
+                        """.formatted(ESPOO))
+                .andExpect(status().isNotFound());
+        send(post("/api/cities/{id}/merge", ESPOO), MEMBER, """
+                        {"into": "%s"}
+                        """.formatted(HELSINKI))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/api/cities/{id}", ESPOO)).andExpect(status().isOk());
+    }
+
+    @Test
+    void mergesACountryIntoAnotherWithItsCitiesAndEveryPlaceInIt() throws Exception {
+        jdbc.update(
+                "INSERT INTO entity_location (entity_type, entity_id, country_id, city_id, is_primary) VALUES"
+                        + " ('PERSON', ?, ?, NULL, false), ('PERSON', ?, ?, NULL, false), ('PERSON', ?, ?, NULL, true)",
+                JANE,
+                FINLAND,
+                JANE,
+                SWEDEN,
+                IVAN,
+                FINLAND);
+        jdbc.update(
+                "UPDATE entity_location SET is_primary = false WHERE entity_id = ? AND city_id = ?", JANE, HELSINKI);
+        jdbc.update(
+                "UPDATE entity_location SET is_primary = true WHERE entity_id = ? AND country_id = ? AND city_id IS NULL",
+                JANE,
+                FINLAND);
+
+        send(post("/api/countries/{id}/merge", FINLAND), ADMIN, """
+                        {"into": "%s"}
+                        """.formatted(SWEDEN))
+                .andExpect(status().isNoContent());
+
+        mvc.perform(get("/api/countries/{id}", FINLAND)).andExpect(status().isNotFound());
+        mvc.perform(get("/api/cities/{id}", HELSINKI))
+                .andExpect(jsonPath("$.countryId").value(SWEDEN.toString()));
+        mvc.perform(get("/api/cities/{id}", ESPOO))
+                .andExpect(jsonPath("$.countryId").value(SWEDEN.toString()));
+        assertThat(placesOf(JANE)).containsExactlyInAnyOrder(SWEDEN + "/null*", SWEDEN + "/" + HELSINKI);
+        assertThat(placesOf(IVAN)).containsExactly(SWEDEN + "/null*");
+        assertThat(jdbc.queryForObject(
+                        "SELECT count(*) FROM search_outbox WHERE entity_type = 'SOFTWARE' AND entity_id = ?",
+                        Integer.class,
+                        ELITE))
+                .isOne();
+    }
+
+    @Test
+    void refusesMergingACountryIntoItselfOrIntoOneNotInTheArchive() throws Exception {
+        send(post("/api/countries/{id}/merge", SWEDEN), ADMIN, """
+                        {"into": "%s"}
+                        """.formatted(SWEDEN))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code").value("geo.merge-into-itself"));
+        send(post("/api/countries/{id}/merge", SWEDEN), ADMIN, """
+                        {"into": "%s"}
+                        """.formatted(id(99)))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code").value("geo.country-unknown"))
+                .andExpect(jsonPath("$.errors[0].field").value("into"));
+        send(post("/api/countries/{id}/merge", SWEDEN), MEMBER, """
+                        {"into": "%s"}
+                        """.formatted(FINLAND))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/api/countries/{id}", SWEDEN)).andExpect(status().isOk());
+    }
+
+    @Test
+    void keepsACityAnOldLabelRecordIsIn() throws Exception {
+        jdbc.update("INSERT INTO label (id, name) VALUES (?, 'Old')", id(51));
+        jdbc.update("INSERT INTO label_city (label_id, city_id) VALUES (?, ?)", id(51), ESPOO);
+
+        send(delete("/api/cities/{id}", ESPOO), ADMIN, null)
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code").value("geo.city-in-use"));
     }
 
     private ResultActions send(

@@ -24,4 +24,10 @@ public interface AffectedSoftware {
      * the search tells its country by their places.
      */
     List<UUID> creditedFromCity(UUID city);
+
+    /**
+     * The software credited, by themselves or by one of their labels, on the people and the groups located in the
+     * country, in it directly or in one of its cities.
+     */
+    List<UUID> creditedFromCountry(UUID country);
 }

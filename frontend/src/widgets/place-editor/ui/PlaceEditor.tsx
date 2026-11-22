@@ -13,8 +13,10 @@ import {
 } from '@/entities/locations';
 import {DeletePlaceButton} from '@/features/geography/delete';
 import {EditPlaceProvider} from '@/features/geography/edit';
+import {MergePlaceButton} from '@/features/geography/merge';
 import {useSkeleton} from '@/shared/lib/loading';
 import {Button} from '@/shared/ui/button';
+import {Inline} from '@/shared/ui/inline';
 import {PageLayout} from '@/shared/ui/page-layout';
 
 export interface PlaceEditorProps {
@@ -22,13 +24,13 @@ export interface PlaceEditorProps {
     readonly id: CountryId | CityId;
     /** Called once the country or the city is saved. */
     readonly onSaved: () => void;
-    /** Called once it is deleted. */
+    /** Called once it is deleted, or merged into another one. */
     readonly onDeleted: () => void;
     /** Navigation shared by the management pages. */
     readonly navigation?: ReactNode;
 }
 
-/** The page of editing a country or a city: Delete next to the title, the form with Cancel and Save under it. */
+/** The page of editing a country or a city: Merge and Delete next to the title, the form with Cancel and Save under it. */
 export function PlaceEditor(props: PlaceEditorProps) {
     return (
         <CountriesProvider>
@@ -58,7 +60,15 @@ function LoadedEditor({kind, onSaved, onDeleted, navigation}: PlaceEditorProps) 
         return null;
     }
     return (
-        <PageLayout title={title} actions={<DeletePlaceButton place={query.data} onDeleted={onDeleted}/>}>
+        <PageLayout
+            title={title}
+            actions={(
+                <Inline gap="sm">
+                    <MergePlaceButton place={query.data} onMerged={onDeleted}/>
+                    <DeletePlaceButton place={query.data} onDeleted={onDeleted}/>
+                </Inline>
+            )}
+        >
             {navigation}
             <EditPlaceProvider place={query.data} onSaved={onSaved}>
                 <PlaceForm

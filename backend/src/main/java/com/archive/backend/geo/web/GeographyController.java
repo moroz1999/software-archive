@@ -12,8 +12,12 @@ import com.archive.backend.geo.app.GetCountryHandler;
 import com.archive.backend.geo.app.GetCountryQuery;
 import com.archive.backend.geo.app.ListCitiesOfNoCountryHandler;
 import com.archive.backend.geo.app.ListCitiesOfNoCountryQuery;
+import com.archive.backend.geo.app.ListGeoDuplicatesHandler;
+import com.archive.backend.geo.app.ListGeoDuplicatesQuery;
 import com.archive.backend.geo.app.ListGeographyHandler;
 import com.archive.backend.geo.app.ListGeographyQuery;
+import com.archive.backend.geo.app.MergeCityHandler;
+import com.archive.backend.geo.app.MergeCountryHandler;
 import com.archive.backend.geo.app.PutCityInCountryHandler;
 import com.archive.backend.geo.app.UpdateCityHandler;
 import com.archive.backend.geo.app.UpdateCountryHandler;
@@ -22,8 +26,10 @@ import com.archive.backend.geo.domain.CountryId;
 import com.archive.backend.geo.web.dto.CityCountryRequestDto;
 import com.archive.backend.geo.web.dto.CityDetailsDto;
 import com.archive.backend.geo.web.dto.CountryDetailsDto;
+import com.archive.backend.geo.web.dto.GeoDuplicatesDto;
 import com.archive.backend.geo.web.dto.GeographyCityDto;
 import com.archive.backend.geo.web.dto.GeographyCountryDto;
+import com.archive.backend.geo.web.dto.MergeRequestDto;
 import com.archive.backend.geo.web.dto.PlaceCreatedDto;
 import com.archive.backend.geo.web.dto.PlaceRequestDto;
 import com.archive.backend.geo.web.mapper.PlaceWebMapper;
@@ -60,6 +66,9 @@ public class GeographyController {
     private final DeleteCityHandler deleteCityHandler;
     private final ListCitiesOfNoCountryHandler citiesOfNoCountryHandler;
     private final PutCityInCountryHandler putCityInCountryHandler;
+    private final ListGeoDuplicatesHandler duplicatesHandler;
+    private final MergeCityHandler mergeCityHandler;
+    private final MergeCountryHandler mergeCountryHandler;
     private final PlaceWebMapper webMapper;
 
     /** Every country with its cities at once: the tree of the management needs all of it. */
@@ -72,6 +81,26 @@ public class GeographyController {
     @GetMapping("/api/geography/cities-of-no-country")
     public List<GeographyCityDto> citiesOfNoCountry(Language language) {
         return webMapper.toCities(citiesOfNoCountryHandler.handle(new ListCitiesOfNoCountryQuery(language)));
+    }
+
+    /** The countries and the cities that may be duplicates, merged by hand. */
+    @GetMapping("/api/geography/duplicates")
+    public GeoDuplicatesDto duplicates(Language language) {
+        return webMapper.toDuplicates(duplicatesHandler.handle(new ListGeoDuplicatesQuery(language)));
+    }
+
+    /** Merges the country into the one named: its cities and places go there, then it goes. */
+    @PostMapping("/api/countries/{id}/merge")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void mergeCountry(Actor actor, @PathVariable UUID id, @RequestBody MergeRequestDto request) {
+        mergeCountryHandler.handle(webMapper.toMergeCountry(actor, id, request));
+    }
+
+    /** Merges the city into the one named: its places go there, then it goes. */
+    @PostMapping("/api/cities/{id}/merge")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void mergeCity(Actor actor, @PathVariable UUID id, @RequestBody MergeRequestDto request) {
+        mergeCityHandler.handle(webMapper.toMergeCity(actor, id, request));
     }
 
     @GetMapping("/api/countries/{id}")

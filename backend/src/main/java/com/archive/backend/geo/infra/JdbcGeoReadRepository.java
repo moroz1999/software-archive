@@ -4,6 +4,7 @@ import com.archive.backend.geo.read.CityDetails;
 import com.archive.backend.geo.read.CityItem;
 import com.archive.backend.geo.read.CountryDetails;
 import com.archive.backend.geo.read.CountryItem;
+import com.archive.backend.geo.read.GeoDuplicates;
 import com.archive.backend.geo.read.GeoNameSql;
 import com.archive.backend.geo.read.GeoReadRepository;
 import com.archive.backend.geo.read.GeographyCity;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Repository;
 public class JdbcGeoReadRepository implements GeoReadRepository {
 
     private final JdbcClient jdbc;
+    private final JdbcGeoDuplicates duplicates;
 
     @Override
     public List<CountryItem> findCountries(String language) {
@@ -121,5 +123,10 @@ public class JdbcGeoReadRepository implements GeoReadRepository {
                 .query((rs, row) ->
                         new GeographyCity(rs.getObject("id", UUID.class), rs.getString("name"), rs.getInt("places")))
                 .list();
+    }
+
+    @Override
+    public GeoDuplicates findDuplicates(String language) {
+        return duplicates.find(language);
     }
 }

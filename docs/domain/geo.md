@@ -15,4 +15,9 @@ Administrators keep the countries and the cities in the management, as a tree: e
 - A country or a city is added and edited with its names and its coordinates, a latitude and a longitude given both or not at all; coordinates are kept for later use and may stay unknown.
 - The cities of no known country are listed apart, over the tree, each with how many places are in it, and are put in a country one by one; the places in such a city are then in that country.
 - A city is put in a country, or in none while its country is not known. Moving a city to another country moves every place in it there: the places follow their city.
-- Only a country or a city nothing of the archive is in can be deleted: a country without cities and without places in it, a city no place is in. Anything else is refused, so nothing is lost with it.
+- Only a country or a city nothing of the archive is in can be deleted: a country without cities and without places in it, a city no place is in and no old record of a label names. Anything else is refused, so nothing is lost with it.
+- Duplicates are merged by hand. Countries, and cities of one country, named alike in any language — letter case, "ё" and "е", spaces and hyphens aside — are shown as possible duplicates, a city of no known country with the cities of every country named like it; nothing is merged by itself.
+- A country or a city is merged into another one, never into itself, and the one merged goes with its names and coordinates; the one it goes into keeps its own. Nothing else of it is kept.
+  - A merged city has every place in it, and every old label record of it, put in the city it goes into and that one's country.
+  - A merged country has its cities, and every place in it, put in the country it goes into.
+  - An owner who then has one place twice keeps it once, primary when either was.

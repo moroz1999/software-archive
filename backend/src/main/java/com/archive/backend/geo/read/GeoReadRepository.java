@@ -32,4 +32,10 @@ public interface GeoReadRepository {
 
     /** The cities of no known country, named as countries are, by that name, each with how many places are in it. */
     List<GeographyCity> findCitiesOfNoCountry(String language);
+
+    /**
+     * The countries, and the cities of a country or of none, named alike in any language — letter case, "ё" and "е",
+     * spaces and hyphens aside — named as countries are.
+     */
+    GeoDuplicates findDuplicates(String language);
 }

@@ -6,6 +6,6 @@ public interface GeoUses {
     /** Whether the country has cities, or places are in it directly. */
     boolean countryInUse(CountryId country);
 
-    /** Whether a place of a person, a group or a label is in the city. */
+    /** Whether a place of a person, a group or a label, or an old record of a label, is in the city. */
     boolean cityInUse(CityId city);
 }

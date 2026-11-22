@@ -3,7 +3,9 @@ package com.archive.backend.search.app;
 import com.archive.backend.author.domain.AuthorChanged;
 import com.archive.backend.category.domain.CategoryDeleted;
 import com.archive.backend.category.domain.CategoryMoved;
+import com.archive.backend.geo.domain.CityMerged;
 import com.archive.backend.geo.domain.CityMoved;
+import com.archive.backend.geo.domain.CountryMerged;
 import com.archive.backend.group.domain.GroupChanged;
 import com.archive.backend.label.domain.LabelChanged;
 import com.archive.backend.label.domain.LabelCreated;
@@ -93,6 +95,26 @@ public class EnqueueSearchDocumentsHandler {
     @EventListener
     public void on(CityMoved event) {
         enqueueSoftware(affected.creditedFromCity(event.city().value()));
+    }
+
+    /**
+     * A merged city may leave the software made in it in another country; both cities are asked, as the places may have
+     * moved already.
+     */
+    @EventListener
+    public void on(CityMerged event) {
+        enqueueSoftware(affected.creditedFromCity(event.city().value()));
+        enqueueSoftware(affected.creditedFromCity(event.into().value()));
+    }
+
+    /**
+     * The software made in a merged country is in the one it went into; both are asked, as the places may have moved
+     * already.
+     */
+    @EventListener
+    public void on(CountryMerged event) {
+        enqueueSoftware(affected.creditedFromCountry(event.country().value()));
+        enqueueSoftware(affected.creditedFromCountry(event.into().value()));
     }
 
     @EventListener

@@ -2,6 +2,8 @@ package com.archive.backend.geo.web.mapper;
 
 import com.archive.backend.geo.app.CreateCityCommand;
 import com.archive.backend.geo.app.CreateCountryCommand;
+import com.archive.backend.geo.app.MergeCityCommand;
+import com.archive.backend.geo.app.MergeCountryCommand;
 import com.archive.backend.geo.app.PutCityInCountryCommand;
 import com.archive.backend.geo.app.UpdateCityCommand;
 import com.archive.backend.geo.app.UpdateCountryCommand;
@@ -12,13 +14,17 @@ import com.archive.backend.geo.domain.GeoName;
 import com.archive.backend.geo.domain.GeoNames;
 import com.archive.backend.geo.read.CityDetails;
 import com.archive.backend.geo.read.CountryDetails;
+import com.archive.backend.geo.read.GeoDuplicate;
+import com.archive.backend.geo.read.GeoDuplicates;
 import com.archive.backend.geo.read.GeographyCity;
 import com.archive.backend.geo.read.GeographyCountry;
 import com.archive.backend.geo.web.dto.CityCountryRequestDto;
 import com.archive.backend.geo.web.dto.CityDetailsDto;
 import com.archive.backend.geo.web.dto.CountryDetailsDto;
+import com.archive.backend.geo.web.dto.GeoDuplicatesDto;
 import com.archive.backend.geo.web.dto.GeographyCityDto;
 import com.archive.backend.geo.web.dto.GeographyCountryDto;
+import com.archive.backend.geo.web.dto.MergeRequestDto;
 import com.archive.backend.geo.web.dto.PlaceRequestDto;
 import com.archive.backend.shared.domain.Language;
 import com.archive.backend.shared.domain.error.InvalidValueException;
@@ -39,6 +45,30 @@ public interface PlaceWebMapper {
     List<GeographyCityDto> toCities(List<GeographyCity> cities);
 
     CountryDetailsDto toDetails(CountryDetails country);
+
+    GeoDuplicatesDto toDuplicates(GeoDuplicates duplicates);
+
+    List<GeoDuplicatesDto.DuplicateDto> toDuplicateList(List<GeoDuplicate> duplicates);
+
+    default List<List<GeoDuplicatesDto.DuplicateDto>> toDuplicateGroups(List<List<GeoDuplicate>> groups) {
+        return groups.stream().map(this::toDuplicateList).toList();
+    }
+
+    default MergeCityCommand toMergeCity(Actor actor, UUID id, MergeRequestDto request) {
+        return new MergeCityCommand(actor, new CityId(id), new CityId(into(request)));
+    }
+
+    default MergeCountryCommand toMergeCountry(Actor actor, UUID id, MergeRequestDto request) {
+        return new MergeCountryCommand(actor, new CountryId(id), new CountryId(into(request)));
+    }
+
+    private static UUID into(MergeRequestDto request) {
+        UUID into = request.into();
+        if (into == null) {
+            throw new InvalidValueException("geo.merge-target-required", "A merge names what stays.");
+        }
+        return into;
+    }
 
     default PutCityInCountryCommand toPutInCountry(Actor actor, UUID id, CityCountryRequestDto request) {
         UUID country = request.countryId();

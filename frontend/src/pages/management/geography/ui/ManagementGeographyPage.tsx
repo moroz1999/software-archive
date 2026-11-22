@@ -1,5 +1,15 @@
 import {useTranslation} from 'react-i18next';
-import {CitiesOfNoCountry, CitiesOfNoCountryProvider, CITY_NEW_PATH, CountriesProvider, COUNTRY_NEW_PATH, GeographyProvider, GeographyTree} from '@/entities/locations';
+import {
+    CitiesOfNoCountry,
+    CitiesOfNoCountryProvider,
+    CITY_NEW_PATH,
+    CountriesProvider,
+    COUNTRY_NEW_PATH,
+    GeoDuplicatesList,
+    GeoDuplicatesProvider,
+    GeographyProvider,
+    GeographyTree,
+} from '@/entities/locations';
 import {PutCityInCountry} from '@/features/geography/put-in-country';
 import {Stack} from '@/shared/ui/stack';
 import {ManagementTabs} from '@/features/user/management-navigation';
@@ -26,6 +36,9 @@ export function ManagementGeographyPage() {
                         <CitiesOfNoCountry action={(city) => <PutCityInCountry city={city}/>}/>
                     </CitiesOfNoCountryProvider>
                 </CountriesProvider>
+                <GeoDuplicatesProvider>
+                    <GeoDuplicatesList/>
+                </GeoDuplicatesProvider>
                 <GeographyProvider>
                     <GeographyTree/>
                 </GeographyProvider>

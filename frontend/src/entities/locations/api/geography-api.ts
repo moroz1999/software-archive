@@ -1,7 +1,7 @@
-import {deleteResource, getJson, type JsonObject, mapResponse, postJson, putJson, readArray, readNullableString, readNumber, readObject, readString} from '@/shared/api';
+import {deleteResource, getJson, type JsonObject, mapResponse, postJson, postNoContent, putJson, readArray, readNullableString, readNumber, readObject, readString} from '@/shared/api';
 import {SUPPORTED_UI_LANGUAGES, type UiLanguage} from '@/shared/lib/i18n';
 import {type CityId, type CountryId, toCityId, toCountryId} from '../model/geo';
-import type {GeographyCity, GeographyCountry, PlaceDetails, PlaceKind, PlaceNames} from '../model/geography';
+import type {GeoDuplicate, GeoDuplicates, GeographyCity, GeographyCountry, PlaceDetails, PlaceKind, PlaceNames} from '../model/geography';
 import type {PlaceDraft} from '../model/place-form';
 
 function placesPath(kind: PlaceKind): string {
@@ -97,4 +97,29 @@ export async function fetchCitiesOfNoCountry(signal: AbortSignal): Promise<reado
 /** Puts a city in a country, keeping all else it has. */
 export async function putCityInCountry(city: CityId, country: CountryId): Promise<void> {
     await putJson(`/api/cities/${city}/country`, {countryId: country});
+}
+
+function parseDuplicate(item: unknown): GeoDuplicate {
+    const dto = readObject(item, 'duplicate');
+    return {id: readString(dto, 'id'), name: readString(dto, 'name'), country: readNullableString(dto, 'country'), places: readNumber(dto, 'places')};
+}
+
+/** The countries and the cities that may be duplicates: `GET /api/geography/duplicates`. */
+export async function fetchGeoDuplicates(signal: AbortSignal): Promise<GeoDuplicates> {
+    const json = await getJson('/api/geography/duplicates', signal);
+    return mapResponse(() => {
+        const dto = readObject(json, 'duplicates');
+        return {
+            countries: readArray(dto['countries'], 'countries').map((group) => readArray(group, 'group').map(parseDuplicate)),
+            cities: readArray(dto['cities'], 'cities').map((item) => {
+                const group = readObject(item, 'group');
+                return {country: readNullableString(group, 'country'), cities: readArray(group['cities'], 'cities').map(parseDuplicate)};
+            }),
+        };
+    });
+}
+
+/** Merges a country or a city into another one, the one that stays. */
+export async function mergePlace(kind: PlaceKind, id: CountryId | CityId, into: string): Promise<void> {
+    await postNoContent(`${placePath(kind, id)}/merge`, {into});
 }

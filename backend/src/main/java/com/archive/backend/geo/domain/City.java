@@ -50,6 +50,14 @@ public final class City {
         }
     }
 
+    /** Tells the city is merged into the other one: its places go there, then it goes. */
+    public void mergeInto(City other) {
+        if (other.id.equals(id)) {
+            throw new MergeIntoItselfException();
+        }
+        events.add(new CityMerged(id, other.id, other.countryId()));
+    }
+
     public @Nullable CountryId countryId() {
         return countryId(country);
     }

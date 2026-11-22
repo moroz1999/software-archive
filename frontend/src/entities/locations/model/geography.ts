@@ -47,3 +47,17 @@ export function requirePlaceId(kind: PlaceKind, raw: string | undefined): Countr
     }
     return id;
 }
+
+/** A country or a city that may be a duplicate, with a city's country, null for none, and how many places are in it. */
+export interface GeoDuplicate {
+    readonly id: string;
+    readonly name: string;
+    readonly country: string | null;
+    readonly places: number;
+}
+
+/** The countries, and the cities of each country or of none, that may be one; each group of what may be one. */
+export interface GeoDuplicates {
+    readonly countries: readonly (readonly GeoDuplicate[])[];
+    readonly cities: readonly {readonly country: string | null; readonly cities: readonly GeoDuplicate[]}[];
+}

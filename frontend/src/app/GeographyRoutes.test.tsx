@@ -14,6 +14,9 @@ const SWEDEN = '00000000-0000-0000-0010-000000000002';
 const HELSINKI = '00000000-0000-0000-0010-000000000011';
 const KOVROV = '00000000-0000-0000-0010-000000000021';
 const NEW_ID = '00000000-0000-0000-0010-000000000099';
+const SUOMI = '00000000-0000-0000-0010-000000000003';
+const HELSINGFORS = '00000000-0000-0000-0010-000000000012';
+const STOCKHOLM = '00000000-0000-0000-0010-000000000031';
 const CITIES_OF_NO_COUNTRY = 'GET /api/geography/cities-of-no-country';
 
 const GEOGRAPHY = [
@@ -38,6 +41,7 @@ function stubApi(user: typeof MEMBER, routes: Routes = {}) {
         ['GET /api/platforms', json([])],
         ['GET /api/geography', json(GEOGRAPHY)],
         ['GET /api/geography/cities-of-no-country', json([])],
+        ['GET /api/geography/duplicates', json({countries: [], cities: []})],
         ['GET /api/countries', json(COUNTRIES)],
         ...Object.entries(routes),
     ]);
@@ -299,5 +303,109 @@ describe('geography routes', () => {
 
         await expect(screen.findByText('The country is not in the archive any more. Reload and try again.')).resolves.toBeInTheDocument();
         expect(screen.getByRole('link', {name: 'Kovrov'})).toBeInTheDocument();
+    });
+
+    it('shows the countries and the cities that may be duplicates, each leading to its editing', async () => {
+        stubApi(ADMIN, {'GET /api/geography/duplicates': json({
+            countries: [[{id: FINLAND, name: 'Finland', places: 3}, {id: SUOMI, name: 'Suomi', places: 0}]],
+            cities: [{country: 'Finland', cities: [
+                {id: HELSINKI, name: 'Helsinki', country: 'Finland', places: 1},
+                {id: KOVROV, name: 'Helsinki', country: null, places: 0},
+            ]}],
+        })});
+        openAt('/management/geography');
+
+        const block = within(await screen.findByRole('region', {name: 'Possible duplicates'}));
+
+        expect(block.getByRole('link', {name: 'Suomi'})).toHaveAttribute('href', `/management/geography/countries/${SUOMI}/edit`);
+        expect(block.getByRole('link', {name: 'Helsinki, Finland'})).toHaveAttribute('href', `/management/geography/cities/${HELSINKI}/edit`);
+        expect(block.getByRole('link', {name: 'Helsinki, country not specified'})).toHaveAttribute('href', `/management/geography/cities/${KOVROV}/edit`);
+        expect(block.getByText('1 place')).toBeInTheDocument();
+    });
+
+    it('says when no duplicates are found', async () => {
+        stubApi(ADMIN);
+        openAt('/management/geography');
+
+        const block = within(await screen.findByRole('region', {name: 'Possible duplicates'}));
+
+        expect(block.getByText('No possible duplicates.')).toBeInTheDocument();
+    });
+
+    it('merges a city into another one chosen in its country and returns to the tree', async () => {
+        const fetchMock = stubApi(ADMIN, {
+            [`GET /api/cities/${HELSINGFORS}`]: json({...HELSINKI_DETAILS, id: HELSINGFORS, names: {ru: 'Гельсингфорс'}}),
+            [`GET /api/countries/${SWEDEN}/cities`]: json([{id: STOCKHOLM, name: 'Stockholm'}]),
+            [`POST /api/cities/${HELSINGFORS}/merge`]: noContent(),
+        });
+        openAt(`/management/geography/cities/${HELSINGFORS}/edit`);
+
+        await userEvent.click(await screen.findByRole('button', {name: 'Merge into another'}));
+        const dialog = within(screen.getByRole('dialog', {name: 'Merge city'}));
+
+        expect(dialog.getByText('Its places move to the city chosen, and “Гельсингфорс” is deleted.')).toBeInTheDocument();
+
+        await userEvent.selectOptions(dialog.getByRole('combobox', {name: 'Country'}), dialog.getByRole('option', {name: 'Sweden'}));
+        await userEvent.selectOptions(dialog.getByRole('combobox', {name: 'City'}), await dialog.findByRole('option', {name: 'Stockholm'}));
+        await userEvent.click(dialog.getByRole('button', {name: 'Merge'}));
+
+        await backAtTheTree();
+
+        expect(bodyOf(fetchMock, 'POST', `/api/cities/${HELSINGFORS}/merge`)).toStrictEqual({into: STOCKHOLM});
+    });
+
+    it('offers no city to merge into before one is chosen, and not the city itself', async () => {
+        stubApi(ADMIN, {
+            [`GET /api/cities/${HELSINKI}`]: json(HELSINKI_DETAILS),
+            [`GET /api/countries/${FINLAND}/cities`]: json([{id: HELSINKI, name: 'Helsinki'}, {id: HELSINGFORS, name: 'Helsingfors'}]),
+        });
+        openAt(`/management/geography/cities/${HELSINKI}/edit`);
+
+        await userEvent.click(await screen.findByRole('button', {name: 'Merge into another'}));
+        const dialog = within(screen.getByRole('dialog', {name: 'Merge city'}));
+
+        expect(dialog.getByRole('button', {name: 'Merge'})).toBeDisabled();
+
+        await userEvent.selectOptions(dialog.getByRole('combobox', {name: 'Country'}), dialog.getByRole('option', {name: 'Finland'}));
+
+        await expect(dialog.findByRole('option', {name: 'Helsingfors'})).resolves.toBeInTheDocument();
+        expect(dialog.queryByRole('option', {name: 'Helsinki'})).not.toBeInTheDocument();
+    });
+
+    it('says inside the dialog why a city is not merged', async () => {
+        stubApi(ADMIN, {
+            [`GET /api/cities/${HELSINKI}`]: json(HELSINKI_DETAILS),
+            [`GET /api/countries/${SWEDEN}/cities`]: json([{id: STOCKHOLM, name: 'Stockholm'}]),
+            [`POST /api/cities/${HELSINKI}/merge`]: refusal(422, 'geo.city-unknown', 'into'),
+        });
+        openAt(`/management/geography/cities/${HELSINKI}/edit`);
+
+        await userEvent.click(await screen.findByRole('button', {name: 'Merge into another'}));
+        const dialog = within(screen.getByRole('dialog', {name: 'Merge city'}));
+        await userEvent.selectOptions(dialog.getByRole('combobox', {name: 'Country'}), dialog.getByRole('option', {name: 'Sweden'}));
+        await userEvent.selectOptions(dialog.getByRole('combobox', {name: 'City'}), await dialog.findByRole('option', {name: 'Stockholm'}));
+        await userEvent.click(dialog.getByRole('button', {name: 'Merge'}));
+
+        await expect(dialog.findByText('The city is not in the archive any more. Reload and try again.')).resolves.toBeInTheDocument();
+    });
+
+    it('merges a country into another one, not offering itself', async () => {
+        const fetchMock = stubApi(ADMIN, {
+            [`GET /api/countries/${FINLAND}`]: json(FINLAND_DETAILS),
+            [`POST /api/countries/${FINLAND}/merge`]: noContent(),
+        });
+        openAt(`/management/geography/countries/${FINLAND}/edit`);
+
+        await userEvent.click(await screen.findByRole('button', {name: 'Merge into another'}));
+        const dialog = within(screen.getByRole('dialog', {name: 'Merge country'}));
+
+        expect(dialog.queryByRole('option', {name: 'Finland'})).not.toBeInTheDocument();
+
+        await userEvent.selectOptions(dialog.getByRole('combobox', {name: 'Country'}), dialog.getByRole('option', {name: 'Sweden'}));
+        await userEvent.click(dialog.getByRole('button', {name: 'Merge'}));
+
+        await backAtTheTree();
+
+        expect(bodyOf(fetchMock, 'POST', `/api/countries/${FINLAND}/merge`)).toStrictEqual({into: SWEDEN});
     });
 });

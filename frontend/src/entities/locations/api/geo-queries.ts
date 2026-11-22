@@ -1,7 +1,7 @@
 import {queryOptions, skipToken} from '@tanstack/react-query';
 import type {CityId, CountryId} from '../model/geo';
 import type {PlaceKind} from '../model/geography';
-import {fetchCitiesOfNoCountry, fetchGeography, fetchPlace} from './geography-api';
+import {fetchCitiesOfNoCountry, fetchGeoDuplicates, fetchGeography, fetchPlace} from './geography-api';
 import {fetchCities, fetchCountries} from './geo-api';
 
 /** The common prefix of every query of countries and cities: a change of one makes them all stale. */
@@ -43,5 +43,13 @@ export function citiesOfNoCountryQuery() {
     return queryOptions({
         queryKey: [...GEO_QUERY_KEY, 'cities-of-no-country'],
         queryFn: ({signal}) => fetchCitiesOfNoCountry(signal),
+    });
+}
+
+/** The countries and the cities that may be duplicates. */
+export function geoDuplicatesQuery() {
+    return queryOptions({
+        queryKey: [...GEO_QUERY_KEY, 'duplicates'],
+        queryFn: ({signal}) => fetchGeoDuplicates(signal),
     });
 }
