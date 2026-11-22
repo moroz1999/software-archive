@@ -1,5 +1,5 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
-import {act, render, screen, within} from '@testing-library/react';
+import {act, fireEvent, render, screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {ScreenshotGallery} from './ScreenshotGallery';
 
@@ -66,13 +66,6 @@ describe(ScreenshotGallery, () => {
         expect(within(viewer).getByRole('img', {name: 'Screenshot 2 of 3'})).toHaveAttribute('src', '/api/screenshots/2');
     });
 
-    it('opens the viewer over the whole viewport', async () => {
-        render(<ScreenshotGallery urls={URLS} title="Elite"/>);
-
-        await userEvent.click(screen.getByRole('button', {name: 'Screenshot 1 of 3'}));
-
-        expect(screen.getByRole('dialog', {name: 'Elite'})).toHaveClass('fullscreen');
-    });
 
     it('shows the picture at the largest whole multiple of its native size that fits and recalculates it on resize', async () => {
         render(<ScreenshotGallery urls={URLS} title="Elite"/>);
@@ -133,6 +126,48 @@ describe(ScreenshotGallery, () => {
         await userEvent.keyboard('{Escape}');
 
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('closes the viewer by a click on its backdrop around the picture', async () => {
+        render(<ScreenshotGallery urls={URLS} title="Elite"/>);
+        await userEvent.click(screen.getByRole('button', {name: 'Screenshot 1 of 3'}));
+
+        await userEvent.click(screen.getByRole('dialog', {name: 'Elite'}));
+
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('closes the viewer by its cross', async () => {
+        render(<ScreenshotGallery urls={URLS} title="Elite"/>);
+        await userEvent.click(screen.getByRole('button', {name: 'Screenshot 1 of 3'}));
+
+        await userEvent.click(within(screen.getByRole('dialog', {name: 'Elite'})).getByRole('button', {name: 'Close'}));
+
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('keeps the viewer open on a click on the picture and on its buttons', async () => {
+        render(<ScreenshotGallery urls={URLS} title="Elite"/>);
+        await userEvent.click(screen.getByRole('button', {name: 'Screenshot 1 of 3'}));
+        const viewer = screen.getByRole('dialog', {name: 'Elite'});
+
+        await userEvent.click(within(viewer).getByRole('img', {name: 'Screenshot 1 of 3'}));
+        await userEvent.click(within(viewer).getByRole('button', {name: 'Next screenshot'}));
+        await userEvent.click(within(viewer).getByRole('button', {name: 'Previous screenshot'}));
+
+        expect(screen.getByRole('dialog', {name: 'Elite'})).toBeInTheDocument();
+    });
+
+    it('keeps the viewer open when a press on the picture is released on the backdrop', async () => {
+        render(<ScreenshotGallery urls={URLS} title="Elite"/>);
+        await userEvent.click(screen.getByRole('button', {name: 'Screenshot 1 of 3'}));
+        const viewer = screen.getByRole('dialog', {name: 'Elite'});
+
+        fireEvent.pointerDown(within(viewer).getByRole('img', {name: 'Screenshot 1 of 3'}));
+        fireEvent.pointerUp(viewer);
+        fireEvent.click(viewer);
+
+        expect(screen.getByRole('dialog', {name: 'Elite'})).toBeInTheDocument();
     });
 
     it('has nothing to go through for a single screenshot', async () => {

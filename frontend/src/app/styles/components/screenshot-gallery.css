@@ -14,6 +14,14 @@
     /* Ring of the thumbnail in focus. */
     --screenshot-gallery-focus-outline: var(--border-width-thick) solid var(--focus-ring-color);
 
+    /* The viewer over the page: its dimming backdrop and its stacking layer. */
+    --screenshot-gallery-viewer-bg: var(--overlay-bg);
+    --screenshot-gallery-viewer-layer: var(--layer-dialog);
+
+    /* Band around the picture kept for the cross and the buttons, and their distance from the viewport edges. */
+    --screenshot-gallery-viewer-band: var(--space-64);
+    --screenshot-gallery-viewer-edge: var(--space-16);
+
     /* How fast the frame of a thumbnail follows the pointer. */
     --screenshot-gallery-duration: var(--animation-sm);
 }
