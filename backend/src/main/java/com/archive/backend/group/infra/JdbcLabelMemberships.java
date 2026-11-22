@@ -26,7 +26,7 @@ public class JdbcLabelMemberships implements LabelMemberships {
     public void transfer(LabelId label, GroupId group) {
         jdbc.sql("""
                         INSERT INTO group_member_group (group_id, member_group_id)
-                        SELECT DISTINCT group_id, :group FROM group_member WHERE label_id = :label
+                        SELECT DISTINCT group_id, :group FROM group_member WHERE label_id = :label AND group_id <> :group
                         ON CONFLICT DO NOTHING
                         """)
                 .param("group", group.value())

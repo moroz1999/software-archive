@@ -51,7 +51,8 @@ public interface LabelWebMapper {
                 label.rights().canChange(),
                 label.rights().canMakeOwner(),
                 label.rights().canEdit(),
-                label.rights().canChangeOwner());
+                label.rights().canChangeOwner(),
+                label.rights().canGiveToGroup());
     }
 
     default CreateLabelCommand toCreate(Actor actor, NewLabelRequestDto request) {

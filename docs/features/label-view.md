@@ -5,7 +5,7 @@ The page of a label at `/labels/{id}` ([domain/authors.md](../domain/authors.md#
 ## Page
 
 - Over the heading, the breadcrumbs: Authors, leading to the catalog, then the label.
-- The label's name is the page heading; under it "Whose label": a person by the real name with the main name muted next to it (by the main name without a real name), a group by its name, leading to their page, or "Not known yet whose label this is" for a label of nobody; then Member of: the groups it was a member of, each leading to its page ([group-view.md](group-view.md)).
+- The label's name is the page heading; under it "Whose label": a person by the real name with the main name muted next to it (by the main name without a real name), a group by its name, leading to their page, or "Not known yet whose label this is" for a label of nobody; then Locations ("City, Country", the primary one first); then Member of: the groups it was a member of, each leading to its page ([group-view.md](group-view.md)).
 - Software below: the software it is credited on, as on an author's page ([author-view.md](author-view.md)).
 - Last: who added the label and on which day ("Added by Zork on 4 March 2026"), only the day once their account is gone ([domain/users.md](../domain/users.md#who-added-an-entry)).
 
@@ -28,6 +28,14 @@ The page of a label at `/labels/{id}` ([domain/authors.md](../domain/authors.md#
 - After making, the page of the new person or group opens; the old owner, the catalogs and the lists of software read again.
 - Refusals show inside the dialog: the label being the display name of a person with other labels, or the only name of a person without a real name; a type gone from the archive; no right to change the owner; a missing sign-in. System errors go to the error dialog.
 
+## Giving to a group
+
+- "Make a label of a group" and "Merge into group and delete" in the menu, for administrators, on a label of nobody or of a group. Each opens a dialog of its name with "Group" searching groups only and its button locked until one is chosen: "“{name}” becomes another name of the group chosen; its credits and memberships stay under this name." with "Make a label"; "Its credits, memberships, locations and sources go to the group chosen, and “{name}” is deleted." with "Merge and delete".
+- After either, the page of the group opens; the catalogs and the lists of software read again.
+- Refusals show inside the dialog: the group gone, the label of a person, no right to do it. System errors go to the error dialog.
+- Making a label of a group releases it from another group that has it and the group adopts it, as attaching does; nothing changes for a label already of the group.
+- The group takes the label in (`LabelReplacedByGroup`, as when a group is made of it): its locations join the group's, the credits, memberships and origin move to it in the same transaction, then the label is deleted. The moves keep one row where the group already has one: one credit with the joined roles, one member group, and no membership of the group in itself.
+
 ## Loading and errors
 
 - The page preloads the label's details ([data-loading.md](../data-loading.md)): within the window it appears filled, otherwise with a skeleton. The software is asked for once its block comes into view.
@@ -37,8 +45,10 @@ The page of a label at `/labels/{id}` ([domain/authors.md](../domain/authors.md#
 
 | Call | Answer | Errors |
 |---|---|---|
-| `GET /api/labels/{id}` | `{id, name, owner: {type, id, name, note} \| null, groups: [{id, name}], canChange, canMakeOwner}`; `type` `author` or `group`; `owner.name` the person's real name, else their main name, or the group's name; `owner.note` the person's main name next to a real name, else `null`; group names are main names; `canChange` for an administrator on a label of nobody; `canMakeOwner` for whoever added the label and administrators, on a label with an owner only when they may change that owner; the fields of editing ([label-editing.md](label-editing.md#rest)); `added: {by, at}` as for authors ([author-view.md](author-view.md#rest)) | `404 label.not-found`; `400` for a malformed id |
+| `GET /api/labels/{id}` | `{id, name, owner: {type, id, name, note} \| null, groups: [{id, name}], canChange, canMakeOwner}`; `type` `author` or `group`; `owner.name` the person's real name, else their main name, or the group's name; `owner.note` the person's main name next to a real name, else `null`; group names are main names; `canChange` for an administrator on a label of nobody; `canMakeOwner` for whoever added the label and administrators, on a label with an owner only when they may change that owner; `canGiveToGroup` for administrators on a label that is not a person's; the fields of editing ([label-editing.md](label-editing.md#rest)); `added: {by, at}` as for authors ([author-view.md](author-view.md#rest)) | `404 label.not-found`; `400` for a malformed id |
 | `GET /api/labels/{id}/software` | as `GET /api/authors/{id}/software`, every credit by the label itself | `400` for a malformed id |
 | `POST /api/labels/{id}/owner` `{type, id, display}` | `204` | `404 label.not-found`; `409 label.owned`; `422 label.owner-unknown` (field `owner`), `422 label.display-one` (a person only; `display` is ignored for a group); `401`, `403`; `400` for another `type` or a missing `id` |
 | `POST /api/labels/{id}/author` | `201 {id}` of the new person | `404 label.not-found`; `422 label.display-one`, `422 author.nameless` (taking it from a person); `401`, `403`; `400` for a malformed id |
 | `POST /api/labels/{id}/group` `{types}` | `201 {id}` of the new group | as `/author`; `422 group.type-unknown` |
+| `POST /api/labels/{id}/attach-to-group` `{group}` | `204`; the label is the group's | as `/merge-into-group` |
+| `POST /api/labels/{id}/merge-into-group` `{group}` | `204`; the label is deleted | `404 label.not-found`; `422 label.of-person`, `422 label.owner-unknown` (field `group`); `401`, `403` for anyone but an administrator; `400 label.group-required` without `group` |

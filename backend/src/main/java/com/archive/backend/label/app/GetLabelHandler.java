@@ -28,7 +28,11 @@ public class GetLabelHandler {
         boolean canEdit = AddedBy.of(label.addedBy()).mayBeChangedBy(q.actor());
         boolean canMakeOwner =
                 canEdit && (owner == null || AddedBy.of(owner.addedBy()).mayBeChangedBy(q.actor()));
-        return label.withRights(
-                new LabelDetails.Rights(owner == null && administrator, canMakeOwner, canEdit, administrator));
+        return label.withRights(new LabelDetails.Rights(
+                owner == null && administrator,
+                canMakeOwner,
+                canEdit,
+                administrator,
+                administrator && (owner == null || owner.type().equals("group"))));
     }
 }

@@ -55,6 +55,7 @@ export async function fetchLabel(id: LabelId, signal: AbortSignal): Promise<Labe
             canMakeOwner: readBoolean(dto, 'canMakeOwner'),
             canEdit: readBoolean(dto, 'canEdit'),
             canChangeOwner: readBoolean(dto, 'canChangeOwner'),
+            canGiveToGroup: readBoolean(dto, 'canGiveToGroup'),
         };
     });
 }
@@ -97,6 +98,26 @@ export async function makeAuthorOfLabel(id: LabelId): Promise<LabelOwner> {
 export async function makeGroupOfLabel(id: LabelId, types: readonly string[]): Promise<LabelOwner> {
     const json = await postJson(`/api${labelPath(id)}/group`, {types});
     return mapResponse(() => ({type: 'group', id: readString(readObject(json, 'made group'), 'id')}));
+}
+
+/** Merges the label into the group it is a duplicate of, the label deleted: `POST /api/labels/{id}/merge-into-group`. */
+export async function mergeLabelIntoGroup(id: LabelId, group: string): Promise<void> {
+    await postNoContent(`/api${labelPath(id)}/merge-into-group`, {group});
+}
+
+/** Makes the label a label of the group, taken from another group that has it: `POST /api/labels/{id}/attach-to-group`. */
+export async function attachLabelToGroup(id: LabelId, group: string): Promise<void> {
+    await postNoContent(`/api${labelPath(id)}/attach-to-group`, {group});
+}
+
+/** Groups by name, for giving a label to one of them. */
+export async function fetchLabelGroups(query: string, signal: AbortSignal): Promise<readonly LabelOwnerOption[]> {
+    const params = new URLSearchParams({types: 'group', query});
+    const json = await getJson(`/api/entity-lookup?${params.toString()}`, signal);
+    return mapResponse(() => readArray(readObject(json, 'group lookup')['items'], 'items').map((item) => {
+        const dto = readObject(item, 'group');
+        return {type: readOwnerType(dto, 'type'), id: readString(dto, 'id'), title: readString(dto, 'title')};
+    }));
 }
 
 /** People and groups by name, for attaching a label to one of them. */

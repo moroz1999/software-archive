@@ -2,11 +2,13 @@ import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router';
 import {authorPath, AUTHORS_PATH, toAuthorId} from '@/entities/authors';
-import {groupPath, toGroupId} from '@/entities/groups';
+import {type GroupId, groupPath, toGroupId} from '@/entities/groups';
 import {type LabelDetails, LabelDetailsProvider, labelEditPath, type LabelId, type LabelOwner, useLabelDetails} from '@/entities/labels';
+import {locationText, primaryFirst} from '@/entities/locations';
 import {CreditedSoftwareList} from '@/entities/software';
 import {AttachLabelDialog} from '@/features/label/attach';
 import {MakeAuthorDialog, MakeGroupDialog} from '@/features/label/make-owner';
+import {AttachLabelToGroupDialog, MergeLabelIntoGroupDialog} from '@/features/label/give-to-group';
 import {useSkeleton} from '@/shared/lib/loading';
 import {Inline} from '@/shared/ui/inline';
 import {AdditionNote} from '@/shared/ui/addition-note';
@@ -22,7 +24,7 @@ export interface LabelViewProps {
 }
 
 /**
- * The page of a label: its name, whose it is when known, the groups it was a member of and the software it is credited
+ * The page of a label: its name, whose it is when known, where it is located, the groups it was a member of and the software it is credited
  * on; a label of nobody waits there for a person who knows whose it is to attach it to its owner, and any label can
  * become a new person or group of its own, or be edited by whoever may.
  */
@@ -44,7 +46,7 @@ function LoadedView() {
     const query = useLabelDetails();
     const skeleton = useSkeleton(query);
     // Which window the menu opened is UI state: the menu closes while the window stays.
-    const [dialog, setDialog] = useState<'attach' | 'author' | 'group' | null>(null);
+    const [dialog, setDialog] = useState<'attach' | 'author' | 'group' | 'merge' | 'give' | null>(null);
 
     if (skeleton || query.isPending) {
         return (
@@ -66,6 +68,9 @@ function LoadedView() {
     const openOwner = (owner: LabelOwner) => {
         void navigate(ownerPath(owner));
     };
+    const openGroup = (group: GroupId) => {
+        void navigate(groupPath(group));
+    };
     const close = () => {
         setDialog(null);
     };
@@ -73,7 +78,7 @@ function LoadedView() {
         <PageLayout
             title={label.name}
             breadcrumbs={[{label: t('pages.authors'), href: AUTHORS_PATH}, {label: label.name}]}
-            menu={label.canEdit || label.canChange || label.canMakeOwner ? (
+            menu={label.canEdit || label.canChange || label.canMakeOwner || label.canGiveToGroup ? (
                 <PopoverMenu label={t('actions.menu')}>
                     {label.canEdit && <PopoverMenuItem href={labelEditPath(label.id)}>{t('actions.edit')}</PopoverMenuItem>}
                     {label.canChange && <PopoverMenuItem onClick={() => { setDialog('attach'); }}>{t('label.attach')}</PopoverMenuItem>}
@@ -81,6 +86,12 @@ function LoadedView() {
                         <>
                             <PopoverMenuItem onClick={() => { setDialog('author'); }}>{t('label.makeAuthor')}</PopoverMenuItem>
                             <PopoverMenuItem onClick={() => { setDialog('group'); }}>{t('label.makeGroup')}</PopoverMenuItem>
+                        </>
+                    )}
+                    {label.canGiveToGroup && (
+                        <>
+                            <PopoverMenuItem onClick={() => { setDialog('give'); }}>{t('label.giveToGroup')}</PopoverMenuItem>
+                            <PopoverMenuItem onClick={() => { setDialog('merge'); }}>{t('label.merge')}</PopoverMenuItem>
                         </>
                     )}
                 </PopoverMenu>
@@ -96,6 +107,12 @@ function LoadedView() {
                 <>
                     <MakeAuthorDialog label={label} open={dialog === 'author'} onClose={close} onMade={openOwner}/>
                     <MakeGroupDialog label={label} open={dialog === 'group'} onClose={close} onMade={openOwner}/>
+                </>
+            )}
+            {label.canGiveToGroup && (
+                <>
+                    <AttachLabelToGroupDialog label={{id: label.id, name: label.name}} open={dialog === 'give'} onClose={close} onAttached={openGroup}/>
+                    <MergeLabelIntoGroupDialog label={{id: label.id, name: label.name}} open={dialog === 'merge'} onClose={close} onMerged={openGroup}/>
                 </>
             )}
         </PageLayout>
@@ -117,6 +134,14 @@ function Details({label}: {readonly label: LabelDetails}) {
                         </Inline>
                     </Stack>
                 )}
+            {label.locations.length > 0 && (
+                <Stack gap="xs">
+                    <Text variant="label" tone="muted">{t('label.locations')}</Text>
+                    <Stack as="ul" gap="xs" ariaLabel={t('label.locations')}>
+                        {primaryFirst(label.locations).map((location, index) => <li key={index}><Text>{locationText(location)}</Text></li>)}
+                    </Stack>
+                </Stack>
+            )}
             {label.groups.length > 0 && (
                 <Stack gap="xs">
                     <Text variant="label" tone="muted">{t('group.memberOf')}</Text>

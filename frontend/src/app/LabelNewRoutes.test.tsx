@@ -22,6 +22,7 @@ const ZORK = {
     added: {by: 'Zed', at: '2026-03-04T05:06:07Z'},
     canChange: false,
     canMakeOwner: true,
+    canGiveToGroup: false,
     canEdit: true,
     canChangeOwner: false,
 };

@@ -137,6 +137,17 @@ public final class Group {
         return group;
     }
 
+    /**
+     * Takes in a label found out to be a duplicate of the group: its places are added to the group's, and its credits,
+     * memberships and remembered origin become the group's before it goes.
+     */
+    public void absorb(Label label) {
+        events.add(new LabelReplacedByGroup(label.getId(), id));
+        events.add(new OwnerOfLabelsChanged(Set.of(label.getId())));
+        locations = locations.with(label.getLocations());
+        markChanged();
+    }
+
     /** Gives up a label that turned out to be somebody else's; only its works change their owner. */
     public void release(LabelId label) {
         labels = labels.release(label);

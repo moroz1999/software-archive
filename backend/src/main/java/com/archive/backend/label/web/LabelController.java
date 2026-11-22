@@ -13,14 +13,19 @@ import com.archive.backend.label.app.DeleteLabelHandler;
 import com.archive.backend.label.app.EditLabelHandler;
 import com.archive.backend.label.app.GetLabelHandler;
 import com.archive.backend.label.app.GetLabelQuery;
+import com.archive.backend.label.app.GiveLabelToGroupCommand;
+import com.archive.backend.label.app.GiveLabelToGroupHandler;
 import com.archive.backend.label.app.MakeAuthorOfLabelCommand;
 import com.archive.backend.label.app.MakeAuthorOfLabelHandler;
 import com.archive.backend.label.app.MakeGroupOfLabelCommand;
 import com.archive.backend.label.app.MakeGroupOfLabelHandler;
+import com.archive.backend.label.app.MergeLabelIntoGroupCommand;
+import com.archive.backend.label.app.MergeLabelIntoGroupHandler;
 import com.archive.backend.label.domain.LabelAttachment;
 import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.web.dto.LabelCreatedDto;
 import com.archive.backend.label.web.dto.LabelDetailsDto;
+import com.archive.backend.label.web.dto.LabelGroupChoiceDto;
 import com.archive.backend.label.web.dto.LabelGroupRequestDto;
 import com.archive.backend.label.web.dto.LabelMadeOwnerDto;
 import com.archive.backend.label.web.dto.LabelOwnerRequestDto;
@@ -49,7 +54,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Adding a label of nobody, the page of a label, attaching a label of nobody to its owner, making a new person or group of a label
+ * Adding a label of nobody, the page of a label, attaching a label of nobody to its owner, making a new person or group of a label,
+ * merging a label into the group it is a duplicate of or making it a label of a group
  * (docs/features/label-view.md), and editing and deleting it (docs/features/label-editing.md).
  */
 @RestController
@@ -65,6 +71,8 @@ public class LabelController {
     private final AttachLabelToGroupHandler attachToGroupHandler;
     private final MakeAuthorOfLabelHandler makeAuthorHandler;
     private final MakeGroupOfLabelHandler makeGroupHandler;
+    private final MergeLabelIntoGroupHandler mergeHandler;
+    private final GiveLabelToGroupHandler giveHandler;
     private final LabelWebMapper webMapper;
 
     @PostMapping
@@ -114,6 +122,26 @@ public class LabelController {
         AuthorId author = makeAuthorHandler.handle(new MakeAuthorOfLabelCommand(actor, new LabelId(id)));
         return ResponseEntity.created(URI.create("/api/authors/" + author.value()))
                 .body(new LabelMadeOwnerDto(author.value()));
+    }
+
+    @PostMapping("/{id}/merge-into-group")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void mergeIntoGroup(Actor actor, @PathVariable UUID id, @RequestBody LabelGroupChoiceDto request) {
+        mergeHandler.handle(new MergeLabelIntoGroupCommand(actor, new LabelId(id), groupOf(request)));
+    }
+
+    private static GroupId groupOf(LabelGroupChoiceDto request) {
+        UUID group = request.group();
+        if (group == null) {
+            throw new InvalidValueException("label.group-required", "The group to give the label to is required.");
+        }
+        return new GroupId(group);
+    }
+
+    @PostMapping("/{id}/attach-to-group")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void giveToGroup(Actor actor, @PathVariable UUID id, @RequestBody LabelGroupChoiceDto request) {
+        giveHandler.handle(new GiveLabelToGroupCommand(actor, new LabelId(id), groupOf(request)));
     }
 
     @PostMapping("/{id}/group")

@@ -3,7 +3,7 @@ import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {createMemoryRouter, RouterProvider} from 'react-router';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
-import {breadcrumbSteps, json, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
+import {breadcrumbSteps, json, noContent, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
 import {toLabelId} from '@/entities/labels';
 import {LabelView} from './LabelView';
 
@@ -11,7 +11,7 @@ const ID = '00000000-0000-0000-0004-000000000001';
 const CREW = '00000000-0000-0000-0005-000000000001';
 const JANE = '00000000-0000-0000-0003-000000000001';
 const ELITE = '00000000-0000-0000-0001-000000000001';
-const GHOST = {id: ID, name: 'Ghost', owner: null, groups: [{id: CREW, name: 'Crew'}], locations: [], origins: [], canChange: true, canMakeOwner: true, canEdit: false, canChangeOwner: false, added: {by: 'Zork', at: '2026-03-04T05:06:07Z'}};
+const GHOST = {id: ID, name: 'Ghost', owner: null, groups: [{id: CREW, name: 'Crew'}], locations: [], origins: [], canChange: true, canMakeOwner: true, canEdit: false, canChangeOwner: false, canGiveToGroup: true, added: {by: 'Zork', at: '2026-03-04T05:06:07Z'}};
 
 const SOFTWARE_URL = `/api/labels/${ID}/software`;
 const NO_SOFTWARE = new Map([[SOFTWARE_URL, json([])]]);
@@ -20,6 +20,7 @@ function openLabel() {
     const router = createMemoryRouter([
         {path: '/labels/:id', element: <LabelView id={toLabelId(ID)}/>},
         {path: '/authors/:id', element: <p>Author page</p>},
+        {path: '/groups/:id', element: <p>Group page</p>},
     ], {initialEntries: [`/labels/${ID}`]});
     renderWithQueries(<RouterProvider router={router}/>);
 }
@@ -57,6 +58,27 @@ describe(LabelView, () => {
         const groups = await screen.findByRole('list', {name: 'Member of'});
 
         expect(within(groups).getByRole('link', {name: 'Crew'})).toHaveAttribute('href', `/groups/${CREW}`);
+    });
+
+    it('shows where the label is located, the primary place first', async () => {
+        stubFetchAround(NO_SOFTWARE, json({...GHOST, locations: [
+            {countryId: 'c2', country: 'Ukraine', cityId: null, city: null, primary: false},
+            {countryId: 'c1', country: 'Russia', cityId: 'm1', city: 'Moscow', primary: true},
+        ]}));
+        openLabel();
+
+        const locations = await screen.findByRole('list', {name: 'Locations'});
+
+        expect(within(locations).getAllByRole('listitem').map((item) => item.textContent)).toStrictEqual(['Moscow, Russia', 'Ukraine']);
+    });
+
+    it('shows no locations for a label located nowhere', async () => {
+        stubFetchAround(NO_SOFTWARE, json(GHOST));
+        openLabel();
+
+        await screen.findByRole('heading', {level: 1, name: 'Ghost'});
+
+        expect(screen.queryByRole('list', {name: 'Locations'})).not.toBeInTheDocument();
     });
 
     it('lists the software the label is credited on', async () => {
@@ -163,8 +185,64 @@ describe(LabelView, () => {
         expect(screen.getByRole('dialog', {name: 'Make group'})).toBeInTheDocument();
     });
 
+    it('offers merging the label into a group and making it a label of a group to whoever may', async () => {
+        stubFetchAround(NO_SOFTWARE, json(GHOST));
+        openLabel();
+
+        await openActions();
+
+        expect(screen.getByRole('button', {name: 'Merge into group and delete'})).toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Make a label of a group'})).toBeInTheDocument();
+    });
+
+    it('offers neither to whoever may not', async () => {
+        stubFetchAround(NO_SOFTWARE, json({...GHOST, canGiveToGroup: false}));
+        openLabel();
+
+        await openActions();
+
+        expect(screen.queryByRole('button', {name: 'Merge into group and delete'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Make a label of a group'})).not.toBeInTheDocument();
+    });
+
+    it('opens the page of the group the label is merged into', async () => {
+        stubFetchAround(
+            new Map([...NO_SOFTWARE, ['/api/entity-lookup?types=group&query=crew', json({items: [{id: CREW, type: 'group', title: 'Crew'}]})]]),
+            json(GHOST),
+            noContent(),
+        );
+        openLabel();
+
+        await openActions();
+        await userEvent.click(screen.getByRole('button', {name: 'Merge into group and delete'}));
+        const dialog = screen.getByRole('dialog', {name: 'Merge into group and delete'});
+        await userEvent.type(within(dialog).getByRole('combobox', {name: 'Group'}), 'crew');
+        await userEvent.click(await screen.findByRole('option', {name: 'Crew'}));
+        await userEvent.click(within(dialog).getByRole('button', {name: 'Merge and delete'}));
+
+        await expect(screen.findByText('Group page')).resolves.toBeInTheDocument();
+    });
+
+    it('opens the page of the group the label is made a label of', async () => {
+        stubFetchAround(
+            new Map([...NO_SOFTWARE, ['/api/entity-lookup?types=group&query=crew', json({items: [{id: CREW, type: 'group', title: 'Crew'}]})]]),
+            json(GHOST),
+            noContent(),
+        );
+        openLabel();
+
+        await openActions();
+        await userEvent.click(screen.getByRole('button', {name: 'Make a label of a group'}));
+        const dialog = screen.getByRole('dialog', {name: 'Make a label of a group'});
+        await userEvent.type(within(dialog).getByRole('combobox', {name: 'Group'}), 'crew');
+        await userEvent.click(await screen.findByRole('option', {name: 'Crew'}));
+        await userEvent.click(within(dialog).getByRole('button', {name: 'Make a label'}));
+
+        await expect(screen.findByText('Group page')).resolves.toBeInTheDocument();
+    });
+
     it('offers no actions at all to whoever may do none of them', async () => {
-        stubFetchAround(NO_SOFTWARE, json({...GHOST, canChange: false, canMakeOwner: false, canEdit: false}));
+        stubFetchAround(NO_SOFTWARE, json({...GHOST, canChange: false, canMakeOwner: false, canEdit: false, canGiveToGroup: false}));
         openLabel();
 
         await screen.findByRole('heading', {level: 1, name: 'Ghost'});

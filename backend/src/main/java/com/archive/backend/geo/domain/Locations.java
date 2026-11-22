@@ -1,6 +1,7 @@
 package com.archive.backend.geo.domain;
 
 import com.archive.backend.shared.domain.ddd.ValueObject;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,5 +23,18 @@ public record Locations(List<Location> all) {
             throw new LocationPrimaryException();
         }
         all = distinct;
+    }
+
+    /**
+     * These locations followed by the other's places not among them; the primary stays, or the other's when there
+     * are none of these.
+     */
+    public Locations with(Locations other) {
+        if (all.isEmpty()) {
+            return other;
+        }
+        List<Location> joined = new ArrayList<>(all);
+        other.all().forEach(location -> joined.add(new Location(location.place(), false)));
+        return new Locations(joined);
     }
 }
