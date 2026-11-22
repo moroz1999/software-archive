@@ -54,6 +54,7 @@ Credits tell who made the software, who published it and who worked on it. Devel
 - Anyone is credited: a person, a group, or the exact label of either under which they did the work. Each of them is credited once per software, with all their roles.
 - A credit has one or several roles (developer, publisher, code, graphics, music, etc.); without a chosen role it is recorded as unknown.
 - A label of nobody can be credited, as imports do; editing keeps it.
+- A credit under a label is a credit of the label itself, whoever owns it: once the label is attached to a person or a group, or taken away from them, the credit stays and shows its new owner. A label is credited once, whoever it belonged to when it was credited.
 - A credited name leads from software to its person or group when that owner is known, a label of nobody to its own page ([authors.md](authors.md#label-page)).
 - Some roles are work on a copy of the software rather than on the software itself: release (cracking), the intro code, graphics and music, adaptation, restoring, localization, translation, guest, support and testing. Whoever had only these roles does not tell where the software comes from ([search.md](search.md)).
 

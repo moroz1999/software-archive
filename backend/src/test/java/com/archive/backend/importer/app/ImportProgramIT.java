@@ -3,6 +3,8 @@ package com.archive.backend.importer.app;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.archive.backend.IntegrationTest;
+import com.archive.backend.author.app.AttachLabelToAuthorCommand;
+import com.archive.backend.author.app.AttachLabelToAuthorHandler;
 import com.archive.backend.author.app.CreateAuthorCommand;
 import com.archive.backend.author.app.CreateAuthorHandler;
 import com.archive.backend.author.app.DeleteAuthorCommand;
@@ -12,6 +14,8 @@ import com.archive.backend.author.domain.RealName;
 import com.archive.backend.category.domain.CategoryId;
 import com.archive.backend.geo.domain.CityId;
 import com.archive.backend.geo.domain.LocationDraft;
+import com.archive.backend.group.app.AttachLabelToGroupCommand;
+import com.archive.backend.group.app.AttachLabelToGroupHandler;
 import com.archive.backend.group.app.CreateGroupCommand;
 import com.archive.backend.group.app.CreateGroupHandler;
 import com.archive.backend.group.app.DeleteGroupCommand;
@@ -38,11 +42,18 @@ import com.archive.backend.importer.read.ImportRunLogLine;
 import com.archive.backend.importer.read.ImportRunPlaceEntry;
 import com.archive.backend.importer.read.ImportRunReadRepository;
 import com.archive.backend.importer.read.ImportRunReport;
+import com.archive.backend.label.app.EditLabelCommand;
+import com.archive.backend.label.app.EditLabelHandler;
 import com.archive.backend.label.app.MakeAuthorOfLabelCommand;
 import com.archive.backend.label.app.MakeAuthorOfLabelHandler;
+import com.archive.backend.label.app.MakeGroupOfLabelCommand;
+import com.archive.backend.label.app.MakeGroupOfLabelHandler;
+import com.archive.backend.label.domain.LabelAttachment;
 import com.archive.backend.label.domain.LabelDraft;
 import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.label.domain.LabelName;
+import com.archive.backend.label.domain.LabelOwnerChoice;
+import com.archive.backend.label.domain.LabelOwnerKind;
 import com.archive.backend.label.domain.UnmarkedLabelDraft;
 import com.archive.backend.shared.domain.Language;
 import com.archive.backend.software.app.CreateReleaseCommand;
@@ -129,6 +140,18 @@ class ImportProgramIT {
 
     @Autowired
     private CreateGroupHandler createGroup;
+
+    @Autowired
+    private AttachLabelToGroupHandler attachToGroup;
+
+    @Autowired
+    private AttachLabelToAuthorHandler attachToAuthor;
+
+    @Autowired
+    private EditLabelHandler editLabel;
+
+    @Autowired
+    private MakeGroupOfLabelHandler makeGroup;
 
     @Autowired
     private ImportRunRepository runs;
@@ -498,6 +521,109 @@ class ImportProgramIT {
                 .isEqualTo(person);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM label WHERE name = 'IVAN A'", Integer.class))
                 .isZero();
+    }
+
+    @Test
+    void creditsAnImportedLabelAttachedToAGroupSinceUnderThatLabel() {
+        UUID label = importedLabel();
+        UUID group = ourGroup("CodeMasters", List.of(), null);
+        attachToGroup.handle(new AttachLabelToGroupCommand(TestActors.ADMIN, new LabelId(label), new GroupId(group)));
+
+        importAnotherProgramOfTheLabel();
+
+        assertThat(creditOfExolon()).containsEntry("label_id", label);
+    }
+
+    @Test
+    void creditsAnImportedLabelAttachedToAPersonSinceUnderThatLabel() {
+        UUID label = importedLabel();
+        UUID person = ourPerson("Иван Андреев", "IVAN", null);
+        attachToAuthor.handle(new AttachLabelToAuthorCommand(
+                TestActors.ADMIN, new LabelAttachment(new LabelId(label), false), new AuthorId(person)));
+
+        importAnotherProgramOfTheLabel();
+
+        assertThat(creditOfExolon()).containsEntry("label_id", label);
+    }
+
+    @Test
+    void creditsAnImportedLabelMovedFromAGroupToAPersonUnderThatLabel() {
+        UUID label = importedLabel();
+        UUID group = ourGroup("CodeMasters", List.of(), null);
+        attachToGroup.handle(new AttachLabelToGroupCommand(TestActors.ADMIN, new LabelId(label), new GroupId(group)));
+        UUID person = ourPerson("Иван Андреев", "IVAN", null);
+        editLabel.handle(new EditLabelCommand(
+                TestActors.ADMIN,
+                new LabelId(label),
+                new LabelName("Code Masters"),
+                new LabelOwnerChoice(LabelOwnerKind.AUTHOR, person, false),
+                List.of()));
+
+        importAnotherProgramOfTheLabel();
+
+        assertThat(creditOfExolon()).containsEntry("label_id", label);
+    }
+
+    @Test
+    void creditsAnImportedLabelTakenAwayFromItsGroupUnderThatLabel() {
+        UUID label = importedLabel();
+        UUID group = ourGroup("CodeMasters", List.of(), null);
+        attachToGroup.handle(new AttachLabelToGroupCommand(TestActors.ADMIN, new LabelId(label), new GroupId(group)));
+        editLabel.handle(new EditLabelCommand(
+                TestActors.ADMIN, new LabelId(label), new LabelName("Code Masters"), null, List.of()));
+
+        importAnotherProgramOfTheLabel();
+
+        assertThat(creditOfExolon()).containsEntry("label_id", label);
+    }
+
+    @Test
+    void creditsTheGroupAnImportedLabelWasMadeInto() {
+        UUID label = importedLabel();
+        UUID group = makeGroup
+                .handle(new MakeGroupOfLabelCommand(TestActors.ADMIN, new LabelId(label), Set.of()))
+                .value();
+
+        importAnotherProgramOfTheLabel();
+
+        assertThat(creditOfExolon()).containsEntry("group_id", group);
+    }
+
+    @Test
+    void findsNothingToAddToAProgramWhoseImportedLabelWasAttachedToAGroupSince() {
+        UUID label = importedLabel();
+        UUID group = ourGroup("CodeMasters", List.of(), null);
+        attachToGroup.handle(new AttachLabelToGroupCommand(TestActors.ADMIN, new LabelId(label), new GroupId(group)));
+
+        importProgram(program("1", "Elite", zip(Map.of("ELITE.ROM", ELITE_ROM)))
+                .authors(SourceAuthor.label(new LabelName("Code Masters")))
+                .build());
+
+        assertThat(jdbc.queryForList(
+                        "SELECT label_id FROM software_contribution WHERE software_id = ?",
+                        UUID.class,
+                        software("Elite")))
+                .containsExactly(label);
+    }
+
+    /** The label of nobody the import made of the author of its first program. */
+    private UUID importedLabel() {
+        importProgram(program("1", "Elite", zip(Map.of("ELITE.ROM", ELITE_ROM)))
+                .authors(SourceAuthor.label(new LabelName("Code Masters")))
+                .build());
+        return jdbc.queryForObject("SELECT id FROM label WHERE name = 'Code Masters'", UUID.class);
+    }
+
+    private void importAnotherProgramOfTheLabel() {
+        importProgram(program("2", "Exolon", zip(Map.of("EXOLON.ROM", EXTRA_ROM)))
+                .authors(SourceAuthor.label(new LabelName("Code Masters")))
+                .build());
+    }
+
+    private Map<String, Object> creditOfExolon() {
+        return jdbc.queryForMap(
+                "SELECT person_id, group_id, label_id FROM software_contribution WHERE software_id = ?",
+                software("Exolon"));
     }
 
     @Test

@@ -53,9 +53,9 @@ public class JdbcSoftwareReferences implements SoftwareReferenceCatalog, Softwar
     public boolean contains(SoftwareReference reference) {
         String sql = switch (reference.type()) {
             case AUTHOR -> "SELECT EXISTS (SELECT 1 FROM person WHERE id = :id)";
-            case AUTHOR_LABEL -> "SELECT EXISTS (SELECT 1 FROM label WHERE id = :id AND group_id IS NULL)";
             case GROUP -> "SELECT EXISTS (SELECT 1 FROM \"group\" WHERE id = :id)";
-            case GROUP_LABEL -> "SELECT EXISTS (SELECT 1 FROM label WHERE id = :id AND group_id IS NOT NULL)";
+            // A label credit is stored by the label alone, whoever owns it now (docs/domain/software.md#credits).
+            case AUTHOR_LABEL, GROUP_LABEL -> "SELECT EXISTS (SELECT 1 FROM label WHERE id = :id)";
         };
         return jdbc.sql(sql)
                 .param("id", reference.id().value())

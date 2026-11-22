@@ -141,6 +141,22 @@ class SoftwareCreditsIT {
     }
 
     @Test
+    void refusesACreditedLabelThatIsNotInTheArchive() throws Exception {
+        mvc.perform(post("/api/software")
+                        .with(TestActors.bearer(accessTokens, MEMBER))
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "title": "Elite",
+                                  "platform": "vector",
+                                  "credits": [{"type": "author-label", "id": "%s", "roles": ["code"]}]
+                                }
+                                """.formatted(UNKNOWN)))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code").value("software.credit-unknown"));
+    }
+
+    @Test
     void refusesACreditedGroupThatIsNotInTheArchive() throws Exception {
         mvc.perform(post("/api/software")
                         .with(TestActors.bearer(accessTokens, MEMBER))
