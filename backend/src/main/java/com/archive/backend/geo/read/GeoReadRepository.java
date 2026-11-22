@@ -29,4 +29,7 @@ public interface GeoReadRepository {
     Optional<CountryDetails> findCountry(UUID id);
 
     Optional<CityDetails> findCity(UUID id);
+
+    /** The cities of no known country, named as countries are, by that name, each with how many places are in it. */
+    List<GeographyCity> findCitiesOfNoCountry(String language);
 }

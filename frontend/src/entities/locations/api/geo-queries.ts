@@ -1,7 +1,7 @@
 import {queryOptions, skipToken} from '@tanstack/react-query';
 import type {CityId, CountryId} from '../model/geo';
 import type {PlaceKind} from '../model/geography';
-import {fetchGeography, fetchPlace} from './geography-api';
+import {fetchCitiesOfNoCountry, fetchGeography, fetchPlace} from './geography-api';
 import {fetchCities, fetchCountries} from './geo-api';
 
 /** The common prefix of every query of countries and cities: a change of one makes them all stale. */
@@ -35,5 +35,13 @@ export function placeDetailsQuery(kind: PlaceKind, id: CountryId | CityId) {
     return queryOptions({
         queryKey: [...GEO_QUERY_KEY, kind, id],
         queryFn: ({signal}) => fetchPlace(kind, id, signal),
+    });
+}
+
+/** The cities of no known country, sorted out in the management. */
+export function citiesOfNoCountryQuery() {
+    return queryOptions({
+        queryKey: [...GEO_QUERY_KEY, 'cities-of-no-country'],
+        queryFn: ({signal}) => fetchCitiesOfNoCountry(signal),
     });
 }

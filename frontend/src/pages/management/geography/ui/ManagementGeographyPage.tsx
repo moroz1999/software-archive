@@ -1,5 +1,7 @@
 import {useTranslation} from 'react-i18next';
-import {CITY_NEW_PATH, COUNTRY_NEW_PATH, GeographyProvider, GeographyTree} from '@/entities/locations';
+import {CitiesOfNoCountry, CitiesOfNoCountryProvider, CITY_NEW_PATH, CountriesProvider, COUNTRY_NEW_PATH, GeographyProvider, GeographyTree} from '@/entities/locations';
+import {PutCityInCountry} from '@/features/geography/put-in-country';
+import {Stack} from '@/shared/ui/stack';
 import {ManagementTabs} from '@/features/user/management-navigation';
 import {Button} from '@/shared/ui/button';
 import {Inline} from '@/shared/ui/inline';
@@ -18,9 +20,16 @@ export function ManagementGeographyPage() {
             )}
         >
             <ManagementTabs/>
-            <GeographyProvider>
-                <GeographyTree/>
-            </GeographyProvider>
+            <Stack gap="lg">
+                <CountriesProvider>
+                    <CitiesOfNoCountryProvider>
+                        <CitiesOfNoCountry action={(city) => <PutCityInCountry city={city}/>}/>
+                    </CitiesOfNoCountryProvider>
+                </CountriesProvider>
+                <GeographyProvider>
+                    <GeographyTree/>
+                </GeographyProvider>
+            </Stack>
         </PageLayout>
     );
 }

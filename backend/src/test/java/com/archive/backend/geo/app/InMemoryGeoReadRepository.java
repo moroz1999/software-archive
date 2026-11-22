@@ -5,6 +5,7 @@ import com.archive.backend.geo.read.CityItem;
 import com.archive.backend.geo.read.CountryDetails;
 import com.archive.backend.geo.read.CountryItem;
 import com.archive.backend.geo.read.GeoReadRepository;
+import com.archive.backend.geo.read.GeographyCity;
 import com.archive.backend.geo.read.GeographyCountry;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,5 +48,10 @@ class InMemoryGeoReadRepository implements GeoReadRepository {
     @Override
     public Optional<CityDetails> findCity(UUID id) {
         return Optional.empty();
+    }
+
+    @Override
+    public List<GeographyCity> findCitiesOfNoCountry(String language) {
+        return List.of();
     }
 }

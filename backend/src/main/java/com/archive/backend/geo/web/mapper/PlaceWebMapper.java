@@ -2,6 +2,7 @@ package com.archive.backend.geo.web.mapper;
 
 import com.archive.backend.geo.app.CreateCityCommand;
 import com.archive.backend.geo.app.CreateCountryCommand;
+import com.archive.backend.geo.app.PutCityInCountryCommand;
 import com.archive.backend.geo.app.UpdateCityCommand;
 import com.archive.backend.geo.app.UpdateCountryCommand;
 import com.archive.backend.geo.domain.CityId;
@@ -11,12 +12,16 @@ import com.archive.backend.geo.domain.GeoName;
 import com.archive.backend.geo.domain.GeoNames;
 import com.archive.backend.geo.read.CityDetails;
 import com.archive.backend.geo.read.CountryDetails;
+import com.archive.backend.geo.read.GeographyCity;
 import com.archive.backend.geo.read.GeographyCountry;
+import com.archive.backend.geo.web.dto.CityCountryRequestDto;
 import com.archive.backend.geo.web.dto.CityDetailsDto;
 import com.archive.backend.geo.web.dto.CountryDetailsDto;
+import com.archive.backend.geo.web.dto.GeographyCityDto;
 import com.archive.backend.geo.web.dto.GeographyCountryDto;
 import com.archive.backend.geo.web.dto.PlaceRequestDto;
 import com.archive.backend.shared.domain.Language;
+import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.user.domain.Actor;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +36,17 @@ public interface PlaceWebMapper {
 
     List<GeographyCountryDto> toGeography(List<GeographyCountry> countries);
 
+    List<GeographyCityDto> toCities(List<GeographyCity> cities);
+
     CountryDetailsDto toDetails(CountryDetails country);
+
+    default PutCityInCountryCommand toPutInCountry(Actor actor, UUID id, CityCountryRequestDto request) {
+        UUID country = request.countryId();
+        if (country == null) {
+            throw new InvalidValueException("geo.country-required", "A city is put in a country.");
+        }
+        return new PutCityInCountryCommand(actor, new CityId(id), new CountryId(country));
+    }
 
     CityDetailsDto toDetails(CityDetails city);
 

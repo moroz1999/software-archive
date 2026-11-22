@@ -1,7 +1,7 @@
 import {deleteResource, getJson, type JsonObject, mapResponse, postJson, putJson, readArray, readNullableString, readNumber, readObject, readString} from '@/shared/api';
 import {SUPPORTED_UI_LANGUAGES, type UiLanguage} from '@/shared/lib/i18n';
 import {type CityId, type CountryId, toCityId, toCountryId} from '../model/geo';
-import type {GeographyCountry, PlaceDetails, PlaceKind, PlaceNames} from '../model/geography';
+import type {GeographyCity, GeographyCountry, PlaceDetails, PlaceKind, PlaceNames} from '../model/geography';
 import type {PlaceDraft} from '../model/place-form';
 
 function placesPath(kind: PlaceKind): string {
@@ -34,16 +34,18 @@ function parseNames(value: unknown): PlaceNames {
     return {...names, ru: readString(dto, 'ru')};
 }
 
+function parseCity(item: unknown): GeographyCity {
+    const dto = readObject(item, 'city');
+    return {id: toCityId(readString(dto, 'id')), name: readString(dto, 'name'), places: readNumber(dto, 'places')};
+}
+
 function parseCountry(item: unknown): GeographyCountry {
     const dto = readObject(item, 'country');
     return {
         id: toCountryId(readString(dto, 'id')),
         name: readString(dto, 'name'),
         places: readNumber(dto, 'places'),
-        cities: readArray(dto['cities'], 'cities').map((city) => {
-            const cityDto = readObject(city, 'city');
-            return {id: toCityId(readString(cityDto, 'id')), name: readString(cityDto, 'name'), places: readNumber(cityDto, 'places')};
-        }),
+        cities: readArray(dto['cities'], 'cities').map(parseCity),
     };
 }
 
@@ -84,4 +86,15 @@ export async function updatePlace(kind: PlaceKind, id: CountryId | CityId, draft
 /** Deletes a country or a city nothing of the archive is in. */
 export async function deletePlace(kind: PlaceKind, id: CountryId | CityId): Promise<void> {
     await deleteResource(placePath(kind, id));
+}
+
+/** The cities of no known country with how many places are in them: `GET /api/geography/cities-of-no-country`. */
+export async function fetchCitiesOfNoCountry(signal: AbortSignal): Promise<readonly GeographyCity[]> {
+    const json = await getJson('/api/geography/cities-of-no-country', signal);
+    return mapResponse(() => readArray(json, 'cities').map(parseCity));
+}
+
+/** Puts a city in a country, keeping all else it has. */
+export async function putCityInCountry(city: CityId, country: CountryId): Promise<void> {
+    await putJson(`/api/cities/${city}/country`, {countryId: country});
 }

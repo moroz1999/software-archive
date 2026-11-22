@@ -32,6 +32,11 @@ public final class City {
     public void edit(GeoNames names, @Nullable KnownCountry country, @Nullable Coordinates coordinates) {
         this.names = Objects.requireNonNull(names, "names");
         this.coordinates = coordinates;
+        moveTo(country);
+    }
+
+    /** Puts the city in the country, or in none, keeping all else it has; a change tells it moved. */
+    public void moveTo(@Nullable KnownCountry country) {
         if (!Objects.equals(countryId(this.country), countryId(country))) {
             events.add(new CityMoved(id, countryId(country)));
         }

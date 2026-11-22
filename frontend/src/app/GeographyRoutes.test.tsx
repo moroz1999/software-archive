@@ -12,7 +12,9 @@ const ADMIN = {...MEMBER, groups: ['admin', 'member'], abilities: ['add-entries'
 const FINLAND = '00000000-0000-0000-0010-000000000001';
 const SWEDEN = '00000000-0000-0000-0010-000000000002';
 const HELSINKI = '00000000-0000-0000-0010-000000000011';
+const KOVROV = '00000000-0000-0000-0010-000000000021';
 const NEW_ID = '00000000-0000-0000-0010-000000000099';
+const CITIES_OF_NO_COUNTRY = 'GET /api/geography/cities-of-no-country';
 
 const GEOGRAPHY = [
     {id: FINLAND, name: 'Finland', places: 3, cities: [{id: HELSINKI, name: 'Helsinki', places: 1}]},
@@ -35,6 +37,7 @@ function stubApi(user: typeof MEMBER, routes: Routes = {}) {
         ['GET /api/auth/me', json(user)],
         ['GET /api/platforms', json([])],
         ['GET /api/geography', json(GEOGRAPHY)],
+        ['GET /api/geography/cities-of-no-country', json([])],
         ['GET /api/countries', json(COUNTRIES)],
         ...Object.entries(routes),
     ]);
@@ -240,5 +243,61 @@ describe('geography routes', () => {
         await userEvent.click(screen.getByRole('button', {name: 'Delete for good'}));
 
         await expect(within(screen.getByRole('alertdialog')).findByText('People, groups or labels are located in the city: it cannot be deleted.')).resolves.toBeInTheDocument();
+    });
+
+    it('shows the cities of no country over the tree, each with how many places are in it and leading to its editing', async () => {
+        stubApi(ADMIN, {[CITIES_OF_NO_COUNTRY]: json([{id: KOVROV, name: 'Kovrov', places: 2}])});
+        openAt('/management/geography');
+
+        const block = within(await screen.findByRole('region', {name: 'Cities of no country'}));
+
+        expect(block.getByRole('link', {name: 'Kovrov'})).toHaveAttribute('href', `/management/geography/cities/${KOVROV}/edit`);
+        expect(block.getByText('2 places')).toBeInTheDocument();
+        expect(screen.getByRole('region', {name: 'Cities of no country'}).compareDocumentPosition(screen.getByRole('list', {name: 'Geography'}))).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+
+    it('says when every city is in a country', async () => {
+        stubApi(ADMIN);
+        openAt('/management/geography');
+
+        const block = within(await screen.findByRole('region', {name: 'Cities of no country'}));
+
+        expect(block.getByText('Every city is in a country.')).toBeInTheDocument();
+    });
+
+    it('puts a city of no country in the country chosen, and the city leaves the list', async () => {
+        let put = false;
+        const fetchMock = stubApi(ADMIN, {
+            [CITIES_OF_NO_COUNTRY]: () => json(put ? [] : [{id: KOVROV, name: 'Kovrov', places: 2}])(),
+            [`PUT /api/cities/${KOVROV}/country`]: () => {
+                put = true;
+                return noContent()();
+            },
+        });
+        openAt('/management/geography');
+
+        const country = await screen.findByRole('combobox', {name: 'Country for Kovrov'});
+
+        expect(screen.getByRole('button', {name: 'Put Kovrov in the country'})).toBeDisabled();
+
+        await userEvent.selectOptions(country, await screen.findByRole('option', {name: 'Finland'}));
+        await userEvent.click(screen.getByRole('button', {name: 'Put Kovrov in the country'}));
+
+        await expect(screen.findByText('Every city is in a country.')).resolves.toBeInTheDocument();
+        expect(bodyOf(fetchMock, 'PUT', `/api/cities/${KOVROV}/country`)).toStrictEqual({countryId: FINLAND});
+    });
+
+    it('says next to the city when its country is gone', async () => {
+        stubApi(ADMIN, {
+            [CITIES_OF_NO_COUNTRY]: json([{id: KOVROV, name: 'Kovrov', places: 2}]),
+            [`PUT /api/cities/${KOVROV}/country`]: refusal(422, 'geo.country-unknown', 'countryId'),
+        });
+        openAt('/management/geography');
+
+        await userEvent.selectOptions(await screen.findByRole('combobox', {name: 'Country for Kovrov'}), await screen.findByRole('option', {name: 'Finland'}));
+        await userEvent.click(screen.getByRole('button', {name: 'Put Kovrov in the country'}));
+
+        await expect(screen.findByText('The country is not in the archive any more. Reload and try again.')).resolves.toBeInTheDocument();
+        expect(screen.getByRole('link', {name: 'Kovrov'})).toBeInTheDocument();
     });
 });

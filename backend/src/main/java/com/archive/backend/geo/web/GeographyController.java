@@ -10,14 +10,19 @@ import com.archive.backend.geo.app.GetCityHandler;
 import com.archive.backend.geo.app.GetCityQuery;
 import com.archive.backend.geo.app.GetCountryHandler;
 import com.archive.backend.geo.app.GetCountryQuery;
+import com.archive.backend.geo.app.ListCitiesOfNoCountryHandler;
+import com.archive.backend.geo.app.ListCitiesOfNoCountryQuery;
 import com.archive.backend.geo.app.ListGeographyHandler;
 import com.archive.backend.geo.app.ListGeographyQuery;
+import com.archive.backend.geo.app.PutCityInCountryHandler;
 import com.archive.backend.geo.app.UpdateCityHandler;
 import com.archive.backend.geo.app.UpdateCountryHandler;
 import com.archive.backend.geo.domain.CityId;
 import com.archive.backend.geo.domain.CountryId;
+import com.archive.backend.geo.web.dto.CityCountryRequestDto;
 import com.archive.backend.geo.web.dto.CityDetailsDto;
 import com.archive.backend.geo.web.dto.CountryDetailsDto;
+import com.archive.backend.geo.web.dto.GeographyCityDto;
 import com.archive.backend.geo.web.dto.GeographyCountryDto;
 import com.archive.backend.geo.web.dto.PlaceCreatedDto;
 import com.archive.backend.geo.web.dto.PlaceRequestDto;
@@ -53,12 +58,20 @@ public class GeographyController {
     private final CreateCityHandler createCityHandler;
     private final UpdateCityHandler updateCityHandler;
     private final DeleteCityHandler deleteCityHandler;
+    private final ListCitiesOfNoCountryHandler citiesOfNoCountryHandler;
+    private final PutCityInCountryHandler putCityInCountryHandler;
     private final PlaceWebMapper webMapper;
 
     /** Every country with its cities at once: the tree of the management needs all of it. */
     @GetMapping("/api/geography")
     public List<GeographyCountryDto> geography(Language language) {
         return webMapper.toGeography(listHandler.handle(new ListGeographyQuery(language)));
+    }
+
+    /** The cities of no known country, sorted out by hand. */
+    @GetMapping("/api/geography/cities-of-no-country")
+    public List<GeographyCityDto> citiesOfNoCountry(Language language) {
+        return webMapper.toCities(citiesOfNoCountryHandler.handle(new ListCitiesOfNoCountryQuery(language)));
     }
 
     @GetMapping("/api/countries/{id}")
@@ -102,6 +115,13 @@ public class GeographyController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateCity(Actor actor, @PathVariable UUID id, @RequestBody PlaceRequestDto request) {
         updateCityHandler.handle(webMapper.toUpdateCity(actor, id, request));
+    }
+
+    /** Puts a city in a country, keeping all else it has. */
+    @PutMapping("/api/cities/{id}/country")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void putCityInCountry(Actor actor, @PathVariable UUID id, @RequestBody CityCountryRequestDto request) {
+        putCityInCountryHandler.handle(webMapper.toPutInCountry(actor, id, request));
     }
 
     @DeleteMapping("/api/cities/{id}")

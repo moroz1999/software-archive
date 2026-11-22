@@ -109,4 +109,17 @@ public class JdbcGeoReadRepository implements GeoReadRepository {
                 .list();
         return names;
     }
+
+    @Override
+    public List<GeographyCity> findCitiesOfNoCountry(String language) {
+        return jdbc.sql("SELECT ci.id, " + GeoNameSql.city("ci.id") + """
+                         AS name,
+                               (SELECT count(*) FROM entity_location el WHERE el.city_id = ci.id) AS places
+                        FROM city ci WHERE ci.country_id IS NULL ORDER BY name, ci.id
+                        """)
+                .param("language", language)
+                .query((rs, row) ->
+                        new GeographyCity(rs.getObject("id", UUID.class), rs.getString("name"), rs.getInt("places")))
+                .list();
+    }
 }

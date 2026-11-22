@@ -40,8 +40,12 @@ class GeographyIT {
     private static final UUID SWEDEN = id(2);
     private static final UUID HELSINKI = id(11);
     private static final UUID ESPOO = id(12);
+    private static final UUID KOVROV = id(13);
+    private static final UUID ABAKAN = id(14);
     private static final UUID JANE = id(21);
+    private static final UUID IVAN = id(22);
     private static final UUID ELITE = id(31);
+    private static final UUID TETRIS = id(32);
 
     @Autowired
     private MockMvc mvc;
@@ -61,6 +65,7 @@ class GeographyIT {
         city(jdbc, HELSINKI, FINLAND, "Хельсинки", "Helsinki");
         city(jdbc, ESPOO, FINLAND, "Эспоо", null);
         jdbc.update("INSERT INTO person (id, real_name) VALUES (?, 'Jane Doe')", JANE);
+        jdbc.update("INSERT INTO person (id, real_name) VALUES (?, 'Ivan')", IVAN);
         jdbc.update(
                 "INSERT INTO entity_location (entity_type, entity_id, country_id, city_id, is_primary)"
                         + " VALUES ('PERSON', ?, ?, ?, true)",
@@ -241,6 +246,81 @@ class GeographyIT {
                         {"names": {"ru": "Осло"}, "countryId": null}
                         """).andExpect(status().isNotFound());
         send(delete("/api/countries/{id}", id(99)), ADMIN, null).andExpect(status().isNotFound());
+    }
+
+    /** Kovrov, where Ivan lives and of which he made Tetris, and Abakan: two cities of no known country. */
+    private void insertCitiesOfNoCountry() {
+        city(jdbc, KOVROV, null, "Ковров", null);
+        city(jdbc, ABAKAN, null, "Абакан", null);
+        jdbc.update(
+                "INSERT INTO entity_location (entity_type, entity_id, country_id, city_id, is_primary)"
+                        + " VALUES ('PERSON', ?, NULL, ?, true)",
+                IVAN,
+                KOVROV);
+        jdbc.update("INSERT INTO software (id, title, platform_code) VALUES (?, 'Tetris', 'vector')", TETRIS);
+        jdbc.update(
+                "INSERT INTO software_contribution (software_id, person_id, role_codes) VALUES (?, ?, ARRAY['code'])",
+                TETRIS,
+                IVAN);
+    }
+
+    @Test
+    void showsTheCitiesOfNoCountryWithHowManyPlacesAreInThem() throws Exception {
+        insertCitiesOfNoCountry();
+
+        mvc.perform(get("/api/geography/cities-of-no-country").header("Accept-Language", "ru"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].id").value(contains(ABAKAN.toString(), KOVROV.toString())))
+                .andExpect(jsonPath("$[*].name").value(contains("Абакан", "Ковров")))
+                .andExpect(jsonPath("$[*].places").value(contains(0, 1)));
+    }
+
+    @Test
+    void putsACityOfNoCountryInACountryWithThePlacesInItAndSendsTheirSoftwareToTheSearch() throws Exception {
+        insertCitiesOfNoCountry();
+
+        send(put("/api/cities/{id}/country", KOVROV), ADMIN, """
+                        {"countryId": "%s"}
+                        """.formatted(FINLAND))
+                .andExpect(status().isNoContent());
+
+        mvc.perform(get("/api/cities/{id}", KOVROV))
+                .andExpect(jsonPath("$.countryId").value(FINLAND.toString()));
+        mvc.perform(get("/api/cities/{id}", KOVROV))
+                .andExpect(jsonPath("$.names.ru").value("Ковров"));
+        mvc.perform(get("/api/authors/{id}", IVAN))
+                .andExpect(jsonPath("$.locations[0].countryId").value(FINLAND.toString()));
+        mvc.perform(get("/api/geography/cities-of-no-country"))
+                .andExpect(jsonPath("$[*].id").value(contains(ABAKAN.toString())));
+        assertThat(jdbc.queryForObject(
+                        "SELECT count(*) FROM search_outbox WHERE entity_type = 'SOFTWARE' AND entity_id = ?",
+                        Integer.class,
+                        TETRIS))
+                .isOne();
+    }
+
+    @Test
+    void refusesPuttingACityInNoCountryOrInOneNotInTheArchive() throws Exception {
+        insertCitiesOfNoCountry();
+
+        send(put("/api/cities/{id}/country", KOVROV), ADMIN, """
+                        {"countryId": null}
+                        """)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("geo.country-required"));
+        send(put("/api/cities/{id}/country", KOVROV), ADMIN, """
+                        {"countryId": "%s"}
+                        """.formatted(id(99)))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code").value("geo.country-unknown"));
+        send(put("/api/cities/{id}/country", id(99)), ADMIN, """
+                        {"countryId": "%s"}
+                        """.formatted(FINLAND))
+                .andExpect(status().isNotFound());
+        send(put("/api/cities/{id}/country", KOVROV), MEMBER, """
+                        {"countryId": "%s"}
+                        """.formatted(FINLAND))
+                .andExpect(status().isForbidden());
     }
 
     private ResultActions send(

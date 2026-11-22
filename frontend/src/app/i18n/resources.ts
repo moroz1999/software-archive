@@ -203,6 +203,9 @@ export const resources = {
             places_one: '{{count}} place', places_other: '{{count}} places',
             expand: 'Expand {{name}}', collapse: 'Collapse {{name}}', empty: 'No countries yet.',
             deleteCountry: 'Delete country', deleteCity: 'Delete city', deleteQuestion: 'Delete “{{name}}” from the archive?',
+            citiesOfNoCountry: 'Cities of no country', everyCityInCountry: 'Every city is in a country.',
+            chooseCountry: 'Choose a country', countryFor: 'Country for {{name}}',
+            putInCountry: 'Put in the country', putIn: 'Put {{name}} in the country',
         },
         category: {
             titleIn: {ru: 'Title in Russian', en: 'Title in English'},
@@ -435,6 +438,9 @@ export const resources = {
             places_one: '{{count}} место', places_few: '{{count}} места', places_many: '{{count}} мест', places_other: '{{count}} места',
             expand: 'Развернуть {{name}}', collapse: 'Свернуть {{name}}', empty: 'Стран пока нет.',
             deleteCountry: 'Удалить страну', deleteCity: 'Удалить город', deleteQuestion: 'Удалить «{{name}}» из архива?',
+            citiesOfNoCountry: 'Города без страны', everyCityInCountry: 'Все города в странах.',
+            chooseCountry: 'Выберите страну', countryFor: 'Страна для {{name}}',
+            putInCountry: 'Поставить в страну', putIn: 'Поставить {{name}} в страну',
         },
         category: {
             titleIn: {ru: 'Название на русском', en: 'Название на английском'},
