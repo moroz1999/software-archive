@@ -1,6 +1,6 @@
 # Production Deployment
 
-The whole archive runs on one host from `compose.prod.yaml`. Caddy is the only service reachable from outside (ports 80 and 443): it serves the static frontend, proxies `/api` to the backend and obtains the HTTPS certificate itself. PostgreSQL, Typesense and the backend stay in the internal network of the stack.
+The archive is served at retroteka.org (`SITE_ADDRESS` in `.env.prod`). The whole archive runs on one host from `compose.prod.yaml`. Caddy is the only service reachable from outside (ports 80 and 443): it serves the static frontend, proxies `/api` to the backend and obtains the HTTPS certificate itself. PostgreSQL, Typesense and the backend stay in the internal network of the stack.
 
 The steps of the first start and of deploying a new version are in the [README](../README.md#deploying-to-production).
 
