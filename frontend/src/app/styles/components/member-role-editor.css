@@ -17,9 +17,6 @@
     /* Space between the chosen role chips. */
     --member-role-editor-roles-gap: var(--space-4);
 
-    /* Space between the start and end date fields. */
-    --member-role-editor-dates-gap: var(--space-8);
-
     /* Framed dropdown of the roles. */
     --member-role-editor-list-border-width: var(--border-width-thin);
     --member-role-editor-list-border-color: var(--border-color);

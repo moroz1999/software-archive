@@ -28,10 +28,10 @@ const CREW = {
         {countryId: '00000000-0000-0000-0002-000000000001', country: 'Finland', cityId: '00000000-0000-0000-0002-000000000011', city: 'Helsinki', primary: true},
     ],
     members: [
-        {id: GHOST, type: 'author-label', title: 'Ghost', name: 'Ghost', personId: null, personName: null, roles: [], startDate: null, endDate: null},
-        {id: CARL, type: 'author', title: 'Carl Real', name: 'Carl Real', personId: CARL, personName: null, roles: [], startDate: null, endDate: null},
-        {id: ZED_LABEL, type: 'author-label', title: 'Zed', name: 'Zed', personId: ZED, personName: null, roles: [], startDate: null, endDate: null},
-        {id: FEDYA_LABEL, type: 'author-label', title: 'хакер федя', name: 'хакер федя', personId: FEDYA, personName: 'MASTERSOFT', roles: [], startDate: null, endDate: null},
+        {id: GHOST, type: 'author-label', title: 'Ghost', name: 'Ghost', personId: null, personName: null, roles: []},
+        {id: CARL, type: 'author', title: 'Carl Real', name: 'Carl Real', personId: CARL, personName: null, roles: []},
+        {id: ZED_LABEL, type: 'author-label', title: 'Zed', name: 'Zed', personId: ZED, personName: null, roles: []},
+        {id: FEDYA_LABEL, type: 'author-label', title: 'хакер федя', name: 'хакер федя', personId: FEDYA, personName: 'MASTERSOFT', roles: []},
     ],
     memberGroups: [{id: BAND, name: 'Band'}],
     groups: [{id: OLDIES, name: 'Alpha'}],
@@ -165,8 +165,8 @@ describe(GroupView, () => {
 
     it('shows the known roles of the members and leaves the unknown one out', async () => {
         stubFetchAround(NO_SOFTWARE, json({...CREW, members: [
-            {id: ZED, type: 'author', title: 'Zed', name: 'Zed', personId: ZED, personName: null, roles: ['coder'], startDate: null, endDate: null},
-            {id: FEDYA, type: 'author', title: 'хакер федя', name: 'хакер федя', personId: FEDYA, personName: null, roles: ['unknown'], startDate: null, endDate: null},
+            {id: ZED, type: 'author', title: 'Zed', name: 'Zed', personId: ZED, personName: null, roles: ['coder']},
+            {id: FEDYA, type: 'author', title: 'хакер федя', name: 'хакер федя', personId: FEDYA, personName: null, roles: ['unknown']},
         ]}));
         renderView();
 

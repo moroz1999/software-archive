@@ -1,6 +1,5 @@
 package com.archive.backend.group.read;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -16,11 +15,9 @@ public record GroupMember(
         String name,
         @Nullable UUID personId,
         @Nullable String personName,
-        List<String> roles,
-        @Nullable LocalDate startDate,
-        @Nullable LocalDate endDate) {
+        List<String> roles) {
 
     public GroupMember(String name, @Nullable UUID personId, @Nullable String personName) {
-        this(personId, "author", name, name, personId, personName, List.of("unknown"), null, null);
+        this(personId, "author", name, name, personId, personName, List.of("unknown"));
     }
 }

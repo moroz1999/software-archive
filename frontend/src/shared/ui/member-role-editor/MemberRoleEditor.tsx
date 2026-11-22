@@ -12,8 +12,6 @@ import styles from './MemberRoleEditor.module.css';
 
 export interface MemberRoleValue extends EntityAutocompleteOption {
     readonly roles: readonly string[];
-    readonly startDate: string;
-    readonly endDate: string;
 }
 
 export interface MemberRoleOption {
@@ -27,20 +25,19 @@ export interface MemberRoleEditorProps {
     readonly roles: readonly MemberRoleOption[];
     readonly search: (query: string, signal: AbortSignal) => Promise<readonly EntityAutocompleteOption[]>;
     readonly onChange: (value: readonly MemberRoleValue[]) => void;
-    readonly showDates?: boolean;
     readonly disabled?: boolean;
     readonly error?: string | undefined;
 }
 
 /** People or their aliases as a grid of cards, each with the roles chosen for it; new ones are found under the grid. */
-export function MemberRoleEditor({label, value, roles, search, onChange, showDates = false, disabled = false, error}: MemberRoleEditorProps) {
+export function MemberRoleEditor({label, value, roles, search, onChange, disabled = false, error}: MemberRoleEditorProps) {
     function add(options: readonly EntityAutocompleteOption[]) {
         const option = options[0];
         // A member already on a card is not added twice.
         if (option === undefined || value.some((member) => member.type === option.type && member.id === option.id)) {
             return;
         }
-        onChange([...value, {...option, roles: [], startDate: '', endDate: ''}]);
+        onChange([...value, {...option, roles: []}]);
     }
 
     function replace(index: number, member: MemberRoleValue) {
@@ -56,7 +53,6 @@ export function MemberRoleEditor({label, value, roles, search, onChange, showDat
                             key={`${member.type}:${member.id}`}
                             member={member}
                             roles={roles}
-                            showDates={showDates}
                             disabled={disabled}
                             onChange={(next) => { replace(index, next); }}
                             onRemove={() => { onChange(value.filter((_, currentIndex) => currentIndex !== index)); }}
@@ -80,10 +76,9 @@ export function MemberRoleEditor({label, value, roles, search, onChange, showDat
     );
 }
 
-function MemberCard({member, roles, showDates, disabled, onChange, onRemove}: {
+function MemberCard({member, roles, disabled, onChange, onRemove}: {
     readonly member: MemberRoleValue;
     readonly roles: readonly MemberRoleOption[];
-    readonly showDates: boolean;
     readonly disabled: boolean;
     readonly onChange: (value: MemberRoleValue) => void;
     readonly onRemove: () => void;
@@ -122,26 +117,6 @@ function MemberCard({member, roles, showDates, disabled, onChange, onRemove}: {
                 disabled={disabled}
                 onPick={(code) => { onChange({...member, roles: [...member.roles, code]}); }}
             />
-            {showDates && (
-                <div className={styles.dates}>
-                    <Input
-                        id={`${id}-start`}
-                        value={member.startDate}
-                        onChange={(startDate) => { onChange({...member, startDate}); }}
-                        ariaLabel={t('roles.startDateFor', {name: member.title})}
-                        placeholder={t('roles.from')}
-                        disabled={disabled}
-                    />
-                    <Input
-                        id={`${id}-end`}
-                        value={member.endDate}
-                        onChange={(endDate) => { onChange({...member, endDate}); }}
-                        ariaLabel={t('roles.endDateFor', {name: member.title})}
-                        placeholder={t('roles.to')}
-                        disabled={disabled}
-                    />
-                </div>
-            )}
         </div>
     );
 }

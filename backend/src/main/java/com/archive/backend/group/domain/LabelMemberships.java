@@ -10,8 +10,8 @@ public interface LabelMemberships {
     void transfer(LabelId label, AuthorId author);
 
     /**
-     * Makes the group a member group wherever the label was a member; a group member has no roles or dates, so the
-     * label's are not kept.
+     * Makes the group a member group wherever the label was a member; a group member has no roles, so the label's
+     * are not kept.
      */
     void transfer(LabelId label, GroupId group);
 }

@@ -29,8 +29,6 @@ export interface GroupMember {
     readonly personId: string | null;
     readonly personName: string | null;
     readonly roles: readonly string[];
-    readonly startDate: string | null;
-    readonly endDate: string | null;
 }
 
 /** A group inside another one, or one containing it, under its main name. */

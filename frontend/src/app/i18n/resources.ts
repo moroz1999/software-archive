@@ -124,8 +124,7 @@ export const resources = {
         loading: {refreshing: 'Refreshing', searching: 'Searching'},
         selection: {remove: 'Remove {{name}}', selected_one: '{{count}} selected', selected_other: '{{count}} selected'},
         roles: {
-            add: 'Add role', for: 'Role for {{name}}', from: 'From', to: 'To',
-            startDateFor: 'Start date for {{name}}', endDateFor: 'End date for {{name}}',
+            add: 'Add role', for: 'Role for {{name}}',
             group: {
                 coder: 'Coder', cracker: 'Cracker', graphician: 'Graphician', hardware: 'Hardware', musician: 'Musician',
                 organizer: 'Organizer', support: 'Support', tester: 'Tester', gamedesigner: 'Game designer', unknown: 'Unknown',
@@ -343,8 +342,7 @@ export const resources = {
             selected_many: 'Выбрано {{count}}', selected_other: 'Выбрано {{count}}',
         },
         roles: {
-            add: 'Добавить роль', for: 'Роль: {{name}}', from: 'С', to: 'По',
-            startDateFor: 'Дата начала: {{name}}', endDateFor: 'Дата окончания: {{name}}',
+            add: 'Добавить роль', for: 'Роль: {{name}}',
             group: {
                 coder: 'Кодер', cracker: 'Взломщик', graphician: 'График', hardware: 'Аппаратчик', musician: 'Музыкант',
                 organizer: 'Организатор', support: 'Поддержка', tester: 'Тестировщик', gamedesigner: 'Геймдизайнер', unknown: 'Неизвестно',

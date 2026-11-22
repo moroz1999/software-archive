@@ -104,6 +104,16 @@ describe(GroupEditor, () => {
         expect(screen.getByRole('region', {name: 'Members'})).toBeInTheDocument();
     });
 
+    it('offers the roles of a member and no dates of the membership', async () => {
+        const member = {id: CREW_LABEL, type: 'author-label', title: 'Crew', name: 'Crew', personId: null, personName: null, roles: ['coder']};
+        stubFetchAround(AROUND, json({...CREW, members: [member]}));
+        renderEditor();
+
+        await expect(screen.findByRole('combobox', {name: 'Role for Crew'})).resolves.toBeInTheDocument();
+        expect(screen.queryByRole('textbox', {name: 'Start date for Crew'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('textbox', {name: 'End date for Crew'})).not.toBeInTheDocument();
+    });
+
     it('saves the whole group with its types, labels and locations', async () => {
         const fetchMock = stubFetchAround(AROUND, json(CREW), noContent());
         const onSaved = vi.fn<() => void>();

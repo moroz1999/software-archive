@@ -6,7 +6,7 @@ import {renderWithQueries} from '@/shared/lib/test';
 import {MemberRoleEditor, type MemberRoleValue} from './MemberRoleEditor';
 
 const ALIAS = '00000000-0000-0000-00bb-000000000002';
-const JANE: MemberRoleValue = {id: ALIAS, type: 'author-label', title: 'J.D. — Jane Doe', roles: [], startDate: '', endDate: ''};
+const JANE: MemberRoleValue = {id: ALIAS, type: 'author-label', title: 'J.D. — Jane Doe', roles: []};
 
 function Editor({initial = []}: {readonly initial?: readonly MemberRoleValue[]}) {
     const [value, setValue] = useState<readonly MemberRoleValue[]>(initial);
@@ -18,7 +18,6 @@ function Editor({initial = []}: {readonly initial?: readonly MemberRoleValue[]})
                 roles={[{code: 'coder', title: 'Coder'}, {code: 'organizer', title: 'Organizer'}, {code: 'musician', title: 'Musician'}]}
                 search={vi.fn(() => Promise.resolve([{id: ALIAS, type: 'author-label', title: 'J.D. — Jane Doe'}]))}
                 onChange={setValue}
-                showDates
             />
             <output>{JSON.stringify(value)}</output>
         </>
@@ -26,7 +25,7 @@ function Editor({initial = []}: {readonly initial?: readonly MemberRoleValue[]})
 }
 
 describe(MemberRoleEditor, () => {
-    it('adds an alias with several roles and membership dates', async () => {
+    it('adds an alias with several roles, and no dates', async () => {
         renderWithQueries(<Editor/>);
 
         await userEvent.type(screen.getByRole('combobox', {name: 'Members'}), 'j.d.');
@@ -34,14 +33,12 @@ describe(MemberRoleEditor, () => {
         await userEvent.click(screen.getByRole('combobox', {name: 'Role for J.D. — Jane Doe'}));
         await userEvent.click(screen.getByRole('option', {name: 'Coder'}));
         await userEvent.click(screen.getByRole('option', {name: 'Organizer'}));
-        await userEvent.type(screen.getByRole('textbox', {name: 'Start date for J.D. — Jane Doe'}), '1990-01-01');
-        await userEvent.type(screen.getByRole('textbox', {name: 'End date for J.D. — Jane Doe'}), '1995-12-31');
 
         expect(screen.getByRole('status')).toHaveTextContent(JSON.stringify([{
-            ...JANE,
+            id: ALIAS,
+            type: 'author-label',
+            title: 'J.D. — Jane Doe',
             roles: ['coder', 'organizer'],
-            startDate: '1990-01-01',
-            endDate: '1995-12-31',
         }]));
     });
 

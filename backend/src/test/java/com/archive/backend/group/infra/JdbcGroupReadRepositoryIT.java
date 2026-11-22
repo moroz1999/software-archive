@@ -323,6 +323,6 @@ class JdbcGroupReadRepositoryIT {
     /** A member known by its label, with no roles nor dates given. */
     private static GroupMember labelMember(
             UUID label, String title, String name, @Nullable UUID person, @Nullable String personName) {
-        return new GroupMember(label, "author-label", title, name, person, personName, List.of("unknown"), null, null);
+        return new GroupMember(label, "author-label", title, name, person, personName, List.of("unknown"));
     }
 }

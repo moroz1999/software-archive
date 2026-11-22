@@ -136,9 +136,7 @@ public interface GroupWebMapper {
         }
         return new GroupMemberDraft(
                 new PersonReference(PersonReferenceType.fromCode(type), new PersonReferenceId(id)),
-                member.roles() == null ? List.of() : member.roles(),
-                member.startDate(),
-                member.endDate());
+                member.roles() == null ? List.of() : member.roles());
     }
 
     default ListGroupsQuery toListQuery(

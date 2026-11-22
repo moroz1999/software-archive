@@ -49,7 +49,7 @@ class PeopleRolesIT {
     }
 
     @Test
-    void storesGroupMemberRolesAndDatesUnderTheChosenAlias() throws Exception {
+    void storesGroupMemberRolesWithoutDatesUnderTheChosenAlias() throws Exception {
         String created = mvc.perform(post("/api/groups")
                         .with(TestActors.bearer(accessTokens, MEMBER))
                         .contentType("application/json")
@@ -60,9 +60,7 @@ class PeopleRolesIT {
                                   "members": [{
                                     "id": "%s",
                                     "type": "author-label",
-                                    "roles": ["coder", "organizer"],
-                                    "startDate": "1990-01-01",
-                                    "endDate": "1995-12-31"
+                                    "roles": ["coder", "organizer"]
                                   }]
                                 }
                                 """.formatted(ALIAS)))
@@ -79,8 +77,8 @@ class PeopleRolesIT {
                 .andExpect(jsonPath("$.members[0].type").value("author-label"))
                 .andExpect(jsonPath("$.members[0].roles[0]").value("coder"))
                 .andExpect(jsonPath("$.members[0].roles[1]").value("organizer"))
-                .andExpect(jsonPath("$.members[0].startDate").value("1990-01-01"))
-                .andExpect(jsonPath("$.members[0].endDate").value("1995-12-31"));
+                .andExpect(jsonPath("$.members[0].keys()")
+                        .value(org.hamcrest.Matchers.not(org.hamcrest.Matchers.hasItems("startDate", "endDate"))));
     }
 
     @Test

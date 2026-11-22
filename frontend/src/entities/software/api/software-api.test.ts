@@ -22,8 +22,8 @@ const DRAFT = {
     categories: [GAMES],
     preservation: 'donationware',
     credits: [
-        {id: PUBLISHER, type: AUTHOR_LABEL, title: 'J.P. — Jane Publisher', roles: ['publisher'], startDate: '', endDate: ''},
-        {id: DEVELOPER, type: GROUP, title: 'Nebula Studio', roles: ['developer'], startDate: '', endDate: ''},
+        {id: PUBLISHER, type: AUTHOR_LABEL, title: 'J.P. — Jane Publisher', roles: ['publisher']},
+        {id: DEVELOPER, type: GROUP, title: 'Nebula Studio', roles: ['developer']},
     ],
 } satisfies SoftwareDraft;
 const VECTOR = {code: 'vector', name: 'Vector'};
@@ -56,8 +56,8 @@ describe(fetchSoftware, () => {
             id: ID, title: 'Elite', description: 'Space trading', releaseDate: null, platform: VECTOR, hardware: [VECTOR06C],
             categories: [{id: ACTION, title: 'Action', branch: [{id: GAMES, title: 'Games'}, {id: ACTION, title: 'Action'}]}],
             credits: [
-                {id: PUBLISHER, type: AUTHOR_LABEL, title: 'J.P. — Jane Publisher', ownerId: OWNER, roles: ['publisher'], startDate: '', endDate: ''},
-                {id: DEVELOPER, type: GROUP, title: 'Nebula Studio', ownerId: DEVELOPER, roles: ['developer'], startDate: '', endDate: ''},
+                {id: PUBLISHER, type: AUTHOR_LABEL, title: 'J.P. — Jane Publisher', ownerId: OWNER, roles: ['publisher']},
+                {id: DEVELOPER, type: GROUP, title: 'Nebula Studio', ownerId: DEVELOPER, roles: ['developer']},
             ],
             sources: [{archive: 'vektor-06c.ru', url: 'https://vektor-06c.ru/programmnoe-obespechenie/arkadnye-igry/joe-blade-/'}],
             preservation: 'missing-in-action',

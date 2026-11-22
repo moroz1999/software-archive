@@ -66,9 +66,7 @@ public interface GroupMapper {
                 new PersonReference(
                         person == null ? PersonReferenceType.AUTHOR_LABEL : PersonReferenceType.AUTHOR,
                         new PersonReferenceId(person == null ? Objects.requireNonNull(entity.getLabelId()) : person)),
-                entity.getRoleCodes(),
-                entity.getStartDate(),
-                entity.getEndDate());
+                entity.getRoleCodes());
     }
 
     private static GroupMemberEntity fromMember(GroupMemberDraft member) {
@@ -80,8 +78,6 @@ public interface GroupMapper {
             entity.setLabelId(id);
         }
         entity.setRoleCodes(new ArrayList<>(member.roles()));
-        entity.setStartDate(member.startDate());
-        entity.setEndDate(member.endDate());
         return entity;
     }
 }

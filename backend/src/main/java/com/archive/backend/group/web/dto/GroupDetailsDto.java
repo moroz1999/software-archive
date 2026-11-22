@@ -1,7 +1,6 @@
 package com.archive.backend.group.web.dto;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -35,9 +34,7 @@ public record GroupDetailsDto(
             String name,
             @Nullable UUID personId,
             @Nullable String personName,
-            List<String> roles,
-            @Nullable LocalDate startDate,
-            @Nullable LocalDate endDate) {}
+            List<String> roles) {}
 
     public record RelatedGroupDto(UUID id, String name) {}
 

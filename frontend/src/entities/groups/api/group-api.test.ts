@@ -16,11 +16,11 @@ const CREW = {
         {
             id: '00000000-0000-0000-0004-000000000002', type: 'author-label', title: 'хакер федя',
             name: 'хакер федя', personId: '00000000-0000-0000-0003-000000000001', personName: 'MASTERSOFT',
-            roles: ['coder'], startDate: '1990-01-01', endDate: null,
+            roles: ['coder'],
         },
         {
             id: null, type: 'author-label', title: 'Ghost', name: 'Ghost', personId: null, personName: null,
-            roles: ['unknown'], startDate: null, endDate: null,
+            roles: ['unknown'],
         },
     ],
     memberGroups: [{id: '00000000-0000-0000-0005-000000000002', name: 'Band'}],

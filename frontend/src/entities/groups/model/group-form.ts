@@ -98,8 +98,6 @@ export function toGroupFormValues(group?: GroupDetails): GroupFormValues {
             type: member.type,
             title: member.title,
             roles: member.roles,
-            startDate: member.startDate ?? '',
-            endDate: member.endDate ?? '',
         }]) ?? [],
     };
 }

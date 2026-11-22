@@ -5,7 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -32,10 +31,4 @@ public class GroupMemberEntity {
     @JdbcTypeCode(SqlTypes.ARRAY)
     @Column(name = "role_codes", columnDefinition = "text[]", nullable = false)
     private List<String> roleCodes = new ArrayList<>();
-
-    @Column(name = "start_date")
-    private @Nullable LocalDate startDate;
-
-    @Column(name = "end_date")
-    private @Nullable LocalDate endDate;
 }

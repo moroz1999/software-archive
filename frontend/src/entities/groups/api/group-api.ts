@@ -14,9 +14,7 @@ function toBody(draft: GroupDraft): unknown {
         types: draft.types,
         labels: draft.labels.map((label) => ({id: label.id, name: label.name})),
         locations: draft.locations.map((location) => ({country: location.country, city: location.city, primary: location.primary})),
-        members: (draft.members ?? []).map(({id, type, roles, startDate, endDate}) => ({
-            id, type, roles, startDate: startDate === '' ? null : startDate, endDate: endDate === '' ? null : endDate,
-        })),
+        members: (draft.members ?? []).map(({id, type, roles}) => ({id, type, roles})),
     };
 }
 
@@ -46,8 +44,6 @@ function parseMember(item: unknown): GroupMember {
         personId: readNullableString(dto, 'personId'),
         personName: readNullableString(dto, 'personName'),
         roles: readStringArray(dto['roles'], 'member roles'),
-        startDate: readNullableString(dto, 'startDate'),
-        endDate: readNullableString(dto, 'endDate'),
     };
 }
 

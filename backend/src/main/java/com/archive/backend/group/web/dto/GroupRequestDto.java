@@ -1,6 +1,5 @@
 package com.archive.backend.group.web.dto;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -35,7 +34,5 @@ public record GroupRequestDto(
     public record MemberDto(
             @Nullable UUID id,
             @Nullable String type,
-            @Nullable List<String> roles,
-            @Nullable LocalDate startDate,
-            @Nullable LocalDate endDate) {}
+            @Nullable List<String> roles) {}
 }

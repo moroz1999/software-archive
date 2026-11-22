@@ -41,12 +41,6 @@
     gap: var(--member-role-editor-roles-gap);
 }
 
-.dates {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--member-role-editor-dates-gap);
-}
-
 .overlay {
     overflow: hidden;
     border-width: var(--member-role-editor-list-border-width);

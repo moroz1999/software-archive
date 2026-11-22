@@ -12,7 +12,6 @@ import com.archive.backend.label.read.LetterFilterSql;
 import com.archive.backend.label.read.MainNameSql;
 import com.archive.backend.label.read.PlatformFilterSql;
 import com.archive.backend.user.read.AdditionSql;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -180,7 +179,7 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
                                COALESCE(l.name, p.main_name) AS name,
                                COALESCE(gm.person_id, l.person_id) AS person_id,
                                CASE WHEN gm.person_id IS NOT NULL OR p.main_name = l.name THEN NULL ELSE p.main_name END AS person_name,
-                               gm.role_codes, gm.start_date, gm.end_date
+                               gm.role_codes
                         FROM group_member gm
                         LEFT JOIN label l ON l.id = gm.label_id
                         LEFT JOIN named_person p ON p.person_id = COALESCE(gm.person_id, l.person_id)
@@ -195,9 +194,7 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
                         rs.getString("name"),
                         rs.getObject("person_id", UUID.class),
                         rs.getString("person_name"),
-                        Arrays.asList((String[]) rs.getArray("role_codes").getArray()),
-                        rs.getObject("start_date", LocalDate.class),
-                        rs.getObject("end_date", LocalDate.class)))
+                        Arrays.asList((String[]) rs.getArray("role_codes").getArray())))
                 .list();
     }
 

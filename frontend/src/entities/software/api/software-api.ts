@@ -108,8 +108,6 @@ function parseSoftwareCredits(raw: unknown): NonNullable<SoftwareDetails['credit
                 }
                 return role;
             }),
-            startDate: '',
-            endDate: '',
         };
     });
 }

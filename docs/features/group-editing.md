@@ -17,7 +17,7 @@ The edit page shows Groups › the name, leading to the group's page, › "Editi
 - In one narrow column, in sections: Main (Name, required, at most 255 characters; Types, required; Notes, multi-line), Names (Labels), Geography (Locations), Members; Cancel and the submit button at its bottom right — the same layout as the author form ([author-editing.md](author-editing.md)).
 - Types: a checkbox for every type of the reference book, under its code; none chosen is a group of no known type.
 - Labels and Locations: the same editors as for authors, but the labels have no "Display name" — a group is always shown under its name; exactly one primary location; a label taken away stays in the archive as a label of nobody.
-- Members: people and their aliases are found remotely by name; every selected member has removable role chips and optional start and end days. The form replaces the complete roster.
+- Members: people and their aliases are found remotely by name; every selected member has removable role chips. The form replaces the complete roster.
 - Format rules are checked before sending; errors appear under their fields on submit and clear when the field is edited. Empty notes are sent as unknown (`null`).
 - While saving, the fields and the buttons are locked.
 
@@ -37,7 +37,7 @@ The edit page shows Groups › the name, leading to the group's page, › "Editi
 | Call | Answer | Errors |
 |---|---|---|
 | `GET /api/group-types` | `200`, the codes of the reference book by code | — |
-| `POST /api/groups` with the form values and `members: [{id, type, roles, startDate, endDate}]` | `201`, `Location: /api/groups/{id}`, `{id}` | Format errors; `422 group.member-unknown` under Members; the existing type, label and location refusals |
+| `POST /api/groups` with the form values and `members: [{id, type, roles}]` | `201`, `Location: /api/groups/{id}`, `{id}` | Format errors; `422 group.member-unknown` under Members; the existing type, label and location refusals |
 | `PUT /api/groups/{id}` (same body) | `204` | `404 group.not-found`; the errors of `POST` |
 | `DELETE /api/groups/{id}` | `204` | `404 group.not-found` |
 

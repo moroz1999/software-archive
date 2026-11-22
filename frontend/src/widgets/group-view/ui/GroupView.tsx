@@ -115,9 +115,6 @@ function memberHref(member: GroupMember): string | null {
 function Member({member}: {readonly member: GroupMember}) {
     const {t} = useTranslation();
     const href = memberHref(member);
-    const dates = [member.startDate, member.endDate].some((date) => date !== null)
-        ? `${member.startDate ?? '…'} – ${member.endDate ?? '…'}`
-        : null;
     return (
         <Inline gap="sm" align="baseline" wrap>
             <Text>{href === null ? member.name : <TextLink href={href}>{member.name}</TextLink>}</Text>
@@ -126,7 +123,6 @@ function Member({member}: {readonly member: GroupMember}) {
             )}
             {/* An unknown role tells nothing to a reader. */}
             {member.roles.filter((role) => role !== 'unknown').map((role) => <Chip key={role} size="sm">{t(`roles.group.${role}`)}</Chip>)}
-            {dates !== null && <Text variant="bodySm" tone="muted">{dates}</Text>}
         </Inline>
     );
 }

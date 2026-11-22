@@ -16,7 +16,7 @@ const CREW = '00000000-0000-0000-0005-000000000001';
 const ZED_DETAILS = {id: ZED, name: 'Zed', realName: null, notes: null, labels: [], locations: [], groups: [{id: CREW, name: 'Crew Ltd', as: null}], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true};
 const CREW_DETAILS = {
     id: CREW, name: 'Crew Ltd', notes: null, types: [], labels: [], locations: [],
-    members: [{id: ZED, type: 'author', title: 'Zed', name: 'Zed', personId: ZED, personName: null, roles: [], startDate: null, endDate: null}], memberGroups: [], groups: [],
+    members: [{id: ZED, type: 'author', title: 'Zed', name: 'Zed', personId: ZED, personName: null, roles: []}], memberGroups: [], groups: [],
     added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
     canChange: true,
 };

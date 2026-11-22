@@ -46,7 +46,6 @@ export function GroupForm({submitLabel, labels, locations, actions}: GroupFormPr
                     onChange={changeMembers}
                     search={fetchGroupPeople}
                     roles={GROUP_MEMBER_ROLES.map((code) => ({code, title: t(`roles.group.${code}`)}))}
-                    showDates
                     disabled={busy}
                     error={refusals.members}
                 />
