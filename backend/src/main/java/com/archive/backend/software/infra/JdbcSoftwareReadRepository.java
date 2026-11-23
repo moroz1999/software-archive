@@ -48,9 +48,7 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     /**
      * Hardware in the order of its groups, then by name.
      */
-    private static final String HARDWARE_ORDER =
-            " ORDER BY array_position(ARRAY['computers', 'storage', 'dos', 'sound', 'controls', 'expansion'],"
-                    + " h.hardware_group), lower(h.name), h.code";
+    private static final String HARDWARE_ORDER = " ORDER BY h.position, lower(h.name), h.code";
 
     private final JdbcClient jdbc;
 
@@ -363,14 +361,20 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
      * The hardware attached to one row of the owner table.
      */
     private List<SoftwareHardware> hardware(String table, String ownerColumn, UUID ownerId, String language) {
-        return jdbc.sql("SELECT h.code, h.name, h.hardware_group FROM (SELECT hw.code, "
-                        + HardwareNameSql.hardware("hw.code") + " AS name, hw.hardware_group FROM " + table
-                        + " x JOIN hardware hw ON hw.code = x.hardware_code WHERE x." + ownerColumn + " = :id) h"
+        return jdbc.sql("SELECT h.code, h.name, h.hardware_group, h.group_name, h.position FROM (SELECT hw.code, "
+                        + HardwareNameSql.hardware("hw.code") + " AS name, hw.hardware_group, "
+                        + HardwareNameSql.group("g.code") + " AS group_name, g.position FROM " + table
+                        + " x JOIN hardware hw ON hw.code = x.hardware_code"
+                        + " JOIN hardware_group g ON g.code = hw.hardware_group WHERE x." + ownerColumn + " = :id) h"
                         + HARDWARE_ORDER)
                 .param("id", ownerId)
                 .param("language", language)
                 .query((rs, row) -> new SoftwareHardware(
-                        rs.getString("code"), rs.getString("name"), rs.getString("hardware_group")))
+                        rs.getString("code"),
+                        rs.getString("name"),
+                        rs.getString("hardware_group"),
+                        rs.getString("group_name"),
+                        rs.getInt("position")))
                 .list();
     }
 

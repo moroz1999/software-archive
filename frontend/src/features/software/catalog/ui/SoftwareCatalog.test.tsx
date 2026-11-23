@@ -38,7 +38,7 @@ const FACETS = {
     // Stockholm comes with software also made in Finland; Espoo has none left.
     cities: [{value: HELSINKI, count: 2}, {value: STOCKHOLM, count: 1}],
     platforms: [{value: 'bk', count: 1}, {value: 'msx', count: 3}],
-    hardware: [{value: 'vector06c', name: 'Vector-06C', group: 'computers', count: 2}, {value: 'ay8910', name: 'AY-3-8910', group: 'sound', count: 1}],
+    hardware: [{value: 'vector06c', name: 'Vector-06C', group: 'computers', groupName: 'Computers', count: 2}, {value: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound', count: 1}],
 };
 const FINNISH_CITIES = [{id: ESPOO, name: 'Espoo'}, {id: HELSINKI, name: 'Helsinki'}];
 
@@ -210,6 +210,18 @@ describe(SoftwareCatalog, () => {
         expect(checkboxNames(within(dialog).getByRole('group', {name: 'Platforms'}))).toStrictEqual(['BK (1)', 'MSX (3)']);
         expect(checkboxNames(within(dialog).getByRole('group', {name: 'Computers'}))).toStrictEqual(['Vector-06C (2)']);
         expect(checkboxNames(within(dialog).getByRole('group', {name: 'Sound'}))).toStrictEqual(['AY-3-8910 (1)']);
+    });
+
+    it('offers the hardware of a group the archive added under the name of the group, after the others', async () => {
+        const withVideo = {...FACETS, hardware: [...FACETS.hardware, {value: 'gpu', name: 'GPU', group: 'video', groupName: 'Video', count: 1}]};
+        stubFetchRoutes(routes({[ALL]: catalog([ELITE], {facets: withVideo})}));
+        openCatalog();
+
+        const dialog = await openHardware();
+
+        await expect(within(dialog).findByRole('group', {name: 'Video'})).resolves.toBeInTheDocument();
+        expect(checkboxNames(within(dialog).getByRole('group', {name: 'Video'}))).toStrictEqual(['GPU (1)']);
+        expect(within(dialog).getAllByRole('group').map((group) => group.getAttribute('aria-label'))).toStrictEqual(['Platforms', 'Computers', 'Sound', 'Video']);
     });
 
     it('offers only the hardware of the platform chosen in the switch, without the platforms', async () => {

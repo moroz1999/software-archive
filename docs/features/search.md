@@ -18,7 +18,7 @@ One document per entity, with the entity's id as the document id. Facet values a
 
 | Collection | Matched by the keyword | Filters and facets |
 |---|---|---|
-| `software` | title, alternative titles | platform; release year; categories (each one of the software with all its ancestors); countries; cities; the hardware of the software and of its releases, a field per hardware group (`hardware_computers`, `hardware_sound`, …). Beside them, for the card only: the release date, the screenshots ([screenshots.md](screenshots.md#card)) and who made it ([domain/software.md](../domain/software.md#card)) |
+| `software` | title, alternative titles | platform; release year; categories (each one of the software with all its ancestors); countries; cities; the hardware of the software and of its releases in one field `hardware`, each item as `group:code` (`sound:ay8910`), so a group added to the reference book needs no new field; the catalog splits the values into a facet per group. Beside them, for the card only: the release date, the screenshots ([screenshots.md](screenshots.md#card)) and who made it ([domain/software.md](../domain/software.md#card)) |
 | `authors` | every label of the person, real name | platforms |
 | `groups` | every label of the group, name | platforms |
 

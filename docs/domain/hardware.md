@@ -34,15 +34,25 @@ The Vector platform is the family of computers compatible with the Vector-06C.
 - Expansion: the Z80 processor in place of the 8080.
 
 ## Hardware
-A flat list kept in the archive as a reference book (editing it comes later). Every item has:
+A flat list kept in the archive as a reference book. Every item has:
 - a name — "Sound card 1";
 - a code — `chip123`;
 - a group — sound;
-- the platforms it belongs to — `vector`. One item can belong to several platforms: the AY chip was used with both the Specialist and the ZX Spectrum.
+- the platforms it belongs to — `vector`, at least one. One item can belong to several platforms: the AY chip was used with both the Specialist and the ZX Spectrum.
 
-Groups: computers (models and clones), storage, dos, sound, controls, expansion.
+The groups are a reference book of their own, each with a code and a name, in an order of their own. The archive started with computers (models and clones), storage, dos, sound, controls and expansion.
 
-Hardware is shown grouped by its group.
+Hardware is shown grouped by its group, the groups in their order.
+
+## Keeping the reference book
+Administrators add, edit and delete groups and hardware.
+- A code is lower-case Latin letters and digits, words joined by a hyphen. It is given once, when the group or the item is added, and never changes: links and the search know things by it. Two groups, or two items, never share a code.
+- A name is given in Russian at least, in any other language of the site besides, at most 255 characters each.
+- A new group goes to the end of the order.
+- A group with hardware in it cannot be deleted; hardware of any software or release cannot be deleted.
+- Hardware cannot leave a platform while software of that platform, or one of its releases, has the hardware: that hardware would belong to another platform than its software.
+- Platforms themselves are not kept here: hardware only chooses among them.
+- Hardware moved to another group is found under that group from then on, in the catalog and in search.
 
 ## Hardware of software and releases
 - Software is released for its base hardware. That hardware is attached to the software.

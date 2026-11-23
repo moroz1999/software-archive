@@ -1,7 +1,6 @@
 import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {type PlatformCode, toPlatformCode, usePlatformSelection} from '@/entities/platforms';
-import {HARDWARE_GROUPS} from '@/entities/software';
 import {Button} from '@/shared/ui/button';
 import {Checkbox} from '@/shared/ui/checkbox';
 import {Dialog} from '@/shared/ui/dialog';
@@ -81,15 +80,19 @@ export function HardwareFilter() {
             })),
         });
     }
-    for (const group of HARDWARE_GROUPS) {
-        groups.push({
-            name: t(`hardwareGroups.${group}`),
-            of: 'hardware',
-            choices: (facets?.hardware ?? []).filter((item) => item.group === group).map((item) => ({
-                value: item.value,
-                label: t('filters.withCount', {label: item.name, count: item.count}),
-            })),
-        });
+    // The archive gives the hardware in the order of its groups.
+    const hardwareGroups = new Map<string, {readonly name: string; readonly choices: Choice[]}>();
+    for (const item of facets?.hardware ?? []) {
+        const choice = {value: item.value, label: t('filters.withCount', {label: item.name, count: item.count})};
+        const group = hardwareGroups.get(item.group);
+        if (group === undefined) {
+            hardwareGroups.set(item.group, {name: item.groupName, choices: [choice]});
+        } else {
+            group.choices.push(choice);
+        }
+    }
+    for (const {name, choices} of hardwareGroups.values()) {
+        groups.push({name, of: 'hardware', choices});
     }
     const close = () => {
         setDraft(null);

@@ -73,7 +73,8 @@ public interface SoftwareCatalogWebMapper {
                                 .map(c -> new FacetValueDto<>(c.code(), c.count()))
                                 .toList(),
                         answer.hardware().stream()
-                                .map(h -> new HardwareFacetValueDto(h.code(), h.name(), h.group(), h.count()))
+                                .map(h -> new HardwareFacetValueDto(
+                                        h.code(), h.name(), h.group(), h.groupName(), h.count()))
                                 .toList()));
     }
 

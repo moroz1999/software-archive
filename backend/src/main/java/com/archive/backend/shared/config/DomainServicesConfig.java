@@ -12,6 +12,7 @@ import com.archive.backend.group.domain.GroupMemberSets;
 import com.archive.backend.group.domain.GroupTypeCatalog;
 import com.archive.backend.group.domain.GroupTypes;
 import com.archive.backend.hardware.domain.HardwareCatalog;
+import com.archive.backend.hardware.domain.HardwarePlacements;
 import com.archive.backend.hardware.domain.HardwareSets;
 import com.archive.backend.software.domain.SoftwareCreditSets;
 import com.archive.backend.software.domain.SoftwareReferenceCatalog;
@@ -55,6 +56,11 @@ public class DomainServicesConfig {
     @Bean
     public HardwareSets hardwareSets(HardwareCatalog catalog) {
         return new HardwareSets(catalog);
+    }
+
+    @Bean
+    public HardwarePlacements hardwarePlacements(HardwareCatalog catalog) {
+        return new HardwarePlacements(catalog);
     }
 
     @Bean

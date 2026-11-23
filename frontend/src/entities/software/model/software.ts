@@ -95,16 +95,15 @@ export interface SoftwarePlatform {
     readonly name: string;
 }
 
-/** The groups hardware is shown under, in the order they are shown (docs/domain/hardware.md). */
-export const HARDWARE_GROUPS = ['computers', 'storage', 'dos', 'sound', 'controls', 'expansion'] as const;
-
-export type HardwareGroup = (typeof HARDWARE_GROUPS)[number];
-
-/** An item of the hardware reference book. */
+/**
+ * An item of the hardware reference book with its group, named in the interface language; the archive gives hardware
+ * in the order of its groups (docs/domain/hardware.md).
+ */
 export interface Hardware {
     readonly code: string;
     readonly name: string;
-    readonly group: HardwareGroup;
+    readonly group: string;
+    readonly groupName: string;
 }
 
 const RELEASE_DATE = /^(\d{4})(?:-(\d{2})-(\d{2}))?$/;
@@ -167,15 +166,7 @@ export function toSoftwarePlatformCode(raw: string): SoftwarePlatformCode {
     return raw as SoftwarePlatformCode;
 }
 
-const HARDWARE_GROUP_SET: ReadonlySet<string> = new Set(HARDWARE_GROUPS);
 const SOFTWARE_REFERENCE_TYPE_SET: ReadonlySet<string> = new Set(SOFTWARE_REFERENCE_TYPES);
-
-export function toHardwareGroup(raw: string): HardwareGroup {
-    if (!HARDWARE_GROUP_SET.has(raw)) {
-        throw new TypeError(`Invalid hardware group: ${raw}`);
-    }
-    return raw as HardwareGroup;
-}
 
 export function toSoftwareReferenceType(raw: string): SoftwareReferenceType {
     if (!SOFTWARE_REFERENCE_TYPE_SET.has(raw)) {

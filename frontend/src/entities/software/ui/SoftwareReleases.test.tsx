@@ -15,7 +15,7 @@ const AY_MOD = {
     type: 'mod',
     releaseDate: '1990-03-01',
     description: 'With AY music',
-    hardware: [{code: 'vector06c', name: 'Vector-06C', group: 'computers'}, {code: 'ay8910', name: 'AY-3-8910', group: 'sound'}],
+    hardware: [{code: 'vector06c', name: 'Vector-06C', group: 'computers', groupName: 'Computers'}, {code: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound'}],
     added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
     canChange: true,
 };

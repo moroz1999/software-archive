@@ -19,7 +19,7 @@ const SOFTWARE = {
     preservation: 'unknown' as const,
 };
 const RELEASE = '00000000-0000-0000-0007-000000000002';
-const HARDWARE: readonly Hardware[] = [{code: 'ay8910', name: 'AY-3-8910', group: 'sound'}];
+const HARDWARE: readonly Hardware[] = [{code: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound'}];
 
 function showCreateForm(onCreated = vi.fn<(id: ReleaseId) => void>()) {
     renderWithQueries(

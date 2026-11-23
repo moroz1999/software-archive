@@ -30,4 +30,7 @@ public interface AffectedSoftware {
      * country, in it directly or in one of its cities.
      */
     List<UUID> creditedFromCountry(UUID country);
+
+    /** The software that has the hardware, on itself or on a release of it. */
+    List<UUID> withHardware(String hardware);
 }

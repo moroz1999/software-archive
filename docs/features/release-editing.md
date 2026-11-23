@@ -37,7 +37,7 @@ The edit page shows the breadcrumbs of the release ([release-view.md](release-vi
 
 | Call | Answer | Errors |
 |---|---|---|
-| `GET /api/hardware?platform={code}` | `[{code, name, group}]` by group, then name; empty for an unknown platform | `400 platform.required`, `400 platform.code-invalid` |
+| `GET /api/hardware?platform={code}` | `[{code, name, group, groupName}]` by the order of the groups, then name; `groupName` in the language of `Accept-Language`, else in Russian; empty for an unknown platform | `400 platform.required`, `400 platform.code-invalid` |
 | `GET /api/software/{id}/releases/{releaseId}` | `{id, title, version, type, releaseDate, description, hardware, archive}`: its own fields and hardware; `archive` is `null` or `{fileName, size, url}` | `404 software.not-found`, `404 release.not-found` |
 | `POST /api/software/{id}/releases`, multipart `release` (the JSON fields) and optional `archive` | `201`, `Location`, `{id}` | `400 release.type-required`, `400 release.type-invalid`, `400 title.too-long`, `400 release.version-too-long`, `400 release-date.invalid` (not a year `1987` or a day `1987-05-12`), `400 hardware.code-invalid`, `422 hardware.unknown`, `422 release.archive-too-large`, `404 software.not-found` |
 | `PUT /api/software/{id}/releases/{releaseId}`, the same multipart fields and optional `removeArchive=true` | `204` | the errors of `POST`, `422 release.archive-change-invalid`, `404 release.not-found` |

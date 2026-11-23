@@ -45,8 +45,6 @@ export {usePlatformHardware} from './model/platform-hardware-context';
 export {PlatformHardwareProvider, type PlatformHardwareProviderProps} from './model/PlatformHardwareProvider';
 export {
     type Hardware,
-    HARDWARE_GROUPS,
-    type HardwareGroup,
     type ReleaseDate,
     type Software,
     type SoftwareCategory,
@@ -62,7 +60,6 @@ export {
     requireSoftwareId,
     toReleaseDate,
     toSoftwareId,
-    toHardwareGroup,
     toSoftwarePlatformCode,
     toSoftwareTitle,
 } from './model/software';

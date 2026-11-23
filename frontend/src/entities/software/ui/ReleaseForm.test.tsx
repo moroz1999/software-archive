@@ -12,9 +12,9 @@ import {Button} from '@/shared/ui/button';
 type FormProps = Omit<ReleaseFormProviderProps, 'onSubmit' | 'children'> & {readonly actions?: ReactNode};
 
 const HARDWARE: readonly Hardware[] = [
-    {code: 'vector06c', name: 'Vector-06C', group: 'computers'},
-    {code: 'ay8910', name: 'AY-3-8910', group: 'sound'},
-    {code: 'beeper', name: 'Beeper', group: 'sound'},
+    {code: 'vector06c', name: 'Vector-06C', group: 'computers', groupName: 'Computers'},
+    {code: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound'},
+    {code: 'beeper', name: 'Beeper', group: 'sound', groupName: 'Sound'},
 ];
 
 function renderForm({actions, ...props}: FormProps = {}) {

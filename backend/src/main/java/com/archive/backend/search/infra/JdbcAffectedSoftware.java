@@ -76,4 +76,16 @@ public class JdbcAffectedSoftware implements AffectedSoftware {
                         WHERE COALESCE(el.country_id, city.country_id) = :country
                         """).param("country", country).query(UUID.class).list();
     }
+
+    @Override
+    public List<UUID> withHardware(String hardware) {
+        return jdbc.sql("""
+                        SELECT software_id FROM software_hardware WHERE hardware_code = :code
+                        UNION
+                        SELECT r.software_id
+                        FROM software_release r
+                        JOIN software_release_hardware rh ON rh.release_id = r.id
+                        WHERE rh.hardware_code = :code
+                        """).param("code", hardware).query(UUID.class).list();
+    }
 }

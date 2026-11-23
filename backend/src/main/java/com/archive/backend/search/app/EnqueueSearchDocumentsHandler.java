@@ -8,6 +8,7 @@ import com.archive.backend.geo.domain.CityMoved;
 import com.archive.backend.geo.domain.CityTurnedIntoCountry;
 import com.archive.backend.geo.domain.CountryMerged;
 import com.archive.backend.group.domain.GroupChanged;
+import com.archive.backend.hardware.domain.HardwareRegrouped;
 import com.archive.backend.label.domain.LabelChanged;
 import com.archive.backend.label.domain.LabelCreated;
 import com.archive.backend.label.domain.LabelDeleted;
@@ -96,6 +97,12 @@ public class EnqueueSearchDocumentsHandler {
         UUID group = event.group().value();
         enqueue(SearchEntityType.GROUP, List.of(group));
         enqueueSoftware(affected.creditingGroup(group));
+    }
+
+    /** Hardware put in another group is filtered by in that group: the software that has it is found there. */
+    @EventListener
+    public void on(HardwareRegrouped event) {
+        enqueueSoftware(affected.withHardware(event.hardware().value()));
     }
 
     /** A city put in another country changes the country of the software made by whoever is located in it. */

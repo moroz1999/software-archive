@@ -7,7 +7,6 @@ import {
     type SoftwareReference,
     SOFTWARE_REFERENCE_TYPES,
     type SoftwareReferenceType,
-    toHardwareGroup,
     toReleaseDate,
     toSoftwarePlatformCode,
     toSoftwareReferenceType,
@@ -53,7 +52,7 @@ function parseSoftwareReferences(raw: unknown, name: string): readonly SoftwareR
 export function parseHardwareList(raw: unknown): readonly Hardware[] {
     return readArray(raw, 'hardware').map((item) => {
         const hardware = readObject(item, 'hardware item');
-        return {code: readString(hardware, 'code'), name: readString(hardware, 'name'), group: toHardwareGroup(readString(hardware, 'group'))};
+        return {code: readString(hardware, 'code'), name: readString(hardware, 'name'), group: readString(hardware, 'group'), groupName: readString(hardware, 'groupName')};
     });
 }
 

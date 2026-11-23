@@ -14,9 +14,10 @@ type FormProps = Omit<SoftwareFormProviderProps, 'onSubmit' | 'children'> & {rea
 
 const PLATFORMS = [{code: 'agat', name: 'Agat'}, {code: 'bk', name: 'BK'}];
 const BK_HARDWARE = [
-    {code: 'bk0010', name: 'BK-0010', group: 'computers'},
-    {code: 'bk0011m', name: 'BK-0011M', group: 'computers'},
-    {code: 'ay8910', name: 'AY-3-8910', group: 'sound'},
+    {code: 'bk0010', name: 'BK-0010', group: 'computers', groupName: 'Computers'},
+    {code: 'bk0011m', name: 'BK-0011M', group: 'computers', groupName: 'Computers'},
+    {code: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound'},
+    {code: 'gpu', name: 'GPU', group: 'video', groupName: 'Video'},
 ];
 
 function renderForm({actions, categories, ...props}: FormProps = {}) {
@@ -288,6 +289,14 @@ describe(SoftwareForm, () => {
         await userEvent.click(screen.getByRole('button', {name: 'Save'}));
 
         expect(onSubmit).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({platform: 'bk', hardware: ['bk0011m', 'ay8910'], categories: []}));
+    });
+
+    it('offers the hardware of a group the archive added under the name of the group', async () => {
+        renderForm({initial: {title: 'Elite', description: '', releaseDate: '', platform: 'bk', hardware: [], categories: []}});
+
+        const video = await screen.findByRole('group', {name: 'Video'});
+
+        expect(within(video).getByRole('checkbox', {name: 'GPU'})).toBeInTheDocument();
     });
 
     it('starts from the hardware of the software', async () => {

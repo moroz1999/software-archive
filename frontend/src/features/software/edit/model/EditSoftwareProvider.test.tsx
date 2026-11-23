@@ -23,7 +23,7 @@ const PLATFORMS = json([{code: 'bk', name: 'BK'}, {code: 'vector', name: 'Vector
 function answer(software: () => Response) {
     return stubFetchRoutes(new Map([
         ['/api/platforms', PLATFORMS],
-        ['/api/hardware?platform=vector', json([{code: 'vector06c', name: 'Vector-06C', group: 'computers'}])],
+        ['/api/hardware?platform=vector', json([{code: 'vector06c', name: 'Vector-06C', group: 'computers', groupName: 'Computers'}])],
         ['/api/hardware?platform=bk', json([])],
         [`/api/software/${SOFTWARE.id}`, software],
     ]));

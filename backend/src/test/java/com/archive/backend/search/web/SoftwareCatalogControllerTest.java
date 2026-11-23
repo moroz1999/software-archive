@@ -76,7 +76,7 @@ class SoftwareCatalogControllerTest {
                                         List.of(new IdCount(HELSINKI, 4)),
                                         List.of(new CodeCount("vector", 40), new CodeCount("bk", 1)),
                                         List.of(new CodeCount("ay8910", 12)))),
-                        List.of(new HardwareCount("ay8910", "AY-3-8910", "sound", 12))));
+                        List.of(new HardwareCount("ay8910", "AY-3-8910", "sound", "Sound", 12))));
     }
 
     private ListSoftwareCatalogQuery asked() {
@@ -154,6 +154,7 @@ class SoftwareCatalogControllerTest {
                 .andExpect(jsonPath("$.facets.hardware[0].value").value("ay8910"))
                 .andExpect(jsonPath("$.facets.hardware[0].name").value("AY-3-8910"))
                 .andExpect(jsonPath("$.facets.hardware[0].group").value("sound"))
+                .andExpect(jsonPath("$.facets.hardware[0].groupName").value("Sound"))
                 .andExpect(jsonPath("$.facets.hardware[0].count").value(12));
     }
 

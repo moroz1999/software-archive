@@ -1,0 +1,4 @@
+.loading {
+    width: var(--hardware-form-loading-width);
+    height: var(--hardware-form-loading-height);
+}

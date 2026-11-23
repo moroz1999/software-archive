@@ -96,7 +96,7 @@ describe(toSoftwareFormValues, () => {
             description: null,
             releaseDate: null,
             platform: {code: toSoftwarePlatformCode('vector'), name: 'Vector'},
-            hardware: [{code: 'vector06c', name: 'Vector-06C', group: 'computers'}, {code: 'ay8910', name: 'AY-3-8910', group: 'sound'}],
+            hardware: [{code: 'vector06c', name: 'Vector-06C', group: 'computers', groupName: 'Computers'}, {code: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound'}],
             categories: [],
         }).hardware).toStrictEqual(['vector06c', 'ay8910']);
     });

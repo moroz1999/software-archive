@@ -79,8 +79,8 @@ public class ListSoftwareCatalogHandler {
             return List.of();
         }
         return hardware.findByCodes(codes, q.language().code()).stream()
-                .map(item ->
-                        new HardwareCount(item.code(), item.name(), item.group(), counts.getOrDefault(item.code(), 0L)))
+                .map(item -> new HardwareCount(
+                        item.code(), item.name(), item.group(), item.groupName(), counts.getOrDefault(item.code(), 0L)))
                 .toList();
     }
 }

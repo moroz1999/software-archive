@@ -17,8 +17,8 @@ const SOFTWARE = {
     canChange: true,
     preservation: 'unknown' as const,
 };
-const AY: Hardware = {code: 'ay8910', name: 'AY-3-8910', group: 'sound'};
-const BEEPER: Hardware = {code: 'beeper', name: 'Beeper', group: 'sound'};
+const AY: Hardware = {code: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound'};
+const BEEPER: Hardware = {code: 'beeper', name: 'Beeper', group: 'sound', groupName: 'Sound'};
 const RELEASE = {
     id: toReleaseId('00000000-0000-0000-0007-000000000002'),
     title: 'Elite AY',

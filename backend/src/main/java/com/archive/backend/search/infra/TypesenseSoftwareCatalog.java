@@ -2,7 +2,6 @@ package com.archive.backend.search.infra;
 
 import static com.archive.backend.search.infra.TypesenseCall.call;
 
-import com.archive.backend.search.domain.SoftwareDocument;
 import com.archive.backend.search.read.CodeCount;
 import com.archive.backend.search.read.IdCount;
 import com.archive.backend.search.read.SoftwareCatalog;
@@ -15,8 +14,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.PageImpl;
@@ -41,8 +43,18 @@ public class TypesenseSoftwareCatalog implements SoftwareCatalog {
 
     private final Client client;
 
-    /** A filter of the catalog: the field it is counted by, and its condition while a value is chosen. */
-    private record Facet(String field, @Nullable String condition) {
+    /**
+     * A filter of the catalog: the field it is counted by, and its condition while a value is chosen. The hardware is
+     * one field, filtered by group: a filter of each group chosen, and one counting the groups not chosen.
+     */
+    private record Facet(
+            String field,
+            @Nullable String condition,
+            @Nullable String group) {
+
+        Facet(String field, @Nullable String condition) {
+            this(field, condition, null);
+        }
 
         boolean chosen() {
             return condition != null;
@@ -76,10 +88,18 @@ public class TypesenseSoftwareCatalog implements SoftwareCatalog {
         facets.add(new Facet("countries", equal("countries", filter.country())));
         facets.add(new Facet("cities", equal("cities", filter.city())));
         facets.add(new Facet("platform", anyOf("platform", filter.platforms())));
-        for (String group : SoftwareDocument.HARDWARE_GROUPS) {
-            String field = TypesenseSearchIndex.hardwareField(group);
-            facets.add(new Facet(field, anyOf(field, filter.hardware().getOrDefault(group, List.of()))));
-        }
+        String hardware = TypesenseSearchIndex.HARDWARE_FIELD;
+        facets.add(new Facet(hardware, null));
+        filter.hardware().forEach((group, codes) -> {
+            String condition = anyOf(
+                    hardware,
+                    codes.stream()
+                            .map(code -> TypesenseSearchIndex.hardwareValue(group, code))
+                            .toList());
+            if (condition != null) {
+                facets.add(new Facet(hardware, condition, group));
+            }
+        });
         return facets;
     }
 
@@ -111,16 +131,26 @@ public class TypesenseSoftwareCatalog implements SoftwareCatalog {
         results.forEach(TypesenseSoftwareCatalog::requireAnswered);
 
         MultiSearchResultItem items = results.getFirst();
-        Map<String, List<FacetCounts>> counts = new HashMap<>();
-        open.forEach(facet -> counts.put(facet.field(), items.getFacetCounts()));
+        Map<Facet, List<FacetCounts>> counts = new HashMap<>();
+        open.forEach(facet -> counts.put(facet, items.getFacetCounts()));
         for (int i = 0; i < chosen.size(); i++) {
-            counts.put(chosen.get(i).field(), results.get(i + 1).getFacetCounts());
+            counts.put(chosen.get(i), results.get(i + 1).getFacetCounts());
         }
 
+        // Each chosen group is counted by its own search, every other group by the page.
+        Set<String> chosenGroups =
+                chosen.stream().map(Facet::group).filter(Objects::nonNull).collect(Collectors.toSet());
         List<CodeCount> hardware = new ArrayList<>();
-        for (String group : SoftwareDocument.HARDWARE_GROUPS) {
-            hardware.addAll(values(counts, TypesenseSearchIndex.hardwareField(group), TypesenseSoftwareCatalog::code));
-        }
+        facets.stream()
+                .filter(facet -> facet.field().equals(TypesenseSearchIndex.HARDWARE_FIELD))
+                .forEach(facet -> values(counts, facet, value -> value).stream()
+                        .filter(value -> {
+                            String group = groupOf(value);
+                            String own = facet.group();
+                            return own == null ? !chosenGroups.contains(group) : own.equals(group);
+                        })
+                        .map(value -> new CodeCount(codeOf(value), value.count()))
+                        .forEach(hardware::add));
         return new SoftwareCatalogPage(
                 new PageImpl<>(
                         items.getHits().stream()
@@ -129,10 +159,14 @@ public class TypesenseSoftwareCatalog implements SoftwareCatalog {
                         pageable,
                         items.getFound()),
                 new SoftwareCatalogFacets(
-                        values(counts, "year", value -> new YearCount(Integer.parseInt(value.value()), value.count())),
-                        values(counts, "countries", TypesenseSoftwareCatalog::id),
-                        values(counts, "cities", TypesenseSoftwareCatalog::id),
-                        values(counts, "platform", TypesenseSoftwareCatalog::code),
+                        values(
+                                counts,
+                                facets,
+                                "year",
+                                value -> new YearCount(Integer.parseInt(value.value()), value.count())),
+                        values(counts, facets, "countries", TypesenseSoftwareCatalog::id),
+                        values(counts, facets, "cities", TypesenseSoftwareCatalog::id),
+                        values(counts, facets, "platform", TypesenseSoftwareCatalog::code),
                         hardware));
     }
 
@@ -142,6 +176,16 @@ public class TypesenseSoftwareCatalog implements SoftwareCatalog {
 
     private static CodeCount code(Value value) {
         return new CodeCount(value.value(), value.count());
+    }
+
+    /** The group of an item of hardware the index counts as {@code group:code}. */
+    private static String groupOf(Value value) {
+        return value.value().substring(0, value.value().indexOf(':'));
+    }
+
+    /** The code of an item of hardware the index counts as {@code group:code}. */
+    private static String codeOf(Value value) {
+        return value.value().substring(value.value().indexOf(':') + 1);
     }
 
     /** A search of the catalog with every condition of the filter but the one of {@code without}. */
@@ -186,12 +230,22 @@ public class TypesenseSoftwareCatalog implements SoftwareCatalog {
 
     private record Value(String value, long count) {}
 
-    private static <T> List<T> values(Map<String, List<FacetCounts>> counts, String field, Function<Value, T> read) {
-        List<FacetCounts> of = counts.get(field);
+    /** The values of the one filter of the field: every field but the hardware has a single one. */
+    private static <T> List<T> values(
+            Map<Facet, List<FacetCounts>> counts, List<Facet> facets, String field, Function<Value, T> read) {
+        return facets.stream()
+                .filter(facet -> facet.field().equals(field))
+                .findFirst()
+                .map(facet -> values(counts, facet, read))
+                .orElse(List.of());
+    }
+
+    private static <T> List<T> values(Map<Facet, List<FacetCounts>> counts, Facet facet, Function<Value, T> read) {
+        List<FacetCounts> of = counts.get(facet);
         return of == null
                 ? List.of()
                 : of.stream()
-                        .filter(c -> field.equals(c.getFieldName()))
+                        .filter(c -> facet.field().equals(c.getFieldName()))
                         .flatMap(c -> c.getCounts().stream())
                         .map(c -> read.apply(new Value(c.getValue(), c.getCount())))
                         .toList();

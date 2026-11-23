@@ -15,7 +15,7 @@ const FACETS = {
     countries: [{value: FINLAND, count: 1}],
     cities: [{value: HELSINKI, count: 1}],
     platforms: [{value: 'vector', count: 4}],
-    hardware: [{value: 'ay8910', name: 'AY-3-8910', group: 'sound', count: 2}],
+    hardware: [{value: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound', count: 2}],
 };
 
 function catalogResponse(items: readonly unknown[], facets: unknown = FACETS) {

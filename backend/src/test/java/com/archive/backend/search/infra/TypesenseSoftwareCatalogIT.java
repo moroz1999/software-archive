@@ -73,7 +73,7 @@ class TypesenseSoftwareCatalogIT {
                     List.of(ACTION, GAMES),
                     List.of(BRITAIN)),
             List.of(LONDON),
-            Map.of("computers", List.of("krista2")));
+            Map.of("computers", List.of("krista2"), "video", List.of("gpu")));
     private static final SoftwareDocument TETRIS = located(
             software(
                     3,
@@ -280,7 +280,29 @@ class TypesenseSoftwareCatalogIT {
                         new CodeCount("vector06c", 2),
                         new CodeCount("krista2", 1),
                         new CodeCount("bk0011m", 1),
-                        new CodeCount("ay8910", 2));
+                        new CodeCount("ay8910", 2),
+                        new CodeCount("gpu", 1));
+    }
+
+    @Test
+    void findsSoftwareWithHardwareOfAGroupAddedToTheReferenceBook() {
+        assertThat(titles(find(filter("vector", null, null, List.of(), Map.of("video", List.of("gpu"))))))
+                .containsExactly("Exolon");
+        assertThat(titles(find(filter(
+                        "vector",
+                        null,
+                        null,
+                        List.of(),
+                        Map.of("computers", List.of("vector06c"), "video", List.of("gpu"))))))
+                .isEmpty();
+    }
+
+    @Test
+    void countsAChosenGroupAddedToTheReferenceBookWithoutItsOwnCondition() {
+        SoftwareCatalogPage page = find(filter("vector", null, null, List.of(), Map.of("video", List.of("gpu"))));
+
+        assertThat(page.facets().hardware())
+                .containsExactlyInAnyOrder(new CodeCount("gpu", 1), new CodeCount("krista2", 1));
     }
 
     @Test

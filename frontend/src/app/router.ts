@@ -2,6 +2,7 @@ import type {QueryClient} from '@tanstack/react-query';
 import {createBrowserRouter, type RouteObject} from 'react-router';
 import {AUTHOR_EDIT_ROUTE, AUTHOR_NEW_PATH, AUTHOR_ROUTE, AUTHORS_PATH} from '@/entities/authors';
 import {CATEGORIES_PATH, CATEGORY_EDIT_ROUTE, CATEGORY_NEW_PATH} from '@/entities/categories';
+import {HARDWARE_EDIT_ROUTE, HARDWARE_GROUP_EDIT_ROUTE, HARDWARE_GROUP_NEW_PATH, HARDWARE_NEW_PATH, HARDWARE_PATH} from '@/entities/hardware';
 import {CITY_EDIT_ROUTE, CITY_NEW_PATH, COUNTRY_EDIT_ROUTE, COUNTRY_NEW_PATH, GEOGRAPHY_PATH} from '@/entities/locations';
 import {GROUP_EDIT_ROUTE, GROUP_NEW_PATH, GROUP_ROUTE, GROUPS_PATH} from '@/entities/groups';
 import {LABEL_EDIT_ROUTE, LABEL_NEW_PATH, LABEL_ROUTE} from '@/entities/labels';
@@ -15,6 +16,9 @@ import {loadCategoriesPage, preloadCategoriesPage} from '@/pages/categories';
 import {loadCategoryEditPage, preloadCategoryEditPage} from '@/pages/category-edit';
 import {loadCategoryNewPage, preloadCategoryNewPage} from '@/pages/category-new';
 import {loadManagementGeographyPage, preloadManagementGeographyPage} from '@/pages/management/geography';
+import {loadHardwareEditPage, loadHardwareGroupEditPage, preloadHardwareEditPage, preloadHardwareGroupEditPage} from '@/pages/management/hardware-edit';
+import {loadHardwareGroupNewPage, loadHardwareNewPage, preloadHardwareNewPage} from '@/pages/management/hardware-new';
+import {loadManagementHardwarePage, preloadManagementHardwarePage} from '@/pages/management/hardware';
 import {loadManagementImportsPage, preloadManagementImportsPage} from '@/pages/management/imports';
 import {loadCityEditPage, loadCountryEditPage, preloadCityEditPage, preloadCountryEditPage} from '@/pages/management/place-edit';
 import {loadCityNewPage, loadCountryNewPage, preloadCityNewPage} from '@/pages/management/place-new';
@@ -116,6 +120,11 @@ const routes = (queryClient: QueryClient): RouteObject[] => [{Component: AppLayo
             {path: COUNTRY_EDIT_ROUTE, loader: preloadCountryEditPage(queryClient), lazy: {Component: loadCountryEditPage}, HydrateFallback: nothing},
             {path: CITY_NEW_PATH, loader: preloadCityNewPage(queryClient), lazy: {Component: loadCityNewPage}, HydrateFallback: nothing},
             {path: CITY_EDIT_ROUTE, loader: preloadCityEditPage(queryClient), lazy: {Component: loadCityEditPage}, HydrateFallback: nothing},
+            {path: HARDWARE_PATH, loader: preloadManagementHardwarePage(queryClient), lazy: {Component: loadManagementHardwarePage}, HydrateFallback: nothing},
+            {path: HARDWARE_GROUP_NEW_PATH, lazy: {Component: loadHardwareGroupNewPage}, HydrateFallback: nothing},
+            {path: HARDWARE_GROUP_EDIT_ROUTE, loader: preloadHardwareGroupEditPage(queryClient), lazy: {Component: loadHardwareGroupEditPage}, HydrateFallback: nothing},
+            {path: HARDWARE_NEW_PATH, loader: preloadHardwareNewPage(queryClient), lazy: {Component: loadHardwareNewPage}, HydrateFallback: nothing},
+            {path: HARDWARE_EDIT_ROUTE, loader: preloadHardwareEditPage(queryClient), lazy: {Component: loadHardwareEditPage}, HydrateFallback: nothing},
             {path: MANAGEMENT_IMPORTS_PATH, loader: preloadManagementImportsPage(queryClient), lazy: {Component: loadManagementImportsPage}, HydrateFallback: nothing},
         ]},
         {

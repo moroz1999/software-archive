@@ -127,7 +127,7 @@ class SoftwareReleaseControllerTest {
                         "mod",
                         null,
                         null,
-                        List.of(new SoftwareHardware("floppy", "Дискета", "storage"))));
+                        List.of(new SoftwareHardware("floppy", "Дискета", "storage", "Носители", 2))));
 
         mvc.perform(get(RELEASE, ELITE, AY_MOD).header("Accept-Language", "ru"))
                 .andExpect(status().isOk())
@@ -144,7 +144,7 @@ class SoftwareReleaseControllerTest {
                         "mod",
                         "1990-03-01",
                         "With AY music",
-                        List.of(new SoftwareHardware("ay8910", "AY-3-8910", "sound"))));
+                        List.of(new SoftwareHardware("ay8910", "AY-3-8910", "sound", "Sound", 4))));
 
         mvc.perform(get(RELEASE, ELITE, AY_MOD))
                 .andExpect(status().isOk())
@@ -155,7 +155,8 @@ class SoftwareReleaseControllerTest {
                 .andExpect(jsonPath("$.releaseDate").value("1990-03-01"))
                 .andExpect(jsonPath("$.description").value("With AY music"))
                 .andExpect(jsonPath("$.hardware[0].code").value("ay8910"))
-                .andExpect(jsonPath("$.hardware[0].group").value("sound"));
+                .andExpect(jsonPath("$.hardware[0].group").value("sound"))
+                .andExpect(jsonPath("$.hardware[0].groupName").value("Sound"));
     }
 
     @Test

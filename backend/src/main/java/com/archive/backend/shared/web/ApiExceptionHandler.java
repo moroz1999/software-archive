@@ -9,6 +9,7 @@ import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.shared.domain.error.RuleViolationException;
 import java.util.List;
 import java.util.Map;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.ConcurrencyFailureException;
@@ -44,7 +45,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ConflictException.class)
     ProblemDetail conflict(ConflictException e) {
-        return business(HttpStatus.CONFLICT, e);
+        return withField(business(HttpStatus.CONFLICT, e), e.field(), e.code());
     }
 
     /**
@@ -62,10 +63,13 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(RuleViolationException.class)
     ProblemDetail ruleViolation(RuleViolationException e) {
-        ProblemDetail problem = business(HttpStatus.UNPROCESSABLE_ENTITY, e);
-        String field = e.field();
+        return withField(business(HttpStatus.UNPROCESSABLE_ENTITY, e), e.field(), e.code());
+    }
+
+    /** The error of the request field it concerns, when it concerns one. */
+    private static ProblemDetail withField(ProblemDetail problem, @Nullable String field, String code) {
         if (field != null) {
-            problem.setProperty("errors", List.of(Map.of("field", field, "code", e.code())));
+            problem.setProperty("errors", List.of(Map.of("field", field, "code", code)));
         }
         return problem;
     }

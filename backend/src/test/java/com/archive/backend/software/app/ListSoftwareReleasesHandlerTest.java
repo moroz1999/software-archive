@@ -24,9 +24,10 @@ import org.junit.jupiter.api.Test;
 class ListSoftwareReleasesHandlerTest {
 
     private static final UUID ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
-    private static final SoftwareHardware VECTOR = new SoftwareHardware("vector06c", "Vector-06C", "computers");
-    private static final SoftwareHardware BEEPER = new SoftwareHardware("beeper", "Beeper", "sound");
-    private static final SoftwareHardware AY = new SoftwareHardware("ay8910", "AY-3-8910", "sound");
+    private static final SoftwareHardware VECTOR =
+            new SoftwareHardware("vector06c", "Vector-06C", "computers", "Computers", 1);
+    private static final SoftwareHardware BEEPER = new SoftwareHardware("beeper", "Beeper", "sound", "Sound", 4);
+    private static final SoftwareHardware AY = new SoftwareHardware("ay8910", "AY-3-8910", "sound", "Sound", 4);
 
     private final InMemorySoftwareReadRepository reads = new InMemorySoftwareReadRepository();
     private final ListSoftwareReleasesHandler handler = new ListSoftwareReleasesHandler(reads);

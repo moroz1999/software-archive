@@ -4,7 +4,7 @@ import {toReleaseFormValues, validateReleaseForm} from './release-form';
 import {toReleaseDate} from './software';
 
 const EMPTY = toReleaseFormValues();
-const AY = {code: 'ay8910', name: 'AY-3-8910', group: 'sound' as const};
+const AY = {code: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound'};
 
 describe(validateReleaseForm, () => {
     it('turns the filled form into a draft', () => {

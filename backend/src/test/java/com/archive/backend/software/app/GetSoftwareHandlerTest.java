@@ -34,7 +34,7 @@ class GetSoftwareHandlerTest {
                 "Space trading",
                 "1985-09-20",
                 new SoftwarePlatform("vector", "Vector"),
-                List.of(new SoftwareHardware("vector06c", "Vector-06C", "computers")),
+                List.of(new SoftwareHardware("vector06c", "Vector-06C", "computers", "Computers", 1)),
                 List.of(),
                 ADDED);
         reads.add(details);

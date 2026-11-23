@@ -7,7 +7,7 @@ import {createRelease, deleteRelease, fetchPlatformHardware, fetchSoftwareReleas
 
 const SOFTWARE = toSoftwareId('00000000-0000-0000-0001-000000000001');
 const RELEASE = toReleaseId('00000000-0000-0000-0007-000000000002');
-const AY = {code: 'ay8910', name: 'AY-3-8910', group: 'sound'};
+const AY = {code: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound'};
 const DRAFT = {title: null, version: '1.1', type: 'mod' as const, releaseDate: toReleaseDate('1990-03-01'), description: null, hardware: ['ay8910']};
 const RELEASE_PATH = `/api/software/${SOFTWARE}/releases/${RELEASE}`;
 const ARCHIVE = {fileName: 'elite-ay.zip', size: 1536, url: `${RELEASE_PATH}/archive`};

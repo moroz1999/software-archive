@@ -171,7 +171,7 @@ class SoftwareControllerTest {
                         "Space trading",
                         "1985-09-20",
                         new SoftwarePlatform("vector", "Vector"),
-                        List.of(new SoftwareHardware("vector06c", "Vector-06C", "computers")),
+                        List.of(new SoftwareHardware("vector06c", "Vector-06C", "computers", "Computers", 1)),
                         List.of(),
                         ADDED));
 
@@ -241,7 +241,7 @@ class SoftwareControllerTest {
                         null,
                         null,
                         new SoftwarePlatform("vector", "Vector"),
-                        List.of(new SoftwareHardware("vector06c", "Vector-06C", "computers")),
+                        List.of(new SoftwareHardware("vector06c", "Vector-06C", "computers", "Computers", 1)),
                         List.of(),
                         ADDED));
 
@@ -251,7 +251,8 @@ class SoftwareControllerTest {
                 .andExpect(jsonPath("$.platform.name").value("Vector"))
                 .andExpect(jsonPath("$.hardware[0].code").value("vector06c"))
                 .andExpect(jsonPath("$.hardware[0].name").value("Vector-06C"))
-                .andExpect(jsonPath("$.hardware[0].group").value("computers"));
+                .andExpect(jsonPath("$.hardware[0].group").value("computers"))
+                .andExpect(jsonPath("$.hardware[0].groupName").value("Computers"));
     }
 
     @Test
@@ -263,7 +264,7 @@ class SoftwareControllerTest {
                         null,
                         null,
                         new SoftwarePlatform("vector", "Вектор"),
-                        List.of(new SoftwareHardware("tape", "Магнитофон", "storage")),
+                        List.of(new SoftwareHardware("tape", "Магнитофон", "storage", "Носители", 2)),
                         List.of(),
                         ADDED));
         when(releasesHandler.handle(new ListSoftwareReleasesQuery(Actor.anonymous(), new SoftwareId(ID), Language.RU)))
@@ -274,7 +275,7 @@ class SoftwareControllerTest {
                         "mod",
                         null,
                         null,
-                        List.of(new SoftwareHardware("floppy", "Дискета", "storage")),
+                        List.of(new SoftwareHardware("floppy", "Дискета", "storage", "Носители", 2)),
                         ADDED)));
 
         mvc.perform(get("/api/software/{id}", ID).header("Accept-Language", "ru"))
@@ -296,7 +297,7 @@ class SoftwareControllerTest {
                         "mod",
                         "1990-03-01",
                         "With AY music",
-                        List.of(new SoftwareHardware("ay8910", "AY-3-8910", "sound")),
+                        List.of(new SoftwareHardware("ay8910", "AY-3-8910", "sound", "Sound", 4)),
                         ADDED)));
 
         mvc.perform(get("/api/software/{id}/releases", ID))
@@ -318,7 +319,7 @@ class SoftwareControllerTest {
                         "mod",
                         null,
                         "With AY music",
-                        List.of(new SoftwareHardware("ay8910", "AY-3-8910", "sound")),
+                        List.of(new SoftwareHardware("ay8910", "AY-3-8910", "sound", "Sound", 4)),
                         ADDED)));
 
         mvc.perform(get("/api/software/{id}/releases", ID))

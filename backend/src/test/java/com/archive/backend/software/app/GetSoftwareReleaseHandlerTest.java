@@ -21,7 +21,13 @@ class GetSoftwareReleaseHandlerTest {
     private static final UUID ELITE = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID AY_MOD = UUID.fromString("00000000-0000-0000-0000-000000000012");
     private static final ReleaseDetails AY_MOD_DETAILS = new ReleaseDetails(
-            AY_MOD, null, "1.1", "mod", null, null, List.of(new SoftwareHardware("ay8910", "AY-3-8910", "sound")));
+            AY_MOD,
+            null,
+            "1.1",
+            "mod",
+            null,
+            null,
+            List.of(new SoftwareHardware("ay8910", "AY-3-8910", "sound", "Sound", 4)));
 
     private final InMemorySoftwareReadRepository reads = new InMemorySoftwareReadRepository();
     private final GetSoftwareReleaseHandler handler = new GetSoftwareReleaseHandler(reads);

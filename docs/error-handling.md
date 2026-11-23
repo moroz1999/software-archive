@@ -51,7 +51,7 @@ Every error is a `ProblemDetail` (RFC 9457, `application/problem+json`) with ext
 ```
 
 - `code` — stable machine-readable identifier `{domain}.{error}`. The frontend chooses the message by it.
-- `errors` — present for field-level problems (`422` business rules and `400` format rules); `field` matches the request field name.
+- `errors` — present for field-level problems (`422` business rules, `400` format rules, and a `409` duplicate of a field, as a code already taken); `field` matches the request field name.
 - `detail` — English, for logs and developers; not shown to users as is.
 
 ## Frontend

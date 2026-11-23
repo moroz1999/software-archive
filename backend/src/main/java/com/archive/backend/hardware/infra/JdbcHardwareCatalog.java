@@ -2,6 +2,7 @@ package com.archive.backend.hardware.infra;
 
 import com.archive.backend.hardware.domain.HardwareCatalog;
 import com.archive.backend.hardware.domain.HardwareCode;
+import com.archive.backend.hardware.domain.HardwareGroupCode;
 import com.archive.backend.hardware.domain.PlatformCode;
 import java.util.List;
 import java.util.Set;
@@ -19,6 +20,27 @@ public class JdbcHardwareCatalog implements HardwareCatalog {
     public boolean platformExists(PlatformCode platform) {
         return jdbc.sql("SELECT EXISTS (SELECT 1 FROM platform WHERE code = :code)")
                 .param("code", platform.value())
+                .query(Boolean.class)
+                .single();
+    }
+
+    @Override
+    public boolean platformsExist(Set<PlatformCode> platforms) {
+        if (platforms.isEmpty()) {
+            return true;
+        }
+        List<String> values = platforms.stream().map(PlatformCode::value).toList();
+        return jdbc.sql("SELECT count(*) FROM platform WHERE code IN (:codes)")
+                        .param("codes", values)
+                        .query(Integer.class)
+                        .single()
+                == values.size();
+    }
+
+    @Override
+    public boolean groupExists(HardwareGroupCode group) {
+        return jdbc.sql("SELECT EXISTS (SELECT 1 FROM hardware_group WHERE code = :code)")
+                .param("code", group.value())
                 .query(Boolean.class)
                 .single();
     }

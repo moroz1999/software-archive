@@ -96,12 +96,13 @@ public class TypesenseSearchIndex implements SearchIndex {
                                 .type(FieldTypes.STRING_ARRAY)
                                 .index(false)
                                 .optional(true)));
-                // The hardware of the software and of its releases, a field for each group it is filtered by.
-                SoftwareDocument.HARDWARE_GROUPS.forEach(group -> software.add(new Field()
-                        .name(hardwareField(group))
+                // The hardware of the software and of its releases, each item as its group and its code: the groups
+                // are filtered by apart, whichever groups the reference book has.
+                software.add(new Field()
+                        .name(HARDWARE_FIELD)
                         .type(FieldTypes.STRING_ARRAY)
                         .facet(true)
-                        .optional(true)));
+                        .optional(true));
                 yield List.copyOf(software);
             }
             case AUTHOR ->
@@ -164,9 +165,12 @@ public class TypesenseSearchIndex implements SearchIndex {
         return doc;
     }
 
-    /** The field of the software documents holding the hardware of the group. */
-    static String hardwareField(String group) {
-        return "hardware_" + group;
+    /** The field of the software documents holding their hardware, each item as {@code group:code}. */
+    static final String HARDWARE_FIELD = "hardware";
+
+    /** An item of hardware as the field of the software documents holds it. */
+    static String hardwareValue(String group, String code) {
+        return group + ":" + code;
     }
 
     private static Map<String, Object> toMap(SoftwareDocument d) {
@@ -187,7 +191,12 @@ public class TypesenseSearchIndex implements SearchIndex {
         doc.put("screenshots", d.screenshots().stream().map(UUID::toString).toList());
         doc.put("made_by", d.madeBy());
         doc.put("cities", d.cities().stream().map(UUID::toString).toList());
-        d.hardware().forEach((group, codes) -> doc.put(hardwareField(group), codes));
+        doc.put(
+                HARDWARE_FIELD,
+                d.hardware().entrySet().stream()
+                        .flatMap(group -> group.getValue().stream().map(code -> hardwareValue(group.getKey(), code)))
+                        .sorted()
+                        .toList());
         return doc;
     }
 

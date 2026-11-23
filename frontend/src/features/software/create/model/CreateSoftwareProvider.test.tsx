@@ -13,7 +13,7 @@ const PLATFORMS = json([{code: 'agat', name: 'Agat'}, {code: 'bk', name: 'BK'}])
 function answer(software: () => Response) {
     return stubFetchRoutes(new Map([
         ['/api/platforms', PLATFORMS],
-        ['/api/hardware?platform=bk', json([{code: 'bk0011m', name: 'BK-0011M', group: 'computers'}])],
+        ['/api/hardware?platform=bk', json([{code: 'bk0011m', name: 'BK-0011M', group: 'computers', groupName: 'Computers'}])],
         ['/api/software', software],
         ['/api/auth/refresh', json({status: 401, code: 'auth.session-expired'}, 401)],
     ]));

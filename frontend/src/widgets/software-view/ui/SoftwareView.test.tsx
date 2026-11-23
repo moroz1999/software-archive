@@ -10,8 +10,8 @@ import {CurrentUserProvider} from '@/entities/users';
 import {SoftwareView} from './SoftwareView';
 
 const ID = '00000000-0000-0000-0001-000000000001';
-const VECTOR06C = {code: 'vector06c', name: 'Vector-06C', group: 'computers'};
-const BEEPER = {code: 'beeper', name: 'Beeper', group: 'sound'};
+const VECTOR06C = {code: 'vector06c', name: 'Vector-06C', group: 'computers', groupName: 'Computers'};
+const BEEPER = {code: 'beeper', name: 'Beeper', group: 'sound', groupName: 'Sound'};
 const GAMES = '00000000-0000-0000-0006-000000000001';
 const ACTION = '00000000-0000-0000-0006-000000000002';
 const SHOOTERS = '00000000-0000-0000-0006-000000000003';
@@ -50,7 +50,7 @@ const AY_MOD = {
     type: 'mod',
     releaseDate: null,
     description: null,
-    hardware: [VECTOR06C, {code: 'ay8910', name: 'AY-3-8910', group: 'sound'}],
+    hardware: [VECTOR06C, {code: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound'}],
     added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
     canChange: true,
 };

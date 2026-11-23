@@ -421,7 +421,7 @@ class SoftwareSearchSyncIT {
     void indexesTheHardwareOfSoftwareAndOfEveryReleaseOfItByGroup() throws Exception {
         SoftwareId elite = createWithHardware("Elite", "vector06c", "tape");
         worker.handle();
-        assertThat(listIn(document(elite), "hardware_computers")).containsExactly("vector06c");
+        assertThat(listIn(document(elite), "hardware")).containsExactly("computers:vector06c", "storage:tape");
 
         createRelease.handle(new CreateReleaseCommand(
                 ADMIN,
@@ -432,9 +432,8 @@ class SoftwareSearchSyncIT {
         worker.handle();
 
         Map<String, Object> doc = document(elite);
-        assertThat(listIn(doc, "hardware_computers")).containsExactlyInAnyOrder("vector06c", "krista2");
-        assertThat(listIn(doc, "hardware_storage")).containsExactly("tape");
-        assertThat(listIn(doc, "hardware_sound")).containsExactly("ay8910");
+        assertThat(listIn(doc, "hardware"))
+                .containsExactlyInAnyOrder("computers:vector06c", "computers:krista2", "storage:tape", "sound:ay8910");
     }
 
     private SoftwareCatalogAnswer withHardware(String keyword, Language language, String... hardware) {
@@ -476,10 +475,10 @@ class SoftwareSearchSyncIT {
 
         assertThat(withHardware("Lambda", Language.RU).hardware())
                 .containsExactly(
-                        new HardwareCount("vector06c", "Вектор-06Ц", "computers", 2),
-                        new HardwareCount("ay8910", "AY-3-8910", "sound", 1));
+                        new HardwareCount("vector06c", "Вектор-06Ц", "computers", "Компьютеры", 2),
+                        new HardwareCount("ay8910", "AY-3-8910", "sound", "Звук", 1));
         assertThat(withHardware("Sigma", Language.EN, "ay8910").hardware())
-                .containsExactly(new HardwareCount("ay8910", "AY-3-8910", "sound", 0));
+                .containsExactly(new HardwareCount("ay8910", "AY-3-8910", "sound", "Sound", 0));
     }
 
     @Test

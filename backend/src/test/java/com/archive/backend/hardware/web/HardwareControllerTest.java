@@ -8,8 +8,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.archive.backend.hardware.app.CreateHardwareHandler;
+import com.archive.backend.hardware.app.DeleteHardwareHandler;
+import com.archive.backend.hardware.app.GetHardwareHandler;
 import com.archive.backend.hardware.app.ListHardwareHandler;
 import com.archive.backend.hardware.app.ListHardwareQuery;
+import com.archive.backend.hardware.app.UpdateHardwareHandler;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.hardware.read.HardwareItem;
 import com.archive.backend.hardware.web.mapper.HardwareWebMapperImpl;
@@ -33,24 +37,37 @@ class HardwareControllerTest {
     private MockMvc mvc;
 
     @MockitoBean
+    private GetHardwareHandler getHandler;
+
+    @MockitoBean
+    private CreateHardwareHandler createHandler;
+
+    @MockitoBean
+    private UpdateHardwareHandler updateHandler;
+
+    @MockitoBean
+    private DeleteHardwareHandler deleteHandler;
+
+    @MockitoBean
     private ListHardwareHandler handler;
 
     @Test
     void listsTheHardwareOfAPlatform() throws Exception {
         when(handler.handle(new ListHardwareQuery(new PlatformCode("vector"), Language.EN)))
-                .thenReturn(List.of(new HardwareItem("ay8910", "AY-3-8910", "sound")));
+                .thenReturn(List.of(new HardwareItem("ay8910", "AY-3-8910", "sound", "Sound")));
 
         mvc.perform(get("/api/hardware").param("platform", "vector"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].code").value("ay8910"))
                 .andExpect(jsonPath("$[0].name").value("AY-3-8910"))
-                .andExpect(jsonPath("$[0].group").value("sound"));
+                .andExpect(jsonPath("$[0].group").value("sound"))
+                .andExpect(jsonPath("$[0].groupName").value("Sound"));
     }
 
     @Test
     void listsTheHardwareInTheLanguageAskedFor() throws Exception {
         when(handler.handle(new ListHardwareQuery(new PlatformCode("vector"), Language.RU)))
-                .thenReturn(List.of(new HardwareItem("tape", "Магнитофон", "storage")));
+                .thenReturn(List.of(new HardwareItem("tape", "Магнитофон", "storage", "Носители")));
 
         mvc.perform(get("/api/hardware").param("platform", "vector").header("Accept-Language", "ru"))
                 .andExpect(status().isOk())

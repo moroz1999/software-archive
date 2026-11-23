@@ -1,6 +1,6 @@
 import {toCityId, toCountryId} from '@/entities/locations';
 import {type PlatformCode, toPlatformCode} from '@/entities/platforms';
-import {parseSoftware, toHardwareGroup} from '@/entities/software';
+import {parseSoftware} from '@/entities/software';
 import {getJson, type JsonObject, mapResponse, parsePage, readArray, readNumber, readObject, readString} from '@/shared/api';
 import type {FacetCount, SoftwareCatalogPage} from '../model/catalog';
 import type {SoftwareCatalogFilter} from '../model/catalog-filter';
@@ -56,7 +56,8 @@ export async function fetchSoftwareCatalog(
                     return {
                         value: readString(dto, 'value'),
                         name: readString(dto, 'name'),
-                        group: toHardwareGroup(readString(dto, 'group')),
+                        group: readString(dto, 'group'),
+                        groupName: readString(dto, 'groupName'),
                         count: readNumber(dto, 'count'),
                     };
                 }),

@@ -2,6 +2,7 @@ package com.archive.backend.software.app;
 
 import com.archive.backend.hardware.domain.HardwareCatalog;
 import com.archive.backend.hardware.domain.HardwareCode;
+import com.archive.backend.hardware.domain.HardwareGroupCode;
 import com.archive.backend.hardware.domain.PlatformCode;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,6 +22,16 @@ class InMemoryHardwareCatalog implements HardwareCatalog {
     @Override
     public boolean platformExists(PlatformCode platform) {
         return onPlatform.containsKey(platform);
+    }
+
+    @Override
+    public boolean platformsExist(Set<PlatformCode> platforms) {
+        return onPlatform.keySet().containsAll(platforms);
+    }
+
+    @Override
+    public boolean groupExists(HardwareGroupCode group) {
+        return true;
     }
 
     @Override

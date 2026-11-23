@@ -26,6 +26,16 @@ class HardwareSetsTest {
         }
 
         @Override
+        public boolean platformsExist(Set<PlatformCode> platforms) {
+            return hardware.keySet().containsAll(platforms);
+        }
+
+        @Override
+        public boolean groupExists(HardwareGroupCode group) {
+            return true;
+        }
+
+        @Override
         public boolean allOnPlatform(Set<HardwareCode> codes, PlatformCode platform) {
             return hardware.getOrDefault(platform, Set.of()).containsAll(codes);
         }

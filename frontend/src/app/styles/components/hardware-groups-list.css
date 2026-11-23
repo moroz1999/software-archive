@@ -1,0 +1,5 @@
+:root {
+    /* Row bone: a name of a group or of an item of hardware. */
+    --hardware-groups-list-row-width: 180px;
+    --hardware-groups-list-row-height: var(--space-24);
+}

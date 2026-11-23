@@ -37,6 +37,6 @@ Each release shows its effective hardware ([domain/hardware.md](../domain/hardwa
 | Call | Answer | Errors |
 |---|---|---|
 | `GET /api/software/{id}` | the same call as the editing ([software-editing.md](software-editing.md#rest)) | |
-| `GET /api/software/{id}/releases` | `[{id, title, version, type, releaseDate, description, hardware: [{code, name, group}], screenshots: [{id, url}], archive: {fileName, size, url}}]` (`archive` is `null` without one) by release date — a year before the days of that year —, unknown dates last; `title` falls back to the software's title; `added: {by, at}` as for the software | `404 software.not-found`; `400` for a malformed id |
+| `GET /api/software/{id}/releases` | `[{id, title, version, type, releaseDate, description, hardware: [{code, name, group, groupName}], screenshots: [{id, url}], archive: {fileName, size, url}}]` (`archive` is `null` without one) by release date — a year before the days of that year —, unknown dates last; `title` falls back to the software's title; `added: {by, at}` as for the software | `404 software.not-found`; `400` for a malformed id |
 
 `type` is one of `original`, `rerelease`, `adaptation`, `localization`, `bugfix`, `mod`, `crack`, `mia`, `corrupted`, `compilation`, `incomplete`, `demoversion`, `unknown`; `group` is one of `computers`, `storage`, `dos`, `sound`, `controls`, `expansion`.

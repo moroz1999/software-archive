@@ -11,7 +11,6 @@ export interface HardwareListProps {
 
 /** Hardware by its group: the name of every group over the names of its items. */
 export function HardwareList({hardware}: HardwareListProps) {
-    const {t} = useTranslation();
     const sections = groupHardware(hardware);
     if (sections.length === 0) {
         return null;
@@ -19,9 +18,9 @@ export function HardwareList({hardware}: HardwareListProps) {
     return (
         <Stack gap="md">
             {sections.map((section) => (
-                <div key={section.group} role="group" aria-label={t(`hardwareGroups.${section.group}`)}>
+                <div key={section.group} role="group" aria-label={section.label}>
                     <Stack gap="xs">
-                        <Text variant="label" tone="muted">{t(`hardwareGroups.${section.group}`)}</Text>
+                        <Text variant="label" tone="muted">{section.label}</Text>
                         <Inline as="ul" gap="sm" wrap>
                             {section.items.map((item) => <li key={item.code}><Chip variant="mono">{item.name}</Chip></li>)}
                         </Inline>
@@ -31,4 +30,3 @@ export function HardwareList({hardware}: HardwareListProps) {
         </Stack>
     );
 }
-import {useTranslation} from 'react-i18next';

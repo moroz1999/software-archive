@@ -78,10 +78,6 @@ public record SoftwareDocument(
         this(id, title, releaseDate, alternativeTitles, platform, year, categories, countries, screenshots, List.of());
     }
 
-    /** The groups of hardware, each a filter of its own: an item of any one of them, and every group chosen. */
-    public static final List<String> HARDWARE_GROUPS =
-            List.of("computers", "storage", "dos", "sound", "controls", "expansion");
-
     public SoftwareDocument {
         Objects.requireNonNull(id, "id");
         Objects.requireNonNull(title, "title");

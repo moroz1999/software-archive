@@ -62,6 +62,13 @@ public record Actor(@Nullable UserId id, Set<UserGroup> groups) {
     }
 
     /**
+     * Whether they may keep the hardware reference book and its groups: administrators only.
+     */
+    public boolean mayKeepHardware() {
+        return isAdministrator();
+    }
+
+    /**
      * Whether they may keep the countries and the cities: administrators only.
      */
     public boolean mayKeepPlaces() {

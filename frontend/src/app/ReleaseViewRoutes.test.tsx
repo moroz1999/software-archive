@@ -33,8 +33,8 @@ const RELEASE = {
     releaseDate: '1985-10-05',
     description: 'AY music\nwith improved controls',
     hardware: [
-        {code: 'vector06c', name: 'Vector-06C', group: 'computers'},
-        {code: 'ay8910', name: 'AY-3-8910', group: 'sound'},
+        {code: 'vector06c', name: 'Vector-06C', group: 'computers', groupName: 'Computers'},
+        {code: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound'},
     ],
     screenshots: [{id: SCREENSHOT_ID, url: `/api/screenshots/${SCREENSHOT_ID}`}],
     archive: {fileName: 'elite-ay.zip', size: 1536, url: ARCHIVE_URL},

@@ -1,0 +1,5 @@
+:root {
+    /* Platforms bone: a line of a few checkboxes while the platforms load. */
+    --hardware-form-loading-width: 240px;
+    --hardware-form-loading-height: var(--space-24);
+}

@@ -17,7 +17,7 @@ export interface HardwarePickerProps {
 export function HardwarePicker({hardware, value, onChange, disabled = false, hint, error}: HardwarePickerProps) {
     const {t} = useTranslation();
     const groups = groupHardware(hardware).map((section) => ({
-        label: t(`hardwareGroups.${section.group}`),
+        label: section.label,
         options: section.items.map((item) => ({value: item.code, label: item.name})),
     }));
     return (

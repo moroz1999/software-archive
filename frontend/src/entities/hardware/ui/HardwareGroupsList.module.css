@@ -1,0 +1,4 @@
+.row {
+    width: var(--hardware-groups-list-row-width);
+    height: var(--hardware-groups-list-row-height);
+}

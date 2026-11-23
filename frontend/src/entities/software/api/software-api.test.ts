@@ -27,8 +27,8 @@ const DRAFT = {
     ],
 } satisfies SoftwareDraft;
 const VECTOR = {code: 'vector', name: 'Vector'};
-const VECTOR06C = {code: 'vector06c', name: 'Vector-06C', group: 'computers'};
-const AY = {code: 'ay8910', name: 'AY-3-8910', group: 'sound'};
+const VECTOR06C = {code: 'vector06c', name: 'Vector-06C', group: 'computers', groupName: 'Computers'};
+const AY = {code: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound'};
 const RELEASE = '00000000-0000-0000-0007-000000000001';
 const SHOT = '00000000-0000-0000-0055-000000000001';
 const ARCHIVE = {fileName: 'elite-ay.zip', size: 1536, url: `/api/software/${ID}/releases/${RELEASE}/archive`};
@@ -104,9 +104,20 @@ describe(fetchSoftware, () => {
         await expect(fetchSoftware(ID, new AbortController().signal)).rejects.toBeInstanceOf(SystemError);
     });
 
-    it('fails with a system error on hardware of an unknown group', async () => {
+    it('reads hardware of a group the archive added, with the name of its group', async () => {
         stubFetch(json({
-            id: ID, title: 'Elite', description: null, releaseDate: null, platform: VECTOR, hardware: [{...VECTOR06C, group: 'video'}],
+            id: ID, title: 'Elite', description: null, releaseDate: null, platform: VECTOR, hardware: [{code: 'gpu', name: 'GPU', group: 'video', groupName: 'Video'}],
+            categories: [], credits: [], sources: [], preservation: 'missing-in-action', added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true,
+        }));
+
+        await expect(fetchSoftware(ID, new AbortController().signal)).resolves.toMatchObject({
+            hardware: [{code: 'gpu', name: 'GPU', group: 'video', groupName: 'Video'}],
+        });
+    });
+
+    it('fails with a system error on hardware without the name of its group', async () => {
+        stubFetch(json({
+            id: ID, title: 'Elite', description: null, releaseDate: null, platform: VECTOR, hardware: [{code: 'vector06c', name: 'Vector-06C', group: 'computers'}],
         }));
 
         await expect(fetchSoftware(ID, new AbortController().signal)).rejects.toBeInstanceOf(SystemError);

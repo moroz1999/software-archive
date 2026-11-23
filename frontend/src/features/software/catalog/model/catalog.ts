@@ -1,6 +1,6 @@
 import type {CityId, CountryId} from '@/entities/locations';
 import type {PlatformCode} from '@/entities/platforms';
-import type {HardwareGroup, Software} from '@/entities/software';
+import type {Software} from '@/entities/software';
 import type {Page} from '@/shared/api';
 
 /** A value of a filter with the count of software it leaves. */
@@ -9,10 +9,14 @@ export interface FacetCount<T> {
     readonly count: number;
 }
 
-/** An item of hardware to filter by: its code, its name in the interface language and its group, with its count. */
+/**
+ * An item of hardware to filter by: its code, its name and its group's in the interface language, with its count; the
+ * archive gives them in the order of their groups.
+ */
 export interface HardwareFacetCount extends FacetCount<string> {
     readonly name: string;
-    readonly group: HardwareGroup;
+    readonly group: string;
+    readonly groupName: string;
 }
 
 /**

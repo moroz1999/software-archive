@@ -39,6 +39,6 @@ describe('ManagementImportsPage', () => {
         const management = within(await screen.findByRole('navigation', {name: 'Management'}));
 
         expect(management.getByRole('link', {name: 'Imports'})).toHaveAttribute('aria-current', 'page');
-        expect(management.getAllByRole('link')).toHaveLength(4);
+        expect(management.getAllByRole('link')).toHaveLength(5);
     });
 });

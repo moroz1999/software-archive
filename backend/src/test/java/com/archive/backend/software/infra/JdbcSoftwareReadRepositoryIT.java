@@ -49,10 +49,12 @@ class JdbcSoftwareReadRepositoryIT {
     /** Only its year is known: the year of the AY mod. */
     private static final UUID DISK = id(14);
 
-    private static final SoftwareHardware VECTOR06C = new SoftwareHardware("vector06c", "Vector-06C", "computers");
-    private static final SoftwareHardware TAPE = new SoftwareHardware("tape", "Tape", "storage");
-    private static final SoftwareHardware FLOPPY = new SoftwareHardware("floppy", "Floppy disk", "storage");
-    private static final SoftwareHardware AY = new SoftwareHardware("ay8910", "AY-3-8910", "sound");
+    private static final SoftwareHardware VECTOR06C =
+            new SoftwareHardware("vector06c", "Vector-06C", "computers", "Computers", 1);
+    private static final SoftwareHardware TAPE = new SoftwareHardware("tape", "Tape", "storage", "Storage", 2);
+    private static final SoftwareHardware FLOPPY =
+            new SoftwareHardware("floppy", "Floppy disk", "storage", "Storage", 2);
+    private static final SoftwareHardware AY = new SoftwareHardware("ay8910", "AY-3-8910", "sound", "Sound", 4);
 
     @Autowired
     private JdbcSoftwareReadRepository reads;
@@ -260,16 +262,16 @@ class JdbcSoftwareReadRepositoryIT {
             assertThat(details.platform()).isEqualTo(new SoftwarePlatform("vector", "Вектор"));
             assertThat(details.hardware())
                     .containsExactly(
-                            new SoftwareHardware("vector06c", "Вектор-06Ц", "computers"),
-                            new SoftwareHardware("floppy", "Дискета", "storage"),
-                            new SoftwareHardware("tape", "Магнитофон", "storage"));
+                            new SoftwareHardware("vector06c", "Вектор-06Ц", "computers", "Компьютеры", 1),
+                            new SoftwareHardware("floppy", "Дискета", "storage", "Носители", 2),
+                            new SoftwareHardware("tape", "Магнитофон", "storage", "Носители", 2));
         });
     }
 
     @Test
     void readsTheHardwareOfReleasesInTheLanguageAskedFor() {
         jdbc.update("INSERT INTO software_release_hardware (release_id, hardware_code) VALUES (?, 'floppy')", AY_MOD);
-        SoftwareHardware floppy = new SoftwareHardware("floppy", "Дискета", "storage");
+        SoftwareHardware floppy = new SoftwareHardware("floppy", "Дискета", "storage", "Носители", 2);
 
         assertThat(reads.findRelease(ELITE, AY_MOD, "ru"))
                 .hasValueSatisfying(release -> assertThat(release.hardware()).contains(floppy));

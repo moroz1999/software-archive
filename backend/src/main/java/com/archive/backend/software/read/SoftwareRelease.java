@@ -91,7 +91,7 @@ public record SoftwareRelease(
         Set<String> own = hardware.stream().map(SoftwareHardware::group).collect(Collectors.toSet());
         List<SoftwareHardware> shown = Stream.concat(
                         base.stream().filter(item -> !own.contains(item.group())), hardware.stream())
-                .sorted(Comparator.comparingInt(SoftwareHardware::groupOrder))
+                .sorted(Comparator.comparingInt(SoftwareHardware::groupPosition))
                 .toList();
         return new SoftwareRelease(
                 id,
