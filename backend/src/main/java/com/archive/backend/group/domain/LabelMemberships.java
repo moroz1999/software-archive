@@ -6,7 +6,10 @@ import com.archive.backend.label.domain.LabelId;
 /** The memberships in groups held under a label. */
 public interface LabelMemberships {
 
-    /** Makes the person the member wherever the label was one. */
+    /**
+     * Makes the person the member wherever the label was one; a group the person is already a member of keeps that
+     * one membership, with the roles of both.
+     */
     void transfer(LabelId label, AuthorId author);
 
     /**
@@ -14,4 +17,10 @@ public interface LabelMemberships {
      * are not kept.
      */
     void transfer(LabelId label, GroupId group);
+
+    /**
+     * Makes the other label the member wherever the label was one; a group it is already a member of keeps that one
+     * membership, with the roles of both.
+     */
+    void transfer(LabelId label, LabelId into);
 }

@@ -77,21 +77,21 @@ class MergeLabelIntoGroupIT {
     }
 
     @Test
-    void offersGivingTheLabelToAGroupToAdministratorsOnly() throws Exception {
+    void offersHandingTheLabelOverToAdministratorsOnly() throws Exception {
         mvc.perform(get("/api/labels/{id}", GHOST))
-                .andExpect(jsonPath("$.canGiveToGroup").value(false));
+                .andExpect(jsonPath("$.canHandOver").value(false));
         mvc.perform(get("/api/labels/{id}", GHOST).with(TestActors.bearer(accessTokens, MEMBER)))
-                .andExpect(jsonPath("$.canGiveToGroup").value(false));
+                .andExpect(jsonPath("$.canHandOver").value(false));
         mvc.perform(get("/api/labels/{id}", GHOST).with(TestActors.bearer(accessTokens, ADMIN)))
-                .andExpect(jsonPath("$.canGiveToGroup").value(true));
+                .andExpect(jsonPath("$.canHandOver").value(true));
     }
 
     @Test
-    void offersNoGivingOfALabelOfAPersonToAGroup() throws Exception {
+    void offersNoHandingOverOfALabelOfAPerson() throws Exception {
         insertJane();
 
         mvc.perform(get("/api/labels/{id}", JD).with(TestActors.bearer(accessTokens, ADMIN)))
-                .andExpect(jsonPath("$.canGiveToGroup").value(false));
+                .andExpect(jsonPath("$.canHandOver").value(false));
     }
 
     @Test

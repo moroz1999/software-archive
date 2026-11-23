@@ -1,14 +1,14 @@
 import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router';
-import {authorPath, AUTHORS_PATH, toAuthorId} from '@/entities/authors';
+import {type AuthorId, authorPath, AUTHORS_PATH, toAuthorId} from '@/entities/authors';
 import {type GroupId, groupPath, toGroupId} from '@/entities/groups';
-import {type LabelDetails, LabelDetailsProvider, labelEditPath, type LabelId, type LabelOwner, useLabelDetails} from '@/entities/labels';
+import {type LabelDetails, LabelDetailsProvider, labelEditPath, type LabelId, type LabelOwner, labelPath, useLabelDetails} from '@/entities/labels';
 import {locationText, primaryFirst} from '@/entities/locations';
 import {CreditedSoftwareList} from '@/entities/software';
 import {AttachLabelDialog} from '@/features/label/attach';
 import {MakeAuthorDialog, MakeGroupDialog} from '@/features/label/make-owner';
-import {AttachLabelToGroupDialog, MergeLabelIntoGroupDialog} from '@/features/label/give-to-group';
+import {AttachLabelToGroupDialog, MergeLabelIntoAuthorDialog, MergeLabelIntoGroupDialog, MergeLabelIntoLabelDialog} from '@/features/label/hand-over';
 import {useSkeleton} from '@/shared/lib/loading';
 import {Inline} from '@/shared/ui/inline';
 import {AdditionNote} from '@/shared/ui/addition-note';
@@ -46,7 +46,7 @@ function LoadedView() {
     const query = useLabelDetails();
     const skeleton = useSkeleton(query);
     // Which window the menu opened is UI state: the menu closes while the window stays.
-    const [dialog, setDialog] = useState<'attach' | 'author' | 'group' | 'merge' | 'give' | null>(null);
+    const [dialog, setDialog] = useState<'attach' | 'author' | 'group' | 'merge' | 'give' | 'merge-author' | 'merge-label' | null>(null);
 
     if (skeleton || query.isPending) {
         return (
@@ -71,6 +71,12 @@ function LoadedView() {
     const openGroup = (group: GroupId) => {
         void navigate(groupPath(group));
     };
+    const openAuthor = (author: AuthorId) => {
+        void navigate(authorPath(author));
+    };
+    const openLabel = (other: LabelId) => {
+        void navigate(labelPath(other));
+    };
     const close = () => {
         setDialog(null);
     };
@@ -78,7 +84,7 @@ function LoadedView() {
         <PageLayout
             title={label.name}
             breadcrumbs={[{label: t('pages.authors'), href: AUTHORS_PATH}, {label: label.name}]}
-            menu={label.canEdit || label.canChange || label.canMakeOwner || label.canGiveToGroup ? (
+            menu={label.canEdit || label.canChange || label.canMakeOwner || label.canHandOver ? (
                 <PopoverMenu label={t('actions.menu')}>
                     {label.canEdit && <PopoverMenuItem href={labelEditPath(label.id)}>{t('actions.edit')}</PopoverMenuItem>}
                     {label.canChange && <PopoverMenuItem onClick={() => { setDialog('attach'); }}>{t('label.attach')}</PopoverMenuItem>}
@@ -88,10 +94,12 @@ function LoadedView() {
                             <PopoverMenuItem onClick={() => { setDialog('group'); }}>{t('label.makeGroup')}</PopoverMenuItem>
                         </>
                     )}
-                    {label.canGiveToGroup && (
+                    {label.canHandOver && (
                         <>
                             <PopoverMenuItem onClick={() => { setDialog('give'); }}>{t('label.giveToGroup')}</PopoverMenuItem>
                             <PopoverMenuItem onClick={() => { setDialog('merge'); }}>{t('label.merge')}</PopoverMenuItem>
+                            <PopoverMenuItem onClick={() => { setDialog('merge-author'); }}>{t('label.mergeIntoAuthor')}</PopoverMenuItem>
+                            <PopoverMenuItem onClick={() => { setDialog('merge-label'); }}>{t('label.mergeIntoLabel')}</PopoverMenuItem>
                         </>
                     )}
                 </PopoverMenu>
@@ -109,10 +117,12 @@ function LoadedView() {
                     <MakeGroupDialog label={label} open={dialog === 'group'} onClose={close} onMade={openOwner}/>
                 </>
             )}
-            {label.canGiveToGroup && (
+            {label.canHandOver && (
                 <>
                     <AttachLabelToGroupDialog label={{id: label.id, name: label.name}} open={dialog === 'give'} onClose={close} onAttached={openGroup}/>
                     <MergeLabelIntoGroupDialog label={{id: label.id, name: label.name}} open={dialog === 'merge'} onClose={close} onMerged={openGroup}/>
+                    <MergeLabelIntoAuthorDialog label={{id: label.id, name: label.name}} open={dialog === 'merge-author'} onClose={close} onMerged={openAuthor}/>
+                    <MergeLabelIntoLabelDialog label={{id: label.id, name: label.name}} open={dialog === 'merge-label'} onClose={close} onMerged={openLabel}/>
                 </>
             )}
         </PageLayout>

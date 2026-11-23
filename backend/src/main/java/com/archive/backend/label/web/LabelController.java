@@ -19,14 +19,20 @@ import com.archive.backend.label.app.MakeAuthorOfLabelCommand;
 import com.archive.backend.label.app.MakeAuthorOfLabelHandler;
 import com.archive.backend.label.app.MakeGroupOfLabelCommand;
 import com.archive.backend.label.app.MakeGroupOfLabelHandler;
+import com.archive.backend.label.app.MergeLabelIntoAuthorCommand;
+import com.archive.backend.label.app.MergeLabelIntoAuthorHandler;
 import com.archive.backend.label.app.MergeLabelIntoGroupCommand;
 import com.archive.backend.label.app.MergeLabelIntoGroupHandler;
+import com.archive.backend.label.app.MergeLabelIntoLabelCommand;
+import com.archive.backend.label.app.MergeLabelIntoLabelHandler;
 import com.archive.backend.label.domain.LabelAttachment;
 import com.archive.backend.label.domain.LabelId;
+import com.archive.backend.label.web.dto.LabelAuthorChoiceDto;
 import com.archive.backend.label.web.dto.LabelCreatedDto;
 import com.archive.backend.label.web.dto.LabelDetailsDto;
 import com.archive.backend.label.web.dto.LabelGroupChoiceDto;
 import com.archive.backend.label.web.dto.LabelGroupRequestDto;
+import com.archive.backend.label.web.dto.LabelLabelChoiceDto;
 import com.archive.backend.label.web.dto.LabelMadeOwnerDto;
 import com.archive.backend.label.web.dto.LabelOwnerRequestDto;
 import com.archive.backend.label.web.dto.LabelRequestDto;
@@ -72,6 +78,8 @@ public class LabelController {
     private final MakeAuthorOfLabelHandler makeAuthorHandler;
     private final MakeGroupOfLabelHandler makeGroupHandler;
     private final MergeLabelIntoGroupHandler mergeHandler;
+    private final MergeLabelIntoAuthorHandler mergeIntoAuthorHandler;
+    private final MergeLabelIntoLabelHandler mergeIntoLabelHandler;
     private final GiveLabelToGroupHandler giveHandler;
     private final LabelWebMapper webMapper;
 
@@ -128,6 +136,26 @@ public class LabelController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void mergeIntoGroup(Actor actor, @PathVariable UUID id, @RequestBody LabelGroupChoiceDto request) {
         mergeHandler.handle(new MergeLabelIntoGroupCommand(actor, new LabelId(id), groupOf(request)));
+    }
+
+    @PostMapping("/{id}/merge-into-author")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void mergeIntoAuthor(Actor actor, @PathVariable UUID id, @RequestBody LabelAuthorChoiceDto request) {
+        UUID author = request.author();
+        if (author == null) {
+            throw new InvalidValueException("label.author-required", "The person to merge the label into is required.");
+        }
+        mergeIntoAuthorHandler.handle(new MergeLabelIntoAuthorCommand(actor, new LabelId(id), new AuthorId(author)));
+    }
+
+    @PostMapping("/{id}/merge-into-label")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void mergeIntoLabel(Actor actor, @PathVariable UUID id, @RequestBody LabelLabelChoiceDto request) {
+        UUID into = request.label();
+        if (into == null) {
+            throw new InvalidValueException("label.label-required", "The label to merge the label into is required.");
+        }
+        mergeIntoLabelHandler.handle(new MergeLabelIntoLabelCommand(actor, new LabelId(id), new LabelId(into)));
     }
 
     private static GroupId groupOf(LabelGroupChoiceDto request) {

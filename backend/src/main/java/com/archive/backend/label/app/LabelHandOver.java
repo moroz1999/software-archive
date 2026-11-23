@@ -50,15 +50,23 @@ final class LabelHandOver {
             AuthorRepository authors,
             GroupRepository groups,
             LabelRepository labels) {
+        requireHandOver(label, actor, authors, labels);
+        if (groups.findById(group).isEmpty()) {
+            throw new LabelOwnerUnknownException().onField("group");
+        }
+    }
+
+    /**
+     * Lets a label be handed over — merged or given to a group — only by an administrator, the label being in the
+     * archive and not a person's.
+     */
+    static void requireHandOver(LabelId label, Actor actor, AuthorRepository authors, LabelRepository labels) {
         actor.administrator();
         if (labels.lock(label).isEmpty()) {
             throw new LabelNotFoundException();
         }
         if (authors.findByLabel(label).isPresent()) {
             throw new LabelOfPersonException();
-        }
-        if (groups.findById(group).isEmpty()) {
-            throw new LabelOwnerUnknownException().onField("group");
         }
     }
 

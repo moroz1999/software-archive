@@ -53,8 +53,8 @@ export interface LabelDetails {
     readonly canEdit: boolean;
     /** The reader may say whose the label is in its form. */
     readonly canChangeOwner: boolean;
-    /** The reader may give the label to a group: merge it into one or make it one of its labels. */
-    readonly canGiveToGroup: boolean;
+    /** The reader may hand the label over: merge it into a group, a person or another label, or make it a label of a group. */
+    readonly canHandOver: boolean;
 }
 
 /** A person or a group a label of nobody can be attached to, as the lookup finds them. */

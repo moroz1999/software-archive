@@ -1,4 +1,5 @@
 import {deleteResource, getJson, type JsonObject, mapResponse, postJson, postNoContent, putJson, readAddition, readArray, readBoolean, readNullableString, readObject, readString} from '@/shared/api';
+import type {EntityAutocompleteOption} from '@/shared/ui/multi-entity-autocomplete';
 import {labelPath} from '../config/paths';
 import type {LabelDetails, LabelDraft, LabelLocation, LabelOrigin, LabelOwner, LabelOwnerOption, NamedLabelOwner, NewLabelDraft} from '../model/label';
 import {type LabelId, toLabelId} from '../model/label-id';
@@ -55,7 +56,7 @@ export async function fetchLabel(id: LabelId, signal: AbortSignal): Promise<Labe
             canMakeOwner: readBoolean(dto, 'canMakeOwner'),
             canEdit: readBoolean(dto, 'canEdit'),
             canChangeOwner: readBoolean(dto, 'canChangeOwner'),
-            canGiveToGroup: readBoolean(dto, 'canGiveToGroup'),
+            canHandOver: readBoolean(dto, 'canHandOver'),
         };
     });
 }
@@ -105,6 +106,16 @@ export async function mergeLabelIntoGroup(id: LabelId, group: string): Promise<v
     await postNoContent(`/api${labelPath(id)}/merge-into-group`, {group});
 }
 
+/** Merges the label into the person it is a duplicate of, the label deleted: `POST /api/labels/{id}/merge-into-author`. */
+export async function mergeLabelIntoAuthor(id: LabelId, author: string): Promise<void> {
+    await postNoContent(`/api${labelPath(id)}/merge-into-author`, {author});
+}
+
+/** Merges the label into another label it is a duplicate of, the label deleted: `POST /api/labels/{id}/merge-into-label`. */
+export async function mergeLabelIntoLabel(id: LabelId, label: string): Promise<void> {
+    await postNoContent(`/api${labelPath(id)}/merge-into-label`, {label});
+}
+
 /** Makes the label a label of the group, taken from another group that has it: `POST /api/labels/{id}/attach-to-group`. */
 export async function attachLabelToGroup(id: LabelId, group: string): Promise<void> {
     await postNoContent(`/api${labelPath(id)}/attach-to-group`, {group});
@@ -117,6 +128,25 @@ export async function fetchLabelGroups(query: string, signal: AbortSignal): Prom
     return mapResponse(() => readArray(readObject(json, 'group lookup')['items'], 'items').map((item) => {
         const dto = readObject(item, 'group');
         return {type: readOwnerType(dto, 'type'), id: readString(dto, 'id'), title: readString(dto, 'title')};
+    }));
+}
+
+/** People by name, for merging a label into one of them. */
+export async function fetchLabelAuthors(query: string, signal: AbortSignal): Promise<readonly EntityAutocompleteOption[]> {
+    return lookup('author', query, signal);
+}
+
+/** Labels by name, of nobody, of people and of groups, for merging a label into one of them. */
+export async function fetchLabelsByName(query: string, signal: AbortSignal): Promise<readonly EntityAutocompleteOption[]> {
+    return lookup('author-label,group-label', query, signal);
+}
+
+async function lookup(types: string, query: string, signal: AbortSignal): Promise<readonly EntityAutocompleteOption[]> {
+    const params = new URLSearchParams({types, query});
+    const json = await getJson(`/api/entity-lookup?${params.toString()}`, signal);
+    return mapResponse(() => readArray(readObject(json, 'lookup')['items'], 'items').map((item) => {
+        const dto = readObject(item, 'entry');
+        return {type: readString(dto, 'type'), id: readString(dto, 'id'), title: readString(dto, 'title')};
     }));
 }
 

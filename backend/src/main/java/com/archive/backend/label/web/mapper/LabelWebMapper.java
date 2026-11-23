@@ -52,7 +52,7 @@ public interface LabelWebMapper {
                 label.rights().canMakeOwner(),
                 label.rights().canEdit(),
                 label.rights().canChangeOwner(),
-                label.rights().canGiveToGroup());
+                label.rights().canHandOver());
     }
 
     default CreateLabelCommand toCreate(Actor actor, NewLabelRequestDto request) {

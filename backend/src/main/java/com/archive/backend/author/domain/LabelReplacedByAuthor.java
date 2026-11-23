@@ -5,8 +5,9 @@ import com.archive.backend.shared.domain.ddd.DomainEvent;
 import java.util.Objects;
 
 /**
- * A new person replaces the label under its name: the label's credits, memberships and remembered origin become the
- * person's, then the label goes (docs/domain/authors.md#label).
+ * A person replaces the label: a new one under its name, or the person it is a duplicate of. The label's credits,
+ * memberships and remembered origin become the person's, joined with what the person already has, then the label goes
+ * (docs/domain/authors.md#label).
  */
 public record LabelReplacedByAuthor(LabelId label, AuthorId author) implements DomainEvent {
 

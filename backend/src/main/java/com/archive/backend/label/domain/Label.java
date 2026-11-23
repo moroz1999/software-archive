@@ -8,6 +8,7 @@ import com.archive.backend.user.domain.AddedBy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import lombok.Getter;
 
 /**
@@ -68,6 +69,17 @@ public final class Label {
         requireChangeableBy(actor);
         this.name = Objects.requireNonNull(name, "name");
         this.locations = Objects.requireNonNull(locations, "locations");
+        events.add(new LabelChanged(id));
+    }
+
+    /**
+     * Takes in a label found out to be a duplicate of this one: its places are added to these, and its credits,
+     * memberships and remembered origin become this label's before it goes.
+     */
+    public void absorb(Label label) {
+        events.add(new LabelMergedIntoLabel(label.getId(), id));
+        events.add(new OwnerOfLabelsChanged(Set.of(label.getId())));
+        locations = locations.with(label.getLocations());
         events.add(new LabelChanged(id));
     }
 

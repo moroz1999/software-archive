@@ -4,7 +4,10 @@ import com.archive.backend.author.domain.AuthorId;
 import com.archive.backend.group.domain.GroupId;
 import com.archive.backend.label.domain.LabelId;
 
-/** The credits of software given under a label. */
+/**
+ * The credits of software given under a label. Software crediting the one taking the credits over keeps that one
+ * credit, with the roles of both.
+ */
 public interface LabelCredits {
 
     /** Credits the person directly wherever the label was credited. */
@@ -12,4 +15,7 @@ public interface LabelCredits {
 
     /** Credits the group directly wherever the label was credited. */
     void transfer(LabelId label, GroupId group);
+
+    /** Credits the other label wherever the label was credited. */
+    void transfer(LabelId label, LabelId into);
 }

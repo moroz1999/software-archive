@@ -17,7 +17,7 @@ public record LabelDetailsDto(
         boolean canMakeOwner,
         boolean canEdit,
         boolean canChangeOwner,
-        boolean canGiveToGroup) {
+        boolean canHandOver) {
 
     public record OwnerDto(
             String type, UUID id, String name, @Nullable String note) {}

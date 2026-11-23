@@ -1,7 +1,7 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {createMemoryRouter, RouterProvider} from 'react-router';
+import {createMemoryRouter, RouterProvider, useParams} from 'react-router';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {breadcrumbSteps, json, noContent, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
 import {toLabelId} from '@/entities/labels';
@@ -11,14 +11,21 @@ const ID = '00000000-0000-0000-0004-000000000001';
 const CREW = '00000000-0000-0000-0005-000000000001';
 const JANE = '00000000-0000-0000-0003-000000000001';
 const ELITE = '00000000-0000-0000-0001-000000000001';
-const GHOST = {id: ID, name: 'Ghost', owner: null, groups: [{id: CREW, name: 'Crew'}], locations: [], origins: [], canChange: true, canMakeOwner: true, canEdit: false, canChangeOwner: false, canGiveToGroup: true, added: {by: 'Zork', at: '2026-03-04T05:06:07Z'}};
+const SPOOK = '00000000-0000-0000-0004-000000000002';
+const GHOST = {id: ID, name: 'Ghost', owner: null, groups: [{id: CREW, name: 'Crew'}], locations: [], origins: [], canChange: true, canMakeOwner: true, canEdit: false, canChangeOwner: false, canHandOver: true, added: {by: 'Zork', at: '2026-03-04T05:06:07Z'}};
 
 const SOFTWARE_URL = `/api/labels/${ID}/software`;
 const NO_SOFTWARE = new Map([[SOFTWARE_URL, json([])]]);
 
+/** The label under test, and the page of any other label it leads to. */
+function LabelRoute() {
+    const {id} = useParams();
+    return id === ID ? <LabelView id={toLabelId(ID)}/> : <p>Other label page</p>;
+}
+
 function openLabel() {
     const router = createMemoryRouter([
-        {path: '/labels/:id', element: <LabelView id={toLabelId(ID)}/>},
+        {path: '/labels/:id', element: <LabelRoute/>},
         {path: '/authors/:id', element: <p>Author page</p>},
         {path: '/groups/:id', element: <p>Group page</p>},
     ], {initialEntries: [`/labels/${ID}`]});
@@ -196,7 +203,7 @@ describe(LabelView, () => {
     });
 
     it('offers neither to whoever may not', async () => {
-        stubFetchAround(NO_SOFTWARE, json({...GHOST, canGiveToGroup: false}));
+        stubFetchAround(NO_SOFTWARE, json({...GHOST, canHandOver: false}));
         openLabel();
 
         await openActions();
@@ -241,8 +248,64 @@ describe(LabelView, () => {
         await expect(screen.findByText('Group page')).resolves.toBeInTheDocument();
     });
 
+    it('offers merging the label into an author and into another label to whoever may', async () => {
+        stubFetchAround(NO_SOFTWARE, json(GHOST));
+        openLabel();
+
+        await openActions();
+
+        expect(screen.getByRole('button', {name: 'Merge into author and delete'})).toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Merge into label and delete'})).toBeInTheDocument();
+    });
+
+    it('offers merging into neither an author nor a label to whoever may not', async () => {
+        stubFetchAround(NO_SOFTWARE, json({...GHOST, canHandOver: false}));
+        openLabel();
+
+        await openActions();
+
+        expect(screen.queryByRole('button', {name: 'Merge into author and delete'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Merge into label and delete'})).not.toBeInTheDocument();
+    });
+
+    it('opens the page of the person the label is merged into', async () => {
+        stubFetchAround(
+            new Map([...NO_SOFTWARE, ['/api/entity-lookup?types=author&query=jane', json({items: [{id: JANE, type: 'author', title: 'Jane Doe'}]})]]),
+            json(GHOST),
+            noContent(),
+        );
+        openLabel();
+
+        await openActions();
+        await userEvent.click(screen.getByRole('button', {name: 'Merge into author and delete'}));
+        const dialog = screen.getByRole('dialog', {name: 'Merge into author and delete'});
+        await userEvent.type(within(dialog).getByRole('combobox', {name: 'Author'}), 'jane');
+        await userEvent.click(await screen.findByRole('option', {name: 'Jane Doe'}));
+        await userEvent.click(within(dialog).getByRole('button', {name: 'Merge and delete'}));
+
+        await expect(screen.findByText('Author page')).resolves.toBeInTheDocument();
+    });
+
+    it('opens the page of the label the label is merged into', async () => {
+        stubFetchAround(
+            new Map([...NO_SOFTWARE, ['/api/entity-lookup?types=author-label%2Cgroup-label&query=spook', json({items: [{id: SPOOK, ownerId: null, type: 'author-label', title: 'Spook'}]})]]),
+            json(GHOST),
+            noContent(),
+        );
+        openLabel();
+
+        await openActions();
+        await userEvent.click(screen.getByRole('button', {name: 'Merge into label and delete'}));
+        const dialog = screen.getByRole('dialog', {name: 'Merge into label and delete'});
+        await userEvent.type(within(dialog).getByRole('combobox', {name: 'Label'}), 'spook');
+        await userEvent.click(await screen.findByRole('option', {name: 'Spook'}));
+        await userEvent.click(within(dialog).getByRole('button', {name: 'Merge and delete'}));
+
+        await expect(screen.findByText('Other label page')).resolves.toBeInTheDocument();
+    });
+
     it('offers no actions at all to whoever may do none of them', async () => {
-        stubFetchAround(NO_SOFTWARE, json({...GHOST, canChange: false, canMakeOwner: false, canEdit: false, canGiveToGroup: false}));
+        stubFetchAround(NO_SOFTWARE, json({...GHOST, canChange: false, canMakeOwner: false, canEdit: false, canHandOver: false}));
         openLabel();
 
         await screen.findByRole('heading', {level: 1, name: 'Ghost'});

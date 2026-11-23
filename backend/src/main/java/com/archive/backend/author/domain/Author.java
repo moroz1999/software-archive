@@ -131,6 +131,17 @@ public final class Author {
     }
 
     /**
+     * Takes in a label found out to be a duplicate of the person: its places are added to the person's, and its
+     * credits, memberships and remembered origin become the person's before it goes.
+     */
+    public void absorb(Label label) {
+        events.add(new LabelReplacedByAuthor(label.getId(), id));
+        events.add(new OwnerOfLabelsChanged(Set.of(label.getId())));
+        locations = locations.with(label.getLocations());
+        events.add(new AuthorChanged(id));
+    }
+
+    /**
      * Gives up a label that turned out to be somebody else's; only its works change their owner. The person keeps
      * their display name while other labels stay, and some name at all.
      */

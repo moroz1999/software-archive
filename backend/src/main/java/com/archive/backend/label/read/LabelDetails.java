@@ -49,11 +49,11 @@ public record LabelDetails(
 
     /**
      * What the reader may do with the label: attach it to an owner ({@code canChange}), make a new owner of it, edit
-     * and delete it, say whose it is in its form, and give it to a group: merge it into one it is a duplicate of, or make it one of its
-     * labels.
+     * and delete it, say whose it is in its form, and hand it over: merge it into a group, a person or another label it is a duplicate
+     * of, or make it a label of a group.
      */
     public record Rights(
-            boolean canChange, boolean canMakeOwner, boolean canEdit, boolean canChangeOwner, boolean canGiveToGroup) {
+            boolean canChange, boolean canMakeOwner, boolean canEdit, boolean canChangeOwner, boolean canHandOver) {
 
         public static final Rights NONE = new Rights(false, false, false, false, false);
     }

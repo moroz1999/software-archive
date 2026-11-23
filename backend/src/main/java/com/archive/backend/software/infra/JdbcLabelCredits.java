@@ -4,6 +4,7 @@ import com.archive.backend.author.domain.AuthorId;
 import com.archive.backend.group.domain.GroupId;
 import com.archive.backend.label.domain.LabelId;
 import com.archive.backend.software.domain.LabelCredits;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
@@ -16,18 +17,24 @@ public class JdbcLabelCredits implements LabelCredits {
 
     @Override
     public void transfer(LabelId label, AuthorId author) {
-        jdbc.sql("UPDATE software_contribution SET person_id = :author, label_id = NULL WHERE label_id = :label")
-                .param("author", author.value())
-                .param("label", label.value())
-                .update();
+        transfer(label, "person_id", author.value());
+    }
+
+    @Override
+    public void transfer(LabelId label, GroupId group) {
+        transfer(label, "group_id", group.value());
+    }
+
+    @Override
+    public void transfer(LabelId label, LabelId into) {
+        transfer(label, "label_id", into.value());
     }
 
     /**
-     * Software crediting the group already keeps that one credit, with the roles of both: an unknown role goes once a
-     * known one is there.
+     * Software already crediting the participant keeps that one credit, with the roles of both: an unknown role goes
+     * once a known one is there; the other credits move to the participant. {@code column} is a constant of this class.
      */
-    @Override
-    public void transfer(LabelId label, GroupId group) {
+    private void transfer(LabelId label, String column, UUID participant) {
         jdbc.sql("""
                         UPDATE software_contribution g
                         SET role_codes = ARRAY(
@@ -37,22 +44,24 @@ public class JdbcLabelCredits implements LabelCredits {
                                                   WHERE k <> 'unknown')),
                             notes = COALESCE(g.notes, l.notes)
                         FROM software_contribution l
-                        WHERE l.label_id = :label AND g.group_id = :group AND g.software_id = l.software_id
-                        """)
-                .param("group", group.value())
+                        WHERE l.label_id = :label AND g.%1$s = :participant AND g.software_id = l.software_id
+                        """.formatted(column))
+                .param("participant", participant)
                 .param("label", label.value())
                 .update();
         jdbc.sql("""
                         DELETE FROM software_contribution l
                         WHERE l.label_id = :label
                           AND EXISTS (SELECT 1 FROM software_contribution g
-                                      WHERE g.group_id = :group AND g.software_id = l.software_id)
-                        """)
-                .param("group", group.value())
+                                      WHERE g.%1$s = :participant AND g.software_id = l.software_id)
+                        """.formatted(column))
+                .param("participant", participant)
                 .param("label", label.value())
                 .update();
-        jdbc.sql("UPDATE software_contribution SET group_id = :group, label_id = NULL WHERE label_id = :label")
-                .param("group", group.value())
+        String moved =
+                column.equals("label_id") ? "label_id = :participant" : column + " = :participant, label_id = NULL";
+        jdbc.sql("UPDATE software_contribution SET " + moved + " WHERE label_id = :label")
+                .param("participant", participant)
                 .param("label", label.value())
                 .update();
     }
