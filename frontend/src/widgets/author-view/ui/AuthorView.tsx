@@ -4,7 +4,7 @@ import {type AuthorDetails, AuthorDetailsProvider, authorEditPath, type AuthorId
 import {locationText, primaryFirst} from '@/entities/locations';
 import {groupPath, toGroupId} from '@/entities/groups';
 import {labelPath, toLabelId} from '@/entities/labels';
-import {CreditedSoftwareList} from '@/entities/software';
+import {CreditedReleaseList, CreditedSoftwareList} from '@/entities/software';
 import {PopoverMenu, PopoverMenuItem} from '@/shared/ui/popover-menu';
 import {Inline} from '@/shared/ui/inline';
 import {AdditionNote} from '@/shared/ui/addition-note';
@@ -54,6 +54,7 @@ function LoadedView() {
             <Stack gap="xl">
                 <Details author={query.data}/>
                 <CreditedSoftwareList owner={{kind: 'authors', id: query.data.id}}/>
+                <CreditedReleaseList owner={{kind: 'authors', id: query.data.id}}/>
                 <AdditionNote addition={query.data.added}/>
             </Stack>
         </PageLayout>

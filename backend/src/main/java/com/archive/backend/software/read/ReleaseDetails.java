@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A release as it states itself, to edit it: its own title, if any, and only its own hardware.
+ * A release as it states itself, to edit it: its own title, if any, only its own hardware, and its credits.
  */
 public record ReleaseDetails(
         UUID id,
@@ -15,7 +15,20 @@ public record ReleaseDetails(
         @Nullable String releaseDate,
         @Nullable String description,
         List<SoftwareHardware> hardware,
-        @Nullable ReleaseArchiveDetails archive) {
+        @Nullable ReleaseArchiveDetails archive,
+        List<SoftwareCredit> credits) {
+
+    public ReleaseDetails(
+            UUID id,
+            @Nullable String title,
+            @Nullable String version,
+            String type,
+            @Nullable String releaseDate,
+            @Nullable String description,
+            List<SoftwareHardware> hardware,
+            @Nullable ReleaseArchiveDetails archive) {
+        this(id, title, version, type, releaseDate, description, hardware, archive, List.of());
+    }
 
     public ReleaseDetails(
             UUID id,

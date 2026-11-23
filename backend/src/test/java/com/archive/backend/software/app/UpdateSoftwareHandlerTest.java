@@ -26,9 +26,9 @@ import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.shared.domain.error.RuleViolationException;
+import com.archive.backend.software.domain.KnownReferences;
 import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.Software;
-import com.archive.backend.software.domain.SoftwareCreditSets;
 import com.archive.backend.software.domain.SoftwareCredits;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareTitle;
@@ -41,7 +41,7 @@ class UpdateSoftwareHandlerTest {
 
     private final InMemorySoftwareRepository repository = new InMemorySoftwareRepository();
     private final UpdateSoftwareHandler handler = new UpdateSoftwareHandler(
-            repository, hardwareSets(), categorySets(), new SoftwareCreditSets(reference -> true), event -> {});
+            repository, hardwareSets(), categorySets(), KnownReferences.creditSets(reference -> true), event -> {});
 
     @Test
     void storesTheEditedSoftware() {

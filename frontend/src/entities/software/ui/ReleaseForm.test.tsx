@@ -1,8 +1,9 @@
 import type {ReactNode} from 'react';
-import {describe, expect, it, vi} from 'vitest';
-import {render, screen, within} from '@testing-library/react';
+import {afterEach, describe, expect, it, vi} from 'vitest';
+import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {BusinessError} from '@/shared/api';
+import {json, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import type {ReleaseDraft} from '../model/release-form';
 import {ReleaseFormProvider, type ReleaseFormProviderProps} from '../model/ReleaseFormProvider';
 import type {Hardware} from '../model/software';
@@ -19,7 +20,7 @@ const HARDWARE: readonly Hardware[] = [
 
 function renderForm({actions, ...props}: FormProps = {}) {
     const onSubmit = vi.fn<(draft: ReleaseDraft) => void>();
-    render(
+    renderWithQueries(
         <ReleaseFormProvider onSubmit={onSubmit} hardware={HARDWARE} {...props}>
             <ReleaseForm submitLabel="Save" actions={actions}/>
         </ReleaseFormProvider>,
@@ -27,7 +28,14 @@ function renderForm({actions, ...props}: FormProps = {}) {
     return {onSubmit};
 }
 
+const JANE = '00000000-0000-0000-0004-000000000001';
+const CREW = '00000000-0000-0000-0004-000000000002';
+
 describe(ReleaseForm, () => {
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
     it('groups its fields in sections, the required type starred', () => {
         renderForm();
 
@@ -44,6 +52,12 @@ describe(ReleaseForm, () => {
 
         expect(within(technical).getByRole('checkbox', {name: 'AY-3-8910'})).toBeInTheDocument();
         expect(within(technical).getByRole('group', {name: 'Archive'})).toBeInTheDocument();
+    });
+
+    it('credits people and groups in a section of its own', () => {
+        renderForm();
+
+        expect(within(screen.getByRole('region', {name: 'Credits'})).getByRole('combobox', {name: 'Person or group'})).toBeInTheDocument();
     });
 
     it('ends with its buttons, the submit last', () => {
@@ -64,8 +78,62 @@ describe(ReleaseForm, () => {
         await userEvent.click(screen.getByRole('button', {name: 'Save'}));
 
         expect(onSubmit).toHaveBeenCalledExactlyOnceWith({
-            title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: '1990-03-01', description: 'With AY music', hardware: ['ay8910'],
+            title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: '1990-03-01', description: 'With AY music', hardware: ['ay8910'], credits: [],
         });
+    });
+
+    it('credits people, groups and their labels on the release with their roles', async () => {
+        stubFetchRoutes(new Map([
+            [
+                '/api/entity-lookup?types=author%2Cauthor-label%2Cgroup%2Cgroup-label&query=jane',
+                json({items: [{id: JANE, type: 'author', title: 'Jane Doe'}]}),
+            ],
+            [
+                '/api/entity-lookup?types=author%2Cauthor-label%2Cgroup%2Cgroup-label&query=crew',
+                json({items: [{id: CREW, type: 'group', title: 'Crew'}]}),
+            ],
+        ]));
+        const {onSubmit} = renderForm();
+        const credited = screen.getByRole('combobox', {name: 'Person or group'});
+
+        await userEvent.type(credited, 'jane');
+        await userEvent.click(await screen.findByRole('option', {name: 'Jane Doe'}));
+        await userEvent.click(screen.getByRole('combobox', {name: 'Role for Jane Doe'}));
+        await userEvent.click(screen.getByRole('option', {name: 'Intro music'}));
+        await userEvent.type(credited, 'crew');
+        await userEvent.click(await screen.findByRole('option', {name: 'Crew'}));
+        await userEvent.click(screen.getByRole('combobox', {name: 'Role for Crew'}));
+        await userEvent.click(screen.getByRole('option', {name: 'Release'}));
+        await userEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        expect(onSubmit).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
+            credits: [
+                expect.objectContaining({id: JANE, type: 'author', roles: ['intro_music']}),
+                expect.objectContaining({id: CREW, type: 'group', roles: ['release']}),
+            ],
+        }));
+    });
+
+    it('starts from the credits the release has', () => {
+        renderForm({
+            initial: {
+                title: 'Elite AY', version: '', type: 'mod', releaseDate: '', description: '', hardware: [],
+                credits: [{id: CREW, type: 'group', title: 'Crew', roles: ['release']}],
+            },
+        });
+
+        expect(screen.getByRole('combobox', {name: 'Role for Crew'})).toBeInTheDocument();
+    });
+
+    it('shows a refusal of the credits under them', () => {
+        renderForm({
+            error: new BusinessError(422, 'software.credit-unknown', [{field: 'credits', code: 'software.credit-unknown'}]),
+            messages: {'software.credit-unknown': 'One of the credited is not in the archive any more.'},
+        });
+
+        expect(screen.getByRole('combobox', {name: 'Person or group'})).toHaveAccessibleDescription(
+            'One of the credited is not in the archive any more.',
+        );
     });
 
     it('takes a year alone as the release date and tells how to write one', async () => {
@@ -120,7 +188,7 @@ describe(ReleaseForm, () => {
     });
 
     it('unchecks hardware the release had', async () => {
-        const {onSubmit} = renderForm({initial: {title: '', version: '', type: 'mod', releaseDate: '', description: '', hardware: ['ay8910', 'beeper']}});
+        const {onSubmit} = renderForm({initial: {title: '', version: '', type: 'mod', releaseDate: '', description: '', hardware: ['ay8910', 'beeper'], credits: []}});
 
         expect(screen.getByRole('checkbox', {name: 'Beeper'})).toBeChecked();
 

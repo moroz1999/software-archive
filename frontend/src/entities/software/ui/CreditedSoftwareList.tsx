@@ -3,14 +3,13 @@ import {useTranslation} from 'react-i18next';
 import {useSkeleton} from '@/shared/lib/loading';
 import {useInViewport} from '@/shared/lib/screen';
 import {CardGrid} from '@/shared/ui/card-grid';
-import {Chip} from '@/shared/ui/chip';
-import {Inline} from '@/shared/ui/inline';
 import {Stack} from '@/shared/ui/stack';
-import {Heading, Text} from '@/shared/ui/typography';
+import {Heading} from '@/shared/ui/typography';
 import {softwarePath} from '../config/paths';
-import type {CreditedOwner, OwnCredit} from '../model/credited-software';
+import type {CreditedOwner} from '../model/credited-software';
 import {useCreditedSoftware} from '../model/credited-software-context';
 import {CreditedSoftwareProvider} from '../model/CreditedSoftwareProvider';
+import {OwnCreditLine} from './OwnCreditLine';
 import {SoftwareCard} from './SoftwareCard';
 import {SoftwareCardSkeleton} from './SoftwareCardSkeleton';
 
@@ -59,27 +58,12 @@ function Cards() {
                         : query.data.map((software) => (
                             <li key={software.id}>
                                 <SoftwareCard software={software} href={softwarePath(software.id)}>
-                                    {software.credits.map((credit, index) => <Credit key={index} credit={credit}/>)}
+                                    {software.credits.map((credit, index) => <OwnCreditLine key={index} credit={credit}/>)}
                                 </SoftwareCard>
                             </li>
                         ))}
                 </CardGrid>
             </Stack>
         </section>
-    );
-}
-
-/** The roles of one credit, an unknown one left out, after the label it was under when that is not the main name. */
-function Credit({credit}: {readonly credit: OwnCredit}) {
-    const {t} = useTranslation();
-    const roles = credit.roles.filter((role) => role !== 'unknown');
-    if (credit.as === null && roles.length === 0) {
-        return null;
-    }
-    return (
-        <Inline gap="xs" align="center" wrap>
-            {credit.as !== null && <Text variant="bodySm" tone="muted">{t('software.creditedAs', {name: credit.as})}</Text>}
-            {roles.map((role) => <Chip key={role} size="sm">{t(`roles.software.${role}`)}</Chip>)}
-        </Inline>
     );
 }

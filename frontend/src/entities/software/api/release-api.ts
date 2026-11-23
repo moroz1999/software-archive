@@ -4,7 +4,7 @@ import type {ReleaseArchive} from '../model/release-archive';
 import {type ReleaseFile, toReleaseFileId} from '../model/release-file';
 import type {ReleaseDraft} from '../model/release-form';
 import {type Hardware, type SoftwareId, type SoftwarePlatformCode, toReleaseDate} from '../model/software';
-import {parseHardwareList} from './software-api';
+import {parseHardwareList, parseSoftwareCredits} from './software-api';
 
 function releasesPath(softwareId: SoftwareId): string {
     return `/api/software/${softwareId}/releases`;
@@ -22,6 +22,7 @@ function toBody(draft: ReleaseDraft): unknown {
         releaseDate: draft.releaseDate,
         description: draft.description,
         hardware: draft.hardware,
+        credits: draft.credits.map(({id, type, roles}) => ({id, type, roles})),
     };
 }
 
@@ -61,6 +62,7 @@ export async function fetchSoftwareRelease(softwareId: SoftwareId, releaseId: Re
             description: readNullableString(dto, 'description'),
             hardware: parseHardwareList(dto['hardware']),
             archive: parseReleaseArchive(dto['archive']),
+            credits: dto['credits'] === undefined ? [] : parseSoftwareCredits(dto['credits']),
         };
     });
 }

@@ -5,6 +5,7 @@ import com.archive.backend.hardware.read.HardwareNameSql;
 import com.archive.backend.label.read.MainNameSql;
 import com.archive.backend.software.read.CardMadeBySql;
 import com.archive.backend.software.read.CardScreenshotsSql;
+import com.archive.backend.software.read.CreditedRelease;
 import com.archive.backend.software.read.CreditedSoftware;
 import com.archive.backend.software.read.ReleaseArchiveDetails;
 import com.archive.backend.software.read.ReleaseDateSql;
@@ -49,6 +50,12 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
      * Hardware in the order of its groups, then by name.
      */
     private static final String HARDWARE_ORDER = " ORDER BY h.position, lower(h.name), h.code";
+
+    /** The credits of software or of releases: their table and the column of what they credit. */
+    private record Credited(String table, String of) {}
+
+    private static final Credited SOFTWARE_CREDITS = new Credited("software_contribution", "software_id");
+    private static final Credited RELEASE_CREDITS = new Credited("software_release_contribution", "release_id");
 
     private final JdbcClient jdbc;
 
@@ -124,7 +131,7 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                         new SoftwarePlatform(rs.getString("code"), rs.getString("name")),
                         hardware("software_hardware", "software_id", id, language),
                         categories(id, language),
-                        credits(id),
+                        credits(SOFTWARE_CREDITS, id),
                         sources(id),
                         AdditionSql.of(rs),
                         rs.getObject("added_by", UUID.class),
@@ -134,54 +141,106 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
 
     @Override
     public List<CreditedSoftware> findCreditedOnPerson(UUID personId) {
-        return creditedOn("person_id", MainNameSql.PEOPLE, "named_person", personId);
+        return cards(creditedOn(SOFTWARE_CREDITS, "person_id", MainNameSql.PEOPLE, "named_person", personId));
     }
 
     @Override
     public List<CreditedSoftware> findCreditedOnGroup(UUID groupId) {
-        return creditedOn("group_id", MainNameSql.GROUPS, "named_group", groupId);
+        return cards(creditedOn(SOFTWARE_CREDITS, "group_id", MainNameSql.GROUPS, "named_group", groupId));
     }
 
     @Override
     public List<CreditedSoftware> findCreditedOnLabel(UUID labelId) {
-        return cards(credits("""
-                        SELECT software_id, NULL AS as_label, role_codes
-                        FROM software_contribution
+        return cards(creditedOnLabel(SOFTWARE_CREDITS, labelId));
+    }
+
+    @Override
+    public List<CreditedRelease> findReleasesCreditedOnPerson(UUID personId) {
+        return releaseCards(creditedOn(RELEASE_CREDITS, "person_id", MainNameSql.PEOPLE, "named_person", personId));
+    }
+
+    @Override
+    public List<CreditedRelease> findReleasesCreditedOnGroup(UUID groupId) {
+        return releaseCards(creditedOn(RELEASE_CREDITS, "group_id", MainNameSql.GROUPS, "named_group", groupId));
+    }
+
+    @Override
+    public List<CreditedRelease> findReleasesCreditedOnLabel(UUID labelId) {
+        return releaseCards(creditedOnLabel(RELEASE_CREDITS, labelId));
+    }
+
+    /** The credits of a label by itself, by the software or the release they are on. */
+    private Map<UUID, List<CreditedSoftware.OwnCredit>> creditedOnLabel(Credited credited, UUID labelId) {
+        return ownCredits("""
+                        SELECT %s AS work_id, NULL AS as_label, role_codes
+                        FROM %s
                         WHERE label_id = :owner
-                        """, labelId));
+                        """.formatted(credited.of(), credited.table()), labelId);
     }
 
     /**
-     * The software an owner is credited on, by the owner column of the credits and of their labels, with the owner's
-     * credits on each: by themselves first, then by label in name order; a label is named unless it is the main name.
+     * The credits of an owner, by the owner column of the credits and of their labels, by the software or the release
+     * they are on: by themselves first, then by label in name order; a label is named unless it is the main name.
      */
-    private List<CreditedSoftware> creditedOn(String ownerColumn, String mainNames, String named, UUID ownerId) {
-        return cards(credits("WITH " + mainNames + """
-                        SELECT sc.software_id,
+    private Map<UUID, List<CreditedSoftware.OwnCredit>> creditedOn(
+            Credited credited, String ownerColumn, String mainNames, String named, UUID ownerId) {
+        return ownCredits(
+                "WITH " + mainNames + """
+                        SELECT sc.%3$s AS work_id,
                                CASE WHEN sc.label_id IS NULL OR sc.label_id = n.main_label_id THEN NULL ELSE l.name END
                                    AS as_label,
                                sc.role_codes
-                        FROM software_contribution sc
+                        FROM %4$s sc
                         LEFT JOIN label l ON l.id = sc.label_id
                         JOIN %2$s n ON n.%1$s = COALESCE(sc.%1$s, l.%1$s)
                         WHERE n.%1$s = :owner
                         ORDER BY sc.label_id IS NOT NULL, lower(l.name), sc.id
-                        """.formatted(ownerColumn, named), ownerId));
+                        """.formatted(ownerColumn, named, credited.of(), credited.table()), ownerId);
     }
 
-    /** The credits the query of {@code :owner} finds, by their software, in the order it gives. */
-    private Map<UUID, List<CreditedSoftware.OwnCredit>> credits(String sql, UUID ownerId) {
+    /** The credits the query of {@code :owner} finds, by the software or the release they are on, in its order. */
+    private Map<UUID, List<CreditedSoftware.OwnCredit>> ownCredits(String sql, UUID ownerId) {
         Map<UUID, List<CreditedSoftware.OwnCredit>> credits = new HashMap<>();
         jdbc.sql(sql)
                 .param("owner", ownerId)
                 .query((rs, row) -> {
-                    credits.computeIfAbsent(rs.getObject("software_id", UUID.class), id -> new ArrayList<>())
+                    credits.computeIfAbsent(rs.getObject("work_id", UUID.class), id -> new ArrayList<>())
                             .add(new CreditedSoftware.OwnCredit(rs.getString("as_label"), Arrays.asList((String[])
                                     rs.getArray("role_codes").getArray())));
                     return row;
                 })
                 .list();
         return credits;
+    }
+
+    /** The credited releases, by release date, then title, with the credits on each. */
+    private List<CreditedRelease> releaseCards(Map<UUID, List<CreditedSoftware.OwnCredit>> credits) {
+        if (credits.isEmpty()) {
+            return List.of();
+        }
+        return jdbc.sql("""
+                        SELECT r.id, r.software_id, s.title AS software_title, COALESCE(r.title, s.title) AS title,
+                               r.version, r.type, %s AS release_date
+                        FROM software_release r
+                        JOIN software s ON s.id = r.software_id
+                        WHERE r.id IN (:ids)
+                        ORDER BY %s, lower(COALESCE(r.title, s.title)), r.id
+                        """.formatted(ReleaseDateSql.of("r"), ReleaseDateSql.order("r")))
+                .param("ids", credits.keySet())
+                .query((rs, row) -> {
+                    UUID id = rs.getObject("id", UUID.class);
+                    return new CreditedRelease(
+                            id,
+                            rs.getObject("software_id", UUID.class),
+                            rs.getString("software_title"),
+                            rs.getString("title"),
+                            rs.getString("version"),
+                            rs.getString("type"),
+                            rs.getString("release_date"),
+                            findReleaseScreenshots(id),
+                            List.copyOf(credits.getOrDefault(id, List.of())));
+                })
+                .list();
     }
 
     /** The cards of the credited software, by release date, then title, with the credits on each. */
@@ -223,8 +282,9 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
      * Everyone credited: a person or a group by the main name, a label by itself with the name of its owner beside it,
      * in the order of those names.
      */
-    private List<SoftwareCredit> credits(UUID softwareId) {
-        return jdbc.sql("WITH " + MainNameSql.PEOPLE + ", " + MainNameSql.GROUPS + """
+    private List<SoftwareCredit> credits(Credited credited, UUID id) {
+        return jdbc.sql("WITH " + MainNameSql.PEOPLE + ", " + MainNameSql.GROUPS
+                        + """
                         SELECT COALESCE(c.person_id, c.group_id, c.label_id) AS id,
                                COALESCE(c.person_id, c.group_id, l.person_id, l.group_id) AS owner_id,
                                CASE WHEN c.person_id IS NOT NULL THEN 'author'
@@ -239,14 +299,14 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                                         CASE WHEN p.main_name IS NULL OR p.main_name = l.name THEN '' ELSE ' — ' || p.main_name END
                                END AS title,
                                c.role_codes
-                        FROM software_contribution c
+                        FROM %s c
                         LEFT JOIN label l ON l.id = c.label_id
                         LEFT JOIN named_person p ON p.person_id = COALESCE(c.person_id, l.person_id)
                         LEFT JOIN named_group g ON g.group_id = COALESCE(c.group_id, l.group_id)
-                        WHERE c.software_id = :id
+                        WHERE c.%s = :id
                         ORDER BY lower(COALESCE(l.name, p.main_name, g.main_name)), c.id
-                        """)
-                .param("id", softwareId)
+                        """.formatted(credited.table(), credited.of()))
+                .param("id", id)
                 .query((rs, row) -> new SoftwareCredit(
                         rs.getObject("id", UUID.class),
                         rs.getObject("owner_id", UUID.class),
@@ -282,7 +342,8 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                             archive(rs),
                             AdditionSql.of(rs),
                             rs.getObject("added_by", UUID.class),
-                            false);
+                            false,
+                            credits(RELEASE_CREDITS, id));
                 })
                 .list();
     }
@@ -305,7 +366,8 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                         rs.getString("release_date"),
                         rs.getString("description"),
                         hardware("software_release_hardware", "release_id", releaseId, language),
-                        archive(rs)))
+                        archive(rs),
+                        credits(RELEASE_CREDITS, releaseId)))
                 .optional();
     }
 

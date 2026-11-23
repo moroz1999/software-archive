@@ -129,11 +129,12 @@ describe(fetchSoftwareReleases, () => {
         vi.unstubAllGlobals();
     });
 
-    it('reads the releases of one software with their screenshots', async () => {
+    it('reads the releases of one software with their screenshots and credits', async () => {
         const release = {
             id: RELEASE, title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: '1990-03-01', description: null, hardware: [AY], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true,
             screenshots: [{id: SHOT, url: `/api/screenshots/${SHOT}`}],
             archive: ARCHIVE,
+            credits: [{id: RELEASE, type: 'group', title: 'Crew', ownerId: RELEASE, roles: ['release']}],
         };
         const fetchMock = stubFetch(json([release]));
 

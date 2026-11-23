@@ -262,6 +262,18 @@ class FixturesIT {
     }
 
     @Test
+    void fixtureReleasesCreditPeopleAndGroupsShownOnTheirPages() throws Exception {
+        mvc.perform(get("/api/software/{id}/releases", ELITE))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].credits[*].id")
+                        .value(hasItems(
+                                "00000000-0000-0000-0004-000000000061", "00000000-0000-0000-0004-000000000062")));
+        mvc.perform(get("/api/groups/{id}/releases", BYTE_BRIGADE))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].title").value(hasItems("Tetris 11M")));
+    }
+
+    @Test
     void theHardwareOfAPlatformIsServedToChooseFrom() throws Exception {
         mvc.perform(get("/api/hardware").param("platform", "vector"))
                 .andExpect(status().isOk())

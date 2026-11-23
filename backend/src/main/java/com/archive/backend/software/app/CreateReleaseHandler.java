@@ -8,6 +8,7 @@ import com.archive.backend.software.domain.ReleaseArchiveRepository;
 import com.archive.backend.software.domain.ReleaseArchiveUpload;
 import com.archive.backend.software.domain.ReleaseId;
 import com.archive.backend.software.domain.Software;
+import com.archive.backend.software.domain.SoftwareCreditSets;
 import com.archive.backend.software.domain.SoftwareNotFoundException;
 import com.archive.backend.software.domain.SoftwareRepository;
 import com.archive.backend.user.domain.AddedBy;
@@ -26,6 +27,7 @@ public class CreateReleaseHandler {
     private final SoftwareRepository repository;
     private final HardwareSets hardwareSets;
     private final ReleaseArchiveRepository archiveFiles;
+    private final SoftwareCreditSets creditSets;
     private final ApplicationEventPublisher events;
 
     @Transactional
@@ -39,7 +41,12 @@ public class CreateReleaseHandler {
                 ? null
                 : new ReleaseArchive(new ReleaseArchiveId(UUID.randomUUID()), upload.fileName(), upload.size());
         Release added = software.addRelease(
-                id, c.content(), hardwareSets.of(software.getPlatform(), c.hardware()), addedBy, archive);
+                id,
+                c.content(),
+                hardwareSets.of(software.getPlatform(), c.hardware()),
+                addedBy,
+                archive,
+                creditSets.of(c.credits()));
         if (upload != null) {
             archiveFiles.store(Objects.requireNonNull(archive).id(), upload);
         }

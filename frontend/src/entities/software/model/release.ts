@@ -3,7 +3,7 @@ import type {Brand} from '@/shared/lib/brand';
 import {isUuid} from '@/shared/lib/uuid';
 import type {Screenshot} from './screenshot';
 import type {ReleaseArchive} from './release-archive';
-import type {Hardware, ReleaseDate} from './software';
+import type {Hardware, ReleaseDate, SoftwareCredit} from './software';
 
 export type ReleaseId = Brand<string, 'ReleaseId'>;
 
@@ -37,13 +37,15 @@ export interface SoftwareRelease {
     readonly hardware: readonly Hardware[];
     readonly screenshots: readonly Screenshot[];
     readonly archive?: ReleaseArchive | null;
+    /** Who made, cracked, adapted or otherwise worked on this release (docs/domain/software.md#releases). */
+    readonly credits: readonly SoftwareCredit[];
     /** Who added it and when. */
     readonly added: Addition;
     /** Whether whoever reads it may change it, as the archive tells. */
     readonly canChange: boolean;
 }
 
-/** A release as it states itself, to edit it: its own title, if any, and only its own hardware. */
+/** A release as it states itself, to edit it: its own title, if any, only its own hardware, and its credits. */
 export interface ReleaseDetails {
     readonly id: ReleaseId;
     readonly title: string | null;
@@ -53,6 +55,7 @@ export interface ReleaseDetails {
     readonly description: string | null;
     readonly hardware: readonly Hardware[];
     readonly archive?: ReleaseArchive | null;
+    readonly credits: readonly SoftwareCredit[];
 }
 
 export function toReleaseId(raw: string): ReleaseId {

@@ -1,4 +1,5 @@
 import {type TitleProblem, titleProblem} from '@/shared/lib/form-rules';
+import type {MemberRoleValue} from '@/shared/ui/member-role-editor';
 import {type ReleaseDetails, type ReleaseType, toReleaseType} from './release';
 import {parseReleaseDateText, releaseDateField} from '../lib/release-date';
 import type {ReleaseDate} from './software';
@@ -16,6 +17,8 @@ export interface ReleaseFormValues {
     readonly releaseDate: string;
     readonly description: string;
     readonly hardware: readonly string[];
+    /** Whoever is credited on the release, with their roles. */
+    readonly credits: readonly MemberRoleValue[];
 }
 
 /** A release to be added or saved, as the form produced it; a release without a title is called by its software's. */
@@ -26,6 +29,7 @@ export interface ReleaseDraft {
     readonly releaseDate: ReleaseDate | null;
     readonly description: string | null;
     readonly hardware: readonly string[];
+    readonly credits: readonly MemberRoleValue[];
     /** A replacement chosen in the form; absent keeps the current archive. */
     readonly archive?: File;
     /** Set only when the current archive is to be removed on save. */
@@ -71,6 +75,7 @@ export function validateReleaseForm(values: ReleaseFormValues): ReleaseFormResul
             releaseDate,
             description: orNull(values.description),
             hardware: values.hardware,
+            credits: values.credits,
         },
     };
 }
@@ -89,5 +94,6 @@ export function toReleaseFormValues(release?: ReleaseDetails): ReleaseFormValues
         releaseDate: releaseDateField(release?.releaseDate),
         description: release?.description ?? '',
         hardware: release?.hardware.map((item) => item.code) ?? [],
+        credits: release?.credits ?? [],
     };
 }

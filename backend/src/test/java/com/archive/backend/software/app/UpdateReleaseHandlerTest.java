@@ -18,6 +18,7 @@ import static org.mockito.Mockito.mock;
 
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.shared.domain.error.RuleViolationException;
+import com.archive.backend.software.domain.KnownReferences;
 import com.archive.backend.software.domain.ReleaseArchiveRepository;
 import com.archive.backend.user.domain.ChangeForbiddenException;
 import java.util.Set;
@@ -28,7 +29,11 @@ class UpdateReleaseHandlerTest {
 
     private final InMemorySoftwareRepository repository = new InMemorySoftwareRepository();
     private final UpdateReleaseHandler handler = new UpdateReleaseHandler(
-            repository, hardwareSets(), mock(ReleaseArchiveRepository.class), mock(ApplicationEventPublisher.class));
+            repository,
+            hardwareSets(),
+            mock(ReleaseArchiveRepository.class),
+            KnownReferences.creditSets(reference -> true),
+            mock(ApplicationEventPublisher.class));
 
     @Test
     void storesTheEditedRelease() {

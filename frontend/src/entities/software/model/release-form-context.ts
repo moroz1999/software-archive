@@ -1,3 +1,4 @@
+import type {MemberRoleValue} from '@/shared/ui/member-role-editor';
 import {createRequiredContext} from '@/shared/lib/context';
 import type {Hardware} from './software';
 import type {ReleaseFormErrors, ReleaseFormValues} from './release-form';
@@ -16,9 +17,11 @@ export interface ReleaseFormState {
     /** Why the last submit was refused, under the fields the refusal names; a field's text clears once it is edited. */
     readonly refusals: ReleaseFormRefusals;
     /** The change handler of a text field. */
-    readonly change: (field: Exclude<ReleaseFormField, 'hardware' | 'archive'>) => (value: string) => void;
+    readonly change: (field: Exclude<ReleaseFormField, 'hardware' | 'archive' | 'credits'>) => (value: string) => void;
     /** Replaces the chosen hardware. */
     readonly changeHardware: (codes: readonly string[]) => void;
+    /** Replaces whoever is credited on the release. */
+    readonly changeCredits: (credits: readonly MemberRoleValue[]) => void;
     /** The current or newly chosen archive shown by the form. */
     readonly archive: Pick<ReleaseArchive, 'fileName' | 'size'> | null;
     readonly changeArchive: (file: File) => void;

@@ -1,5 +1,6 @@
 package com.archive.backend.software.app;
 
+import com.archive.backend.software.read.CreditedRelease;
 import com.archive.backend.software.read.CreditedSoftware;
 import com.archive.backend.software.read.ReleaseDetails;
 import com.archive.backend.software.read.SoftwareDetails;
@@ -105,6 +106,21 @@ class InMemorySoftwareReadRepository implements SoftwareReadRepository {
 
     @Override
     public List<CreditedSoftware> findCreditedOnLabel(UUID labelId) {
+        return List.of();
+    }
+
+    @Override
+    public List<CreditedRelease> findReleasesCreditedOnPerson(UUID personId) {
+        return List.of();
+    }
+
+    @Override
+    public List<CreditedRelease> findReleasesCreditedOnGroup(UUID groupId) {
+        return List.of();
+    }
+
+    @Override
+    public List<CreditedRelease> findReleasesCreditedOnLabel(UUID labelId) {
         return List.of();
     }
 

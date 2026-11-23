@@ -12,6 +12,7 @@ const SOFTWARE = {
     releaseDate: null,
     platform: {code: toSoftwarePlatformCode('vector'), name: 'Vector'},
     hardware: [],
+    credits: [],
 };
 const RELEASE = {
     id: toReleaseId('00000000-0000-0000-0007-000000000002'),
@@ -21,6 +22,7 @@ const RELEASE = {
     releaseDate: null,
     description: null,
     hardware: [],
+    credits: [],
 };
 
 describe(DeleteReleaseButton, () => {

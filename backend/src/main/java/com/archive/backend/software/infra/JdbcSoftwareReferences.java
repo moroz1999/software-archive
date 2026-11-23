@@ -3,6 +3,7 @@ package com.archive.backend.software.infra;
 import com.archive.backend.label.read.MainNameSql;
 import com.archive.backend.software.domain.SoftwareReference;
 import com.archive.backend.software.domain.SoftwareReferenceCatalog;
+import com.archive.backend.software.domain.SoftwareReferenceId;
 import com.archive.backend.software.read.SoftwareReferenceLookup;
 import com.archive.backend.software.read.SoftwareReferenceOption;
 import java.util.List;
@@ -61,6 +62,21 @@ public class JdbcSoftwareReferences implements SoftwareReferenceCatalog, Softwar
                 .param("id", reference.id().value())
                 .query(Boolean.class)
                 .single();
+    }
+
+    @Override
+    public List<SoftwareReferenceId> labelsOf(SoftwareReference owner) {
+        String column = switch (owner.type()) {
+            case AUTHOR -> "person_id";
+            case GROUP -> "group_id";
+            case AUTHOR_LABEL, GROUP_LABEL -> throw new IllegalArgumentException("A label owns no labels.");
+        };
+        return jdbc.sql(
+                        "SELECT id FROM label WHERE %s = :owner ORDER BY COALESCE(is_display_name, false) DESC, lower(name), id"
+                                .formatted(column))
+                .param("owner", owner.id().value())
+                .query((rs, row) -> new SoftwareReferenceId(rs.getObject("id", java.util.UUID.class)))
+                .list();
     }
 
     @Override

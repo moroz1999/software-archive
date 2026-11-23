@@ -21,6 +21,7 @@ import com.archive.backend.software.read.ReleaseArchiveDetails;
 import com.archive.backend.software.read.ReleaseDetails;
 import com.archive.backend.software.read.ReleaseFileItem;
 import com.archive.backend.software.read.ReleaseFiles;
+import com.archive.backend.software.read.SoftwareCredit;
 import com.archive.backend.software.read.SoftwareHardware;
 import com.archive.backend.software.web.dto.ReleaseArchiveDto;
 import com.archive.backend.software.web.dto.ReleaseCreatedDto;
@@ -28,6 +29,7 @@ import com.archive.backend.software.web.dto.ReleaseDetailsDto;
 import com.archive.backend.software.web.dto.ReleaseFileDto;
 import com.archive.backend.software.web.dto.ReleaseFilesDto;
 import com.archive.backend.software.web.dto.ReleaseRequestDto;
+import com.archive.backend.software.web.dto.SoftwareDetailsDto;
 import com.archive.backend.user.domain.Actor;
 import java.util.List;
 import java.util.Set;
@@ -55,8 +57,11 @@ public interface ReleaseWebMapper {
                 details.releaseDate(),
                 details.description(),
                 toHardwareDtos(details.hardware()),
-                toArchive(softwareId, details.id(), details.archive()));
+                toArchive(softwareId, details.id(), details.archive()),
+                toCreditDtos(details.credits()));
     }
+
+    List<SoftwareDetailsDto.SoftwareCreditDto> toCreditDtos(List<SoftwareCredit> credits);
 
     default ReleaseCreatedDto toCreated(ReleaseId id) {
         return new ReleaseCreatedDto(id.value());
@@ -77,7 +82,8 @@ public interface ReleaseWebMapper {
                 new SoftwareId(softwareId),
                 toContent(request),
                 toHardware(request.hardware()),
-                toArchiveUpload(archive));
+                toArchiveUpload(archive),
+                CreditRequests.toCredits(request.credits()));
     }
 
     default UpdateReleaseCommand toUpdate(Actor actor, UUID softwareId, UUID releaseId, ReleaseRequestDto request) {
@@ -98,7 +104,8 @@ public interface ReleaseWebMapper {
                 toContent(request),
                 toHardware(request.hardware()),
                 toArchiveUpload(archive),
-                new ReleaseArchiveRemoval(removeArchive));
+                new ReleaseArchiveRemoval(removeArchive),
+                CreditRequests.toCredits(request.credits()));
     }
 
     default DeleteReleaseCommand toDelete(Actor actor, UUID softwareId, UUID releaseId) {

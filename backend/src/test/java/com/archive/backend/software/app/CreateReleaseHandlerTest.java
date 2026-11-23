@@ -17,6 +17,7 @@ import static org.mockito.Mockito.verify;
 
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.shared.domain.error.RuleViolationException;
+import com.archive.backend.software.domain.KnownReferences;
 import com.archive.backend.software.domain.ReleaseArchiveRepository;
 import com.archive.backend.software.domain.ReleaseArchiveUpload;
 import com.archive.backend.software.domain.ReleaseId;
@@ -32,8 +33,12 @@ class CreateReleaseHandlerTest {
 
     private final InMemorySoftwareRepository repository = new InMemorySoftwareRepository();
     private final ReleaseArchiveRepository archiveFiles = mock(ReleaseArchiveRepository.class);
-    private final CreateReleaseHandler handler =
-            new CreateReleaseHandler(repository, hardwareSets(), archiveFiles, mock(ApplicationEventPublisher.class));
+    private final CreateReleaseHandler handler = new CreateReleaseHandler(
+            repository,
+            hardwareSets(),
+            archiveFiles,
+            KnownReferences.creditSets(reference -> true),
+            mock(ApplicationEventPublisher.class));
 
     @Test
     void addsTheReleaseToItsSoftwareUnderANewId() {

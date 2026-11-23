@@ -2,7 +2,7 @@ import {type QueryClient, queryOptions} from '@tanstack/react-query';
 import type {ReleaseId} from '../model/release';
 import type {SoftwareId, SoftwarePlatformCode} from '../model/software';
 import type {CreditedOwner} from '../model/credited-software';
-import {fetchCreditedSoftware} from './credited-software-api';
+import {fetchCreditedReleases, fetchCreditedSoftware} from './credited-software-api';
 import {fetchScreenshots} from './screenshot-api';
 import {fetchPlatformHardware, fetchReleaseFiles, fetchSoftwareRelease} from './release-api';
 import {fetchSoftware, fetchSoftwareReleases} from './software-api';
@@ -31,6 +31,14 @@ export function creditedSoftwareQuery(owner: CreditedOwner) {
     return queryOptions({
         queryKey: [...SOFTWARE_QUERY_KEY, 'credited', owner.kind, owner.id],
         queryFn: ({signal}) => fetchCreditedSoftware(owner, signal),
+    });
+}
+
+/** The releases a person, a group or a label is credited on, a block low on their page. */
+export function creditedReleasesQuery(owner: CreditedOwner) {
+    return queryOptions({
+        queryKey: [...SOFTWARE_QUERY_KEY, 'credited-releases', owner.kind, owner.id],
+        queryFn: ({signal}) => fetchCreditedReleases(owner, signal),
     });
 }
 

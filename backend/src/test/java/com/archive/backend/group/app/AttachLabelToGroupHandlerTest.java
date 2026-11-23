@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.archive.backend.geo.domain.Locations;
 import com.archive.backend.group.domain.GroupChanged;
 import com.archive.backend.group.domain.GroupId;
+import com.archive.backend.group.domain.LabelAdoptedByGroup;
 import com.archive.backend.label.app.InMemoryLabelRepository;
 import com.archive.backend.label.domain.Label;
 import com.archive.backend.label.domain.LabelId;
@@ -50,7 +51,11 @@ class AttachLabelToGroupHandlerTest {
                         .containsExactly(
                                 new OwnLabel(CRW, new LabelName("CRW"), BY_OTHER),
                                 new OwnLabel(SOL, new LabelName("Sol"), BY_OTHER)));
-        assertThat(events).containsExactlyInAnyOrder(new OwnerOfLabelsChanged(Set.of(SOL)), new GroupChanged(CREW));
+        assertThat(events)
+                .containsExactlyInAnyOrder(
+                        new LabelAdoptedByGroup(SOL, CREW),
+                        new OwnerOfLabelsChanged(Set.of(SOL)),
+                        new GroupChanged(CREW));
     }
 
     @Test

@@ -8,7 +8,8 @@ import {createRelease, deleteRelease, fetchPlatformHardware, fetchSoftwareReleas
 const SOFTWARE = toSoftwareId('00000000-0000-0000-0001-000000000001');
 const RELEASE = toReleaseId('00000000-0000-0000-0007-000000000002');
 const AY = {code: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound'};
-const DRAFT = {title: null, version: '1.1', type: 'mod' as const, releaseDate: toReleaseDate('1990-03-01'), description: null, hardware: ['ay8910']};
+const DRAFT = {title: null, version: '1.1', type: 'mod' as const, releaseDate: toReleaseDate('1990-03-01'), description: null, hardware: ['ay8910'], credits: []};
+const CREDIT = {id: '00000000-0000-0000-0004-000000000001', ownerId: '00000000-0000-0000-0005-000000000001', type: 'group-label', title: 'CRW — Crew', roles: ['release']};
 const RELEASE_PATH = `/api/software/${SOFTWARE}/releases/${RELEASE}`;
 const ARCHIVE = {fileName: 'elite-ay.zip', size: 1536, url: `${RELEASE_PATH}/archive`};
 
@@ -20,10 +21,12 @@ describe(fetchSoftwareRelease, () => {
     it('reads a release as it states itself', async () => {
         const fetchMock = stubFetch(json({
             id: RELEASE, title: null, version: '1.1', type: 'mod', releaseDate: '1990-03-01', description: 'With AY music', hardware: [AY], archive: ARCHIVE,
+            credits: [CREDIT],
         }));
 
         await expect(fetchSoftwareRelease(SOFTWARE, RELEASE, new AbortController().signal)).resolves.toStrictEqual({
             id: RELEASE, title: null, version: '1.1', type: 'mod', releaseDate: '1990-03-01', description: 'With AY music', hardware: [AY], archive: ARCHIVE,
+            credits: [CREDIT],
         });
         expect(fetchMock.mock.calls[0]?.[0]).toBe(RELEASE_PATH);
     });

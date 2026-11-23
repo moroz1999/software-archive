@@ -3,7 +3,10 @@
     --software-releases-date-column-width: 112px;
     --software-releases-version-column-width: 88px;
     --software-releases-type-column-width: 120px;
-    --software-releases-hardware-column-width: 30%;
+    --software-releases-hardware-column-width: 24%;
+
+    /* Whoever is credited on a release, one name with its roles to a line. */
+    --software-releases-credits-column-width: 22%;
 
     /* The Download button of an archive with its size beside it. */
     --software-releases-archive-column-width: 176px;
@@ -23,11 +26,12 @@
     --software-releases-card-title-line: calc(var(--font-size-lg) * var(--line-height-heading));
     --software-releases-facts-line: calc(var(--font-size-sm) * var(--line-height-compact));
 
-    /* Bone widths: like a typical title, release date, version, hardware name and the facts of a card. */
+    /* Bone widths: like a typical title, release date, version, hardware name, credited name and the facts of a card. */
     --software-releases-title-bone-width: 60%;
     --software-releases-date-bone-width: var(--space-64);
     --software-releases-version-bone-width: var(--space-24);
     --software-releases-hardware-bone-width: 72px;
+    --software-releases-credit-bone-width: 96px;
     --software-releases-card-title-bone-width: 60%;
     --software-releases-facts-bone-width: 40%;
 

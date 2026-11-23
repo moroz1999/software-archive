@@ -1,5 +1,5 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {screen, within} from '@testing-library/react';
+import {screen, waitFor, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {createMemoryRouter, RouterProvider, useParams} from 'react-router';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
@@ -15,7 +15,11 @@ const SPOOK = '00000000-0000-0000-0004-000000000002';
 const GHOST = {id: ID, name: 'Ghost', owner: null, groups: [{id: CREW, name: 'Crew'}], locations: [], origins: [], canChange: true, canMakeOwner: true, canEdit: false, canChangeOwner: false, canHandOver: true, added: {by: 'Zork', at: '2026-03-04T05:06:07Z'}};
 
 const SOFTWARE_URL = `/api/labels/${ID}/software`;
-const NO_SOFTWARE = new Map([[SOFTWARE_URL, json([])]]);
+const RELEASES_URL = `/api/labels/${ID}/releases`;
+const NO_RELEASES: readonly [string, () => Response] = [RELEASES_URL, json([])];
+const NO_SOFTWARE = new Map([[SOFTWARE_URL, json([])], NO_RELEASES]);
+const RELEASE_SOFTWARE = '00000000-0000-0000-0001-000000000031';
+const RELEASE = '00000000-0000-0000-0007-000000000031';
 
 /** The label under test, and the page of any other label it leads to. */
 function LabelRoute() {
@@ -88,8 +92,38 @@ describe(LabelView, () => {
         expect(screen.queryByRole('list', {name: 'Locations'})).not.toBeInTheDocument();
     });
 
+
+    it('lists the releases the label is credited on as cards with its roles', async () => {
+        stubFetchAround(new Map([[SOFTWARE_URL, json([])], [RELEASES_URL, json([
+            {
+                id: RELEASE, softwareId: RELEASE_SOFTWARE, softwareTitle: 'Elite', title: 'Elite AY', version: '1.1', type: 'adaptation',
+                releaseDate: '1987', screenshots: [], credits: [{as: null, roles: ['release', 'unknown']}],
+            },
+        ])]]), json(GHOST));
+        openLabel();
+
+        const releases = await screen.findByRole('region', {name: 'Releases'});
+        const release = await within(releases).findByRole('article', {name: 'Elite AY'});
+
+        expect(within(release).getByRole('link', {name: 'Elite AY'})).toHaveAttribute('href', `/software/${RELEASE_SOFTWARE}/releases/${RELEASE}`);
+        expect(within(release).getByRole('link', {name: 'Elite'})).toHaveAttribute('href', `/software/${RELEASE_SOFTWARE}`);
+        expect(release).toHaveTextContent(/Adaptation.*1987.*1\.1.*Release/u);
+        expect(release).not.toHaveTextContent('Unknown');
+    });
+
+    it('leaves the releases out for the label credited on none', async () => {
+        stubFetchAround(NO_SOFTWARE, json(GHOST));
+        openLabel();
+
+        await screen.findByRole('heading', {level: 1});
+
+        await waitFor(() => {
+            expect(screen.queryByRole('region', {name: 'Releases'})).not.toBeInTheDocument();
+        });
+    });
+
     it('lists the software the label is credited on', async () => {
-        stubFetchAround(new Map([[SOFTWARE_URL, json([
+        stubFetchAround(new Map([NO_RELEASES, [SOFTWARE_URL, json([
             {id: ELITE, title: 'Elite', releaseDate: '1985', screenshots: [], madeBy: ['Ghost'], credits: [{as: null, roles: ['code']}]},
         ])]]), json(GHOST));
         openLabel();

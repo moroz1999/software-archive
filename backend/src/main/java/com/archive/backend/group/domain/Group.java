@@ -113,10 +113,14 @@ public final class Group {
         markChanged();
     }
 
-    /** Takes a label of nobody found out to be the group's; only its works change their owner. */
+    /**
+     * Takes a label of nobody found out to be the group's; only its works change their owner, and the label's credits
+     * take in the group's own on the same works.
+     */
     public void adopt(Label label) {
         labels = labels.adopt(new OwnLabel(label.getId(), label.getName(), label.getAddedBy()));
         events.add(new OwnerOfLabelsChanged(Set.of(label.getId())));
+        events.add(new LabelAdoptedByGroup(label.getId(), id));
         markChanged();
     }
 

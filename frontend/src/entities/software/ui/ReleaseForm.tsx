@@ -18,6 +18,7 @@ import {
 import {RELEASE_TYPES} from '../model/release';
 import {useReleaseForm} from '../model/release-form-context';
 import {fileSizeText} from '../model/release-archive';
+import {CreditsEditor} from './CreditsEditor';
 import {HardwarePicker} from './HardwarePicker';
 
 export interface ReleaseFormProps {
@@ -29,7 +30,7 @@ export interface ReleaseFormProps {
 /** The fields of a release inside a ReleaseFormProvider, its hardware chosen from the platform of its software. */
 export function ReleaseForm({submitLabel, actions}: ReleaseFormProps) {
     const {t} = useTranslation();
-    const {values, errors, refusals, change, submit, busy, error} = useReleaseForm();
+    const {values, errors, refusals, change, changeCredits, submit, busy, error} = useReleaseForm();
     const typeOptions = RELEASE_TYPES.map((type) => ({value: type, label: t(`release.types.${type}`)}));
 
     return (
@@ -63,6 +64,9 @@ export function ReleaseForm({submitLabel, actions}: ReleaseFormProps) {
             <FormSection title={t('formSections.hardwareAndArchive')} columns={1}>
                 <ReleaseHardware/>
                 <ReleaseArchiveField/>
+            </FormSection>
+            <FormSection title={t('formSections.credits')} columns={1}>
+                <CreditsEditor value={values.credits} onChange={changeCredits} disabled={busy} error={refusals.credits}/>
             </FormSection>
             <FormActions>
                 {actions}

@@ -15,6 +15,7 @@ import {
     SoftwareDetailsProvider,
     softwareEditPath,
     type SoftwareId,
+    SoftwareCreditList,
     SoftwareReleases,
     SoftwareReleasesProvider,
     SoftwareScreenshots,
@@ -118,17 +119,7 @@ function Details({software}: {readonly software: SoftwareDetails}) {
             )}
             {(software.credits?.length ?? 0) > 0 && (
                 <Section label={t('fields.credits')}>
-                    <Stack as="ul" gap="xs" ariaLabel={t('fields.credits')}>
-                        {software.credits?.map((credit) => (
-                            <li key={`${credit.type}:${credit.id}`}>
-                                <Inline gap="xs" align="center" wrap>
-                                    <CreditName credit={credit}/>
-                                    {/* An unknown role tells nothing to a reader. */}
-                                    {credit.roles.filter((role) => role !== 'unknown').map((role) => <Chip key={role} size="sm">{t(`roles.software.${role}`)}</Chip>)}
-                                </Inline>
-                            </li>
-                        ))}
-                    </Stack>
+                    <SoftwareCreditList credits={software.credits ?? []} creditHref={creditHref}/>
                 </Section>
             )}
             {(software.sources?.length ?? 0) > 0 && (
@@ -148,12 +139,7 @@ function Details({software}: {readonly software: SoftwareDetails}) {
     );
 }
 
-/** The name of whoever is credited, leading to the person or the group, a label to its own page. */
-function CreditName({credit}: {readonly credit: SoftwareCredit}) {
-    const href = creditHref(credit);
-    return <Text>{href === null ? credit.title : <TextLink href={href}>{credit.title}</TextLink>}</Text>;
-}
-
+/** Where a credited name leads: the person or the group, a label to its own page. */
 function creditHref(credit: SoftwareCredit): string | null {
     if (credit.type === 'author-label' || credit.type === 'group-label') {
         return labelPath(toLabelId(credit.id));
@@ -218,7 +204,7 @@ function Releases({id}: SoftwareViewProps) {
                     {addsEntries && <Button href={releaseNewPath(id)} color="secondary">{t('actions.addRelease')}</Button>}
                 </Inline>
                 <SoftwareReleasesProvider id={id} enabled={visible}>
-                    <SoftwareReleases softwareId={id} actions={(release) => release.canChange && (
+                    <SoftwareReleases softwareId={id} creditHref={creditHref} actions={(release) => release.canChange && (
                         <Button href={releaseEditPath(id, release.id)} color="secondary" ariaLabel={t('release.editNamed', {title: release.title})}>{t('actions.edit')}</Button>
                     )}/>
                 </SoftwareReleasesProvider>

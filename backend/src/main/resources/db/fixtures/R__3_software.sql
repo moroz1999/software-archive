@@ -119,6 +119,13 @@ VALUES ('00000000-0000-0000-000f-000000000001', '00000000-0000-0000-0007-0000000
 INSERT INTO software_release_hardware (release_id, hardware_code)
 VALUES ('00000000-0000-0000-0007-000000000002', 'ay8910');
 
+-- Credits of releases: Crux (the display name of Erik Andersson) did the AY music of Elite AY, his other label Vector
+-- Jr fixed the bugfix, Byte Brigade adapted Tetris to the BK-0011M. The releases go with their credits above.
+INSERT INTO software_release_contribution (release_id, person_id, group_id, label_id, role_codes)
+VALUES ('00000000-0000-0000-0007-000000000002', NULL, NULL, '00000000-0000-0000-0004-000000000061', ARRAY['music']),
+       ('00000000-0000-0000-0007-000000000003', NULL, NULL, '00000000-0000-0000-0004-000000000062', ARRAY['code']),
+       ('00000000-0000-0000-0007-000000000004', NULL, '00000000-0000-0000-0005-000000000001', NULL, ARRAY['adaptation']);
+
 -- Credits on a label of some people and groups: they link them to the platforms of the software.
 
 INSERT INTO software_contribution (software_id, label_id)

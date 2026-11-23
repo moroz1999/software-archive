@@ -8,6 +8,7 @@ The page of one release ([domain/software.md](../domain/software.md#releases)) a
 - The software is named first and links back to its page.
 - Release date (a year, or a day as dd.mm.yyyy), version and description are left out when unknown. Description lines stay separate.
 - Type is always shown. Hardware is the effective hardware returned for the release, grouped in the archive's fixed hardware-group order.
+- Credits: every person, group or exact label credited on the release, as the authors of software ([software-view.md](software-view.md#page)); left out without credits.
 - When the release has an archive, its original file name and size are shown with a download action.
 - The parsed file structure follows the download as a collapsible tree. The root starts open, nested levels are indented, and executable files are marked. A file not parsed yet shows "Waiting for the structure to be parsed" in place of the tree. An unreadable file shows "The file could not be read" instead. Whoever may change the release sees "Parse again" under it: the file is parsed in the request, the button stays busy meanwhile, then the tree is loaded anew; a refusal is shown beside the button, other failures go to the error dialog.
 - The release's screenshots appear in their gallery below the facts and are left out when there are none; whoever may change the release moves them on their thumbnails ([screenshots.md](screenshots.md#pages)).

@@ -21,8 +21,8 @@ import com.archive.backend.category.domain.CategorySet;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.shared.domain.error.RuleViolationException;
+import com.archive.backend.software.domain.KnownReferences;
 import com.archive.backend.software.domain.ReleaseDate;
-import com.archive.backend.software.domain.SoftwareCreditSets;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareTitle;
@@ -37,7 +37,7 @@ class CreateSoftwareHandlerTest {
 
     private final InMemorySoftwareRepository repository = new InMemorySoftwareRepository();
     private final CreateSoftwareHandler handler = new CreateSoftwareHandler(
-            repository, hardwareSets(), categorySets(), new SoftwareCreditSets(reference -> true), event -> {});
+            repository, hardwareSets(), categorySets(), KnownReferences.creditSets(reference -> true), event -> {});
 
     @Test
     void storesNewSoftwareUnderANewId() {

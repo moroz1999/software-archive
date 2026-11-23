@@ -15,6 +15,16 @@ public record SoftwareReference(SoftwareReferenceType type, SoftwareReferenceId 
         Objects.requireNonNull(id, "id");
     }
 
+    /** A label credited by itself, whichever kind of label it is taken for. */
+    public static SoftwareReference label(SoftwareReferenceId id) {
+        return new SoftwareReference(SoftwareReferenceType.AUTHOR_LABEL, id);
+    }
+
+    /** Whether this is a person or a group themselves, not a label. */
+    public boolean isOwner() {
+        return type == SoftwareReferenceType.AUTHOR || type == SoftwareReferenceType.GROUP;
+    }
+
     @Override
     public boolean equals(Object other) {
         return other instanceof SoftwareReference that && kind() == that.kind() && id.equals(that.id);

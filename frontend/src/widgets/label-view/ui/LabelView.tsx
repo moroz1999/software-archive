@@ -5,7 +5,7 @@ import {type AuthorId, authorPath, AUTHORS_PATH, toAuthorId} from '@/entities/au
 import {type GroupId, groupPath, toGroupId} from '@/entities/groups';
 import {type LabelDetails, LabelDetailsProvider, labelEditPath, type LabelId, type LabelOwner, labelPath, useLabelDetails} from '@/entities/labels';
 import {locationText, primaryFirst} from '@/entities/locations';
-import {CreditedSoftwareList} from '@/entities/software';
+import {CreditedReleaseList, CreditedSoftwareList} from '@/entities/software';
 import {AttachLabelDialog} from '@/features/label/attach';
 import {MakeAuthorDialog, MakeGroupDialog} from '@/features/label/make-owner';
 import {AttachLabelToGroupDialog, MergeLabelIntoAuthorDialog, MergeLabelIntoGroupDialog, MergeLabelIntoLabelDialog} from '@/features/label/hand-over';
@@ -108,6 +108,7 @@ function LoadedView() {
             <Stack gap="xl">
                 <Details label={label}/>
                 <CreditedSoftwareList owner={{kind: 'labels', id: label.id}}/>
+                <CreditedReleaseList owner={{kind: 'labels', id: label.id}}/>
                 <AdditionNote addition={label.added}/>
             </Stack>
             {label.canChange && <AttachLabelDialog label={{id: label.id, name: label.name}} open={dialog === 'attach'} onClose={close} onAttached={openOwner}/>}

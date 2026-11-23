@@ -9,10 +9,10 @@ const AY = {code: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound
 describe(validateReleaseForm, () => {
     it('turns the filled form into a draft', () => {
         expect(validateReleaseForm({
-            title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: '01.03.1990', description: 'With AY music', hardware: ['ay8910'],
+            title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: '01.03.1990', description: 'With AY music', hardware: ['ay8910'], credits: [],
         })).toStrictEqual({
             ok: true,
-            draft: {title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: '1990-03-01', description: 'With AY music', hardware: ['ay8910']},
+            draft: {title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: '1990-03-01', description: 'With AY music', hardware: ['ay8910'], credits: []},
         });
     });
 
@@ -23,7 +23,7 @@ describe(validateReleaseForm, () => {
     it('leaves empty fields unknown: a release without a title is called by its software', () => {
         expect(validateReleaseForm({...EMPTY, title: '  ', version: ' ', description: ' '})).toStrictEqual({
             ok: true,
-            draft: {title: null, version: null, type: 'unknown', releaseDate: null, description: null, hardware: []},
+            draft: {title: null, version: null, type: 'unknown', releaseDate: null, description: null, hardware: [], credits: []},
         });
     });
 
@@ -45,7 +45,7 @@ describe(validateReleaseForm, () => {
 
 describe(toReleaseFormValues, () => {
     it('starts a new release of unknown type without hardware', () => {
-        expect(toReleaseFormValues()).toStrictEqual({title: '', version: '', type: 'unknown', releaseDate: '', description: '', hardware: []});
+        expect(toReleaseFormValues()).toStrictEqual({title: '', version: '', type: 'unknown', releaseDate: '', description: '', hardware: [], credits: []});
     });
 
     it('fills the form with what a release states, its hardware by code', () => {
@@ -57,6 +57,7 @@ describe(toReleaseFormValues, () => {
             releaseDate: toReleaseDate('1990-03-01'),
             description: null,
             hardware: [AY],
-        })).toStrictEqual({title: '', version: '1.1', type: 'mod', releaseDate: '01.03.1990', description: '', hardware: ['ay8910']});
+            credits: [],
+        })).toStrictEqual({title: '', version: '1.1', type: 'mod', releaseDate: '01.03.1990', description: '', hardware: ['ay8910'], credits: []});
     });
 });

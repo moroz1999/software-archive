@@ -1,3 +1,4 @@
+import {MemoryRouter} from 'react-router';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -16,6 +17,7 @@ const AY_MOD = {
     releaseDate: '1990-03-01',
     description: 'With AY music',
     hardware: [{code: 'vector06c', name: 'Vector-06C', group: 'computers', groupName: 'Computers'}, {code: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound'}],
+    credits: [],
     added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
     canChange: true,
 };
@@ -23,6 +25,10 @@ const FIX = {...AY_MOD, id: '00000000-0000-0000-0007-000000000002', title: 'Elit
 const ORIGINAL = {...AY_MOD, id: '00000000-0000-0000-0007-000000000003', title: 'Elite', version: null, type: 'original', releaseDate: null, description: null};
 const UNKNOWN = {...ORIGINAL, id: '00000000-0000-0000-0007-000000000004', type: 'unknown'};
 const ARCHIVE = {fileName: 'elite-ay.zip', size: 1536, url: '/api/software/00000000-0000-0000-0001-000000000001/releases/00000000-0000-0000-0007-000000000001/archive'};
+const CREDITS = [
+    {id: '00000000-0000-0000-0004-000000000001', ownerId: '00000000-0000-0000-0004-000000000009', type: 'author-label', title: 'JD — Jane Doe', roles: ['code', 'unknown']},
+    {id: '00000000-0000-0000-0004-000000000002', ownerId: '00000000-0000-0000-0004-000000000002', type: 'group', title: 'Crew', roles: ['unknown']},
+];
 const SHOTS = [
     {id: '00000000-0000-0000-0055-000000000001', url: '/api/screenshots/00000000-0000-0000-0055-000000000001'},
     {id: '00000000-0000-0000-0055-000000000002', url: '/api/screenshots/00000000-0000-0000-0055-000000000002'},
@@ -40,9 +46,11 @@ function stubScreen(phone: boolean) {
 function renderReleases({enabled = true, phone = false} = {}) {
     stubScreen(phone);
     renderWithQueries(
-        <SoftwareReleasesProvider id={ID} enabled={enabled}>
-            <SoftwareReleases actions={(release) => <span>Edit {release.title}</span>}/>
-        </SoftwareReleasesProvider>,
+        <MemoryRouter>
+            <SoftwareReleasesProvider id={ID} enabled={enabled}>
+                <SoftwareReleases actions={(release) => <span>Edit {release.title}</span>} creditHref={(credit) => `/to/${credit.id}`}/>
+            </SoftwareReleasesProvider>
+        </MemoryRouter>,
     );
 }
 
@@ -63,7 +71,7 @@ describe(SoftwareReleases, () => {
 
         const table = await screen.findByRole('table', {name: 'Releases'});
 
-        expect(within(table).getAllByRole('columnheader').map((header) => header.textContent).slice(0, 6)).toStrictEqual(['Title', 'Release date', 'Version', 'Type', 'Hardware', 'Archive']);
+        expect(within(table).getAllByRole('columnheader').map((header) => header.textContent).slice(0, 7)).toStrictEqual(['Title', 'Release date', 'Version', 'Type', 'Hardware', 'Credits', 'Archive']);
         expect(within(table).getAllByRole('row')[1]).toHaveTextContent(/Elite AY.*With AY music.*01\.03\.1990.*1\.1.*Mod.*Vector-06C.*AY-3-8910.*Edit Elite AY/);
     });
 
@@ -143,6 +151,31 @@ describe(SoftwareReleases, () => {
         expect(screen.getByRole('article', {name: 'Elite'})).toBeInTheDocument();
     });
 
+    it('shows who is credited on a release in its row of the table, with their roles', async () => {
+        stubFetch(json([{...AY_MOD, credits: CREDITS}, ORIGINAL]));
+        renderReleases();
+
+        const table = await screen.findByRole('table', {name: 'Releases'});
+        const row = within(table).getByRole('row', {name: /Elite AY/u});
+
+        expect(within(row).getByRole('link', {name: 'JD — Jane Doe'})).toHaveAttribute('href', `/to/${CREDITS[0]?.id ?? ''}`);
+        expect(within(row).getByRole('link', {name: 'Crew'})).toHaveAttribute('href', `/to/${CREDITS[1]?.id ?? ''}`);
+        expect(row).toHaveTextContent(/JD — Jane Doe\s*Code\s*Crew/u);
+        expect(row).not.toHaveTextContent('Unknown');
+    });
+
+    it('shows who is credited on a release on its card', async () => {
+        stubFetch(json([{...AY_MOD, credits: CREDITS}, ORIGINAL]));
+        renderReleases({phone: true});
+
+        const card = await screen.findByRole('article', {name: 'Elite AY'});
+
+        expect(within(card).getByRole('link', {name: 'JD — Jane Doe'})).toBeInTheDocument();
+        expect(within(card).getByRole('link', {name: 'Crew'})).toBeInTheDocument();
+        expect(card).toHaveTextContent('Code');
+        expect(within(screen.getByRole('article', {name: 'Elite'})).queryByRole('link', {name: 'Crew'})).not.toBeInTheDocument();
+    });
+
     it('offers the archive of a release for download in its row of the table', async () => {
         stubFetch(json([{...AY_MOD, archive: ARCHIVE}, ORIGINAL]));
         renderReleases();
@@ -201,7 +234,7 @@ describe(SoftwareReleases, () => {
 
         const skeleton = screen.getByTestId('software-releases-skeleton');
 
-        expect(within(skeleton).getAllByRole('columnheader', {hidden: true}).map((header) => header.textContent)).toStrictEqual(['Title', 'Release date', 'Version', 'Type', 'Hardware', 'Archive', '']);
+        expect(within(skeleton).getAllByRole('columnheader', {hidden: true}).map((header) => header.textContent)).toStrictEqual(['Title', 'Release date', 'Version', 'Type', 'Hardware', 'Credits', 'Archive', '']);
         expect(within(skeleton).getAllByRole('row', {hidden: true})).toHaveLength(4);
     });
 

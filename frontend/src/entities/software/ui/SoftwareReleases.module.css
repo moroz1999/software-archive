@@ -8,6 +8,7 @@
 .versionColumn { width: var(--software-releases-version-column-width); }
 .typeColumn { width: var(--software-releases-type-column-width); }
 .hardwareColumn { width: var(--software-releases-hardware-column-width); }
+.creditsColumn { width: var(--software-releases-credits-column-width); }
 .archiveColumn { width: var(--software-releases-archive-column-width); }
 
 /* The first screenshot of a release beside its title, in the 4:3 of every screenshot. */
@@ -49,6 +50,11 @@
 .hardwareBone {
     width: var(--software-releases-hardware-bone-width);
     height: var(--software-releases-body-line);
+}
+
+.creditBone {
+    width: var(--software-releases-credit-bone-width);
+    height: var(--software-releases-cell-line);
 }
 
 .buttonBone {

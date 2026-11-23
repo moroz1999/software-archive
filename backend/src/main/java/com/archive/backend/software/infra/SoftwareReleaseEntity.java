@@ -1,11 +1,13 @@
 package com.archive.backend.software.infra;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
@@ -63,6 +65,10 @@ public class SoftwareReleaseEntity {
     @CollectionTable(name = "software_release_hardware", joinColumns = @JoinColumn(name = "release_id"))
     @Column(name = "hardware_code")
     private Set<String> hardware = new HashSet<>();
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "release_id", nullable = false)
+    private List<SoftwareReleaseCreditEntity> credits = new ArrayList<>();
 
     /** The screenshots in their order. */
     @ElementCollection

@@ -14,7 +14,7 @@ describe('AuthorViewPage', () => {
     });
 
     it('appears with the author when the preload makes it in time', async () => {
-        const fetchMock = stubFetchAround(new Map([[`/api/authors/${ID}/software`, json([])]]), json(ZED));
+        const fetchMock = stubFetchAround(new Map([[`/api/authors/${ID}/software`, json([])], [`/api/authors/${ID}/releases`, json([])]]), json(ZED));
         const queryClient = createQueryClient();
         const router = createMemoryRouter([
             {path: '/authors/:id', loader: preloadAuthorViewPage(queryClient), lazy: {Component: loadAuthorViewPage}, HydrateFallback: () => null},

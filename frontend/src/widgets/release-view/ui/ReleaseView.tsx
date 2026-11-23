@@ -9,6 +9,8 @@ import {
     ReleaseFilesProvider,
     type ReleaseId,
     ScreenshotsProvider,
+    type SoftwareCredit,
+    SoftwareCreditList,
     type SoftwareId,
     SoftwareDetailsProvider,
     softwarePath,
@@ -18,6 +20,9 @@ import {
     useReleaseFiles,
     useSoftwareReleases,
 } from '@/entities/software';
+import {authorPath, toAuthorId} from '@/entities/authors';
+import {groupPath, toGroupId} from '@/entities/groups';
+import {labelPath, toLabelId} from '@/entities/labels';
 import {ReparseReleaseFilesButton} from '@/features/release/reparse-files';
 import {softwareBreadcrumbs} from '@/features/software/catalog';
 import {EditScreenshotsProvider, MoveScreenshotButtons, ScreenshotsChangeError} from '@/features/software/screenshots';
@@ -113,6 +118,11 @@ function LoadedView({softwareId, releaseId}: ReleaseViewProps) {
                             <HardwareList hardware={release.hardware}/>
                         </Stack>
                     )}
+                    {release.credits.length > 0 && (
+                        <Section label={t('fields.credits')}>
+                            <SoftwareCreditList credits={release.credits} creditHref={creditHref}/>
+                        </Section>
+                    )}
                     {lines.length > 0 && (
                         <Stack gap="sm">
                             {lines.map((line, index) => <Text key={index}>{line}</Text>)}
@@ -177,6 +187,17 @@ function toTreeItem(file: ReleaseFile, executableLabel: string): TreeItem {
         ),
         children: file.children.map((child) => toTreeItem(child, executableLabel)),
     };
+}
+
+/** Where a credited name leads: the person or the group, a label to its own page. */
+function creditHref(credit: SoftwareCredit): string | null {
+    if (credit.type === 'author-label' || credit.type === 'group-label') {
+        return labelPath(toLabelId(credit.id));
+    }
+    if (credit.ownerId === undefined || credit.ownerId === null) {
+        return null;
+    }
+    return credit.type === 'author' ? authorPath(toAuthorId(credit.ownerId)) : groupPath(toGroupId(credit.ownerId));
 }
 
 function Section({label, children}: {readonly label: string; readonly children: ReactNode}) {

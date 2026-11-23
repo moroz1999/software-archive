@@ -16,7 +16,8 @@ public record SoftwareReleaseDto(
         List<ScreenshotDto> screenshots,
         @Nullable ReleaseArchiveDto archive,
         AddedDto added,
-        boolean canChange) {
+        boolean canChange,
+        List<SoftwareDetailsDto.SoftwareCreditDto> credits) {
 
     /** Who added the release, {@code null} once their account was deleted, and when. */
     public record AddedDto(@Nullable String by, Instant at) {}

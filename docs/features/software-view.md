@@ -15,9 +15,9 @@ The page of one software ([domain/software.md](../domain/software.md)) at `/soft
 - Screenshots: a gallery of the software's own screenshots, left out without any; whoever may change the software moves them on their thumbnails ([screenshots.md](screenshots.md#pages)).
 - Program on other sites: a link to the page of each archive the software was imported from, named by the archive (`vektor-06c.ru`); left out for software typed in by hand ([vektor-import.md](vektor-import.md)).
 - Releases: "Add release" next to the heading ([release-editing.md](release-editing.md)); "No releases known yet." when there are none. Otherwise:
-  - a table of Title (leading to the release page, with the first screenshot beside it and the description under it), Release date, Version, Type, Hardware, Archive ("Download" with the size of the archive, empty without one) and "Edit", in the order they come; Title sorts from A, Release date from the newest with unknown dates last, a second click turns the order round;
+  - a table of Title (leading to the release page, with the first screenshot beside it and the description under it), Release date, Version, Type, Hardware, Credits (the names credited on the release with their role chips, leading as the authors of the software do), Archive ("Download" with the size of the archive, empty without one) and "Edit", in the order they come; Title sorts from A, Release date from the newest with unknown dates last, a second click turns the order round;
   - "Type" shows the releases of one type, offered only when they are of more than one; an unknown type is not shown;
-  - "Table / Cards" switches to cards with the same facts, "Download" and the screenshots of each release; a phone always shows cards, with nothing to switch.
+  - "Table / Cards" switches to cards with the same facts, the credits, "Download" and the screenshots of each release; a phone always shows cards, with nothing to switch.
 - Last: who added the software and on which day ("Added by Zork on 4 March 2026"), only the day once their account is gone ([domain/users.md](../domain/users.md#who-added-an-entry)).
 
 ## Hardware of a release
@@ -37,6 +37,6 @@ Each release shows its effective hardware ([domain/hardware.md](../domain/hardwa
 | Call | Answer | Errors |
 |---|---|---|
 | `GET /api/software/{id}` | the same call as the editing ([software-editing.md](software-editing.md#rest)) | |
-| `GET /api/software/{id}/releases` | `[{id, title, version, type, releaseDate, description, hardware: [{code, name, group, groupName}], screenshots: [{id, url}], archive: {fileName, size, url}}]` (`archive` is `null` without one) by release date — a year before the days of that year —, unknown dates last; `title` falls back to the software's title; `added: {by, at}` as for the software | `404 software.not-found`; `400` for a malformed id |
+| `GET /api/software/{id}/releases` | `[{id, title, version, type, releaseDate, description, hardware: [{code, name, group, groupName}], screenshots: [{id, url}], archive: {fileName, size, url}, credits}]` (`archive` is `null` without one; `credits` as in the software details) by release date — a year before the days of that year —, unknown dates last; `title` falls back to the software's title; `added: {by, at}` as for the software | `404 software.not-found`; `400` for a malformed id |
 
 `type` is one of `original`, `rerelease`, `adaptation`, `localization`, `bugfix`, `mod`, `crack`, `mia`, `corrupted`, `compilation`, `incomplete`, `demoversion`, `unknown`; `group` is one of `computers`, `storage`, `dos`, `sound`, `controls`, `expansion`.

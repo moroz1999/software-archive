@@ -17,10 +17,11 @@ The edit page shows the breadcrumbs of the release ([release-view.md](release-vi
 
 ## Form
 
-- Layout: sections Main (Title; Version, Type and Release date in one row; Description) and Hardware and archive ([design-system/form.md](../design-system/form.md)); Cancel and the submit button at its bottom right.
+- Layout: sections Main (Title; Version, Type and Release date in one row; Description), Hardware and archive, and Credits ([design-system/form.md](../design-system/form.md)); Cancel and the submit button at its bottom right.
 - Title (empty: the release is called by its software's title, at most 255 characters), Version (at most 50), Type (required, the fixed list), Release date (a year or a day, one text field with a hint: `1987` or `12.05.1987`; the API keeps the ISO day), Description.
 - Hardware: the hardware of the software's platform, by group, in the picker the software form uses too ([design-system/multi-select-filter.md](../design-system/multi-select-filter.md)). The form holds only the release's own hardware, not what it shows merged with the software's; a group checked here replaces that group of the software.
 - Archive: one optional file of any type, up to 100 MB. The editing form shows its current original name and size and offers replacement or removal. The chosen archive change is saved atomically with the other fields ([release-files.md](release-files.md)).
+- Credits: "Person or group" with roles, the editor the software form uses ([software-editing.md](software-editing.md#form)); a participant gone from the archive meanwhile is refused under it: "One of those credited is no longer in the archive: choose again." Saving joins an owner credited by themselves and under a label of theirs into the label ([domain/software.md](../domain/software.md#credits)).
 - Format errors, refusals under their fields, locking while saving: as in the software form ([software-editing.md](software-editing.md#form)).
 
 ## Deleting
@@ -38,7 +39,7 @@ The edit page shows the breadcrumbs of the release ([release-view.md](release-vi
 | Call | Answer | Errors |
 |---|---|---|
 | `GET /api/hardware?platform={code}` | `[{code, name, group, groupName}]` by the order of the groups, then name; `groupName` in the language of `Accept-Language`, else in Russian; empty for an unknown platform | `400 platform.required`, `400 platform.code-invalid` |
-| `GET /api/software/{id}/releases/{releaseId}` | `{id, title, version, type, releaseDate, description, hardware, archive}`: its own fields and hardware; `archive` is `null` or `{fileName, size, url}` | `404 software.not-found`, `404 release.not-found` |
-| `POST /api/software/{id}/releases`, multipart `release` (the JSON fields) and optional `archive` | `201`, `Location`, `{id}` | `400 release.type-required`, `400 release.type-invalid`, `400 title.too-long`, `400 release.version-too-long`, `400 release-date.invalid` (not a year `1987` or a day `1987-05-12`), `400 hardware.code-invalid`, `422 hardware.unknown`, `422 release.archive-too-large`, `404 software.not-found` |
+| `GET /api/software/{id}/releases/{releaseId}` | `{id, title, version, type, releaseDate, description, hardware, archive, credits}`: its own fields and hardware; `credits` as in the software details ([software-editing.md](software-editing.md#rest)); `archive` is `null` or `{fileName, size, url}` | `404 software.not-found`, `404 release.not-found` |
+| `POST /api/software/{id}/releases`, multipart `release` (the JSON fields, `credits: [{type, id, roles}]` among them, as for software) and optional `archive` | `201`, `Location`, `{id}` | the credit errors of software ([software-editing.md](software-editing.md#rest)), `400 release.type-required`, `400 release.type-invalid`, `400 title.too-long`, `400 release.version-too-long`, `400 release-date.invalid` (not a year `1987` or a day `1987-05-12`), `400 hardware.code-invalid`, `422 hardware.unknown`, `422 release.archive-too-large`, `404 software.not-found` |
 | `PUT /api/software/{id}/releases/{releaseId}`, the same multipart fields and optional `removeArchive=true` | `204` | the errors of `POST`, `422 release.archive-change-invalid`, `404 release.not-found` |
 | `DELETE /api/software/{id}/releases/{releaseId}` | `204` | `404 software.not-found`, `404 release.not-found` |

@@ -27,6 +27,7 @@ const RELEASE = {
     releaseDate: null,
     description: null,
     hardware: [AY],
+    credits: [{id: '00000000-0000-0000-0004-000000000002', type: 'group' as const, title: 'Crew', roles: ['release']}],
 };
 
 function showEditForm(onSaved = vi.fn<() => void>()) {
@@ -60,6 +61,39 @@ describe(EditReleaseProvider, () => {
         expect(fetchMock).toHaveBeenCalledExactlyOnceWith(`/api/software/${SOFTWARE.id}/releases/${RELEASE.id}`, expect.objectContaining({
             method: 'PUT',
         }));
+    });
+
+    it('saves the credits of the release with it', async () => {
+        const fetchMock = stubFetch(noContent());
+        const onSaved = showEditForm();
+
+        await userEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        await vi.waitFor(() => {
+            expect(onSaved).toHaveBeenCalledExactlyOnceWith();
+        });
+
+        const body = fetchMock.mock.calls[0]?.[1]?.body;
+        const part = body instanceof FormData ? body.get('release') : null;
+
+        expect(part).toBeInstanceOf(Blob);
+
+        const release: unknown = part instanceof Blob ? JSON.parse(await part.text()) : null;
+
+        expect(release).toStrictEqual(expect.objectContaining({
+            credits: [{id: '00000000-0000-0000-0004-000000000002', type: 'group', roles: ['release']}],
+        }));
+    });
+
+    it('shows a credited one no longer in the archive under the credits', async () => {
+        stubFetch(json({status: 422, code: 'software.credit-unknown', errors: [{field: 'credits', code: 'software.credit-unknown'}]}, 422));
+        showEditForm();
+
+        await userEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        await vi.waitFor(() => {
+            expect(screen.getByRole('combobox', {name: 'Person or group'})).toHaveAccessibleDescription('One of those credited is no longer in the archive: choose again.');
+        });
     });
 
     it('shows hardware of another platform refused under the hardware', async () => {

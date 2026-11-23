@@ -20,7 +20,7 @@ export interface ReleaseFormProviderProps {
     readonly children: ReactNode;
 }
 
-const FIELDS = ['title', 'version', 'type', 'releaseDate', 'description', 'hardware', 'archive'] as const satisfies readonly ReleaseFormField[];
+const FIELDS = ['title', 'version', 'type', 'releaseDate', 'description', 'hardware', 'credits', 'archive'] as const satisfies readonly ReleaseFormField[];
 
 /** The values of a release form being filled in, their format rules and why the last submit was refused. */
 export function ReleaseFormProvider({onSubmit, initial, initialArchive = null, hardware = [], busy = false, error, messages = {}, children}: ReleaseFormProviderProps) {
@@ -54,6 +54,10 @@ export function ReleaseFormProvider({onSubmit, initial, initialArchive = null, h
         changeHardware: (codes) => {
             setValues((current) => ({...current, hardware: codes}));
             markEdited('hardware');
+        },
+        changeCredits: (credits) => {
+            setValues((current) => ({...current, credits}));
+            markEdited('credits');
         },
         archive: archive.shown,
         changeArchive: (file) => {

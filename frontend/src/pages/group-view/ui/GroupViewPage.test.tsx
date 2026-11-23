@@ -14,7 +14,7 @@ describe('GroupViewPage', () => {
     });
 
     it('appears with the group when the preload makes it in time', async () => {
-        const fetchMock = stubFetchAround(new Map([[`/api/groups/${ID}/software`, json([])]]), json(CREW));
+        const fetchMock = stubFetchAround(new Map([[`/api/groups/${ID}/software`, json([])], [`/api/groups/${ID}/releases`, json([])]]), json(CREW));
         const queryClient = createQueryClient();
         const router = createMemoryRouter([
             {path: '/groups/:id', loader: preloadGroupViewPage(queryClient), lazy: {Component: loadGroupViewPage}, HydrateFallback: () => null},

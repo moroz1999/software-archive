@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A release of software, under its own title or the title of its software.
+ * A release of software, under its own title or the title of its software, with whoever is credited on it.
  */
 public record SoftwareRelease(
         UUID id,
@@ -24,7 +24,37 @@ public record SoftwareRelease(
         @Nullable ReleaseArchiveDetails archive,
         Addition added,
         @Nullable UUID addedBy,
-        boolean canChange) {
+        boolean canChange,
+        List<SoftwareCredit> credits) {
+
+    public SoftwareRelease(
+            UUID id,
+            String title,
+            @Nullable String version,
+            String type,
+            @Nullable String releaseDate,
+            @Nullable String description,
+            List<SoftwareHardware> hardware,
+            List<SoftwareScreenshot> screenshots,
+            @Nullable ReleaseArchiveDetails archive,
+            Addition added,
+            @Nullable UUID addedBy,
+            boolean canChange) {
+        this(
+                id,
+                title,
+                version,
+                type,
+                releaseDate,
+                description,
+                hardware,
+                screenshots,
+                archive,
+                added,
+                addedBy,
+                canChange,
+                List.of());
+    }
 
     /** As read, before the handler tells whether the actor may change it. */
     public SoftwareRelease(
@@ -80,7 +110,8 @@ public record SoftwareRelease(
                 archive,
                 added,
                 addedBy,
-                canChange);
+                canChange,
+                credits);
     }
 
     /**
@@ -105,6 +136,7 @@ public record SoftwareRelease(
                 archive,
                 added,
                 addedBy,
-                canChange);
+                canChange,
+                credits);
     }
 }

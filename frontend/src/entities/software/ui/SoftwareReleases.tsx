@@ -20,6 +20,7 @@ import type {ReleaseType, SoftwareRelease} from '../model/release';
 import {fileSizeText, type ReleaseArchive} from '../model/release-archive';
 import type {SoftwareId} from '../model/software';
 import {useSoftwareReleases} from '../model/software-releases-context';
+import {type CreditHref, SoftwareCreditList} from './SoftwareCreditList';
 import styles from './SoftwareReleases.module.css';
 
 export interface SoftwareReleasesProps {
@@ -27,6 +28,8 @@ export interface SoftwareReleasesProps {
     readonly softwareId?: SoftwareId;
     /** What can be done with a release, shown with it, such as a link to edit it. */
     readonly actions?: (release: SoftwareRelease) => ReactNode;
+    /** Where the names credited on a release lead. */
+    readonly creditHref?: CreditHref;
 }
 
 type View = 'table' | 'cards';
@@ -38,7 +41,7 @@ interface Sort {
 }
 
 /** The releases of the software inside a SoftwareReleasesProvider: a table, or cards on a phone or when asked. */
-export function SoftwareReleases({softwareId, actions}: SoftwareReleasesProps) {
+export function SoftwareReleases({softwareId, actions, creditHref}: SoftwareReleasesProps) {
     const {t} = useTranslation();
     const query = useSoftwareReleases();
     const skeleton = useSkeleton(query);
@@ -53,16 +56,17 @@ export function SoftwareReleases({softwareId, actions}: SoftwareReleasesProps) {
     if (query.data.length === 0) {
         return <Text tone="muted">{t('empty.releases')}</Text>;
     }
-    return <ReleaseList softwareId={softwareId} releases={query.data} actions={actions}/>;
+    return <ReleaseList softwareId={softwareId} releases={query.data} actions={actions} creditHref={creditHref}/>;
 }
 
 interface ReleaseListProps {
     readonly softwareId: SoftwareId | undefined;
     readonly releases: readonly SoftwareRelease[];
     readonly actions: SoftwareReleasesProps['actions'];
+    readonly creditHref: SoftwareReleasesProps['creditHref'];
 }
 
-function ReleaseList({softwareId, releases, actions}: ReleaseListProps) {
+function ReleaseList({softwareId, releases, actions, creditHref}: ReleaseListProps) {
     const {t} = useTranslation();
     const phone = useMediaQuery(MOBILE_QUERY);
     const [view, setView] = useState<View>('table');
@@ -107,8 +111,8 @@ function ReleaseList({softwareId, releases, actions}: ReleaseListProps) {
                 </Inline>
             )}
             {phone || view === 'cards'
-                ? <ReleaseCards softwareId={softwareId} releases={shown} actions={actions}/>
-                : <ReleaseTable softwareId={softwareId} releases={shown} actions={actions} sort={sort} onSort={sortBy}/>}
+                ? <ReleaseCards softwareId={softwareId} releases={shown} actions={actions} creditHref={creditHref}/>
+                : <ReleaseTable softwareId={softwareId} releases={shown} actions={actions} creditHref={creditHref} sort={sort} onSort={sortBy}/>}
         </Stack>
     );
 }
@@ -152,6 +156,7 @@ function ReleaseHeader({withActions, sort = null, onSort}: ReleaseHeaderProps) {
                 <TableHeaderCell align="center" className={styles.versionColumn}>{t('fields.version')}</TableHeaderCell>
                 <TableHeaderCell className={styles.typeColumn}>{t('fields.type')}</TableHeaderCell>
                 <TableHeaderCell className={styles.hardwareColumn}>{t('fields.hardware')}</TableHeaderCell>
+                <TableHeaderCell className={styles.creditsColumn}>{t('fields.credits')}</TableHeaderCell>
                 <TableHeaderCell className={styles.archiveColumn}>{t('release.archive')}</TableHeaderCell>
                 {withActions && <TableHeaderCell/>}
             </TableRow>
@@ -176,7 +181,7 @@ interface ReleaseTableProps extends ReleaseListProps {
     readonly onSort: (field: SortField) => void;
 }
 
-function ReleaseTable({softwareId, releases, actions, sort, onSort}: ReleaseTableProps) {
+function ReleaseTable({softwareId, releases, actions, creditHref, sort, onSort}: ReleaseTableProps) {
     const {t} = useTranslation();
     return (
         <Table label={t('release.releases')}>
@@ -203,6 +208,7 @@ function ReleaseTable({softwareId, releases, actions, sort, onSort}: ReleaseTabl
                                 {release.hardware.map((item) => <Text key={item.code} as="span">{item.name}</Text>)}
                             </Inline>
                         </TableCell>
+                        <TableCell>{release.credits.length > 0 && <SoftwareCreditList credits={release.credits} creditHref={creditHref} compact/>}</TableCell>
                         <TableCell>{release.archive != null && <Download release={release} archive={release.archive}/>}</TableCell>
                         {actions !== undefined && <TableCell align="end">{actions(release)}</TableCell>}
                     </TableRow>
@@ -223,10 +229,10 @@ function Download({release, archive}: {readonly release: SoftwareRelease; readon
     );
 }
 
-function ReleaseCards({softwareId, releases, actions}: ReleaseListProps) {
+function ReleaseCards({softwareId, releases, actions, creditHref}: ReleaseListProps) {
     return (
         <CardGrid>
-            {releases.map((release) => <ReleaseCard key={release.id} softwareId={softwareId} release={release} actions={actions}/>)}
+            {releases.map((release) => <ReleaseCard key={release.id} softwareId={softwareId} release={release} actions={actions} creditHref={creditHref}/>)}
         </CardGrid>
     );
 }
@@ -235,9 +241,10 @@ interface ReleaseCardProps {
     readonly softwareId: SoftwareId | undefined;
     readonly release: SoftwareRelease;
     readonly actions: SoftwareReleasesProps['actions'];
+    readonly creditHref: SoftwareReleasesProps['creditHref'];
 }
 
-function ReleaseCard({softwareId, release, actions}: ReleaseCardProps) {
+function ReleaseCard({softwareId, release, actions, creditHref}: ReleaseCardProps) {
     const {t} = useTranslation();
     const titleId = useId();
     const facts = [
@@ -261,6 +268,7 @@ function ReleaseCard({softwareId, release, actions}: ReleaseCardProps) {
                         {release.hardware.map((item) => <Badge key={item.code} variant="secondary">{item.name}</Badge>)}
                     </Inline>
                 )}
+                {release.credits.length > 0 && <SoftwareCreditList credits={release.credits} creditHref={creditHref} compact/>}
                 {release.archive != null && <Download release={release} archive={release.archive}/>}
                 {actions?.(release)}
             </Stack>
@@ -312,6 +320,7 @@ function SoftwareReleasesSkeleton({withActions}: {readonly withActions: boolean}
                                                 <Skeleton inline className={styles.hardwareBone}/>
                                             </Inline>
                                         </TableCell>
+                                        <TableCell><Skeleton inline className={styles.creditBone}/></TableCell>
                                         <TableCell/>
                                         {withActions && <TableCell align="end"><Skeleton inline className={styles.buttonBone}/></TableCell>}
                                     </TableRow>

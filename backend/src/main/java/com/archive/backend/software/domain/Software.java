@@ -261,7 +261,19 @@ public final class Software {
             HardwareSet hardware,
             AddedBy addedBy,
             @Nullable ReleaseArchive archive) {
-        Release release = new Release(releaseId, content, requireOwn(hardware), addedBy, Screenshots.EMPTY, archive);
+        return addRelease(releaseId, content, hardware, addedBy, archive, SoftwareCredits.EMPTY);
+    }
+
+    /** Anyone signed in adds releases with their credits and their archive, if any. Returns the release added. */
+    public Release addRelease(
+            ReleaseId releaseId,
+            ReleaseContent content,
+            HardwareSet hardware,
+            AddedBy addedBy,
+            @Nullable ReleaseArchive archive,
+            SoftwareCredits credits) {
+        Release release =
+                new Release(releaseId, content, requireOwn(hardware), addedBy, Screenshots.EMPTY, archive, credits);
         releases.add(release);
         // The search finds software by the hardware of its releases too.
         if (!hardware.isEmpty()) {
@@ -277,10 +289,24 @@ public final class Software {
         editRelease(releaseId, content, hardware, actor, null, false);
     }
 
+    /** Edits a release keeping its credits. */
     public void editRelease(
             ReleaseId releaseId,
             ReleaseContent content,
             HardwareSet hardware,
+            Actor actor,
+            @Nullable ReleaseArchive replacement,
+            boolean removeArchive) {
+        editRelease(
+                releaseId, content, hardware, existingRelease(releaseId).credits(), actor, replacement, removeArchive);
+    }
+
+    /** Edits a release with its credits, replacing or removing its archive when asked. */
+    public void editRelease(
+            ReleaseId releaseId,
+            ReleaseContent content,
+            HardwareSet hardware,
+            SoftwareCredits credits,
             Actor actor,
             @Nullable ReleaseArchive replacement,
             boolean removeArchive) {
@@ -290,7 +316,7 @@ public final class Software {
         Release release = release(releaseId).orElseThrow(ReleaseNotFoundException::new);
         requireReleaseChangeableBy(release, actor);
         boolean hardwareChanged = !release.hardware().equals(hardware);
-        release.edit(content, requireOwn(hardware));
+        release.edit(content, requireOwn(hardware), credits);
         // The search finds software by the hardware of its releases too.
         if (hardwareChanged) {
             markChanged();

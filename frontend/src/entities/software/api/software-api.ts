@@ -2,6 +2,7 @@ import {deleteResource, getJson, mapResponse, postJson, putJson, readAddition, r
 import {type SoftwareRelease, toReleaseId, toReleaseType} from '../model/release';
 import {
     type Hardware,
+    type SoftwareCredit,
     type SoftwareDetails,
     type SoftwareId,
     type SoftwareReference,
@@ -93,7 +94,8 @@ export async function fetchSoftware(id: SoftwareId, signal: AbortSignal): Promis
     });
 }
 
-function parseSoftwareCredits(raw: unknown): NonNullable<SoftwareDetails['credits']> {
+/** Whoever is credited on software or a release, each with the name shown and the roles. */
+export function parseSoftwareCredits(raw: unknown): readonly SoftwareCredit[] {
     return readArray(raw, 'credits').map((item) => {
         const credit = readObject(item, 'credit');
         return {
@@ -143,6 +145,7 @@ export async function fetchSoftwareReleases(id: SoftwareId, signal: AbortSignal)
             hardware: parseHardwareList(dto['hardware']),
             screenshots: parseScreenshots(dto['screenshots']),
             archive: parseReleaseArchive(dto['archive']),
+            credits: dto['credits'] === undefined ? [] : parseSoftwareCredits(dto['credits']),
             added: readAddition(dto['added']),
             canChange: readBoolean(dto, 'canChange'),
         };

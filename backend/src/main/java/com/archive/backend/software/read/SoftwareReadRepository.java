@@ -53,6 +53,18 @@ public interface SoftwareReadRepository {
     /** The software a label is credited on, by itself. */
     List<CreditedSoftware> findCreditedOnLabel(UUID labelId);
 
+    /**
+     * The releases the person is credited on, by themselves or by a label, in the order of the release dates and then
+     * of the titles; none for an unknown person.
+     */
+    List<CreditedRelease> findReleasesCreditedOnPerson(UUID personId);
+
+    /** The same for a group. */
+    List<CreditedRelease> findReleasesCreditedOnGroup(UUID groupId);
+
+    /** The releases a label is credited on, by itself. */
+    List<CreditedRelease> findReleasesCreditedOnLabel(UUID labelId);
+
     /** The software's own screenshots in their order; none for unknown software. */
     List<SoftwareScreenshot> findScreenshots(UUID softwareId);
 

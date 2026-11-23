@@ -40,7 +40,11 @@ const CREW = {
 };
 
 const SOFTWARE_URL = `/api/groups/${ID}/software`;
-const NO_SOFTWARE = new Map([[SOFTWARE_URL, json([])]]);
+const RELEASES_URL = `/api/groups/${ID}/releases`;
+const NO_RELEASES: readonly [string, () => Response] = [RELEASES_URL, json([])];
+const NO_SOFTWARE = new Map([[SOFTWARE_URL, json([])], NO_RELEASES]);
+const RELEASE_SOFTWARE = '00000000-0000-0000-0001-000000000031';
+const RELEASE = '00000000-0000-0000-0007-000000000031';
 const ELITE = '00000000-0000-0000-0001-000000000001';
 const TETRIS = '00000000-0000-0000-0001-000000000002';
 
@@ -81,8 +85,38 @@ describe(GroupView, () => {
         expect(breadcrumbSteps()).toStrictEqual([['Groups', '/groups'], ['Crew Ltd', null]]);
     });
 
+
+    it('lists the releases the group is credited on as cards with its roles', async () => {
+        stubFetchAround(new Map([[SOFTWARE_URL, json([])], [RELEASES_URL, json([
+            {
+                id: RELEASE, softwareId: RELEASE_SOFTWARE, softwareTitle: 'Elite', title: 'Elite AY', version: '1.1', type: 'adaptation',
+                releaseDate: '1987', screenshots: [], credits: [{as: 'CRW', roles: ['release', 'unknown']}],
+            },
+        ])]]), json(CREW));
+        renderView();
+
+        const releases = await screen.findByRole('region', {name: 'Releases'});
+        const release = await within(releases).findByRole('article', {name: 'Elite AY'});
+
+        expect(within(release).getByRole('link', {name: 'Elite AY'})).toHaveAttribute('href', `/software/${RELEASE_SOFTWARE}/releases/${RELEASE}`);
+        expect(within(release).getByRole('link', {name: 'Elite'})).toHaveAttribute('href', `/software/${RELEASE_SOFTWARE}`);
+        expect(release).toHaveTextContent(/Adaptation.*1987.*1\.1.*as CRWRelease/u);
+        expect(release).not.toHaveTextContent('Unknown');
+    });
+
+    it('leaves the releases out for the group credited on none', async () => {
+        stubFetchAround(NO_SOFTWARE, json(CREW));
+        renderView();
+
+        await screen.findByRole('heading', {level: 1});
+
+        await waitFor(() => {
+            expect(screen.queryByRole('region', {name: 'Releases'})).not.toBeInTheDocument();
+        });
+    });
+
     it('lists the software the group is credited on as cards with its roles', async () => {
-        stubFetchAround(new Map([[SOFTWARE_URL, json([
+        stubFetchAround(new Map([NO_RELEASES, [SOFTWARE_URL, json([
             {id: ELITE, title: 'Elite', releaseDate: '1985', screenshots: [], madeBy: ['Crew'], credits: [{as: null, roles: ['developer']}]},
             {id: TETRIS, title: 'Tetris', releaseDate: null, screenshots: [], madeBy: [], credits: [{as: 'CRW', roles: ['publisher']}]},
         ])]]), json(CREW));

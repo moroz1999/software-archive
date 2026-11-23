@@ -14,7 +14,7 @@ describe('LabelViewPage', () => {
     });
 
     it('appears with the label when the preload makes it in time', async () => {
-        const fetchMock = stubFetchAround(new Map([[`/api/labels/${ID}/software`, json([])]]), json(GHOST));
+        const fetchMock = stubFetchAround(new Map([[`/api/labels/${ID}/software`, json([])], [`/api/labels/${ID}/releases`, json([])]]), json(GHOST));
         const queryClient = createQueryClient();
         const router = createMemoryRouter([
             {path: '/labels/:id', loader: preloadLabelViewPage(queryClient), lazy: {Component: loadLabelViewPage}, HydrateFallback: () => null},

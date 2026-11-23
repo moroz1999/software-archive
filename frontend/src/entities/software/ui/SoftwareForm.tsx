@@ -3,17 +3,16 @@ import {useTranslation} from 'react-i18next';
 import {Button} from '@/shared/ui/button';
 import {Form, FormActions, FormField, FormMessage, FormSection} from '@/shared/ui/form';
 import {Input} from '@/shared/ui/input';
-import {MemberRoleEditor} from '@/shared/ui/member-role-editor';
 import {Select} from '@/shared/ui/select';
 import {Skeleton} from '@/shared/ui/skeleton';
 import {Textarea} from '@/shared/ui/textarea';
 import {useSkeleton} from '@/shared/lib/loading';
 import {PLATFORM_REQUIRED_KEY, RELEASE_DATE_HINT_KEY, RELEASE_DATE_INVALID_KEY, TITLE_PROBLEM_KEYS} from '../config/messages';
-import {fetchSoftwareParticipants} from '../api/software-api';
 import {usePlatformHardware} from '../model/platform-hardware-context';
 import {PlatformHardwareProvider} from '../model/PlatformHardwareProvider';
 import {PRESERVATION_STATUSES, toSoftwarePlatformCode} from '../model/software';
 import {useSoftwareForm} from '../model/software-form-context';
+import {CreditsEditor} from './CreditsEditor';
 import {HardwarePicker} from './HardwarePicker';
 import styles from './SoftwareForm.module.css';
 
@@ -87,15 +86,7 @@ export function SoftwareForm({submitLabel, actions, categories}: SoftwareFormPro
                 {categories}
             </FormSection>
             <FormSection title={t('formSections.credits')} columns={1}>
-                <MemberRoleEditor
-                    label={t('fields.participant')}
-                    value={values.credits ?? []}
-                    onChange={changeCredits}
-                    search={fetchSoftwareParticipants}
-                    roles={SOFTWARE_ROLES.map((code) => ({code, title: t(`roles.software.${code}`)}))}
-                    disabled={busy}
-                    error={refusals.credits}
-                />
+                <CreditsEditor value={values.credits ?? []} onChange={changeCredits} disabled={busy} error={refusals.credits}/>
             </FormSection>
             <FormActions>
                 {actions}
@@ -104,14 +95,6 @@ export function SoftwareForm({submitLabel, actions, categories}: SoftwareFormPro
         </Form>
     );
 }
-
-/** Developing and publishing come first: they are what software is known by (docs/domain/software.md#credits). */
-const SOFTWARE_ROLES = [
-    'unknown', 'developer', 'publisher', 'code', 'release', 'adaptation', 'restoring', 'music', 'sfx', 'support', 'testing', 'graphics',
-    'loading_screen', 'intro_code', 'intro_graphics', 'intro_music', 'organizing', 'direction', '3dmodels', 'design',
-    'logo', 'font', 'ascii', 'illustrating', 'tools', 'localization', 'concept', 'gamedesign', 'leveldesign', 'story',
-    'text', 'editing', 'translation', 'video', 'guest',
-] as const;
 
 /** The hardware of the chosen platform to choose the software's own from. */
 function SoftwareHardware() {

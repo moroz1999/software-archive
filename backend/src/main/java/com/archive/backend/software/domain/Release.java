@@ -18,6 +18,26 @@ public final class Release {
     private Screenshots screenshots;
     private @Nullable ReleaseArchive archive;
 
+    /** Who made, cracked, adapted or otherwise worked on this release (docs/domain/software.md#releases). */
+    private SoftwareCredits credits;
+
+    public Release(
+            ReleaseId id,
+            ReleaseContent content,
+            HardwareSet hardware,
+            AddedBy addedBy,
+            Screenshots screenshots,
+            @Nullable ReleaseArchive archive,
+            SoftwareCredits credits) {
+        this.id = Objects.requireNonNull(id, "id");
+        this.content = Objects.requireNonNull(content, "content");
+        this.hardware = Objects.requireNonNull(hardware, "hardware");
+        this.addedBy = Objects.requireNonNull(addedBy, "addedBy");
+        this.screenshots = Objects.requireNonNull(screenshots, "screenshots");
+        this.archive = archive;
+        this.credits = Objects.requireNonNull(credits, "credits");
+    }
+
     public Release(
             ReleaseId id,
             ReleaseContent content,
@@ -25,12 +45,7 @@ public final class Release {
             AddedBy addedBy,
             Screenshots screenshots,
             @Nullable ReleaseArchive archive) {
-        this.id = Objects.requireNonNull(id, "id");
-        this.content = Objects.requireNonNull(content, "content");
-        this.hardware = Objects.requireNonNull(hardware, "hardware");
-        this.addedBy = Objects.requireNonNull(addedBy, "addedBy");
-        this.screenshots = Objects.requireNonNull(screenshots, "screenshots");
-        this.archive = archive;
+        this(id, content, hardware, addedBy, screenshots, archive, SoftwareCredits.EMPTY);
     }
 
     public Release(
@@ -66,13 +81,18 @@ public final class Release {
         return archive;
     }
 
+    public SoftwareCredits credits() {
+        return credits;
+    }
+
     void changeScreenshots(Screenshots screenshots) {
         this.screenshots = Objects.requireNonNull(screenshots, "screenshots");
     }
 
-    void edit(ReleaseContent content, HardwareSet hardware) {
+    void edit(ReleaseContent content, HardwareSet hardware, SoftwareCredits credits) {
         this.content = Objects.requireNonNull(content, "content");
         this.hardware = Objects.requireNonNull(hardware, "hardware");
+        this.credits = Objects.requireNonNull(credits, "credits");
     }
 
     void changeArchive(@Nullable ReleaseArchive archive) {

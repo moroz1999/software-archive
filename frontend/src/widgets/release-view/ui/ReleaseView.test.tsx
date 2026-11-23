@@ -36,6 +36,10 @@ const AY_MOD = {
     canChange: false,
 };
 
+const AUTHOR = '00000000-0000-0000-0009-000000000002';
+const GROUP = '00000000-0000-0000-0010-000000000002';
+const LABEL = '00000000-0000-0000-0004-000000000002';
+
 const FIRST_SHOT = {id: '00000000-0000-0000-0055-000000000001', url: '/api/screenshots/00000000-0000-0000-0055-000000000001'};
 const SECOND_SHOT = {id: '00000000-0000-0000-0055-000000000002', url: '/api/screenshots/00000000-0000-0000-0055-000000000002'};
 
@@ -95,6 +99,32 @@ describe(ReleaseView, () => {
         await within(screenshots).findAllByRole('button', {name: /^Screenshot \d of 2$/u});
 
         expect(within(screenshots).queryByRole('button', {name: /^Move screenshot/u})).not.toBeInTheDocument();
+    });
+
+    it('shows who is credited on the release with their roles, leading to their pages', async () => {
+        renderView({
+            ...AY_MOD,
+            credits: [
+                {id: AUTHOR, ownerId: AUTHOR, type: 'author', title: 'Jane Doe', roles: ['intro_music', 'unknown']},
+                {id: LABEL, ownerId: GROUP, type: 'group-label', title: 'CRW — Crew', roles: ['release']},
+                {id: GROUP, ownerId: GROUP, type: 'group', title: 'Crew', roles: ['unknown']},
+            ],
+        });
+
+        const credits = await screen.findByRole('list', {name: 'Credits'});
+
+        expect(within(credits).getByRole('link', {name: 'Jane Doe'})).toHaveAttribute('href', `/authors/${AUTHOR}`);
+        expect(within(credits).getByRole('link', {name: 'CRW — Crew'})).toHaveAttribute('href', `/labels/${LABEL}`);
+        expect(within(credits).getByRole('link', {name: 'Crew'})).toHaveAttribute('href', `/groups/${GROUP}`);
+        expect(credits).toHaveTextContent(/Jane Doe\s*Intro music\s*CRW — Crew\s*Release\s*Crew/u);
+        expect(credits).not.toHaveTextContent('Unknown');
+    });
+
+    it('leaves out the credits of a release nobody is credited on', async () => {
+        renderView({...AY_MOD, credits: []});
+
+        await expect(screen.findByRole('heading', {level: 1, name: 'Elite AY'})).resolves.toBeInTheDocument();
+        expect(screen.queryByRole('list', {name: 'Credits'})).not.toBeInTheDocument();
     });
 
     it('tells who added the release and when', async () => {

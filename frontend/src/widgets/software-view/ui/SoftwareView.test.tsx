@@ -281,6 +281,17 @@ describe(SoftwareView, () => {
         expect(release).toHaveTextContent('AY-3-8910');
     });
 
+    it('shows who is credited on each release, leading to their pages', async () => {
+        stubFetch(json(ELITE), json([{...AY_MOD, credits: GROUP_CREDITS}]));
+        renderView(ID);
+
+        const releases = await screen.findByRole('region', {name: 'Releases'});
+        const release = await within(releases).findByRole('row', {name: /Elite AY/});
+
+        expect(within(release).getByRole('link', {name: 'J.P. — Jane Publisher'})).toHaveAttribute('href', `/labels/${AUTHOR_LABEL}`);
+        expect(within(release).getByRole('link', {name: 'Solar Studio'})).toHaveAttribute('href', `/groups/${GROUP}`);
+    });
+
     it('leads to adding a release and to the editing of each release', async () => {
         stubFetch(json(ELITE));
         renderView(ID);

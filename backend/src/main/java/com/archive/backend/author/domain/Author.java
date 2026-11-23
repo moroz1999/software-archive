@@ -96,11 +96,12 @@ public final class Author {
 
     /**
      * Takes a label of nobody found out to be the person's, as their display name when the person attaching it says
-     * so; only its works change their owner.
+     * so; only its works change their owner, and the label's credits take in the person's own on the same works.
      */
     public void adopt(Label label, boolean display) {
         labels = labels.adopt(new OwnLabel(label.getId(), label.getName(), label.getAddedBy()), display);
         events.add(new OwnerOfLabelsChanged(Set.of(label.getId())));
+        events.add(new LabelAdoptedByAuthor(label.getId(), id));
         events.add(new AuthorChanged(id));
     }
 

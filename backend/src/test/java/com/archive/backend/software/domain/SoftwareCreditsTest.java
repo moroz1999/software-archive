@@ -20,7 +20,7 @@ class SoftwareCreditsTest {
 
     private static SoftwareCreditSets catalogOf(SoftwareReference... known) {
         Set<SoftwareReference> references = Set.of(known);
-        return new SoftwareCreditSets(references::contains);
+        return KnownReferences.creditSets(references::contains);
     }
 
     @Test

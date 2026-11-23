@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.archive.backend.author.domain.AuthorChanged;
 import com.archive.backend.author.domain.AuthorId;
+import com.archive.backend.author.domain.LabelAdoptedByAuthor;
 import com.archive.backend.geo.domain.Locations;
 import com.archive.backend.label.app.InMemoryLabelRepository;
 import com.archive.backend.label.domain.Label;
@@ -68,10 +69,14 @@ class AttachLabelToAuthorHandlerTest {
     }
 
     @Test
-    void tellsTheWorksOfTheLabelAndThePersonChanged() {
+    void tellsTheLabelIsThePersonsAndItsWorksAndThePersonChanged() {
         handler.handle(new AttachLabelToAuthorCommand(ADMIN, new LabelAttachment(BOB, false), ZED));
 
-        assertThat(events).containsExactlyInAnyOrder(new OwnerOfLabelsChanged(Set.of(BOB)), new AuthorChanged(ZED));
+        assertThat(events)
+                .containsExactlyInAnyOrder(
+                        new LabelAdoptedByAuthor(BOB, ZED),
+                        new OwnerOfLabelsChanged(Set.of(BOB)),
+                        new AuthorChanged(ZED));
     }
 
     @Test

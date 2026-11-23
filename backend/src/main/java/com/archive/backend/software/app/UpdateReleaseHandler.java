@@ -6,6 +6,7 @@ import com.archive.backend.software.domain.ReleaseArchiveId;
 import com.archive.backend.software.domain.ReleaseArchiveRepository;
 import com.archive.backend.software.domain.ReleaseArchiveUpload;
 import com.archive.backend.software.domain.Software;
+import com.archive.backend.software.domain.SoftwareCreditSets;
 import com.archive.backend.software.domain.SoftwareNotFoundException;
 import com.archive.backend.software.domain.SoftwareRepository;
 import java.util.Objects;
@@ -23,6 +24,7 @@ public class UpdateReleaseHandler {
     private final SoftwareRepository repository;
     private final HardwareSets hardwareSets;
     private final ReleaseArchiveRepository archiveFiles;
+    private final SoftwareCreditSets creditSets;
     private final ApplicationEventPublisher events;
 
     @Transactional
@@ -37,6 +39,7 @@ public class UpdateReleaseHandler {
                 c.releaseId(),
                 c.content(),
                 hardwareSets.of(software.getPlatform(), c.hardware()),
+                creditSets.of(c.credits()),
                 c.actor(),
                 replacement,
                 c.removeArchive().value());

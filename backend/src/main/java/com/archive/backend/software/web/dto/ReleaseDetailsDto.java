@@ -12,4 +12,5 @@ public record ReleaseDetailsDto(
         @Nullable String releaseDate,
         @Nullable String description,
         List<SoftwareHardwareDto> hardware,
-        @Nullable ReleaseArchiveDto archive) {}
+        @Nullable ReleaseArchiveDto archive,
+        List<SoftwareDetailsDto.SoftwareCreditDto> credits) {}

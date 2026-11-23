@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.mapstruct.Mapper;
@@ -60,9 +61,7 @@ public interface SoftwareMapper {
                 toReleaseDate(entity.getReleaseYear(), entity.getReleaseDay()),
                 toHardware(platform, entity.getHardware()),
                 categories,
-                SoftwareCredits.restore(entity.getCredits().stream()
-                        .map(SoftwareMapper::toCredit)
-                        .toList()),
+                toCredits(entity.getCredits()),
                 entity.getReleases().stream()
                         .map(release -> toRelease(platform, release))
                         .toList(),
@@ -85,9 +84,7 @@ public interface SoftwareMapper {
         entity.setHardware(fromHardware(software.getHardware()));
         entity.setCategories(
                 software.getCategories().ids().stream().map(CategoryId::value).collect(Collectors.toSet()));
-        entity.setCredits(software.getCredits().all().stream()
-                .map(SoftwareMapper::fromCredit)
-                .collect(Collectors.toCollection(ArrayList::new)));
+        entity.setCredits(fromCredits(software.getCredits(), SoftwareCreditEntity::new));
         entity.setAddedBy(AddedByRows.fromAddedBy(software.getAddedBy()));
         entity.setReleases(software.getReleases().stream()
                 .map(SoftwareMapper::fromRelease)
@@ -147,7 +144,8 @@ public interface SoftwareMapper {
                 toHardware(platform, entity.getHardware()),
                 AddedByRows.toAddedBy(entity.getAddedBy()),
                 toScreenshots(entity.getScreenshots()),
-                toArchive(entity));
+                toArchive(entity),
+                toCredits(entity.getCredits()));
     }
 
     private static SoftwareReleaseEntity fromRelease(Release release) {
@@ -167,6 +165,7 @@ public interface SoftwareMapper {
         entity.setHardware(fromHardware(release.hardware()));
         entity.setAddedBy(AddedByRows.fromAddedBy(release.addedBy()));
         entity.setScreenshots(fromScreenshots(release.screenshots()));
+        entity.setCredits(fromCredits(release.credits(), SoftwareReleaseCreditEntity::new));
         ReleaseArchive archive = release.archive();
         if (archive != null) {
             entity.setArchiveId(archive.id().value());
@@ -186,11 +185,19 @@ public interface SoftwareMapper {
                         Objects.requireNonNull(entity.getArchiveSize()));
     }
 
-    private static SoftwareCreditDraft toCredit(SoftwareCreditEntity entity) {
-        return new SoftwareCreditDraft(participant(entity), entity.getRoleCodes());
+    private static SoftwareCredits toCredits(List<? extends CreditColumns> rows) {
+        return SoftwareCredits.restore(rows.stream()
+                .map(row -> new SoftwareCreditDraft(participant(row), row.getRoleCodes()))
+                .toList());
     }
 
-    private static SoftwareReference participant(SoftwareCreditEntity entity) {
+    private static <T extends CreditColumns> List<T> fromCredits(SoftwareCredits credits, Supplier<T> row) {
+        return credits.all().stream()
+                .map(credit -> fromCredit(credit, row.get()))
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    private static SoftwareReference participant(CreditColumns entity) {
         UUID person = entity.getPersonId();
         if (person != null) {
             return new SoftwareReference(SoftwareReferenceType.AUTHOR, new SoftwareReferenceId(person));
@@ -206,8 +213,7 @@ public interface SoftwareMapper {
                 new SoftwareReferenceId(Objects.requireNonNull(entity.getLabelId())));
     }
 
-    private static SoftwareCreditEntity fromCredit(SoftwareCreditDraft credit) {
-        SoftwareCreditEntity entity = new SoftwareCreditEntity();
+    private static <T extends CreditColumns> T fromCredit(SoftwareCreditDraft credit, T entity) {
         UUID id = credit.participant().id().value();
         switch (credit.participant().type()) {
             case AUTHOR -> entity.setPersonId(id);
