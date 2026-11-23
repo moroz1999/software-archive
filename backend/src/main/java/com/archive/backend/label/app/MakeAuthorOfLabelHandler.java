@@ -33,6 +33,6 @@ public class MakeAuthorOfLabelHandler {
         // The answers move the label's credits, memberships and origin to the person before the label goes.
         author.pullEvents().forEach(events::publishEvent);
         labels.delete(label);
-        return id;
+        return author.getId();
     }
 }

@@ -18,7 +18,8 @@ public class CreateCountryHandler {
     public CountryId handle(CreateCountryCommand c) {
         Country.requireKeptBy(c.actor());
         CountryId id = new CountryId(UUID.randomUUID());
-        countries.save(new Country(id, c.names(), c.coordinates()));
-        return id;
+        Country country = new Country(id, c.names(), c.coordinates());
+        countries.save(country);
+        return country.getId();
     }
 }

@@ -23,7 +23,8 @@ public class CreateCityHandler {
         Country.requireKeptBy(c.actor());
         CityId id = new CityId(UUID.randomUUID());
         CountryId country = c.country();
-        cities.save(new City(id, c.names(), country == null ? null : countries.of(country), c.coordinates()));
-        return id;
+        City city = new City(id, c.names(), country == null ? null : countries.of(country), c.coordinates());
+        cities.save(city);
+        return city.getId();
     }
 }

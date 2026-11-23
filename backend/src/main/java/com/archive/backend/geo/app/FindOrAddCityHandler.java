@@ -19,10 +19,7 @@ public class FindOrAddCityHandler {
 
     @Transactional
     public CityId handle(FindOrAddCityCommand c) {
-        return names.cityNamed(c.name()).orElseGet(() -> {
-            CityId city = new CityId(UUID.randomUUID());
-            names.addCity(city, null, c.language(), c.name());
-            return city;
-        });
+        return names.cityNamed(c.name())
+                .orElseGet(() -> names.addCity(new CityId(UUID.randomUUID()), null, c.language(), c.name()));
     }
 }

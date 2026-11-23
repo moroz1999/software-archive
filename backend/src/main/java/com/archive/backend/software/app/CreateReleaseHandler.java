@@ -1,6 +1,7 @@
 package com.archive.backend.software.app;
 
 import com.archive.backend.hardware.domain.HardwareSets;
+import com.archive.backend.software.domain.Release;
 import com.archive.backend.software.domain.ReleaseArchive;
 import com.archive.backend.software.domain.ReleaseArchiveId;
 import com.archive.backend.software.domain.ReleaseArchiveRepository;
@@ -37,12 +38,13 @@ public class CreateReleaseHandler {
         ReleaseArchive archive = upload == null
                 ? null
                 : new ReleaseArchive(new ReleaseArchiveId(UUID.randomUUID()), upload.fileName(), upload.size());
-        software.addRelease(id, c.content(), hardwareSets.of(software.getPlatform(), c.hardware()), addedBy, archive);
+        Release added = software.addRelease(
+                id, c.content(), hardwareSets.of(software.getPlatform(), c.hardware()), addedBy, archive);
         if (upload != null) {
             archiveFiles.store(Objects.requireNonNull(archive).id(), upload);
         }
         repository.save(software);
         software.pullEvents().forEach(events::publishEvent);
-        return id;
+        return added.id();
     }
 }

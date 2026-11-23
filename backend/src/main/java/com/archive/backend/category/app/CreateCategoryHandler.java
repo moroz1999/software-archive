@@ -21,7 +21,8 @@ public class CreateCategoryHandler {
         Category.requireKeptBy(c.actor());
         CategoryId id = new CategoryId(UUID.randomUUID());
         CategoryId parent = c.parent();
-        repository.save(Category.create(id, c.titles(), parent == null ? null : parents.of(id, parent)));
-        return id;
+        Category category = Category.create(id, c.titles(), parent == null ? null : parents.of(id, parent));
+        repository.save(category);
+        return category.getId();
     }
 }

@@ -27,6 +27,6 @@ public class CreateAuthorHandler {
                 Author.create(id, c.realName(), c.notes(), c.labels(), places.locations(c.locations()), addedBy);
         repository.save(author);
         author.pullEvents().forEach(events::publishEvent);
-        return id;
+        return author.getId();
     }
 }

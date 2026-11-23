@@ -19,10 +19,7 @@ public class FindOrAddCountryHandler {
 
     @Transactional
     public CountryId handle(FindOrAddCountryCommand c) {
-        return names.countryNamed(c.name()).orElseGet(() -> {
-            CountryId country = new CountryId(UUID.randomUUID());
-            names.addCountry(country, c.language(), c.name());
-            return country;
-        });
+        return names.countryNamed(c.name())
+                .orElseGet(() -> names.addCountry(new CountryId(UUID.randomUUID()), c.language(), c.name()));
     }
 }

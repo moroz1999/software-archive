@@ -249,19 +249,20 @@ public final class Software {
                 .findFirst();
     }
 
-    /** Anyone signed in adds releases to any software (docs/domain/users.md). */
-    public void addRelease(ReleaseId releaseId, ReleaseContent content, HardwareSet hardware, AddedBy addedBy) {
-        addRelease(releaseId, content, hardware, addedBy, null);
+    /** Anyone signed in adds releases to any software (docs/domain/users.md). Returns the release added. */
+    public Release addRelease(ReleaseId releaseId, ReleaseContent content, HardwareSet hardware, AddedBy addedBy) {
+        return addRelease(releaseId, content, hardware, addedBy, null);
     }
 
-    /** Anyone signed in adds releases, optionally with their one downloadable archive. */
-    public void addRelease(
+    /** Anyone signed in adds releases, optionally with their one downloadable archive. Returns the release added. */
+    public Release addRelease(
             ReleaseId releaseId,
             ReleaseContent content,
             HardwareSet hardware,
             AddedBy addedBy,
             @Nullable ReleaseArchive archive) {
-        releases.add(new Release(releaseId, content, requireOwn(hardware), addedBy, Screenshots.EMPTY, archive));
+        Release release = new Release(releaseId, content, requireOwn(hardware), addedBy, Screenshots.EMPTY, archive);
+        releases.add(release);
         // The search finds software by the hardware of its releases too.
         if (!hardware.isEmpty()) {
             markChanged();
@@ -269,6 +270,7 @@ public final class Software {
         if (archive != null) {
             outdateFileStructures(List.of(releaseId));
         }
+        return release;
     }
 
     public void editRelease(ReleaseId releaseId, ReleaseContent content, HardwareSet hardware, Actor actor) {
@@ -335,10 +337,11 @@ public final class Software {
 
     /**
      * Adds screenshots after those there are: to the software by whoever may change it, to a release by whoever may
-     * change the release (docs/domain/users.md).
+     * change the release (docs/domain/users.md). Returns the screenshots added.
      */
-    public void addScreenshots(@Nullable ReleaseId releaseId, List<Screenshot> added, Actor actor) {
+    public List<Screenshot> addScreenshots(@Nullable ReleaseId releaseId, List<Screenshot> added, Actor actor) {
         changeScreenshots(releaseId, actor, current -> current.plus(added));
+        return List.copyOf(added);
     }
 
     public void removeScreenshot(@Nullable ReleaseId releaseId, ScreenshotId screenshotId, Actor actor) {

@@ -39,6 +39,6 @@ public class CreateSoftwareHandler {
         software.changePreservation(c.preservation());
         repository.save(software);
         software.pullEvents().forEach(events::publishEvent);
-        return id;
+        return software.getId();
     }
 }

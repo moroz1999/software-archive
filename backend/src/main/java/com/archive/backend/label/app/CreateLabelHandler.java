@@ -27,6 +27,6 @@ public class CreateLabelHandler {
         Label label = Label.create(id, c.name(), places.locations(c.locations()), c.actor());
         repository.save(label);
         label.pullEvents().forEach(events::publishEvent);
-        return id;
+        return label.getId();
     }
 }

@@ -11,8 +11,9 @@ public interface GeoNameRepository {
 
     Optional<CountryId> countryNamed(GeoName name);
 
-    /** Adds a city, in no country when its country is not known. */
-    void addCity(CityId city, @Nullable CountryId country, Language language, GeoName name);
+    /** Adds a city, in no country when its country is not known; returns the id it is kept under. */
+    CityId addCity(CityId city, @Nullable CountryId country, Language language, GeoName name);
 
-    void addCountry(CountryId country, Language language, GeoName name);
+    /** Adds a country; returns the id it is kept under. */
+    CountryId addCountry(CountryId country, Language language, GeoName name);
 }

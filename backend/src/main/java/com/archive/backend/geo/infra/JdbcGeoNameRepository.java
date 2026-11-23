@@ -44,27 +44,31 @@ public class JdbcGeoNameRepository implements GeoNameRepository {
     }
 
     @Override
-    public void addCity(CityId city, @Nullable CountryId country, Language language, GeoName name) {
-        jdbc.sql("INSERT INTO city (id, country_id) VALUES (:id, :country)")
+    public CityId addCity(CityId city, @Nullable CountryId country, Language language, GeoName name) {
+        CityId added = new CityId(jdbc.sql("INSERT INTO city (id, country_id) VALUES (:id, :country) RETURNING id")
                 .param("id", city.value())
                 .param("country", country == null ? null : country.value())
-                .update();
+                .query(UUID.class)
+                .single());
         jdbc.sql("INSERT INTO city_name (city_id, language, name) VALUES (:id, :language, :name)")
-                .param("id", city.value())
+                .param("id", added.value())
                 .param("language", language.code())
                 .param("name", name.value())
                 .update();
+        return added;
     }
 
     @Override
-    public void addCountry(CountryId country, Language language, GeoName name) {
-        jdbc.sql("INSERT INTO country (id) VALUES (:id)")
+    public CountryId addCountry(CountryId country, Language language, GeoName name) {
+        CountryId added = new CountryId(jdbc.sql("INSERT INTO country (id) VALUES (:id) RETURNING id")
                 .param("id", country.value())
-                .update();
+                .query(UUID.class)
+                .single());
         jdbc.sql("INSERT INTO country_name (country_id, language, name) VALUES (:id, :language, :name)")
-                .param("id", country.value())
+                .param("id", added.value())
                 .param("language", language.code())
                 .param("name", name.value())
                 .update();
+        return added;
     }
 }

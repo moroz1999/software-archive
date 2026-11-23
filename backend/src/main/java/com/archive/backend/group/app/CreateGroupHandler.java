@@ -38,6 +38,6 @@ public class CreateGroupHandler {
                 addedBy);
         repository.save(group);
         group.pullEvents().forEach(events::publishEvent);
-        return id;
+        return group.getId();
     }
 }
