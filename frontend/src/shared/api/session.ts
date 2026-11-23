@@ -72,14 +72,23 @@ function tabs(): InstanceType<typeof BroadcastChannel> | null {
     return channel;
 }
 
+/** Whether both are the session of the same user, as the archive answered who is signed in. */
+function sameUser(current: Session, next: Session): boolean {
+    return current.status === 'signed-in' && next.status === 'signed-in'
+        && JSON.stringify(current.user) === JSON.stringify(next.user);
+}
+
 function become(next: Session, tell = true): void {
     if (next.status !== 'signed-in') {
         accessToken = null;
     }
-    session = next;
-    listeners.forEach((listener) => {
-        listener();
-    });
+    // The same user with a new access token (another tab restored the session) is no change for what the page shows.
+    if (!sameUser(session, next)) {
+        session = next;
+        listeners.forEach((listener) => {
+            listener();
+        });
+    }
     if (tell) {
         if (next.status === 'signed-in' && accessToken !== null) {
             tabs()?.postMessage({...next, accessToken});

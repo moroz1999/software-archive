@@ -1,7 +1,7 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {AuthenticationRequiredError} from './errors';
 import {getJson, postNoContent} from './http';
-import {endSession, getSession, loadSession, startSession} from './session';
+import {endSession, getSession, loadSession, startSession, subscribeSession} from './session';
 
 type Answer = readonly [status: number, body?: unknown];
 
@@ -49,6 +49,7 @@ function authorization(fetchMock: ReturnType<typeof respond>, path: string, occu
 }
 
 const ZED = {id: '00000000-0000-0000-0009-000000000001', name: 'Zed'};
+const ADA = {id: '00000000-0000-0000-0009-000000000002', name: 'Ada'};
 const GUEST: Answer = [204];
 const SIGNED_IN: Answer = [200, ZED];
 const REQUIRED: Answer = [401, {status: 401, code: 'auth.required'}];
@@ -281,6 +282,49 @@ describe('the session of the browser', () => {
         await getJson('/api/x');
 
         expect(authorization(fetchMock, '/api/x')).toBe('Bearer other-tab-access');
+    });
+
+    it('stays the same session, only taking the new access token, when another tab restores the same user', async () => {
+        const tab = otherTab();
+        channels.push(tab.channel);
+        const fetchMock = respond({
+            '/api/auth/me': [GUEST, SIGNED_IN], '/api/auth/login': [ACCESS], '/api/x': [[200, 'x']],
+        });
+        await loadSession();
+        await startSession('/api/auth/login', {login: 'Zed'});
+        const before = getSession();
+        const changes = vi.fn();
+        const unsubscribe = subscribeSession(changes);
+
+        tab.channel.postMessage({status: 'signed-in', user: ZED, accessToken: 'other-tab-access'});
+        // Nothing else shows that the message arrived: each read goes out with the token this tab holds then.
+        await vi.waitFor(async () => {
+            await getJson('/api/x');
+
+            expect(new Headers(fetchMock.mock.lastCall?.[1]?.headers).get('Authorization')).toBe('Bearer other-tab-access');
+        });
+        unsubscribe();
+
+        expect(getSession()).toBe(before);
+        expect(changes).not.toHaveBeenCalled();
+    });
+
+    it('becomes the other user another tab signed in', async () => {
+        const tab = otherTab();
+        channels.push(tab.channel);
+        respond({'/api/auth/me': [GUEST, SIGNED_IN], '/api/auth/login': [ACCESS]});
+        await loadSession();
+        await startSession('/api/auth/login', {login: 'Zed'});
+        const changes = vi.fn();
+        const unsubscribe = subscribeSession(changes);
+
+        tab.channel.postMessage({status: 'signed-in', user: ADA, accessToken: 'ada-access'});
+        await vi.waitFor(() => {
+            expect(getSession()).toStrictEqual({status: 'signed-in', user: ADA});
+        });
+        unsubscribe();
+
+        expect(changes).toHaveBeenCalledExactlyOnceWith();
     });
 
     it('removes its access token when another tab signs out', async () => {
