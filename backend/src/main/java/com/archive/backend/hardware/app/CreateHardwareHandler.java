@@ -19,7 +19,8 @@ public class CreateHardwareHandler {
     @Transactional
     public HardwareCode handle(CreateHardwareCommand c) {
         Hardware.requireKeptBy(c.actor());
-        hardware.add(new Hardware(c.code(), c.names(), placements.of(c.group(), c.platforms())));
-        return c.code();
+        Hardware added = new Hardware(c.code(), c.names(), placements.of(c.group(), c.platforms()));
+        hardware.add(added);
+        return added.getCode();
     }
 }

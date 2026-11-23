@@ -17,7 +17,8 @@ public class CreateHardwareGroupHandler {
     @Transactional
     public HardwareGroupCode handle(CreateHardwareGroupCommand c) {
         HardwareGroup.requireKeptBy(c.actor());
-        groups.add(new HardwareGroup(c.code(), c.names()));
-        return c.code();
+        HardwareGroup added = new HardwareGroup(c.code(), c.names());
+        groups.add(added);
+        return added.getCode();
     }
 }
