@@ -17,9 +17,10 @@ Each domain is a package under `com.archive.backend`. A request passes four role
 
 ### Use cases (`app`)
 - One use case per user action: an input record and its handler with a `handle` method. The input is either
-  - a **command** (`CreateSoftwareCommand` + `CreateSoftwareHandler`) — changes state: loads domain entities through their repository, lets them apply the rules, saves them; it never touches the read side. A command returns nothing, except the id of the entity it creates;
+  - a **command** (`CreateSoftwareCommand` + `CreateSoftwareHandler`) — changes state: loads domain entities through their repository, lets them apply the rules, saves them; it never touches the read side. A command returns nothing, or what its work produced, as the id of the entity it creates;
   - or a **query** (`GetSoftwareQuery` + `GetSoftwareHandler`) — reads: asks the read repository and returns a read model; `handle` is `@Transactional(readOnly = true)`. Of the domain it uses only value objects and business exceptions, never entities or repositories.
 - Owns the transaction boundary.
+- What a command returns is read from what its work produced: the entity it created or changed (`software.getId()`), what the domain handed back (`software.addRelease(…)` returns the release added), what the storage wrote (`INSERT … RETURNING id`). Never what its command brought (`return c.code();`), nor a value the handler made itself and passed on (`return id;` after `new Software(id, …)`): the entity, its factory or the storage may have made something else of it, and the answer would guess.
 - Holds no business rules itself — they live in the domain.
 - Publishes the domain events of the aggregates it saved (`pullEvents()`) through Spring's `ApplicationEventPublisher`. Another module answers with a use case of its own: a handler with an `@EventListener` method, run synchronously in the transaction of the change, so the change and the answer commit or roll back together. Thus a module answers a change of another without that one knowing it: a moved category (`CategoryMoved`) recategorizes software.
 - Work that must never undo the change it follows answers with `@TransactionalEventListener(phase = AFTER_COMMIT)` and runs in a transaction of its own (`REQUIRES_NEW`); it catches and logs its failures, because the change has already committed. Parsing a stored release file is such work.
@@ -106,4 +107,4 @@ All run on every build; nothing is suppressed to get a change through.
 | `restore` factories of the domain (`HardwareSet`, `Place`, `OwnLabels`) are called only in `infra` | `restoringIsLeftToInfra` |
 | No scalar fields (`String`, `UUID`, numbers, booleans) in `domain`/`app` classes except value objects and exceptions | `noScalarsInDomainAndCommands` |
 
-Not checkable by ArchUnit, left to review: controllers and use cases never catch exceptions to build responses.
+Not checkable by ArchUnit, left to review: controllers and use cases never catch exceptions to build responses; a command returns only what its work produced, never what its command brought or a value it passed on itself.
