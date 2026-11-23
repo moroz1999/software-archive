@@ -1,9 +1,9 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {screen, within} from '@testing-library/react';
+import {screen, waitFor, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
-import {breadcrumbSteps, json, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
+import {breadcrumbSteps, json, noContent, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {toReleaseId, toSoftwareId} from '@/entities/software';
 import {ReleaseView} from './ReleaseView';
 
@@ -36,6 +36,9 @@ const AY_MOD = {
     canChange: false,
 };
 
+const FIRST_SHOT = {id: '00000000-0000-0000-0055-000000000001', url: '/api/screenshots/00000000-0000-0000-0055-000000000001'};
+const SECOND_SHOT = {id: '00000000-0000-0000-0055-000000000002', url: '/api/screenshots/00000000-0000-0000-0055-000000000002'};
+
 function renderView(release: object) {
     stubFetchRoutes(new Map([
         [`/api/software/${ID}`, json(ELITE)],
@@ -48,6 +51,50 @@ function renderView(release: object) {
 describe(ReleaseView, () => {
     afterEach(() => {
         vi.unstubAllGlobals();
+    });
+
+    it('moves a screenshot of the release for whoever may change it, by sending every screenshot in the new order', async () => {
+        const of = `/api/software/${ID}/releases/${RELEASE}/screenshots`;
+        let shown = [FIRST_SHOT, SECOND_SHOT];
+        const fetchMock = stubFetchRoutes(new Map([
+            [`/api/software/${ID}`, json(ELITE)],
+            [`/api/software/${ID}/releases`, json([{...AY_MOD, canChange: true}])],
+            [of, () => json(shown)()],
+            [`${of}/order`, () => {
+                shown = [SECOND_SHOT, FIRST_SHOT];
+                return noContent()();
+            }],
+        ]));
+        renderWithQueries(<MemoryRouter><ReleaseView softwareId={toSoftwareId(ID)} releaseId={toReleaseId(RELEASE)}/></MemoryRouter>);
+
+        const screenshots = await screen.findByRole('region', {name: 'Screenshots'});
+
+        await expect(within(screenshots).findByRole('button', {name: 'Move screenshot 2 right'})).resolves.toBeDisabled();
+
+        await userEvent.click(within(screenshots).getByRole('button', {name: 'Move screenshot 2 left'}));
+
+        await waitFor(() => {
+            expect(within(screenshots).getAllByRole('img', {hidden: true}).map((picture) => picture.getAttribute('src'))).toStrictEqual([SECOND_SHOT.url, FIRST_SHOT.url]);
+        });
+
+        const put = fetchMock.mock.calls.find(([url]) => url === `${of}/order`);
+
+        expect(put?.[1]?.method).toBe('PUT');
+        expect(put?.[1]?.body).toBe(JSON.stringify({order: [SECOND_SHOT.id, FIRST_SHOT.id]}));
+    });
+
+    it('offers no moving of the screenshots of a release to whoever may not change it', async () => {
+        stubFetchRoutes(new Map([
+            [`/api/software/${ID}`, json(ELITE)],
+            [`/api/software/${ID}/releases`, json([AY_MOD])],
+            [`/api/software/${ID}/releases/${RELEASE}/screenshots`, json([FIRST_SHOT, SECOND_SHOT])],
+        ]));
+        renderWithQueries(<MemoryRouter><ReleaseView softwareId={toSoftwareId(ID)} releaseId={toReleaseId(RELEASE)}/></MemoryRouter>);
+
+        const screenshots = await screen.findByRole('region', {name: 'Screenshots'});
+        await within(screenshots).findAllByRole('button', {name: /^Screenshot \d of 2$/u});
+
+        expect(within(screenshots).queryByRole('button', {name: /^Move screenshot/u})).not.toBeInTheDocument();
     });
 
     it('tells who added the release and when', async () => {

@@ -21,12 +21,13 @@ The card of software shows its own screenshots, or when it has none those of its
 |---|---|
 | Software page | "Screenshots" between the details and the releases, a gallery of the software's own; left out without any ([software-view.md](software-view.md)) |
 | Release page | "Screenshots" below the release facts, a gallery of the release's own; left out without any ([release-view.md](release-view.md)) |
+| Software page and release page, for whoever may change them | "‹" and "›" over the foot of every thumbnail, to move it a place; the reason of a refusal under the gallery |
 | Releases on the software page | the first screenshot of a release beside its title in the table; all of them on its card |
 | Software editing, release editing | "Screenshots" below the form: the pictures in their order, each with "‹" and "›" to move it a place and "Delete"; "Add screenshots" with the formats and the size under it |
 
 - Pointing across a card goes through its screenshots ([design-system/card-screenshots.md](../design-system/card-screenshots.md)); a thumbnail of the gallery opens the picture in the full-screen viewer ([design-system/screenshot-gallery.md](../design-system/screenshot-gallery.md)).
 - Files are chosen through the button or dropped on it, several at once ([design-system/file-upload.md](../design-system/file-upload.md)). A file of another format or over 10 MB is refused before anything is sent, with the reason next to the screenshots.
-- A move sends every screenshot in the new order. When they changed meanwhile, the refusal is shown and the screenshots are read anew, as they are now.
+- A move, on an editing page or on a thumbnail of the software or release page, sends every screenshot in the new order. When they changed meanwhile, the refusal is shown and the screenshots are read anew, as they are now.
 - Deleting asks "Delete screenshot n from the archive?"; a refusal stays in the confirmation.
 - While a change runs, every control of the block is locked.
 

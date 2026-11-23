@@ -1,3 +1,4 @@
+import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useSkeleton} from '@/shared/lib/loading';
 import {ScreenshotGallery, ScreenshotGallerySkeleton} from '@/shared/ui/screenshot-gallery';
@@ -10,10 +11,14 @@ export interface SoftwareScreenshotsProps {
     readonly title: string;
     /** The lazy-loading observer attached to the skeleton until the block enters the viewport. */
     readonly viewportRef?: (element: Element | null) => (() => void) | undefined;
+    /** What can be done to the screenshot at an index, on its thumbnail. */
+    readonly controls?: (index: number) => ReactNode;
+    /** Shown under the screenshots, such as why a change of them failed. */
+    readonly note?: ReactNode;
 }
 
 /** The screenshots inside a ScreenshotsProvider under their heading; nothing at all when there are none. */
-export function SoftwareScreenshots({title, viewportRef}: SoftwareScreenshotsProps) {
+export function SoftwareScreenshots({title, viewportRef, controls, note}: SoftwareScreenshotsProps) {
     const {t} = useTranslation();
     const query = useScreenshots();
     const skeleton = useSkeleton(query);
@@ -33,7 +38,8 @@ export function SoftwareScreenshots({title, viewportRef}: SoftwareScreenshotsPro
     return (
         <Stack as="section" gap="md" ariaLabel={t('screenshots.heading')}>
             <Heading level={2} variant="title">{t('screenshots.heading')}</Heading>
-            <ScreenshotGallery urls={query.data.map((screenshot) => screenshot.url)} title={title}/>
+            <ScreenshotGallery urls={query.data.map((screenshot) => screenshot.url)} title={title} controls={controls}/>
+            {note}
         </Stack>
     );
 }

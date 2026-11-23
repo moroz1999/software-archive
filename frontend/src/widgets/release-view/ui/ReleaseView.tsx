@@ -20,6 +20,7 @@ import {
 } from '@/entities/software';
 import {ReparseReleaseFilesButton} from '@/features/release/reparse-files';
 import {softwareBreadcrumbs} from '@/features/software/catalog';
+import {EditScreenshotsProvider, MoveScreenshotButtons, ScreenshotsChangeError} from '@/features/software/screenshots';
 import {NotFoundError} from '@/shared/api';
 import {useSkeleton} from '@/shared/lib/loading';
 import {useInViewport} from '@/shared/lib/screen';
@@ -118,7 +119,7 @@ function LoadedView({softwareId, releaseId}: ReleaseViewProps) {
                         </Stack>
                     )}
                 </Stack>
-                    <ReleaseScreenshots softwareId={softwareId} releaseId={releaseId} title={release.title}/>
+                    <ReleaseScreenshots softwareId={softwareId} releaseId={releaseId} title={release.title} canChange={release.canChange}/>
                     <AdditionNote addition={release.added}/>
                 </Stack>
             </PageLayout>
@@ -187,11 +188,16 @@ function Section({label, children}: {readonly label: string; readonly children: 
     );
 }
 
-function ReleaseScreenshots({softwareId, releaseId, title}: ReleaseViewProps & {readonly title: string}) {
+/** Whoever may change the release moves its screenshots right on their thumbnails. */
+function ReleaseScreenshots({softwareId, releaseId, title, canChange}: ReleaseViewProps & {readonly title: string; readonly canChange: boolean}) {
     const [ref, visible] = useInViewport();
     return (
         <ScreenshotsProvider softwareId={softwareId} releaseId={releaseId} enabled={visible}>
-            <SoftwareScreenshots title={title} viewportRef={ref}/>
+            {canChange ? (
+                <EditScreenshotsProvider softwareId={softwareId} releaseId={releaseId} enabled={visible}>
+                    <SoftwareScreenshots title={title} viewportRef={ref} controls={(index) => <MoveScreenshotButtons index={index}/>} note={<ScreenshotsChangeError/>}/>
+                </EditScreenshotsProvider>
+            ) : <SoftwareScreenshots title={title} viewportRef={ref}/>}
         </ScreenshotsProvider>
     );
 }

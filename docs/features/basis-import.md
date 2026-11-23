@@ -4,8 +4,8 @@ A backend command that takes the card index "Базис" of software for the Vec
 
 ## Running
 
-- An administrator starts it on the Imports tab of management, choosing the source "caglrc.cc (Basis)" and the whole card index or one category. The category choices are kept with their meanings in the archive; opening the import form does not read the source. Categories containing only PC software or paper are not offered. It runs in the background like every import, one at a time ([imports.md](imports.md#running)).
-- `ImportBasisHandler` logs the chosen list read (page 1 of 1) and takes the cards in its order, each in a transaction of its own, logging the files of each as downloaded: before each card the run writes which one of the list it is at; a card in a category that is not software of the archive (PC, paper) counts as left out, with the first such category, a card that fails is written into the log with its page and the reason, and the run goes on. The run ends done.
+- An administrator starts it on the Imports tab of management, choosing the source "caglrc.cc (Basis)" and the whole card index or one category. The category choices are kept with their meanings in the archive; opening the import form does not read the source. Categories containing only PC software, paper or hardware are not offered. It runs in the background like every import, one at a time ([imports.md](imports.md#running)).
+- `ImportBasisHandler` logs the chosen list read (page 1 of 1) and takes the cards in its order, each in a transaction of its own, logging the files of each as downloaded: before each card the run writes which one of the list it is at; a card in a category that is not software of the archive (PC, paper or hardware) counts as left out, with the first such category, a card that fails is written into the log with its page and the reason, and the run goes on. The run ends done.
 - A rerun reads every card again; the one import finds the software each became by its origin (`caglrc.cc`, `SOFTWARE`, the card id) and adds only what it lacks.
 
 ## REST

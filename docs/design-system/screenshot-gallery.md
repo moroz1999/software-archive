@@ -1,4 +1,5 @@
 # ScreenshotGallery
 
 - `ScreenshotGallery` — screenshots as a grid of 4:3 thumbnails, each a button named "Screenshot n of N". A thumbnail opens its picture whole in a viewer of its own, not a `Dialog`: the dimming backdrop over the page is the viewer itself, holding only its cross, the picture and the Previous and Next buttons at its sides, so a click anywhere else is on the backdrop and closes it, as do Escape and the cross; the buttons and the arrow keys go round through the pictures. The `title` only names the viewer for assistive technology. The picture is fitted to the backdrop less the band its cross and buttons keep: a picture that fits is shown at the largest whole multiple of that size with 16 px left free at every edge; below 1× it shrinks just enough to fit.
+- `controls` lays what can be done to a screenshot over the foot of its thumbnail, beside its button, on a shade: shown while the thumbnail is pointed at or holds focus, and always on a screen without a pointer to hover.
 - `ScreenshotGallerySkeleton` — the place of a gallery while its screenshots load: thumbnail bones in the same grid.

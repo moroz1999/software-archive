@@ -101,8 +101,8 @@ final class BasisCategories {
             "z80",
             "zx");
 
-    /** Software for the PC and paper are not software of the archive. */
-    static final Set<String> LEFT_OUT = Set.of("pc", "magazine", "document", "catalogue");
+    /** Software for the PC, paper and hardware are not software of the archive. */
+    static final Set<String> LEFT_OUT = Set.of("pc", "magazine", "document", "catalogue", "hardware");
 
     static final String MISSING = "missing";
 
@@ -182,7 +182,6 @@ final class BasisCategories {
             Map.entry("utility", category("b78ed6d4-3fb8-5bad-9c19-401d0ccbd0a5")), // > System Utilities
             Map.entry("editor", category(SYSTEM_SOFTWARE)),
             Map.entry("ham", category("64ad6713-e267-5618-92d3-d80590b75b4e")), // > Telecom/Network
-            Map.entry("hardware", category("7e79e68b-6be8-5e82-8195-63ee114aef54")), // > I/O Handling
             Map.entry("text", category("e106c954-4886-50c1-b261-4185033b4a1c")), // > Texts > Word Processor
             Map.entry("business", category("10fc1ae9-9172-5153-ba85-381ec0cb4679")), // Applications > Business
             Map.entry("database", category("474c717c-abc9-5a07-aae3-35cbe3a46ff6")), // > Database/Filing

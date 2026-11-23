@@ -56,6 +56,15 @@ describe(ScreenshotGallery, () => {
         expect(thumbnails.map((thumbnail) => within(thumbnail).getByRole('img', {hidden: true}).getAttribute('src'))).toStrictEqual(URLS);
     });
 
+    it('puts the controls given for a thumbnail on it, beside its button', () => {
+        render(<ScreenshotGallery urls={URLS} title="Elite" controls={(index) => <span>{`controls of ${String(index + 1)}`}</span>}/>);
+
+        const items = screen.getAllByRole('listitem');
+
+        expect(items.map((item) => item.textContent)).toStrictEqual(['controls of 1', 'controls of 2', 'controls of 3']);
+        expect(within(screen.getByRole('button', {name: 'Screenshot 1 of 3'})).queryByText('controls of 1')).not.toBeInTheDocument();
+    });
+
     it('opens the picture of a thumbnail whole in a viewer named by the title', async () => {
         render(<ScreenshotGallery urls={URLS} title="Elite"/>);
 

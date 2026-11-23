@@ -7,6 +7,10 @@
     list-style: none;
 }
 
+.item {
+    position: relative;
+}
+
 .thumbnail {
     display: block;
     width: 100%;
@@ -25,6 +29,33 @@
 
 .thumbnail:focus-visible {
     outline: var(--screenshot-gallery-focus-outline);
+}
+
+.controls {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    gap: var(--screenshot-gallery-controls-gap);
+    padding: var(--screenshot-gallery-controls-padding);
+    border-radius: 0 0 var(--screenshot-gallery-thumbnail-radius) var(--screenshot-gallery-thumbnail-radius);
+    background: linear-gradient(transparent, var(--screenshot-gallery-controls-shade));
+    opacity: var(--screenshot-gallery-controls-hidden-opacity);
+    transition: opacity var(--screenshot-gallery-duration);
+}
+
+.item:hover .controls,
+.item:focus-within .controls {
+    opacity: var(--screenshot-gallery-controls-shown-opacity);
+}
+
+/* A touch screen has no pointer to bring the controls up: they stay shown. */
+@media (hover: none) {
+    .controls {
+        opacity: var(--screenshot-gallery-controls-shown-opacity);
+    }
 }
 
 .thumbnailPicture {

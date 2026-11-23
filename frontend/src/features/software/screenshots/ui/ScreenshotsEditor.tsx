@@ -11,12 +11,14 @@ import {ScreenshotGallerySkeleton} from '@/shared/ui/screenshot-gallery';
 import {Stack} from '@/shared/ui/stack';
 import {Heading, Text} from '@/shared/ui/typography';
 import {useEditScreenshots} from '../model/edit-screenshots-context';
+import {MoveScreenshotButtons} from './MoveScreenshotButtons';
+import {ScreenshotsChangeError} from './ScreenshotsChangeError';
 import styles from './ScreenshotsEditor.module.css';
 
 /** The screenshots inside an EditScreenshotsProvider, to add, delete and reorder. */
 export function ScreenshotsEditor() {
     const {t} = useTranslation();
-    const {query, upload, busy, error} = useEditScreenshots();
+    const {query, upload, busy} = useEditScreenshots();
     const skeleton = useSkeleton(query);
 
     return (
@@ -25,7 +27,7 @@ export function ScreenshotsEditor() {
             {skeleton || query.isPending
                 ? <div data-testid="screenshots-editor-skeleton"><ScreenshotGallerySkeleton/></div>
                 : query.isSuccess && <ScreenshotList/>}
-            {error !== undefined && <Text role="alert" tone="danger">{error}</Text>}
+            <ScreenshotsChangeError/>
             <Stack gap="xs">
                 <FileUpload label={t('screenshots.add')} accept={SCREENSHOT_TYPES.join(',')} multiple disabled={busy} onFiles={upload}/>
                 <Text variant="bodySm" tone="muted">{t('screenshots.hint')}</Text>
@@ -36,7 +38,7 @@ export function ScreenshotsEditor() {
 
 function ScreenshotList() {
     const {t} = useTranslation();
-    const {query, move, remove, busy, deleteError, deleted} = useEditScreenshots();
+    const {query, remove, busy, deleteError, deleted} = useEditScreenshots();
     // Which deletion is being asked about is the dialog's own UI state, not business state.
     const [asking, setAsking] = useState<{readonly id: ScreenshotId; readonly n: number} | null>(null);
     const screenshots = query.data ?? [];
@@ -54,14 +56,7 @@ function ScreenshotList() {
                             <Stack gap="xs">
                                 <img src={screenshot.url} alt={t('screenshots.numbered', {n})} loading="lazy" className={styles.picture}/>
                                 <Inline gap="xs" justify="between">
-                                    <Inline gap="xs">
-                                        <Button size="sm" color="outlined" ariaLabel={t('screenshots.moveLeft', {n})} disabled={busy || index === 0} onClick={() => {
-                                            move(screenshot.id, -1);
-                                        }}>‹</Button>
-                                        <Button size="sm" color="outlined" ariaLabel={t('screenshots.moveRight', {n})} disabled={busy || n === screenshots.length} onClick={() => {
-                                            move(screenshot.id, 1);
-                                        }}>›</Button>
-                                    </Inline>
+                                    <MoveScreenshotButtons index={index}/>
                                     <Button size="sm" color="danger" ariaLabel={t('screenshots.delete', {n})} disabled={busy} onClick={() => {
                                         setAsking({id: screenshot.id, n});
                                     }}>{t('actions.delete')}</Button>

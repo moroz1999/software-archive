@@ -1,8 +1,8 @@
-import {useCallback, useEffect, useRef, useState} from 'react';
+import {type ReactNode, useCallback, useEffect, useRef, useState} from 'react';
 import {createPortal} from 'react-dom';
 import {useTranslation} from 'react-i18next';
 import {Button} from '../button';
-import {CloseIcon} from '../icon';
+import {ChevronLeftIcon, ChevronRightIcon, CloseIcon} from '../icon';
 import styles from './ScreenshotGallery.module.css';
 
 interface PixelSize {
@@ -27,10 +27,12 @@ export interface ScreenshotGalleryProps {
     readonly urls: readonly string[];
     /** What the pictures are of: names the viewer for assistive technology. */
     readonly title: string;
+    /** What can be done to the screenshot at an index, laid over the foot of its thumbnail. */
+    readonly controls?: ((index: number) => ReactNode) | undefined;
 }
 
 /** Screenshots as a grid of 4:3 thumbnails; a thumbnail opens its picture whole in a viewer that goes through them all. */
-export function ScreenshotGallery({urls, title}: ScreenshotGalleryProps) {
+export function ScreenshotGallery({urls, title, controls}: ScreenshotGalleryProps) {
     const {t} = useTranslation();
     const [open, setOpen] = useState<number | null>(null);
     const count = urls.length;
@@ -40,12 +42,13 @@ export function ScreenshotGallery({urls, title}: ScreenshotGalleryProps) {
         <>
             <ul className={styles.grid}>
                 {urls.map((url, index) => (
-                    <li key={url}>
+                    <li key={url} className={styles.item}>
                         <button type="button" className={styles.thumbnail} aria-label={label(index)} onClick={() => {
                             setOpen(index);
                         }}>
                             <img src={url} alt={label(index)} aria-hidden="true" loading="lazy" className={styles.thumbnailPicture}/>
                         </button>
+                        {controls !== undefined && <div className={styles.controls}>{controls(index)}</div>}
                     </li>
                 ))}
             </ul>
@@ -132,12 +135,12 @@ function Viewer({urls, title, index, label, onIndex, onClose}: ViewerProps) {
             <FittedPicture key={current} src={current} alt={label(index)} stage={backdrop}/>
             {count > 1 && (
                 <>
-                    <Button color="primary" size="sm" ariaLabel={t('screenshots.previous')} onClick={() => {
+                    <Button color="primary" square ariaLabel={t('screenshots.previous')} onClick={() => {
                         onIndex(previous);
-                    }} className={styles.previous}>‹</Button>
-                    <Button color="primary" size="sm" ariaLabel={t('screenshots.next')} onClick={() => {
+                    }} className={styles.previous}><ChevronLeftIcon/></Button>
+                    <Button color="primary" square ariaLabel={t('screenshots.next')} onClick={() => {
                         onIndex(next);
-                    }} className={styles.next}>›</Button>
+                    }} className={styles.next}><ChevronRightIcon/></Button>
                 </>
             )}
         </div>,

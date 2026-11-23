@@ -179,6 +179,98 @@ describe(SoftwareView, () => {
         });
     });
 
+    it('lets whoever may change the software move each screenshot a place, never past the ends', async () => {
+        stubFetch(json(ELITE), json([AY_MOD]), json(MEMBER), json(SHOTS));
+        renderView(ID);
+
+        const screenshots = await screen.findByRole('region', {name: 'Screenshots'});
+
+        await expect(within(screenshots).findByRole('button', {name: 'Move screenshot 1 left'})).resolves.toBeDisabled();
+        expect(within(screenshots).getByRole('button', {name: 'Move screenshot 1 right'})).toBeEnabled();
+        expect(within(screenshots).getByRole('button', {name: 'Move screenshot 2 left'})).toBeEnabled();
+        expect(within(screenshots).getByRole('button', {name: 'Move screenshot 2 right'})).toBeDisabled();
+    });
+
+    it('offers no moving of screenshots to whoever may not change the software', async () => {
+        stubFetch(json({...ELITE, canChange: false}), json([AY_MOD]), json(MEMBER), json(SHOTS));
+        renderView(ID);
+
+        const screenshots = await screen.findByRole('region', {name: 'Screenshots'});
+        await within(screenshots).findAllByRole('button', {name: /^Screenshot \d of 2$/u});
+
+        expect(within(screenshots).queryByRole('button', {name: /^Move screenshot/u})).not.toBeInTheDocument();
+    });
+
+    it('moves a screenshot by sending every screenshot in the new order and shows them so', async () => {
+        const [first, second] = SHOTS;
+        let shown = SHOTS;
+        const fetchMock = stubFetchRoutes(new Map([
+            [`/api/software/${ID}`, json(ELITE)],
+            [`/api/software/${ID}/screenshots`, () => json(shown)()],
+            [`/api/software/${ID}/screenshots/order`, () => {
+                shown = [second, first].filter((shot) => shot !== undefined);
+                return noContent()();
+            }],
+            [`/api/software/${ID}/releases`, json([AY_MOD])],
+            ['/api/auth/me', json(MEMBER)],
+        ]));
+        renderView(ID);
+
+        const screenshots = await screen.findByRole('region', {name: 'Screenshots'});
+        await userEvent.click(await within(screenshots).findByRole('button', {name: 'Move screenshot 1 right'}));
+
+        await waitFor(() => {
+            expect(within(screenshots).getAllByRole('img', {hidden: true}).map((picture) => picture.getAttribute('src'))).toStrictEqual([second?.url, first?.url]);
+        });
+
+        const put = fetchMock.mock.calls.find(([url]) => url === `/api/software/${ID}/screenshots/order`);
+
+        expect(put?.[1]?.method).toBe('PUT');
+        expect(put?.[1]?.body).toBe(JSON.stringify({order: [second?.id, first?.id]}));
+    });
+
+    it('shows next to the screenshots why a move was refused', async () => {
+        stubFetchRoutes(new Map([
+            [`/api/software/${ID}`, json(ELITE)],
+            [`/api/software/${ID}/screenshots`, json(SHOTS)],
+            [`/api/software/${ID}/screenshots/order`, json({status: 403, code: 'access.denied'}, 403)],
+            [`/api/software/${ID}/releases`, json([AY_MOD])],
+            ['/api/auth/me', json(MEMBER)],
+        ]));
+        renderView(ID);
+
+        const screenshots = await screen.findByRole('region', {name: 'Screenshots'});
+        await userEvent.click(await within(screenshots).findByRole('button', {name: 'Move screenshot 2 left'}));
+
+        await expect(within(screenshots).findByRole('alert')).resolves.toHaveTextContent('Only whoever added this, or an administrator, may change it.');
+    });
+
+    it('shows the screenshots as they are now when they changed before the move', async () => {
+        const [first, second] = SHOTS;
+        const third = {id: '00000000-0000-0000-0055-000000000003', url: '/api/screenshots/00000000-0000-0000-0055-000000000003'};
+        let shown = SHOTS;
+        stubFetchRoutes(new Map([
+            [`/api/software/${ID}`, json(ELITE)],
+            [`/api/software/${ID}/screenshots`, () => json(shown)()],
+            [`/api/software/${ID}/screenshots/order`, () => {
+                shown = [...SHOTS, third];
+                return json({status: 409, code: 'screenshot.order-outdated'}, 409)();
+            }],
+            [`/api/software/${ID}/releases`, json([AY_MOD])],
+            ['/api/auth/me', json(MEMBER)],
+        ]));
+        renderView(ID);
+
+        const screenshots = await screen.findByRole('region', {name: 'Screenshots'});
+        await userEvent.click(await within(screenshots).findByRole('button', {name: 'Move screenshot 1 right'}));
+
+        await expect(within(screenshots).findByRole('alert')).resolves.toHaveTextContent('The screenshots have changed meanwhile; here they are as they are now.');
+
+        await waitFor(() => {
+            expect(within(screenshots).getAllByRole('img', {hidden: true}).map((picture) => picture.getAttribute('src'))).toStrictEqual([first?.url, second?.url, third.url]);
+        });
+    });
+
     it('shows the releases of the software with the hardware each one shows', async () => {
         stubFetch(json(ELITE));
         renderView(ID);
