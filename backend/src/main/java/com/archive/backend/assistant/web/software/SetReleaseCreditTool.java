@@ -74,6 +74,6 @@ public class SetReleaseCreditTool implements WriteTool<ReleaseCreditArguments> {
                 a.softwareId(),
                 a.releaseId(),
                 SoftwareForms.request(current, SoftwareForms.withCredit(current.credits(), credit))));
-        return new Written(a.releaseId());
+        return Written.of(a.releaseId());
     }
 }

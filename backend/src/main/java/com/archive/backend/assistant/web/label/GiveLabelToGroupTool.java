@@ -28,8 +28,8 @@ public class GiveLabelToGroupTool implements WriteTool<LabelGroupArguments> {
 
     @Override
     public String description() {
-        return "Makes a label of a person or of nobody a label of a group: the name the group, not a person, is credited"
-                + " under.";
+        return "Makes a label of nobody, or of another group, a label of a group: another name of it, keeping its credits"
+                + " and memberships. Never a label of a person.";
     }
 
     @Override
@@ -70,6 +70,6 @@ public class GiveLabelToGroupTool implements WriteTool<LabelGroupArguments> {
     @Override
     public Written write(ToolContext context, LabelGroupArguments a) {
         handler.handle(new GiveLabelToGroupCommand(context.actor(), new LabelId(a.id()), new GroupId(a.groupId())));
-        return new Written(a.id());
+        return Written.of(a.id());
     }
 }

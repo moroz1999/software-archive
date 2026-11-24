@@ -58,6 +58,6 @@ public class DeleteSoftwareTool implements WriteTool<IdArguments> {
     @Override
     public Written write(ToolContext context, IdArguments arguments) {
         handler.handle(new DeleteSoftwareCommand(context.actor(), new SoftwareId(arguments.id())));
-        return new Written(arguments.id());
+        return Written.of(arguments.id());
     }
 }

@@ -72,6 +72,6 @@ public class RemoveSoftwareCreditTool implements WriteTool<RemoveSoftwareCreditA
                 context.actor(),
                 a.softwareId(),
                 SoftwareForms.request(current, SoftwareForms.withoutCredit(current.credits(), a.id()))));
-        return new Written(a.softwareId());
+        return Written.of(a.softwareId());
     }
 }

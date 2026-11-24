@@ -78,7 +78,7 @@ public class CreateReleaseTool implements WriteTool<CreateReleaseArguments> {
                 Changes.text(a.description()),
                 a.hardware(),
                 SoftwareForms.credits(a.credits()));
-        return new Written(handler.handle(mapper.toCreate(context.actor(), a.softwareId(), request))
+        return Written.of(handler.handle(mapper.toCreate(context.actor(), a.softwareId(), request))
                 .value());
     }
 }

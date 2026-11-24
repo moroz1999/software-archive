@@ -55,7 +55,7 @@ class LabelWriteToolsIT {
                 """.formatted(FINLAND);
         assertThat(calls.state("create_label", zork, MEMBER)).isNull();
 
-        UUID id = calls.write("create_label", zork, MEMBER).id();
+        UUID id = calls.write("create_label", zork, MEMBER).uuid();
 
         DocumentContext label = label(id);
         assertThat(label.read("$.label.name", String.class)).isEqualTo("Zork");
@@ -118,11 +118,11 @@ class LabelWriteToolsIT {
         DocumentContext state =
                 ToolJson.of(calls.state("merge_label_into_author", merge(GHOST, "authorId", JANE), ADMIN));
         UUID person = calls.write("merge_label_into_author", merge(GHOST, "authorId", JANE), ADMIN)
-                .id();
+                .uuid();
         UUID group = calls.write("merge_label_into_group", merge(first, "groupId", CREW), ADMIN)
-                .id();
+                .uuid();
         UUID label = calls.write("merge_label_into_label", merge(second, "labelId", JANE_ALT), ADMIN)
-                .id();
+                .uuid();
 
         assertThat(state.read("$.label.name", String.class)).isEqualTo("Ghost");
         assertThat(person).isEqualTo(JANE);
@@ -138,11 +138,11 @@ class LabelWriteToolsIT {
         UUID first = label("First");
 
         UUID person = calls.write("make_author_of_label", "{\"id\": \"%s\"}".formatted(GHOST), ADMIN)
-                .id();
+                .uuid();
         UUID group =
                 calls.write("make_group_of_label", """
                         {"id": "%s", "types": ["demogroup"]}
-                        """.formatted(first), ADMIN).id();
+                        """.formatted(first), ADMIN).uuid();
 
         DocumentContext author = ToolJson.of(calls.read("get_author", "{\"id\": \"%s\"}".formatted(person), ADMIN));
         assertThat(author.read("$.author.name", String.class)).isEqualTo("Ghost");
@@ -172,7 +172,7 @@ class LabelWriteToolsIT {
 
     private UUID label(String name) {
         return calls.write("create_label", "{\"name\": \"%s\"}".formatted(name), ADMIN)
-                .id();
+                .uuid();
     }
 
     private DocumentContext label(UUID id) {

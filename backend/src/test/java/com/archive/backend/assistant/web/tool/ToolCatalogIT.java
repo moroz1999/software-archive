@@ -57,6 +57,7 @@ class ToolCatalogIT {
                         "list_hardware",
                         "list_countries",
                         "list_cities",
+                        "find_places",
                         "list_options",
                         "load_skill");
     }
@@ -94,7 +95,14 @@ class ToolCatalogIT {
                         "merge_label_into_group",
                         "merge_label_into_label",
                         "make_author_of_label",
-                        "make_group_of_label");
+                        "make_group_of_label",
+                        "create_country",
+                        "create_city",
+                        "merge_country",
+                        "merge_city",
+                        "put_city_in_country",
+                        "turn_city_into_country",
+                        "create_hardware");
         assertThat(registry.tools())
                 .hasSize(registry.readTools().size() + registry.writeTools().size());
     }
@@ -104,7 +112,7 @@ class ToolCatalogIT {
         assertThat(registry.writeTools())
                 .allSatisfy(tool -> assertThat(tool.entityType())
                         .as(tool.name())
-                        .isIn("software", "release", "author", "group", "label"));
+                        .isIn("software", "release", "author", "group", "label", "country", "city", "hardware"));
     }
 
     @Test

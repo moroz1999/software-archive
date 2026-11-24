@@ -49,7 +49,7 @@ class AuthorWriteToolsIT {
     void addsAPersonWithTheirLabelsAndLocations() {
         assertThat(calls.state("create_author", ivan(), MEMBER)).isNull();
 
-        UUID id = calls.write("create_author", ivan(), MEMBER).id();
+        UUID id = calls.write("create_author", ivan(), MEMBER).uuid();
 
         DocumentContext author = author(id);
         assertThat(author.read("$.author.realName", String.class)).isEqualTo("Ivan Petrov");
@@ -62,7 +62,7 @@ class AuthorWriteToolsIT {
 
     @Test
     void showsThePersonAsTheyAreInTheNamesOfTheArguments() {
-        UUID id = calls.write("create_author", ivan(), MEMBER).id();
+        UUID id = calls.write("create_author", ivan(), MEMBER).uuid();
 
         DocumentContext state = ToolJson.of(calls.state("update_author", "{\"id\": \"%s\"}".formatted(id), MEMBER));
 
@@ -78,11 +78,11 @@ class AuthorWriteToolsIT {
 
     @Test
     void changesOnlyTheFieldsGiven() {
-        UUID id = calls.write("create_author", ivan(), MEMBER).id();
+        UUID id = calls.write("create_author", ivan(), MEMBER).uuid();
 
         UUID written = calls.write("update_author", """
                         {"id": "%s", "notes": "Coder and musician.", "realName": ""}
-                        """.formatted(id), MEMBER).id();
+                        """.formatted(id), MEMBER).uuid();
 
         assertThat(written).isEqualTo(id);
         DocumentContext author = author(id);
@@ -94,7 +94,7 @@ class AuthorWriteToolsIT {
 
     @Test
     void renamesALabelOfThePersonAndAddsAnother() {
-        UUID id = calls.write("create_author", ivan(), MEMBER).id();
+        UUID id = calls.write("create_author", ivan(), MEMBER).uuid();
         DocumentContext state = ToolJson.of(calls.state("update_author", "{\"id\": \"%s\"}".formatted(id), MEMBER));
         String ip = ToolJson.list(state, "$.labels[?(@.name == 'IP')].id")
                 .getFirst()
@@ -112,7 +112,7 @@ class AuthorWriteToolsIT {
 
     @Test
     void deletesAPersonLeavingTheirLabelsToNobody() {
-        UUID id = calls.write("create_author", ivan(), MEMBER).id();
+        UUID id = calls.write("create_author", ivan(), MEMBER).uuid();
         String ip = ToolJson.list(author(id), "$.author.labels[?(@.name == 'IP')].id")
                 .getFirst()
                 .toString();
@@ -128,7 +128,7 @@ class AuthorWriteToolsIT {
 
     @Test
     void refusesAnIdOfNothingAndLeavesWhoMayChangeWhomToTheArchive() {
-        UUID id = calls.write("create_author", ivan(), MEMBER).id();
+        UUID id = calls.write("create_author", ivan(), MEMBER).uuid();
 
         assertThatThrownBy(() -> calls.state("update_author", "{\"id\": \"%s\"}".formatted(FINLAND), MEMBER))
                 .isInstanceOf(NotFoundException.class);

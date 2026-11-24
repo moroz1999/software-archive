@@ -75,7 +75,7 @@ public class MakeGroupOfLabelTool implements WriteTool<MakeGroupOfLabelArguments
         Set<GroupTypeCode> types = a.types() == null
                 ? Set.of()
                 : a.types().stream().map(GroupTypeCode::new).collect(Collectors.toCollection(LinkedHashSet::new));
-        return new Written(handler.handle(new MakeGroupOfLabelCommand(context.actor(), new LabelId(a.id()), types))
+        return Written.of(handler.handle(new MakeGroupOfLabelCommand(context.actor(), new LabelId(a.id()), types))
                 .value());
     }
 }

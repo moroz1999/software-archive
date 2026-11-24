@@ -78,7 +78,7 @@ public class CreateSoftwareTool implements WriteTool<CreateSoftwareArguments> {
                 a.categoryIds(),
                 SoftwareForms.credits(a.credits()),
                 a.preservation());
-        return new Written(
+        return Written.of(
                 handler.handle(mapper.toCreate(context.actor(), request)).value());
     }
 }

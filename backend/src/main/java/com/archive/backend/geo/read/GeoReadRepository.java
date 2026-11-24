@@ -38,4 +38,10 @@ public interface GeoReadRepository {
      * spaces and hyphens aside — named as countries are.
      */
     GeoDuplicates findDuplicates(String language);
+
+    /**
+     * The countries and the cities with a name in any language containing the text given — letter case, "ё" and "е",
+     * spaces and hyphens aside — named as countries are: those of that very name first, then by name.
+     */
+    List<FoundPlace> findPlaces(String name, String language);
 }

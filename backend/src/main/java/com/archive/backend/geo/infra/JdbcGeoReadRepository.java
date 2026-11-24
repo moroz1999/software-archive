@@ -4,6 +4,7 @@ import com.archive.backend.geo.read.CityDetails;
 import com.archive.backend.geo.read.CityItem;
 import com.archive.backend.geo.read.CountryDetails;
 import com.archive.backend.geo.read.CountryItem;
+import com.archive.backend.geo.read.FoundPlace;
 import com.archive.backend.geo.read.GeoDuplicates;
 import com.archive.backend.geo.read.GeoNameSql;
 import com.archive.backend.geo.read.GeoReadRepository;
@@ -11,6 +12,7 @@ import com.archive.backend.geo.read.GeographyCity;
 import com.archive.backend.geo.read.GeographyCountry;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -128,5 +130,56 @@ public class JdbcGeoReadRepository implements GeoReadRepository {
     @Override
     public GeoDuplicates findDuplicates(String language) {
         return duplicates.find(language);
+    }
+
+    @Override
+    public List<FoundPlace> findPlaces(String name, String language) {
+        String key = JdbcGeoDuplicates.key(":name");
+        return jdbc.sql("""
+                        WITH found AS (
+                            SELECT 'country' AS kind, n.country_id AS id, NULL::uuid AS country_id,
+                                   bool_or(%1$s = %2$s) AS exact,
+                                   array_agg(n.language ORDER BY n.language) AS languages,
+                                   array_agg(n.name ORDER BY n.language) AS names
+                            FROM country_name n
+                            GROUP BY n.country_id
+                            HAVING bool_or(strpos(%1$s, %2$s) > 0)
+                            UNION ALL
+                            SELECT 'city', n.city_id, ci.country_id, bool_or(%1$s = %2$s),
+                                   array_agg(n.language ORDER BY n.language), array_agg(n.name ORDER BY n.language)
+                            FROM city_name n JOIN city ci ON ci.id = n.city_id
+                            GROUP BY n.city_id, ci.country_id
+                            HAVING bool_or(strpos(%1$s, %2$s) > 0)
+                        )
+                        SELECT f.kind, f.id, f.country_id, f.languages, f.names,
+                               CASE f.kind WHEN 'country' THEN %3$s ELSE %4$s END AS name,
+                               %5$s AS country
+                        FROM found f
+                        ORDER BY f.exact DESC, lower(CASE f.kind WHEN 'country' THEN %3$s ELSE %4$s END), f.id
+                        LIMIT 50
+                        """.formatted(
+                                JdbcGeoDuplicates.key("n.name"),
+                                key,
+                                GeoNameSql.country("f.id"),
+                                GeoNameSql.city("f.id"),
+                                GeoNameSql.country("f.country_id")))
+                .param("name", name)
+                .param("language", language)
+                .query((rs, row) -> {
+                    String[] languages = (String[]) rs.getArray("languages").getArray();
+                    String[] names = (String[]) rs.getArray("names").getArray();
+                    Map<String, String> byLanguage = new LinkedHashMap<>();
+                    for (int i = 0; i < languages.length; i++) {
+                        byLanguage.put(languages[i], names[i]);
+                    }
+                    return new FoundPlace(
+                            rs.getObject("id", UUID.class),
+                            rs.getString("kind"),
+                            rs.getString("name"),
+                            byLanguage,
+                            rs.getObject("country_id", UUID.class),
+                            rs.getString("country"));
+                })
+                .list();
     }
 }

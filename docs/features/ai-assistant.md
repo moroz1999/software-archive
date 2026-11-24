@@ -13,15 +13,17 @@ The tools are adapters over the use cases, in `assistant/web`, beside the contro
 - The tools that read a list of a page (`search`, `search_software`, `list_latest_software`, `list_authors`, `list_groups`) take the same filters as that page, so the page context the editor sends names the call that reads what they see.
 - An entry is read as its page shows it: `get_software` (with its screenshots and releases), `get_release` (with its screenshots and the file tree of its archive, if it has one), `get_author`, `get_group`, `get_label` (each with the software and releases credited on it). They answer the read models of their domains.
 - `find_names` is the credit picker of the software form: the only search that finds labels of nobody.
+- `find_places` runs `FindPlacesHandler` of the geo domain: `JdbcGeoReadRepository.findPlaces` matches every name of a country or a city by the key the duplicates are compared by (`JdbcGeoDuplicates.key`).
 - `ToolCatalogIT` checks every tool: its description, its schema closed, and its schema naming exactly the components of its arguments record (and of the records in its lists), requiring those that are not `@Nullable`.
 
 ### Write tools
 
 - `WriteTool` changes the archive and is only put into a plan: `ToolCalls.read` refuses it, and `ToolCalls.state`/`write` refuse a read tool. It names its `ChangeKind` and the type of the entry it changes, and has two calls:
   - `state`: the entry as it is now, for the plan to show; none for a create. An edit shows the entry in the names of its own arguments (`SoftwareState`, `ReleaseState`, `AuthorState`, `GroupState`, `LabelState`), so the plan sets what is beside what becomes; a delete, a merge or a conversion shows the entry as its `get_*` tool reads it, with what goes with it. An id of nothing is the use case's not-found.
-  - `write`: makes the change and answers `Written`, the id it produced (the entry added, changed, merged into or made) for a later change of the plan.
+  - `write`: makes the change and answers `Written`, the id it produced (the entry added, changed, merged into or made; the code of hardware) for a later change of the plan.
 - A tool goes through the module's own form: it builds the request DTO of its controller and converts it with the module's web mapper, so a write by the assistant is checked exactly as one by the form. The commands without a form body (deleting, attaching, merging, making an owner of a label) are built directly, as their controllers build them.
 - An edit is the form sent whole: `*Forms` reads the entry as it is and `Changes` lays the arguments given over it (a field left out stays, an empty text clears it, a list given replaces it). `set_*_credit`, `remove_*_credit`, `set_group_member` and `remove_group_member` change one item of that list; taking away one that is not there is refused.
+- Places and hardware go through the management's own requests (`PlaceRequestDto`, `HardwareRequestDto`) and mappers; `NamesArguments` gives the Russian name and the English one. A geo merge or move shows the city or the country as the management reads it.
 - `update_label` keeps the owner the label has; `detach_label` is the label form sent with no owner. Uploads (archives, screenshots) are not written yet.
 - The schemas take their enumerations from the domain: credit and member roles, reference types, release types, preservation statuses. Roles outside them are refused before the use case runs.
 - `*WriteToolsIT`, one per area, run each tool through `ToolCalls` against the database and read the effect back with the read tools.

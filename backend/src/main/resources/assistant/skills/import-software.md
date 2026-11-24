@@ -8,8 +8,9 @@ description: Adding software from a page of another site.
 - Then call `load_skill` with `find-software` and follow it. Same work: offer to change the stored software (`update_software`), not to add another (`create_software`).
 - Add a person, a group or a label only when no one of that name exists, or when `find-author` says the stored namesake is somebody else; say so in the plan.
 - Software is for exactly one platform: find it with `list_platforms`.
-- Put it into a leaf category of `list_categories` (e.g. Arcade under Games), never into a top-level section.
+- Put it into a leaf category of `list_categories` (e.g. Arcade under Games), never into a top-level section. A category the work clearly belongs to but the archive lacks: do not put it into a near one instead; ask the editor in your answer, naming the category and where in the tree it would go.
 - Credits: each person, group or label once, with all their roles from `list_options` (developer, publisher, code, music…). Credit the label the page names, not its owner instead. Work on a copy (cracking, intro, adaptation, translation) is a credit of the release, not of the software.
+- Hardware: the codes of `list_hardware` of the platform. Hardware the source clearly names but the list lacks: add it in the plan before the software (`create_hardware`, in its group, with a code of lower-case Latin letters, digits and hyphens) and say so. Never add hardware the source only hints at.
 - Hardware is split between the software and its releases. The software holds its base hardware: what every release needs. A release states only what is its own (another machine of the platform, a floppy instead of a tape, an AY): a group it states replaces that group of the software.
 - Copy the page's description of the work into the software's description: exactly and in full, no rewording, no retelling, no cuts, nothing of your own. Do not invent a description.
 - A release gets a description only when the page describes that version apart from the work, e.g. the changes of each version in a list of several.

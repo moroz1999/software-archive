@@ -29,7 +29,7 @@ public class MergeLabelIntoAuthorTool implements WriteTool<MergeLabelIntoAuthorA
     @Override
     public String description() {
         return "Merges a label into the person it is a duplicate of: its credits and memberships go to the person, the label"
-                + " is deleted.";
+                + " is deleted. Only a label of nobody or of a group is merged, never a label of a person.";
     }
 
     @Override
@@ -71,6 +71,6 @@ public class MergeLabelIntoAuthorTool implements WriteTool<MergeLabelIntoAuthorA
     public Written write(ToolContext context, MergeLabelIntoAuthorArguments a) {
         handler.handle(
                 new MergeLabelIntoAuthorCommand(context.actor(), new LabelId(a.id()), new AuthorId(a.authorId())));
-        return new Written(a.authorId());
+        return Written.of(a.authorId());
     }
 }

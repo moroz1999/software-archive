@@ -50,7 +50,7 @@ class SoftwareWriteToolsIT {
     void addsSoftwareOfTheFieldsGiven() {
         assertThat(calls.state("create_software", elite(), MEMBER)).isNull();
 
-        UUID id = calls.write("create_software", elite(), MEMBER).id();
+        UUID id = calls.write("create_software", elite(), MEMBER).uuid();
 
         DocumentContext software = software(id);
         assertThat(software.read("$.software.title", String.class)).isEqualTo("Elite");
@@ -66,7 +66,7 @@ class SoftwareWriteToolsIT {
 
     @Test
     void showsTheSoftwareAsItIsInTheNamesOfTheArguments() {
-        UUID id = calls.write("create_software", elite(), MEMBER).id();
+        UUID id = calls.write("create_software", elite(), MEMBER).uuid();
 
         DocumentContext state = ToolJson.of(calls.state("update_software", "{\"id\": \"%s\"}".formatted(id), MEMBER));
 
@@ -85,11 +85,11 @@ class SoftwareWriteToolsIT {
 
     @Test
     void changesOnlyTheFieldsGiven() {
-        UUID id = calls.write("create_software", elite(), MEMBER).id();
+        UUID id = calls.write("create_software", elite(), MEMBER).uuid();
 
         UUID written = calls.write("update_software", """
                         {"id": "%s", "title": "Elite Plus", "releaseDate": "1986-05-12"}
-                        """.formatted(id), MEMBER).id();
+                        """.formatted(id), MEMBER).uuid();
 
         assertThat(written).isEqualTo(id);
         DocumentContext software = software(id);
@@ -104,7 +104,7 @@ class SoftwareWriteToolsIT {
 
     @Test
     void clearsATextGivenEmptyAndReplacesAListGiven() {
-        UUID id = calls.write("create_software", elite(), MEMBER).id();
+        UUID id = calls.write("create_software", elite(), MEMBER).uuid();
 
         calls.write("update_software", """
                 {"id": "%s", "description": "", "releaseDate": "", "categoryIds": [], "credits": []}
@@ -119,10 +119,10 @@ class SoftwareWriteToolsIT {
 
     @Test
     void deletesSoftwareShowingTheReleasesThatGoWithIt() {
-        UUID id = calls.write("create_software", elite(), MEMBER).id();
+        UUID id = calls.write("create_software", elite(), MEMBER).uuid();
         UUID release = calls.write("create_release", """
                         {"softwareId": "%s", "type": "original"}
-                        """.formatted(id), MEMBER).id();
+                        """.formatted(id), MEMBER).uuid();
 
         DocumentContext state = ToolJson.of(calls.state("delete_software", "{\"id\": \"%s\"}".formatted(id), MEMBER));
         calls.write("delete_software", "{\"id\": \"%s\"}".formatted(id), MEMBER);
@@ -134,7 +134,7 @@ class SoftwareWriteToolsIT {
 
     @Test
     void creditsSomebodyOrChangesTheirRoles() {
-        UUID id = calls.write("create_software", elite(), MEMBER).id();
+        UUID id = calls.write("create_software", elite(), MEMBER).uuid();
 
         calls.write("set_software_credit", """
                 {"softwareId": "%s", "id": "%s", "type": "group", "roles": ["publisher"]}
@@ -142,7 +142,7 @@ class SoftwareWriteToolsIT {
         UUID written = calls.write("set_software_credit", """
                         {"softwareId": "%s", "id": "%s", "type": "author-label", "roles": ["code", "music"]}
                         """.formatted(id, JD), MEMBER)
-                .id();
+                .uuid();
 
         assertThat(written).isEqualTo(id);
         DocumentContext software = software(id);
@@ -156,7 +156,7 @@ class SoftwareWriteToolsIT {
 
     @Test
     void takesACreditAwayAndRefusesOneThatIsNotThere() {
-        UUID id = calls.write("create_software", elite(), MEMBER).id();
+        UUID id = calls.write("create_software", elite(), MEMBER).uuid();
         String remove = "{\"softwareId\": \"%s\", \"id\": \"%s\"}";
 
         DocumentContext state = ToolJson.of(calls.state("remove_software_credit", remove.formatted(id, JD), MEMBER));
@@ -178,7 +178,7 @@ class SoftwareWriteToolsIT {
 
     @Test
     void leavesWhoMayChangeWhatToTheArchive() {
-        UUID id = calls.write("create_software", elite(), MEMBER).id();
+        UUID id = calls.write("create_software", elite(), MEMBER).uuid();
 
         assertThatThrownBy(() -> calls.write("update_software", """
                         {"id": "%s", "title": "Elite Plus"}

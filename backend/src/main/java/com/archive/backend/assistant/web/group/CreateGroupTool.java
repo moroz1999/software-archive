@@ -81,7 +81,7 @@ public class CreateGroupTool implements WriteTool<CreateGroupArguments> {
                 a.labels(),
                 a.locations(),
                 GroupForms.members(a.members()));
-        return new Written(
+        return Written.of(
                 handler.handle(mapper.toCreate(context.actor(), request)).value());
     }
 }

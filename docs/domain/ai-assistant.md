@@ -3,13 +3,13 @@
 An assistant that helps trusted editors fill and clean the archive. An editor gives it a task in a chat — about the page they are looking at, about a page of another site, or about the archive as a whole — and the assistant researches the archive, asks when something is ambiguous, and proposes a **plan**: an ordered list of changes. Nothing is changed until the editor approves the whole plan.
 
 ## Who may use it
-Only members of the user group **AI assistant**, given on purpose by an administrator, like the moderator group ([users.md](users.md#user-groups)). Everyone else sees nothing of the assistant. The assistant acts as the editor who asked it: it sees what they may see, and every change of a plan is made as theirs, by the rules they obey, so a change they may not make fails when the plan runs.
+Only members of the user group **AI assistant**, given on purpose by an administrator, like the moderator group ([users.md](users.md#user-groups)). It is given only to administrators: the head administrator sees to it; the archive itself does not tie the two. Everyone else sees nothing of the assistant. The assistant acts as the editor who asked it: it sees what they may see, and every change of a plan is made as theirs, by the rules they obey, so a change they may not make fails when the plan runs.
 
 ## What it knows of the page
 Every message carries the page the editor wrote it from. On the page of an entry the assistant knows which entry it is. On a list — the catalog of software, of authors, of groups, the search results, the fresh software — it knows the list as the editor sees it, with its filters and page, and can read it itself. So an editor can ask it to find and sort out the duplicates on the page in front of them.
 
 ## Reading
-The assistant reads freely, without asking: it searches software, releases, people, groups and labels, reads their pages, the catalogs and lists of the archive, its reference books (categories, platforms and hardware, countries and cities, group types, roles, release types, preservation statuses), and pages and pictures of other sites given to it.
+The assistant reads freely, without asking: it searches software, releases, people, groups and labels, reads their pages, the catalogs and lists of the archive, its reference books (categories, platforms and hardware, countries and cities, group types, roles, release types, preservation statuses), and pages and pictures of other sites given to it. It finds a country or a city by any of its names in any language, letter case, "ё" and "е", spaces and hyphens aside, those of that very name first; a city with its country, if known.
 
 ### Release search
 Releases are found by the assistant on their own, apart from their software: by a word of their title, their version or the title of their software, by their software, type, release year (a release of unknown date has none), platform, hardware (the release's own, and its software's in the groups the release does not state), who is credited on them (a person or a group is found by themselves and by any of their labels, a label only where it is credited itself) and in which roles, by the name of their archive or of any file inside it, and by the MD5 digest of a file inside. The latter finds a file the archive already keeps under another release.
@@ -28,13 +28,16 @@ Releases are found by the assistant on their own, apart from their software: by 
 - People and groups: adding them with their labels, locations and (of a group) members; editing, deleting (their labels stay, as labels of nobody); taking a member into a group, giving a member other roles, taking one out.
 - Labels: adding a label of nobody; renaming and relocating one (whose it is stays); attaching a label of nobody to its person or group, taking a label away from its owner, making a label a label of a group; merging a label into the person, the group or the label it duplicates; making a new person or group of a label of nobody; deleting one.
 - An edit changes only what it names: the rest of the entry stays as it is when the plan runs. A list it names (credits, labels, members, locations, hardware, categories) is replaced whole.
+- Countries and cities: adding them; merging a country or a city into the one it duplicates; putting a city in a country; making a country of a city of no known country ([geo.md](geo.md#keeping)).
+- Hardware: adding an item the source clearly names and the reference book lacks ([hardware.md](hardware.md)).
+- A category the work clearly belongs to but the archive lacks is not added and not replaced by a near one: the assistant asks the editor.
 - Two people, two groups or two software cannot be merged: the assistant reports such duplicates with its evidence instead.
 
 ## Skills
 The assistant's knowledge of how a kind of task is done in this archive — finding which person a name means, finding whether software is already in the archive, adding software from a page of another site — is written down as its skills, which it reads before such a task.
 
 ## Language
-The assistant answers in the language the editor wrote in. It does not fill names kept in several languages.
+The assistant answers in the language the editor wrote in. It does not fill names kept in several languages, except of a country, a city or an item of hardware it adds: the Russian name, and the English one when it knows it.
 
 ## Conversations
 An editor has any number of conversations, each with its own history, and sees only their own. One task runs in a conversation at a time.

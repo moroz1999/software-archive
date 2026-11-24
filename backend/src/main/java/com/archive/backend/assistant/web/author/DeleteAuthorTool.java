@@ -58,6 +58,6 @@ public class DeleteAuthorTool implements WriteTool<IdArguments> {
     @Override
     public Written write(ToolContext context, IdArguments a) {
         handler.handle(new DeleteAuthorCommand(context.actor(), new AuthorId(a.id())));
-        return new Written(a.id());
+        return Written.of(a.id());
     }
 }

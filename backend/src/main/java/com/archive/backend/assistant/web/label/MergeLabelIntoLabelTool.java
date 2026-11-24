@@ -28,7 +28,7 @@ public class MergeLabelIntoLabelTool implements WriteTool<MergeLabelIntoLabelArg
     @Override
     public String description() {
         return "Merges a label into another label it is a duplicate of: its credits go to the other one, the label is"
-                + " deleted.";
+                + " deleted. Only a label of nobody or of a group is merged, never a label of a person.";
     }
 
     @Override
@@ -69,6 +69,6 @@ public class MergeLabelIntoLabelTool implements WriteTool<MergeLabelIntoLabelArg
     @Override
     public Written write(ToolContext context, MergeLabelIntoLabelArguments a) {
         handler.handle(new MergeLabelIntoLabelCommand(context.actor(), new LabelId(a.id()), new LabelId(a.labelId())));
-        return new Written(a.labelId());
+        return Written.of(a.labelId());
     }
 }

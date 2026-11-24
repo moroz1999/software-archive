@@ -16,7 +16,12 @@ class ClasspathSkillReadRepositoryTest {
         assertThat(skills.all())
                 .extracting(Skill::name)
                 .containsExactlyInAnyOrder(
-                        "find-author", "find-software", "add-authors", "import-software", "sort-out-duplicates");
+                        "find-author",
+                        "find-software",
+                        "add-authors",
+                        "import-software",
+                        "sort-out-duplicates",
+                        "merge-and-convert");
         assertThat(skills.all()).allSatisfy(skill -> {
             assertThat(skill.description()).as(skill.name()).isNotBlank();
             assertThat(skill.instructions()).as(skill.name()).isNotBlank().doesNotStartWith("---");

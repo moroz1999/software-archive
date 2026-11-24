@@ -73,6 +73,6 @@ public class RemoveReleaseCreditTool implements WriteTool<RemoveReleaseCreditArg
                 a.softwareId(),
                 a.releaseId(),
                 SoftwareForms.request(current, SoftwareForms.withoutCredit(current.credits(), a.id()))));
-        return new Written(a.releaseId());
+        return Written.of(a.releaseId());
     }
 }

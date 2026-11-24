@@ -72,7 +72,7 @@ public class CreateAuthorTool implements WriteTool<CreateAuthorArguments> {
     public Written write(ToolContext context, CreateAuthorArguments a) {
         AuthorRequestDto request =
                 AuthorForms.request(Changes.text(a.realName()), Changes.text(a.notes()), a.labels(), a.locations());
-        return new Written(
+        return Written.of(
                 handler.handle(mapper.toCreate(context.actor(), request)).value());
     }
 }

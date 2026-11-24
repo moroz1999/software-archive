@@ -28,7 +28,7 @@ public class MergeLabelIntoGroupTool implements WriteTool<LabelGroupArguments> {
 
     @Override
     public String description() {
-        return "Merges a label into the group it is a duplicate of: its credits go to the group, the label is deleted.";
+        return "Merges a label into the group it is a duplicate of: its credits go to the group, the label is deleted. Only a label of nobody or of a group is merged, never a label of a person.";
     }
 
     @Override
@@ -69,6 +69,6 @@ public class MergeLabelIntoGroupTool implements WriteTool<LabelGroupArguments> {
     @Override
     public Written write(ToolContext context, LabelGroupArguments a) {
         handler.handle(new MergeLabelIntoGroupCommand(context.actor(), new LabelId(a.id()), new GroupId(a.groupId())));
-        return new Written(a.groupId());
+        return Written.of(a.groupId());
     }
 }

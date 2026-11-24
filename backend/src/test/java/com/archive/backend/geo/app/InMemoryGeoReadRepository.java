@@ -4,6 +4,7 @@ import com.archive.backend.geo.read.CityDetails;
 import com.archive.backend.geo.read.CityItem;
 import com.archive.backend.geo.read.CountryDetails;
 import com.archive.backend.geo.read.CountryItem;
+import com.archive.backend.geo.read.FoundPlace;
 import com.archive.backend.geo.read.GeoDuplicates;
 import com.archive.backend.geo.read.GeoReadRepository;
 import com.archive.backend.geo.read.GeographyCity;
@@ -59,5 +60,10 @@ class InMemoryGeoReadRepository implements GeoReadRepository {
     @Override
     public GeoDuplicates findDuplicates(String language) {
         return new GeoDuplicates(List.of(), List.of());
+    }
+
+    @Override
+    public List<FoundPlace> findPlaces(String name, String language) {
+        return List.of();
     }
 }

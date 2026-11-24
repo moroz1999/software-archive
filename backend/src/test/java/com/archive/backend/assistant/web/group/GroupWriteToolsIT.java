@@ -51,7 +51,7 @@ class GroupWriteToolsIT {
     void addsAGroupWithItsLabelsLocationsAndMembers() {
         assertThat(calls.state("create_group", demoCrew(), MEMBER)).isNull();
 
-        UUID id = calls.write("create_group", demoCrew(), MEMBER).id();
+        UUID id = calls.write("create_group", demoCrew(), MEMBER).uuid();
 
         DocumentContext group = group(id);
         assertThat(group.read("$.group.name", String.class)).isEqualTo("Demo Crew");
@@ -65,7 +65,7 @@ class GroupWriteToolsIT {
 
     @Test
     void showsTheGroupAsItIsInTheNamesOfTheArguments() {
-        UUID id = calls.write("create_group", demoCrew(), MEMBER).id();
+        UUID id = calls.write("create_group", demoCrew(), MEMBER).uuid();
 
         DocumentContext state = ToolJson.of(calls.state("update_group", "{\"id\": \"%s\"}".formatted(id), MEMBER));
 
@@ -82,11 +82,11 @@ class GroupWriteToolsIT {
 
     @Test
     void changesOnlyTheFieldsGiven() {
-        UUID id = calls.write("create_group", demoCrew(), MEMBER).id();
+        UUID id = calls.write("create_group", demoCrew(), MEMBER).uuid();
 
         UUID written = calls.write("update_group", """
                         {"id": "%s", "name": "Demo Crew Inc", "types": ["demogroup", "game studio"]}
-                        """.formatted(id), MEMBER).id();
+                        """.formatted(id), MEMBER).uuid();
 
         assertThat(written).isEqualTo(id);
         DocumentContext group = group(id);
@@ -99,7 +99,7 @@ class GroupWriteToolsIT {
 
     @Test
     void makesSomebodyAMemberOrChangesTheirRolesOrTakesThemOut() {
-        UUID id = calls.write("create_group", demoCrew(), MEMBER).id();
+        UUID id = calls.write("create_group", demoCrew(), MEMBER).uuid();
 
         calls.write("set_group_member", """
                 {"groupId": "%s", "id": "%s", "type": "author", "roles": ["musician"]}
@@ -126,7 +126,7 @@ class GroupWriteToolsIT {
 
     @Test
     void deletesAGroup() {
-        UUID id = calls.write("create_group", demoCrew(), MEMBER).id();
+        UUID id = calls.write("create_group", demoCrew(), MEMBER).uuid();
 
         DocumentContext state = ToolJson.of(calls.state("delete_group", "{\"id\": \"%s\"}".formatted(id), MEMBER));
         calls.write("delete_group", "{\"id\": \"%s\"}".formatted(id), MEMBER);
@@ -137,7 +137,7 @@ class GroupWriteToolsIT {
 
     @Test
     void refusesAnIdOfNothingAndLeavesWhoMayChangeWhatToTheArchive() {
-        UUID id = calls.write("create_group", demoCrew(), MEMBER).id();
+        UUID id = calls.write("create_group", demoCrew(), MEMBER).uuid();
 
         assertThatThrownBy(() -> calls.state("update_group", "{\"id\": \"%s\"}".formatted(JANE), MEMBER))
                 .isInstanceOf(NotFoundException.class);

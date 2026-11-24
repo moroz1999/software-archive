@@ -69,7 +69,7 @@ public class CreateLabelTool implements WriteTool<CreateLabelArguments> {
     @Override
     public Written write(ToolContext context, CreateLabelArguments a) {
         NewLabelRequestDto request = new NewLabelRequestDto(a.name(), LabelForms.locations(a.locations()));
-        return new Written(
+        return Written.of(
                 handler.handle(mapper.toCreate(context.actor(), request)).value());
     }
 }

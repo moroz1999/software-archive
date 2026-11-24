@@ -57,6 +57,6 @@ public class DetachLabelTool implements WriteTool<IdArguments> {
     public Written write(ToolContext context, IdArguments a) {
         LabelState current = forms.label(context, a.id());
         forms.edit(context, a.id(), current.name(), current.locations(), false);
-        return new Written(a.id());
+        return Written.of(a.id());
     }
 }

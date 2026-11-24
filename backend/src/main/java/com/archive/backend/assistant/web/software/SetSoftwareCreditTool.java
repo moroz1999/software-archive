@@ -73,6 +73,6 @@ public class SetSoftwareCreditTool implements WriteTool<SoftwareCreditArguments>
                 context.actor(),
                 a.softwareId(),
                 SoftwareForms.request(current, SoftwareForms.withCredit(current.credits(), credit))));
-        return new Written(a.softwareId());
+        return Written.of(a.softwareId());
     }
 }

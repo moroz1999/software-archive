@@ -76,6 +76,6 @@ public class RemoveGroupMemberTool implements WriteTool<RemoveGroupMemberArgumen
                         GroupForms.currentMembers(current.members()).stream()
                                 .filter(member -> !a.id().equals(member.id()))
                                 .toList())));
-        return new Written(a.groupId());
+        return Written.of(a.groupId());
     }
 }

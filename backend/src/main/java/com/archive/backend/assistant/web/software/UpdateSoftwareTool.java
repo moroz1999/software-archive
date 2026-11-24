@@ -82,6 +82,6 @@ public class UpdateSoftwareTool implements WriteTool<UpdateSoftwareArguments> {
                 Changes.given(SoftwareForms.credits(a.credits()), SoftwareForms.currentCredits(current.credits())),
                 Changes.given(a.preservation(), current.preservation()));
         handler.handle(mapper.toUpdate(context.actor(), a.id(), request));
-        return new Written(a.id());
+        return Written.of(a.id());
     }
 }

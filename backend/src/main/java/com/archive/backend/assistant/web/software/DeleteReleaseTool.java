@@ -58,6 +58,6 @@ public class DeleteReleaseTool implements WriteTool<GetReleaseArguments> {
     @Override
     public Written write(ToolContext context, GetReleaseArguments a) {
         handler.handle(mapper.toDelete(context.actor(), a.softwareId(), a.releaseId()));
-        return new Written(a.releaseId());
+        return Written.of(a.releaseId());
     }
 }

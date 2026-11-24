@@ -85,6 +85,6 @@ public class AttachLabelTool implements WriteTool<AttachLabelArguments> {
                     new LabelAttachment(label, Boolean.TRUE.equals(a.display())),
                     new AuthorId(a.ownerId())));
         }
-        return new Written(a.id());
+        return Written.of(a.id());
     }
 }

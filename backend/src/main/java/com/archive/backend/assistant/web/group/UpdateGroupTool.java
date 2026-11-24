@@ -84,6 +84,6 @@ public class UpdateGroupTool implements WriteTool<UpdateGroupArguments> {
                 Changes.given(a.locations(), current.locations()),
                 Changes.given(GroupForms.members(a.members()), GroupForms.currentMembers(current.members())));
         handler.handle(mapper.toUpdate(context.actor(), a.id(), request));
-        return new Written(a.id());
+        return Written.of(a.id());
     }
 }

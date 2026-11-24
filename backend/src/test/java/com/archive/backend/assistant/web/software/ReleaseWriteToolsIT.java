@@ -47,14 +47,14 @@ class ReleaseWriteToolsIT {
         WriteToolsTestData.insert(jdbc);
         elite = calls.write("create_software", """
                         {"title": "Elite", "platform": "vector", "hardware": ["vector06c", "tape"]}
-                        """, MEMBER).id();
+                        """, MEMBER).uuid();
     }
 
     @Test
     void addsAReleaseOfItsSoftware() {
         assertThat(calls.state("create_release", ay(), MEMBER)).isNull();
 
-        UUID id = calls.write("create_release", ay(), MEMBER).id();
+        UUID id = calls.write("create_release", ay(), MEMBER).uuid();
 
         DocumentContext release = release(id);
         assertThat(release.read("$.release.title", String.class)).isEqualTo("Elite AY");
@@ -68,7 +68,7 @@ class ReleaseWriteToolsIT {
 
     @Test
     void showsTheReleaseAsItIsInTheNamesOfTheArguments() {
-        UUID id = calls.write("create_release", ay(), MEMBER).id();
+        UUID id = calls.write("create_release", ay(), MEMBER).uuid();
 
         DocumentContext state = ToolJson.of(calls.state("update_release", ids(id), MEMBER));
 
@@ -84,12 +84,12 @@ class ReleaseWriteToolsIT {
 
     @Test
     void changesOnlyTheFieldsGiven() {
-        UUID id = calls.write("create_release", ay(), MEMBER).id();
+        UUID id = calls.write("create_release", ay(), MEMBER).uuid();
 
         UUID written =
                 calls.write("update_release", """
                         {"softwareId": "%s", "releaseId": "%s", "version": "1.2", "description": ""}
-                        """.formatted(elite, id), MEMBER).id();
+                        """.formatted(elite, id), MEMBER).uuid();
 
         assertThat(written).isEqualTo(id);
         DocumentContext release = release(id);
@@ -102,7 +102,7 @@ class ReleaseWriteToolsIT {
 
     @Test
     void deletesARelease() {
-        UUID id = calls.write("create_release", ay(), MEMBER).id();
+        UUID id = calls.write("create_release", ay(), MEMBER).uuid();
 
         DocumentContext state = ToolJson.of(calls.state("delete_release", ids(id), MEMBER));
         calls.write("delete_release", ids(id), MEMBER);
@@ -113,7 +113,7 @@ class ReleaseWriteToolsIT {
 
     @Test
     void creditsSomebodyOnAReleaseOrTakesTheCreditAway() {
-        UUID id = calls.write("create_release", ay(), MEMBER).id();
+        UUID id = calls.write("create_release", ay(), MEMBER).uuid();
 
         calls.write("set_release_credit", """
                 {"softwareId": "%s", "releaseId": "%s", "id": "%s", "type": "group-label", "roles": ["intro_code"]}
@@ -133,7 +133,7 @@ class ReleaseWriteToolsIT {
 
     @Test
     void refusesAReleaseOfOtherSoftwareAndLeavesWhoMayChangeItToTheArchive() {
-        UUID id = calls.write("create_release", ay(), MEMBER).id();
+        UUID id = calls.write("create_release", ay(), MEMBER).uuid();
 
         assertThatThrownBy(() -> calls.state("update_release", """
                         {"softwareId": "%s", "releaseId": "%s"}

@@ -25,8 +25,12 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 class JdbcGeoDuplicates {
 
-    /** A name compared as people mean it: letter case, "ё" and "е", spaces and hyphens aside. */
-    private static final String KEY = "regexp_replace(translate(lower(n.name), 'ё', 'е'), '[[:space:]-]', '', 'g')";
+    private static final String KEY = key("n.name");
+
+    /** A name compared as people mean it: letter case, "ё" and "е", spaces and hyphens aside; of an SQL expression. */
+    static String key(String name) {
+        return "regexp_replace(translate(lower(" + name + "), 'ё', 'е'), '[[:space:]-]', '', 'g')";
+    }
 
     private final JdbcClient jdbc;
 

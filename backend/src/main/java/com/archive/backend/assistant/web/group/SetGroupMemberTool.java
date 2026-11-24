@@ -73,6 +73,6 @@ public class SetGroupMemberTool implements WriteTool<GroupMemberArguments> {
                 context.actor(),
                 a.groupId(),
                 GroupForms.request(current, GroupForms.withMember(current.members(), member))));
-        return new Written(a.groupId());
+        return Written.of(a.groupId());
     }
 }

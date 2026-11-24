@@ -57,7 +57,7 @@ public class MakeAuthorOfLabelTool implements WriteTool<IdArguments> {
 
     @Override
     public Written write(ToolContext context, IdArguments a) {
-        return new Written(handler.handle(new MakeAuthorOfLabelCommand(context.actor(), new LabelId(a.id())))
+        return Written.of(handler.handle(new MakeAuthorOfLabelCommand(context.actor(), new LabelId(a.id())))
                 .value());
     }
 }

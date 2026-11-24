@@ -80,6 +80,6 @@ public class UpdateReleaseTool implements WriteTool<UpdateReleaseArguments> {
                 Changes.given(a.hardware(), current.hardware()),
                 Changes.given(SoftwareForms.credits(a.credits()), SoftwareForms.currentCredits(current.credits())));
         handler.handle(mapper.toUpdate(context.actor(), a.softwareId(), a.releaseId(), request));
-        return new Written(a.releaseId());
+        return Written.of(a.releaseId());
     }
 }

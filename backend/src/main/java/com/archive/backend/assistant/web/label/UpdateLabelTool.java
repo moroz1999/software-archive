@@ -72,6 +72,6 @@ public class UpdateLabelTool implements WriteTool<UpdateLabelArguments> {
                 Changes.given(a.name(), current.name()),
                 Changes.given(a.locations(), current.locations()),
                 true);
-        return new Written(a.id());
+        return Written.of(a.id());
     }
 }

@@ -79,6 +79,6 @@ public class UpdateAuthorTool implements WriteTool<UpdateAuthorArguments> {
                 Changes.given(a.labels(), current.labels()),
                 Changes.given(a.locations(), current.locations()));
         handler.handle(mapper.toUpdate(context.actor(), a.id(), request));
-        return new Written(a.id());
+        return Written.of(a.id());
     }
 }

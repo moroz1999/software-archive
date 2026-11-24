@@ -58,6 +58,6 @@ public class DeleteGroupTool implements WriteTool<IdArguments> {
     @Override
     public Written write(ToolContext context, IdArguments a) {
         handler.handle(new DeleteGroupCommand(context.actor(), new GroupId(a.id())));
-        return new Written(a.id());
+        return Written.of(a.id());
     }
 }
