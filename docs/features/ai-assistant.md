@@ -35,3 +35,15 @@ The tools are adapters over the use cases, in `assistant/web`, beside the contro
 ## Skills
 
 A skill is a Markdown file in `backend/src/main/resources/assistant/skills/`: `<name>.md`, opened by a frontmatter of `name` (the file's name) and `description` (when to load it); the rest is the instructions. `ClasspathSkillReadRepository` reads them; a file that breaks this is refused, and `ClasspathSkillReadRepositoryTest` reads the archive's skills, so a broken one fails the build. `load_skill` answers one; an unknown name is `SkillNotFoundException`, naming the skills there are.
+
+## Other sites
+
+The `remote` module reads what other sites serve, for the tools only: `FetchPageHandler`, `ViewImageHandler` and `DownloadFileHandler` take a `RemoteUrl` (absolute, `http`/`https`, with a host) and go through `RemoteResources`, a read port that `GuardedRemoteResources` implements with OkHttp:
+- Redirects are followed by hand, at most five; before each request every address the host resolves to (an IP written as the host too) must pass `AddressPolicy`, and the call is pinned to those addresses through its own `Dns`, so a second DNS answer cannot lead it elsewhere. No proxy, no cookies, a neutral User-Agent; 10 s to connect, 60 s a call.
+- `PublicAddressPolicy` refuses loopback, any-local, link-local (169.254/16, fe80::/10), private (10/8, 172.16/12, 192.168/16), unique-local (fc00::/7), multicast, 0/8, 100.64/10, 192.0.0/24, 198.18/15 and 240/4, and an IPv4 address carried in IPv6 (mapped, compatible, NAT64) as itself. The integration tests replace it with one letting the IPv4 loopback through (`RemoteTestConfiguration`), where their `TestSite` runs.
+- A page is read up to its limit and decoded from the charset of the header, else of an HTML `<meta>`, else UTF-8; a character the cut falls inside is left out. A response that is not text, JSON, XML or JavaScript has no body.
+- A picture must answer 200 and is judged by its first bytes.
+- A download answers 200, is streamed into `TEMPORARY_FOLDER` and refused as soon as it grows past its limit; `DownloadedFile` deletes it once closed. Its name is that of `Content-Disposition` (`filename*` first), else the last segment of the address, never a path.
+- A refusal is `RemoteRequestRefusedException`, told to the model like any business exception.
+
+`fetch_url` and `view_image` read; `view_image` reads a screenshot of the archive from its stored file too. `add_screenshots` downloads every picture before it adds any and hands them to `AddScreenshotsHandler` as an upload would; `set_release_archive` sends the release whole with the archive (`ReleaseWebMapper.toUpdateWithArchive`); `delete_screenshot` shows the screenshot and deletes it.

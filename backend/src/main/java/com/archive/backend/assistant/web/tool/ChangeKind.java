@@ -10,7 +10,9 @@ public enum ChangeKind {
     ATTACH("attach"),
     DETACH("detach"),
     MERGE("merge"),
-    CONVERT("convert");
+    CONVERT("convert"),
+    FILES("files"),
+    DELETE_FILE("delete-file");
 
     private final String code;
 

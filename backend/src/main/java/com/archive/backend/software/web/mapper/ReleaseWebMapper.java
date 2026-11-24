@@ -97,13 +97,24 @@ public interface ReleaseWebMapper {
             ReleaseRequestDto request,
             @Nullable MultipartFile archive,
             boolean removeArchive) {
+        return toUpdateWithArchive(actor, softwareId, releaseId, request, toArchiveUpload(archive), removeArchive);
+    }
+
+    /** The release as sent, with an archive taken from elsewhere than a form, such as another site. */
+    default UpdateReleaseCommand toUpdateWithArchive(
+            Actor actor,
+            UUID softwareId,
+            UUID releaseId,
+            ReleaseRequestDto request,
+            @Nullable ReleaseArchiveUpload archive,
+            boolean removeArchive) {
         return new UpdateReleaseCommand(
                 actor,
                 new SoftwareId(softwareId),
                 new ReleaseId(releaseId),
                 toContent(request),
                 toHardware(request.hardware()),
-                toArchiveUpload(archive),
+                archive,
                 new ReleaseArchiveRemoval(removeArchive),
                 CreditRequests.toCredits(request.credits()));
     }

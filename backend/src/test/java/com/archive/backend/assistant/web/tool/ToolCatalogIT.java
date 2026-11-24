@@ -58,6 +58,8 @@ class ToolCatalogIT {
                         "list_countries",
                         "list_cities",
                         "find_places",
+                        "fetch_url",
+                        "view_image",
                         "list_options",
                         "load_skill");
     }
@@ -102,7 +104,10 @@ class ToolCatalogIT {
                         "merge_city",
                         "put_city_in_country",
                         "turn_city_into_country",
-                        "create_hardware");
+                        "create_hardware",
+                        "add_screenshots",
+                        "set_release_archive",
+                        "delete_screenshot");
         assertThat(registry.tools())
                 .hasSize(registry.readTools().size() + registry.writeTools().size());
     }

@@ -1,5 +1,6 @@
 package com.archive.backend;
 
+import com.archive.backend.remote.RemoteTestConfiguration;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -17,5 +18,5 @@ import org.springframework.context.annotation.Import;
 @Retention(RetentionPolicy.RUNTIME)
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import({TestcontainersConfiguration.class, TypesenseTestConfiguration.class})
+@Import({TestcontainersConfiguration.class, TypesenseTestConfiguration.class, RemoteTestConfiguration.class})
 public @interface IntegrationTest {}

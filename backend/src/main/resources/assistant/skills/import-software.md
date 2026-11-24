@@ -3,7 +3,8 @@ name: import-software
 description: Adding software from a page of another site.
 ---
 
-- Read the page with the tools for other sites. Take only what the page says.
+- What the page tells that the archive has no place for yet (box and cover pictures, manuals, prices, publishers' adverts, magazine reviews, loading instructions, cheat codes, a story of the work and so on): never drop it silently and never squeeze it into a field it does not belong to (the description is the page's description of the work, nothing else). Tell the editor in your answer what it is and where it is.
+- Read the page with `fetch_url`; a page cut at its limit (`truncated`) may hold more than you see. Take only what the page says.
 - First identify the page's people and groups: call `load_skill` with `find-author` and follow it.
 - Then call `load_skill` with `find-software` and follow it. Same work: offer to change the stored software (`update_software`), not to add another (`create_software`).
 - Add a person, a group or a label only when no one of that name exists, or when `find-author` says the stored namesake is somebody else; say so in the plan.
@@ -15,6 +16,6 @@ description: Adding software from a page of another site.
 - Copy the page's description of the work into the software's description: exactly and in full, no rewording, no retelling, no cuts, nothing of your own. Do not invent a description.
 - A release gets a description only when the page describes that version apart from the work, e.g. the changes of each version in a list of several.
 - Always add a release (`create_release`), even without a downloadable file; give it its type, release date, version and credits.
-- Every downloadable file of the work (another version, another language, another medium) is a release of its own, with that file as its archive.
+- Every downloadable file of the work (another version, another language, another medium) is a release of its own, with that file as its archive: `set_release_archive` after `create_release`, by the file's own address, not the page's. Before, look for it with `search_releases` by `fileName`: the archive may keep it already.
 - The release date is a year, or a day when the page gives the day. Never turn a year into a made-up day.
-- Add the page's screenshots of the work to the software, those of one version to that release. Look at a picture when unsure what it shows.
+- Add the page's screenshots of the work to the software, those of one version to that release (`add_screenshots`, by the pictures' own addresses). Look at a picture with `view_image` when unsure what it shows. A screenshot is a screen of the work only: logos and banners of the site are left out; photos of boxes, covers, tapes, disks, manuals, scans and adverts are not screenshots either, but the archive wants them: list them, with their addresses, in your answer for the editor.

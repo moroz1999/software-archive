@@ -8,7 +8,7 @@ description: Adding people, groups and labels, e.g. from a scene page, a group r
 - Another name of a known person or group: a label of them, not a new person or group: in `labels` of `update_author` or `update_group`, or `attach_label` for a label of nobody found to be theirs.
 - A name whose owner the source does not tell: a label of nobody (`create_label`), as it is met. Never guess its owner.
 - A person's display name is the name they are known by; a person needs at least one label or a real name.
-- Set the real name, notes and locations only when the source says them.
+- Set the real name, notes and locations only when the source says them. What the source tells of them that the archive has no place for yet (photos, dates of life, other activities, contacts, links to their pages): tell the editor in your answer, with where it is.
 - Places:
   - find every country and city with `find_places`, by its name in any language;
   - a city is always given with its country, even when the source names only the city: you know which country it is in. A city of no known country in the archive whose country you know: put it there (`put_city_in_country`) in the plan;
