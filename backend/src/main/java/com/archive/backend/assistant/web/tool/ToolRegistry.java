@@ -31,6 +31,13 @@ public class ToolRegistry {
         return List.copyOf(tools.values());
     }
 
+    public List<WriteTool<?>> writeTools() {
+        return tools.values().stream()
+                .filter(WriteTool.class::isInstance)
+                .<WriteTool<?>>map(tool -> (WriteTool<?>) tool)
+                .toList();
+    }
+
     public List<ReadTool<?>> readTools() {
         return tools.values().stream()
                 .filter(ReadTool.class::isInstance)

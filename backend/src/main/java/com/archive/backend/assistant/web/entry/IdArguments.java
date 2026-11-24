@@ -2,10 +2,10 @@ package com.archive.backend.assistant.web.entry;
 
 import java.util.UUID;
 
-/** The id of the entry a tool reads. */
+/** The id of the entry a tool reads or changes. */
 public record IdArguments(UUID id) {
 
-    static final String SCHEMA = """
+    public static final String SCHEMA = """
             {
               "type": "object",
               "properties": {"id": {"type": "string", "format": "uuid"}},

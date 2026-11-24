@@ -71,7 +71,7 @@ public record SoftwareDetails(
                 title,
                 description,
                 releaseDate,
-                "unknown",
+                preservation,
                 platform,
                 hardware,
                 categories,

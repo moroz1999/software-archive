@@ -16,11 +16,19 @@ Releases are found by the assistant on their own, apart from their software: by 
 
 ## Plans
 - A plan is one logical act: adding software from a source with its releases and credits, merging a duplicate, and so on. It is approved or dropped as a whole, with one button behind a confirmation that counts the destructive changes; there are no per-change toggles and no undo.
-- Each change of a plan shows its kind (adding, editing, deleting, merging, making a person or a group of a label, attaching a label, adding files, deleting a file), what it changes as it is now, and what it becomes. A deletion or a merge also shows what goes with it.
+- Each change of a plan shows its kind (adding, editing, deleting, crediting or taking a member in, taking a credit or a member away, attaching a label, taking a label away from its owner, merging, making a person or a group of a label, adding files, deleting a file), what it changes as it is now, and what it becomes. A deletion or a merge also shows what goes with it: the releases of software deleted, the credits of a label merged.
 - A change may use what an earlier change of the same plan adds: a release of software added in step 1.
 - The changes are made one by one. The first that fails stops the plan; the editor sees what was done and what was not, and the assistant proposes a plan for the rest.
 - Writing another message instead of approving drops the plan proposed.
 - The editor can stop the assistant at any moment, also in the middle of a plan; the change being made is finished, the rest is not made.
+
+### What a plan can change
+- Software: adding, editing, deleting it with its releases; crediting somebody on it, or giving them other roles; taking a credit away.
+- Releases: adding one (without its archive), editing, deleting; crediting on it and taking a credit away.
+- People and groups: adding them with their labels, locations and (of a group) members; editing, deleting (their labels stay, as labels of nobody); taking a member into a group, giving a member other roles, taking one out.
+- Labels: adding a label of nobody; renaming and relocating one (whose it is stays); attaching a label of nobody to its person or group, taking a label away from its owner, making a label a label of a group; merging a label into the person, the group or the label it duplicates; making a new person or group of a label of nobody; deleting one.
+- An edit changes only what it names: the rest of the entry stays as it is when the plan runs. A list it names (credits, labels, members, locations, hardware, categories) is replaced whole.
+- Two people, two groups or two software cannot be merged: the assistant reports such duplicates with its evidence instead.
 
 ## Skills
 The assistant's knowledge of how a kind of task is done in this archive — finding which person a name means, finding whether software is already in the archive, adding software from a page of another site — is written down as its skills, which it reads before such a task.

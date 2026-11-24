@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 @IntegrationTest
 class ToolCatalogIT {
 
+    private static final java.util.UUID ID = java.util.UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final ToolContext CONTEXT = new ToolContext(TestActors.MEMBER, Language.EN);
 
     @Autowired
@@ -58,6 +59,78 @@ class ToolCatalogIT {
                         "list_cities",
                         "list_options",
                         "load_skill");
+    }
+
+    @Test
+    void offersEveryWriteToolOnlyForPlans() {
+        assertThat(registry.writeTools())
+                .extracting(Tool::name)
+                .containsExactlyInAnyOrder(
+                        "create_software",
+                        "update_software",
+                        "delete_software",
+                        "set_software_credit",
+                        "remove_software_credit",
+                        "create_release",
+                        "update_release",
+                        "delete_release",
+                        "set_release_credit",
+                        "remove_release_credit",
+                        "create_author",
+                        "update_author",
+                        "delete_author",
+                        "create_group",
+                        "update_group",
+                        "delete_group",
+                        "set_group_member",
+                        "remove_group_member",
+                        "create_label",
+                        "update_label",
+                        "delete_label",
+                        "attach_label",
+                        "detach_label",
+                        "give_label_to_group",
+                        "merge_label_into_author",
+                        "merge_label_into_group",
+                        "merge_label_into_label",
+                        "make_author_of_label",
+                        "make_group_of_label");
+        assertThat(registry.tools())
+                .hasSize(registry.readTools().size() + registry.writeTools().size());
+    }
+
+    @Test
+    void everyWriteToolSaysWhatItChanges() {
+        assertThat(registry.writeTools())
+                .allSatisfy(tool -> assertThat(tool.entityType())
+                        .as(tool.name())
+                        .isIn("software", "release", "author", "group", "label"));
+    }
+
+    @Test
+    void refusesToReadWithAWriteToolOrToWriteWithAReadTool() {
+        assertThatThrownBy(() -> calls.read("delete_software", "{\"id\": \"%s\"}".formatted(ID), CONTEXT))
+                .isInstanceOf(ToolArgumentsException.class)
+                .hasMessageContaining("plan");
+        assertThatThrownBy(() -> calls.write("get_software", "{\"id\": \"%s\"}".formatted(ID), CONTEXT))
+                .isInstanceOf(ToolArgumentsException.class)
+                .hasMessageContaining("get_software");
+        assertThatThrownBy(() -> calls.state("get_software", "{\"id\": \"%s\"}".formatted(ID), CONTEXT))
+                .isInstanceOf(ToolArgumentsException.class)
+                .hasMessageContaining("get_software");
+    }
+
+    @Test
+    void refusesToWriteWithArgumentsTheSchemaDoesNotTake() {
+        assertThatThrownBy(() -> calls.write("create_label", "{\"title\": \"Ghost\"}", CONTEXT))
+                .isInstanceOf(ToolArgumentsException.class)
+                .hasMessageContaining("name");
+        assertThatThrownBy(() -> calls.state(
+                        "set_software_credit",
+                        "{\"softwareId\": \"%s\", \"id\": \"%s\", \"type\": \"person\"}".formatted(ID, ID),
+                        CONTEXT))
+                .isInstanceOf(ToolArgumentsException.class)
+                .hasMessageContaining("type");
     }
 
     @Test
@@ -139,6 +212,11 @@ class ToolCatalogIT {
                     .isEqualTo(nullable);
             if (component.getType().isRecord()) {
                 assertMatches(property, component.getType(), name);
+            }
+            if (component.getGenericType() instanceof java.lang.reflect.ParameterizedType list
+                    && list.getActualTypeArguments()[0] instanceof Class<?> item
+                    && item.isRecord()) {
+                assertMatches(property.path("items"), item, name + "[]");
             }
         }
     }

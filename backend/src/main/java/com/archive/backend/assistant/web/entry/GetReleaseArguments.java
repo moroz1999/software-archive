@@ -2,5 +2,18 @@ package com.archive.backend.assistant.web.entry;
 
 import java.util.UUID;
 
-/** The arguments of get_release. */
-public record GetReleaseArguments(UUID softwareId, UUID releaseId) {}
+/** A release, by its software and its own id. */
+public record GetReleaseArguments(UUID softwareId, UUID releaseId) {
+
+    public static final String SCHEMA = """
+            {
+              "type": "object",
+              "properties": {
+                "softwareId": {"type": "string", "format": "uuid"},
+                "releaseId": {"type": "string", "format": "uuid"}
+              },
+              "required": ["softwareId", "releaseId"],
+              "additionalProperties": false
+            }
+            """;
+}

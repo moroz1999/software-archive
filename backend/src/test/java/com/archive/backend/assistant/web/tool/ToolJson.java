@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 
 /** A tool's result as the model reads it: its JSON. */
 public final class ToolJson {
@@ -20,7 +21,7 @@ public final class ToolJson {
         return values;
     }
 
-    public static DocumentContext of(Object result) {
+    public static DocumentContext of(@Nullable Object result) {
         try {
             return JsonPath.parse(JSON.writeValueAsString(result));
         } catch (JsonProcessingException e) {

@@ -36,17 +36,7 @@ public class GetReleaseTool implements ReadTool<GetReleaseArguments> {
 
     @Override
     public String schema() {
-        return """
-                {
-                  "type": "object",
-                  "properties": {
-                    "softwareId": {"type": "string", "format": "uuid"},
-                    "releaseId": {"type": "string", "format": "uuid"}
-                  },
-                  "required": ["softwareId", "releaseId"],
-                  "additionalProperties": false
-                }
-                """;
+        return GetReleaseArguments.SCHEMA;
     }
 
     @Override
