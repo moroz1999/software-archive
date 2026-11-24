@@ -21,6 +21,7 @@ What a user may do comes from their groups, and for the entries of the archive a
 | Public visitor | Everyone not signed in | Read the archive |
 | Member | Every confirmed account | Add software, releases, people, groups and labels; edit and delete what they added |
 | Moderator | Given on purpose | Delete comments |
+| AI assistant | Given on purpose | Use the AI assistant ([ai-assistant.md](ai-assistant.md)) |
 | Administrator | Given on purpose | Everything |
 
 A member adds releases to any software. A release can be edited and deleted by whoever added it and by whoever added its software. Categories, countries and cities are kept by administrators only. Every entry is added by a signed-in user, who is remembered as its adder. An entry whose adder's account was deleted keeps no adder: only administrators change it. A label is edited, deleted and made into a new person or group by whoever added it and by administrators; one taken away from an owner, only when they may change that owner too. Only administrators say whose a label is: they attach labels to existing owners and take them away.
@@ -34,7 +35,7 @@ Every person, group, label, software and release remembers who added it and when
 
 ## Managing users
 Administrators see every account of the archive — confirmed or still waiting for its link — with its email, the day it registered and its groups, and find one by a part of its user name or email.
-An administrator edits any account, confirmed or not: its user name, its email and, for a confirmed user, the groups given on purpose — administrator and moderator. Being a member comes with confirmation and is not given or taken away; an unconfirmed account gets no groups.
+An administrator edits any account, confirmed or not: its user name, its email and, for a confirmed user, the groups given on purpose — administrator, moderator and AI assistant. Being a member comes with confirmation and is not given or taken away; an unconfirmed account gets no groups.
 A new user name and email obey the rules of registration: they must not belong to another account, whatever the letter case, and an abandoned account gives them up. A new email is taken at once, with no letter: the administrator answers for it. An account still waiting for its link keeps the link, which goes on working.
 The password is not edited by an administrator.
 The archive keeps at least one administrator: the last one cannot lose the group, not even by their own hand.

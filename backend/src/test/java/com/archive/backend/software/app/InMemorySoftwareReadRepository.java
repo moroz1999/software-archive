@@ -3,6 +3,7 @@ package com.archive.backend.software.app;
 import com.archive.backend.software.read.CreditedRelease;
 import com.archive.backend.software.read.CreditedSoftware;
 import com.archive.backend.software.read.ReleaseDetails;
+import com.archive.backend.software.read.SoftwareCredit;
 import com.archive.backend.software.read.SoftwareDetails;
 import com.archive.backend.software.read.SoftwareReadRepository;
 import com.archive.backend.software.read.SoftwareRelease;
@@ -132,5 +133,10 @@ class InMemorySoftwareReadRepository implements SoftwareReadRepository {
     @Override
     public List<SoftwareScreenshot> findReleaseScreenshots(UUID releaseId) {
         return screenshots.getOrDefault(releaseId, List.of());
+    }
+
+    @Override
+    public List<SoftwareCredit> findReleaseCredits(UUID releaseId) {
+        return List.of();
     }
 }

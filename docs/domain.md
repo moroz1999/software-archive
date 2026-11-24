@@ -46,3 +46,7 @@ Detailed logic and structure: [domain/users.md](domain/users.md)
 ### imports
 One import for every source archive: how software, authors and places are matched, what is added and that nothing of the archive is rewritten.
 Detailed logic and structure: [domain/imports.md](domain/imports.md)
+
+### ai-assistant
+The chat assistant of trusted editors: it researches the archive and proposes plans of changes that the editor approves.
+Detailed logic and structure: [domain/ai-assistant.md](domain/ai-assistant.md)

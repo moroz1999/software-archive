@@ -278,6 +278,11 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                 .list();
     }
 
+    @Override
+    public List<SoftwareCredit> findReleaseCredits(UUID releaseId) {
+        return credits(RELEASE_CREDITS, releaseId);
+    }
+
     /**
      * Everyone credited: a person or a group by the main name, a label by itself with the name of its owner beside it,
      * in the order of those names.
