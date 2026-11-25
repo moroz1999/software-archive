@@ -1,6 +1,6 @@
 # Software List
 
-The software page ("Software" in the main menu, [main-menu.md](main-menu.md)) is the catalog of software ([domain/search.md](../domain/search.md#software-catalog)): a grid of cards, 20 to a page, sorted by title whatever the case, of the platform chosen in the switch ([platform-switch.md](platform-switch.md)), gone through by categories and narrowed by a keyword, a year, a country with its city, and the platforms and hardware. It is read from the search index ([search.md](search.md)).
+The software page ("Software" in the main menu, [main-menu.md](main-menu.md)) is the catalog of software ([domain/search.md](../domain/search.md#software-catalog)): a grid of cards, 30 to a page — full rows of one, two or three cards, as many as fit beside the categories — sorted by title whatever the case, of the platform chosen in the switch ([platform-switch.md](platform-switch.md)), gone through by categories and narrowed by a keyword, a year, a country with its city, and the platforms and hardware. It is read from the search index ([search.md](search.md)).
 
 ## Address
 

@@ -22,7 +22,7 @@ import {useSoftwareCatalog} from '../model/software-catalog-context';
 import {HardwareFilter} from './HardwareFilter';
 import styles from './SoftwareCatalog.module.css';
 
-const SKELETON_CARDS = [1, 2, 3, 4, 5, 6, 7, 8];
+const SKELETON_CARDS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 /** How long the keyword waits for the visitor to stop typing before it is looked for. */
 const KEYWORD_DELAY_MS = 300;

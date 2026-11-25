@@ -77,7 +77,7 @@ describe(App, () => {
     it('opens the sections of the archive from the main menu, which stays over every page', async () => {
         stubRoutes([
             ['/api/software/latest?size=12', json(pageResponse([ALPHA], {size: 12}))],
-            ['/api/software?page=0&size=20', json(pageResponse([ALPHA]))],
+            ['/api/software?page=0&size=30', json(pageResponse([ALPHA]))],
             ['/api/authors?page=0&size=100', json(pageResponse([{personId: ZED, labelId: null, name: 'Zed', note: null}], {size: 100}))],
             ['/api/countries', json([])],
             [`/api/authors/${ZED}`, json(ZED_DETAILS)],

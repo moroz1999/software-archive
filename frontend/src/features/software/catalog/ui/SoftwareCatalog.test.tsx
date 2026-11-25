@@ -43,7 +43,7 @@ const FACETS = {
 const FINNISH_CITIES = [{id: ESPOO, name: 'Espoo'}, {id: HELSINKI, name: 'Helsinki'}];
 
 
-const ALL = '/api/software?page=0&size=20';
+const ALL = '/api/software?page=0&size=30';
 
 function catalog(items: readonly unknown[], {facets = FACETS, totalPages = 1, number = 0} = {}) {
     return json({...pageResponse(items, {number, totalPages, totalElements: items.length}), facets});
@@ -108,7 +108,7 @@ describe(SoftwareCatalog, () => {
     });
 
     it('asks with the keyword and the filters of the address', async () => {
-        const asked = `/api/software?page=1&size=20&q=elite&year=1987&category=${GAMES}&country=${FINLAND}`;
+        const asked = `/api/software?page=1&size=30&q=elite&year=1987&category=${GAMES}&country=${FINLAND}`;
         stubFetchRoutes(routes({[asked]: catalog([ELITE], {number: 1, totalPages: 2})}));
 
         openCatalog(`/software/category/${GAMES}?q=elite&year=1987&country=${FINLAND}&page=2`);
@@ -121,7 +121,7 @@ describe(SoftwareCatalog, () => {
 
     it('offers the years with their counts and goes to the first page of the chosen one', async () => {
         stubFetchRoutes(routes({
-            '/api/software?page=1&size=20': catalog([ELITE, EXOLON], {number: 1, totalPages: 2}),
+            '/api/software?page=1&size=30': catalog([ELITE, EXOLON], {number: 1, totalPages: 2}),
             [`${ALL}&year=1987`]: catalog([ELITE, EXOLON]),
         }));
         const router = openCatalog('/software?page=2');
@@ -162,7 +162,7 @@ describe(SoftwareCatalog, () => {
 
     it('offers the cities of the chosen country with their counts and goes to the first page of the chosen one', async () => {
         stubFetchRoutes(routes({
-            [`/api/software?page=1&size=20&country=${FINLAND}`]: catalog([ELITE], {number: 1, totalPages: 2}),
+            [`/api/software?page=1&size=30&country=${FINLAND}`]: catalog([ELITE], {number: 1, totalPages: 2}),
             [`${ALL}&country=${FINLAND}&city=${HELSINKI}`]: catalog([ELITE]),
         }));
         const router = openCatalog(`/software?country=${FINLAND}&page=2`);
@@ -240,7 +240,7 @@ describe(SoftwareCatalog, () => {
 
     it('applies the platforms and the hardware checked from the first page, and names them on the button', async () => {
         stubFetchRoutes(routes({
-            '/api/software?page=1&size=20': catalog([ELITE], {number: 1, totalPages: 2}),
+            '/api/software?page=1&size=30': catalog([ELITE], {number: 1, totalPages: 2}),
             [`${ALL}&platforms=bk&hardware=ay8910`]: catalog([ELITE]),
         }));
         const router = openCatalog('/software?page=2');
@@ -310,7 +310,7 @@ describe(SoftwareCatalog, () => {
     });
 
     it('opens with the path to the current category unfolded and the category marked', async () => {
-        stubFetchRoutes(routes({[`/api/software?page=2&size=20&q=e&category=${SHOOTERS}`]: catalog([ELITE], {number: 2, totalPages: 3})}));
+        stubFetchRoutes(routes({[`/api/software?page=2&size=30&q=e&category=${SHOOTERS}`]: catalog([ELITE], {number: 2, totalPages: 3})}));
 
         openCatalog(`/software/category/${SHOOTERS}?q=e&page=3`);
 
@@ -339,7 +339,7 @@ describe(SoftwareCatalog, () => {
     });
 
     it('goes to the first page of the keyword once the visitor stops typing', async () => {
-        stubFetchRoutes(routes({'/api/software?page=1&size=20': catalog([ELITE], {number: 1, totalPages: 2}), [`${ALL}&q=exo`]: catalog([EXOLON])}));
+        stubFetchRoutes(routes({'/api/software?page=1&size=30': catalog([ELITE], {number: 1, totalPages: 2}), [`${ALL}&q=exo`]: catalog([EXOLON])}));
         const router = openCatalog('/software?page=2');
 
         await userEvent.type(await screen.findByRole('searchbox', {name: 'Search'}), 'exo');

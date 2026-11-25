@@ -6,7 +6,7 @@ import type {FacetCount, SoftwareCatalogPage} from '../model/catalog';
 import type {SoftwareCatalogFilter} from '../model/catalog-filter';
 
 /** Cards on one page of the catalog. */
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 30;
 
 function parseCounts<T>(value: unknown, what: string, read: (item: JsonObject) => T): readonly FacetCount<T>[] {
     return readArray(value, what).map((item) => {
