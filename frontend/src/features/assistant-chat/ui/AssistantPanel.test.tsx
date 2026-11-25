@@ -60,6 +60,31 @@ const PLAN_ACTIONS = [
     action(3, {tool: 'create_release', arguments: {softwareId: {$ref: 2}, version: '1.0'}, kind: 'create', entityType: 'release', dependsOn: [2]}),
 ];
 
+const RUSSIA = '00000000-0000-0000-00c1-000000000001';
+const LENINGRAD = '00000000-0000-0000-00c2-000000000001';
+const AUTHOR_REFS = {
+    [ELITE]: ELITE_REF,
+    [RUSSIA]: {type: 'country', id: RUSSIA, title: 'Russia', path: '/management/geography'},
+    [LENINGRAD]: {type: 'city', id: LENINGRAD, title: 'Leningrad', path: '/management/geography'},
+};
+
+/** An author, software and its release as an import adds them. */
+const AUTHOR_PLAN = [
+    action(1, {
+        tool: 'create_author', kind: 'create', entityType: 'author',
+        arguments: {
+            realName: 'Лёвин Михаил Викторович',
+            labels: [{id: null, name: 'Лёвин Михаил Викторович', display: true}],
+            locations: [{countryId: RUSSIA, cityId: LENINGRAD, primary: true}],
+        },
+    }),
+    action(2, {tool: 'create_software', kind: 'create', entityType: 'software', arguments: {title: 'Диверсант', preservation: 'unknown', colour: 'red'}}),
+    action(3, {
+        tool: 'create_release', kind: 'create', entityType: 'release', dependsOn: [1, 2],
+        arguments: {softwareId: {$ref: 2}, type: 'adaptation', credits: [{id: {$ref: 1}, type: 'author', roles: ['adaptation', 'original_author']}]},
+    }),
+];
+
 function plan(status: string, actions: readonly unknown[] = PLAN_ACTIONS) {
     return {id: PLAN, title: 'Исправить Elite и добавить Elite Plus', status, proposedAt: AT, actions};
 }
@@ -357,7 +382,7 @@ describe(AssistantPanel, () => {
 
         expect(edit.getByRole('link', {name: 'Elite'})).toHaveAttribute('href', `/software/${ELITE}`);
         expect(edit.getByRole('definition', {name: 'year'})).toHaveTextContent('1984 → 1985');
-        expect(edit.getByRole('definition', {name: 'title'})).toHaveTextContent(/^Elite$/u);
+        expect(edit.getByRole('definition', {name: 'Title'})).toHaveTextContent(/^Elite$/u);
     });
 
     it('shows an id an earlier change makes by the number of that change', async () => {
@@ -365,9 +390,40 @@ describe(AssistantPanel, () => {
         await within(assistant()).findByRole('region', {name: 'Исправить Elite и добавить Elite Plus'});
         const release = within(change(3));
 
-        expect(within(change(2)).getByRole('definition', {name: 'title'})).toHaveTextContent('Elite Plus');
-        expect(release.getByRole('definition', {name: 'softwareId'})).toHaveTextContent('made by change 2');
-        expect(release.getByRole('definition', {name: 'version'})).toHaveTextContent('1.0');
+        expect(within(change(2)).getByRole('definition', {name: 'Title'})).toHaveTextContent('Elite Plus');
+        expect(release.getByRole('definition', {name: 'Software'})).toHaveTextContent('made by change 2');
+        expect(release.getByRole('definition', {name: 'Version'})).toHaveTextContent('1.0');
+    });
+
+    it('names the fields of a change in words, and a field it has no words for by its name', async () => {
+        await openConversation(state({messages: [QUESTION, PLAN_MESSAGE], plans: [plan('proposed', AUTHOR_PLAN)], refs: AUTHOR_REFS}));
+        await within(assistant()).findByRole('region', {name: 'Исправить Elite и добавить Elite Plus'});
+        const author = within(change(1));
+
+        expect(author.getByRole('definition', {name: 'Real name'})).toHaveTextContent('Лёвин Михаил Викторович');
+        expect(author.getByRole('definition', {name: 'Labels'})).toBeInTheDocument();
+        expect(author.getByRole('definition', {name: 'Locations'})).toBeInTheDocument();
+        expect(within(change(2)).getByRole('definition', {name: 'colour'})).toHaveTextContent('red');
+    });
+
+    it('shows what a change holds inside as words and links, not as data', async () => {
+        await openConversation(state({messages: [QUESTION, PLAN_MESSAGE], plans: [plan('proposed', AUTHOR_PLAN)], refs: AUTHOR_REFS}));
+        await within(assistant()).findByRole('region', {name: 'Исправить Elite и добавить Elite Plus'});
+        const author = within(change(1));
+
+        expect(author.getByRole('definition', {name: 'Labels'})).toHaveTextContent(/^Лёвин Михаил Викторович · display name$/u);
+        expect(author.getByRole('definition', {name: 'Locations'})).toHaveTextContent(/^Russia · Leningrad · primary$/u);
+        expect(author.getByRole('link', {name: 'Leningrad'})).toHaveAttribute('href', '/management/geography');
+        expect(within(change(3)).getByRole('definition', {name: 'Credits'})).toHaveTextContent(/^made by change 1 · Adaptation, Original author$/u);
+    });
+
+    it('names the values of the reference books in words', async () => {
+        await openConversation(state({messages: [QUESTION, PLAN_MESSAGE], plans: [plan('proposed', AUTHOR_PLAN)], refs: AUTHOR_REFS}));
+        await within(assistant()).findByRole('region', {name: 'Исправить Elite и добавить Elite Plus'});
+        const release = within(change(3));
+
+        expect(release.getByRole('definition', {name: 'Type'})).toHaveTextContent(/^Adaptation$/u);
+        expect(within(change(2)).getByRole('definition', {name: 'Preservation status'})).toHaveTextContent(/^Unknown$/u);
     });
 
     it('asks before making the plan, and says how it will be made', async () => {

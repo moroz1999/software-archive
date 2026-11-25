@@ -48,6 +48,12 @@ public class JdbcEntityRefReadRepository implements EntityRefReadRepository {
                         SELECT 'country', c.id::text, %s, '/management/geography' FROM country c WHERE c.id IN (:ids)
                         UNION ALL
                         SELECT 'city', c.id::text, %s, '/management/geography' FROM city c WHERE c.id IN (:ids)
+                        UNION ALL
+                        SELECT 'category', c.id::text,
+                            COALESCE((SELECT t.title FROM category_title t
+                                      WHERE t.category_id = c.id ORDER BY t.language <> :language, t.language LIMIT 1), ''),
+                            '/software/category/' || c.id
+                        FROM category c WHERE c.id IN (:ids)
                         """.formatted(GeoNameSql.country("c.id"), GeoNameSql.city("c.id")))
                 .param("ids", ids)
                 .param("language", "ru")

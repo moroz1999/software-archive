@@ -12,6 +12,7 @@ export function Segments({segments}: {readonly segments: readonly Segment[]}) {
             {segment.kind === 'link' && <TextLink href={segment.path}>{segment.text}</TextLink>}
             {segment.kind === 'madeBy' && t('assistant.plan.madeBy', {n: segment.change})}
             {segment.kind === 'text' && segment.text}
+            {segment.kind === 'break' && <br/>}
         </Fragment>
     ));
 }

@@ -202,6 +202,27 @@ class AssistantChatIT {
     }
 
     @Test
+    void namesTheCategoriesAndTheHardwareAPlanChoosesAsLinks() {
+        UUID games = UUID.randomUUID();
+        jdbc.update("INSERT INTO category (id, parent_id, position) VALUES (?, NULL, 0)", games);
+        jdbc.update("INSERT INTO category_title (category_id, language, title) VALUES (?, 'ru', 'Игры')", games);
+        UUID conversation = chat.create(EDITOR);
+        model.calls("propose_plan", """
+                {"title": "Elite 2", "actions": [{"tool": "create_software", "arguments": {
+                  "title": "Elite 2", "platform": "vector", "hardware": ["vector06c"], "categoryIds": ["%s"]}}]}
+                """.formatted(games));
+
+        send(EDITOR, conversation, "Добавь Elite 2");
+
+        Map<String, com.archive.backend.assistant.read.chat.EntityRef> refs =
+                chat.state(EDITOR, conversation, 0).refs();
+        assertThat(refs.get(games.toString()))
+                .isEqualTo(new com.archive.backend.assistant.read.chat.EntityRef(
+                        "category", games.toString(), "Игры", "/software/category/" + games));
+        assertThat(refs).containsKey("vector06c");
+    }
+
+    @Test
     void givesOnlyTheMessagesAfterTheOneAskedFor() {
         UUID conversation = chat.create(EDITOR);
         model.replies("Здравствуйте.");

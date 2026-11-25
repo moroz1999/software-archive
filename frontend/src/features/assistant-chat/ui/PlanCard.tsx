@@ -73,11 +73,35 @@ export function PlanCard({plan, refs}: {readonly plan: ChatPlan; readonly refs: 
 }
 
 const ENTITIES = ['software', 'release', 'author', 'group', 'label', 'country', 'city', 'hardware'];
+
+/** The fields of the write tools named in words; any other is shown by its name. */
+const FIELDS = [
+    'title', 'name', 'realName', 'notes', 'description', 'instructions', 'releaseDate', 'version', 'type', 'types', 'platform',
+    'platforms', 'hardware', 'categoryIds', 'preservation', 'credits', 'roles', 'labels', 'locations', 'members', 'groups',
+    'softwareId', 'releaseId', 'groupId', 'authorId', 'labelId', 'ownerId', 'ownerType', 'countryId', 'cityId', 'intoId',
+    'urls', 'url', 'fileName', 'screenshotId', 'gallery', 'sourceUrl', 'code', 'group', 'names',
+];
+const FLAGS = ['display', 'primary'];
+
+/** The words of the reference books for the values of a field, looked up in their order. */
+const VALUE_KEYS: Readonly<Record<string, readonly string[]>> = {
+    type: ['release.types'],
+    preservation: ['software.preservation'],
+    roles: ['roles.software', 'roles.group'],
+};
 const KINDS = ['create', 'update', 'delete', 'link', 'unlink', 'attach', 'detach', 'merge', 'convert', 'files', 'delete-file'];
 
 function PlanChange({action, refs, failed}: {readonly action: PlanAction; readonly refs: Refs; readonly failed: number | null}) {
-    const {t} = useTranslation();
-    const rows = actionRows(action, refs);
+    const {t, i18n} = useTranslation();
+    const words = (field: string, value: string): string | null => {
+        if (field === 'flag') {
+            return FLAGS.includes(value) ? t(`assistant.plan.flags.${value}`) : null;
+        }
+        const key = VALUE_KEYS[field]?.map((group) => `${group}.${value}`).find((one) => i18n.exists(one));
+        return key === undefined ? null : t(key);
+    };
+    const rows = actionRows(action, refs, words);
+    const label = (field: string) => (FIELDS.includes(field) ? t(`assistant.plan.fields.${field}`) : field);
     const target = actionTarget(action, refs);
     return (
         <Stack as="li" gap="xs" ariaLabel={t('assistant.plan.change', {n: action.position})}>
@@ -92,8 +116,8 @@ function PlanChange({action, refs, failed}: {readonly action: PlanAction; readon
                 <dl className={styles.fields}>
                     {rows.map((row) => (
                         <div key={row.field}>
-                            <dt><Text variant="caption" tone="muted" as="span">{row.field}</Text></dt>
-                            <dd aria-label={row.field} className={styles.value}>
+                            <dt><Text variant="caption" tone="muted" as="span">{label(row.field)}</Text></dt>
+                            <dd aria-label={label(row.field)} className={styles.value}>
                                 <Text variant="bodySm" as="span">
                                     {row.before !== null && <><Segments segments={row.before}/>{' → '}</>}
                                     <Segments segments={row.after}/>

@@ -184,6 +184,16 @@ export const resources = {
                     done: 'Made', running: 'Being made…', skippedAfter: 'Not made: change {{n}} failed.',
                     skippedStopped: 'Not made: the plan was stopped.',
                 },
+                fields: {
+                    title: 'Title', name: 'Name', realName: 'Real name', notes: 'Notes', description: 'Description', instructions: 'Instructions',
+                    releaseDate: 'Release date', version: 'Version', type: 'Type', types: 'Types', platform: 'Platform', platforms: 'Platforms',
+                    hardware: 'Hardware', categoryIds: 'Categories', preservation: 'Preservation status', credits: 'Credits', roles: 'Roles',
+                    labels: 'Labels', locations: 'Locations', members: 'Members', groups: 'Groups', softwareId: 'Software', releaseId: 'Release',
+                    groupId: 'Group', authorId: 'Person', labelId: 'Label', ownerId: 'Owner', ownerType: 'Kind of owner', countryId: 'Country',
+                    cityId: 'City', intoId: 'Into', urls: 'Pictures', url: 'File', fileName: 'File name', screenshotId: 'Picture',
+                    gallery: 'Gallery', sourceUrl: 'Source page', code: 'Code', group: 'Hardware group', names: 'Names',
+                },
+                flags: {display: 'display name', primary: 'primary'},
                 entities: {
                     software: 'Software', release: 'Release', author: 'Author', group: 'Group', label: 'Label',
                     country: 'Country', city: 'City', hardware: 'Hardware',
@@ -546,6 +556,16 @@ export const resources = {
                     done: 'Сделано', running: 'Делается…', skippedAfter: 'Не сделано: ошибка в изменении {{n}}.',
                     skippedStopped: 'Не сделано: план остановлен.',
                 },
+                fields: {
+                    title: 'Название', name: 'Имя', realName: 'Настоящее имя', notes: 'Заметки', description: 'Описание', instructions: 'Инструкция',
+                    releaseDate: 'Дата выпуска', version: 'Версия', type: 'Тип', types: 'Типы', platform: 'Платформа', platforms: 'Платформы',
+                    hardware: 'Оборудование', categoryIds: 'Категории', preservation: 'Статус сохранности', credits: 'Авторы', roles: 'Роли',
+                    labels: 'Метки', locations: 'Места', members: 'Участники', groups: 'Группы', softwareId: 'Программа', releaseId: 'Релиз',
+                    groupId: 'Группа', authorId: 'Человек', labelId: 'Метка', ownerId: 'Владелец', ownerType: 'Вид владельца', countryId: 'Страна',
+                    cityId: 'Город', intoId: 'Куда', urls: 'Картинки', url: 'Файл', fileName: 'Имя файла', screenshotId: 'Картинка',
+                    gallery: 'Галерея', sourceUrl: 'Страница источника', code: 'Код', group: 'Группа оборудования', names: 'Названия',
+                },
+                flags: {display: 'отображаемое имя', primary: 'основное'},
                 entities: {
                     software: 'Программа', release: 'Релиз', author: 'Автор', group: 'Группа', label: 'Лейбл',
                     country: 'Страна', city: 'Город', hardware: 'Железо',

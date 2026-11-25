@@ -13,8 +13,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * The entries a conversation mentions: {@code [[type:id]]} in prose, and in the changes of plans the ids of fields
- * named {@code id}, {@code <name>Id} or {@code <name>Ids}, and what a change produced. A name tells no type, so the
- * ids are found among all entries.
+ * named {@code id}, {@code <name>Id} or {@code <name>Ids}, the codes of a field {@code hardware}, and what a change
+ * produced. A name tells no type, so the ids are found among all entries.
  */
 final class Mentions {
 
@@ -76,6 +76,8 @@ final class Mentions {
             }
         } else if (node.isArray()) {
             node.forEach(item -> walk(item, field));
+        } else if (node.isTextual() && "hardware".equals(field)) {
+            hardware.add(node.asText());
         } else if (node.isTextual() && field != null && names(field)) {
             id(node.asText());
         }

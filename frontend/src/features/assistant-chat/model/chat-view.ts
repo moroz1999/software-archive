@@ -1,11 +1,21 @@
 import type {JsonObject} from '@/shared/api';
 import type {ChatMessage, ChatPlan, EntityRef, PlanAction} from './chat';
 
-/** A piece of shown text: plain, a link to an entry, or the id an earlier change of the plan makes. */
+/** A piece of shown text: plain, a link to an entry, the id an earlier change of the plan makes, or a new line. */
 export type Segment =
     | {readonly kind: 'text'; readonly text: string}
     | {readonly kind: 'link'; readonly text: string; readonly path: string}
-    | {readonly kind: 'madeBy'; readonly change: number};
+    | {readonly kind: 'madeBy'; readonly change: number}
+    | {readonly kind: 'break'};
+
+/**
+ * The word for a value of a reference book a field holds (a release type, a role), or for a flag set on an item
+ * (`display`); null when there is none and the value is shown as it is.
+ */
+export type ValueWords = (field: string, value: string) => string | null;
+
+/** The flags an item of a change may have set, named by the field `flag`. */
+const FLAG = 'flag';
 
 type Refs = Readonly<Record<string, EntityRef>>;
 
@@ -136,33 +146,56 @@ export interface ActionRow {
 }
 
 /** The fields a change sets, each beside what the entry holds; the id of the entry is its target, not a field. */
-export function actionRows(action: PlanAction, refs: Refs): readonly ActionRow[] {
+export function actionRows(action: PlanAction, refs: Refs, words: ValueWords): readonly ActionRow[] {
+    const shown = (field: string, value: unknown) => valueSegments(field, value, refs, words);
     return Object.entries(action.arguments)
         .filter(([field, value]) => field !== 'id' && value !== null && value !== undefined)
-        .map(([field, value]) => ({field, before: before(action.state, field, value, refs), after: valueSegments(value, refs)}));
+        .map(([field, value]) => ({field, before: before(action.state, field, value, shown), after: shown(field, value)}));
 }
 
-function before(state: JsonObject | null, field: string, value: unknown, refs: Refs): readonly Segment[] | null {
+function before(state: JsonObject | null, field: string, value: unknown, shown: (field: string, value: unknown) => readonly Segment[]): readonly Segment[] | null {
     if (state === null || !(field in state) || JSON.stringify(state[field]) === JSON.stringify(value)) {
         return null;
     }
-    return valueSegments(state[field], refs);
+    return shown(field, state[field]);
 }
 
-function valueSegments(value: unknown, refs: Refs): readonly Segment[] {
+function isItem(value: unknown): value is JsonObject {
+    return typeof value === 'object' && value !== null && !Array.isArray(value) && typeof (value as JsonObject)['$ref'] !== 'number';
+}
+
+function valueSegments(field: string, value: unknown, refs: Refs, words: ValueWords): readonly Segment[] {
     if (value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0)) {
         return [{kind: 'text', text: EMPTY}];
     }
     if (Array.isArray(value)) {
-        return value.flatMap((item: unknown, index) => [...(index === 0 ? [] : [{kind: 'text', text: ', '} as const]), ...valueSegments(item, refs)]);
+        // Items of a list, such as labels or credits, each on a line of its own; plain values in a row.
+        const between: Segment = value.some(isItem) ? {kind: 'break'} : {kind: 'text', text: ', '};
+        return value.flatMap((item: unknown, index) => [...(index === 0 ? [] : [between]), ...valueSegments(field, item, refs, words)]);
     }
     if (typeof value === 'string') {
         const ref = refs[value];
-        return [ref === undefined ? {kind: 'text', text: value} : {kind: 'link', text: ref.title, path: ref.path}];
+        return [ref === undefined ? {kind: 'text', text: words(field, value) ?? value} : {kind: 'link', text: ref.title, path: ref.path}];
+    }
+    if (isItem(value)) {
+        return itemSegments(value, refs, words);
     }
     if (typeof value === 'object') {
-        const reference: unknown = (value as JsonObject)['$ref'];
-        return typeof reference === 'number' ? [{kind: 'madeBy', change: reference}] : [{kind: 'text', text: JSON.stringify(value)}];
+        return [{kind: 'madeBy', change: Number((value as JsonObject)['$ref'])}];
     }
     return [{kind: 'text', text: typeof value === 'number' || typeof value === 'boolean' ? String(value) : JSON.stringify(value)}];
+}
+
+/**
+ * An item of a list a change sets — a label, a place, a credit — as its values in a row: a flag set by its word, an
+ * unset one and an empty value left out, and the kind of a credited entry left to its link.
+ */
+function itemSegments(item: JsonObject, refs: Refs, words: ValueWords): readonly Segment[] {
+    const parts = Object.entries(item)
+        .filter(([key, value]) => key !== 'type' && value !== null && value !== undefined && value !== '' && value !== false
+            && !(Array.isArray(value) && value.length === 0))
+        .map(([key, value]): readonly Segment[] => value === true
+            ? [{kind: 'text', text: words(FLAG, key) ?? key}]
+            : valueSegments(key, value, refs, words));
+    return parts.flatMap((part, index) => [...(index === 0 ? [] : [{kind: 'text', text: ' · '} as const]), ...part]);
 }
