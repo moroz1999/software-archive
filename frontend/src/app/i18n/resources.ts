@@ -211,7 +211,7 @@ export const resources = {
                 organizer: 'Organizer', support: 'Support', tester: 'Tester', gamedesigner: 'Game designer', unknown: 'Unknown',
             },
             software: {
-                unknown: 'Unknown', developer: 'Developer', publisher: 'Publisher', code: 'Code', release: 'Release', adaptation: 'Adaptation', restoring: 'Restoring', music: 'Music',
+                unknown: 'Unknown', developer: 'Developer', publisher: 'Publisher', original_author: 'Original author', code: 'Code', release: 'Release', adaptation: 'Adaptation', restoring: 'Restoring', music: 'Music',
                 sfx: 'Sound effects', support: 'Support', testing: 'Testing', graphics: 'Graphics', loading_screen: 'Loading screen',
                 intro_code: 'Intro code', intro_graphics: 'Intro graphics', intro_music: 'Intro music', organizing: 'Organizing',
                 direction: 'Direction', '3dmodels': '3D models', design: 'Design', logo: 'Logo', font: 'Font', ascii: 'ASCII',
@@ -559,7 +559,7 @@ export const resources = {
                 organizer: 'Организатор', support: 'Поддержка', tester: 'Тестировщик', gamedesigner: 'Геймдизайнер', unknown: 'Неизвестно',
             },
             software: {
-                unknown: 'Неизвестно', developer: 'Разработчик', publisher: 'Издатель', code: 'Код', release: 'Выпуск', adaptation: 'Адаптация', restoring: 'Восстановление', music: 'Музыка',
+                unknown: 'Неизвестно', developer: 'Разработчик', publisher: 'Издатель', original_author: 'Автор оригинала', code: 'Код', release: 'Выпуск', adaptation: 'Адаптация', restoring: 'Восстановление', music: 'Музыка',
                 sfx: 'Звуковые эффекты', support: 'Поддержка', testing: 'Тестирование', graphics: 'Графика', loading_screen: 'Экран загрузки',
                 intro_code: 'Код интро', intro_graphics: 'Графика интро', intro_music: 'Музыка интро', organizing: 'Организация',
                 direction: 'Руководство', '3dmodels': '3D-модели', design: 'Дизайн', logo: 'Логотип', font: 'Шрифт', ascii: 'ASCII',

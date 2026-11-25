@@ -42,6 +42,12 @@ class SoftwareCreditsTest {
     }
 
     @Test
+    void creditsTheAuthorOfTheOriginal() {
+        assertThat(new SoftwareCreditDraft(CREW, List.of("original_author")).roles())
+                .containsExactly("original_author");
+    }
+
+    @Test
     void refusesAGroupThatIsNotInTheArchive() {
         SoftwareCreditSets sets = catalogOf(CRW);
 

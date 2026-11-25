@@ -19,6 +19,7 @@ public record SoftwareCreditDraft(SoftwareReference participant, List<String> ro
             "unknown",
             "developer",
             "publisher",
+            "original_author",
             "code",
             "release",
             "adaptation",

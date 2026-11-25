@@ -177,6 +177,29 @@ describe(SoftwareForm, () => {
         }));
     });
 
+    it('credits the author of the original, as of a port or a remake', async () => {
+        stubFetchRoutes(new Map([
+            ['/api/hardware?platform=agat', json([])],
+            [
+                '/api/entity-lookup?types=author%2Cauthor-label%2Cgroup%2Cgroup-label&query=nebula',
+                json({items: [{id: DEVELOPER, type: 'group', title: 'Nebula Studio'}]}),
+            ],
+        ]));
+        const {onSubmit} = renderForm({
+            initial: {title: 'Elite', description: '', releaseDate: '', platform: 'agat', hardware: [], categories: []},
+        });
+
+        await userEvent.type(screen.getByRole('combobox', {name: 'Person or group'}), 'nebula');
+        await userEvent.click(await screen.findByRole('option', {name: 'Nebula Studio'}));
+        await userEvent.click(screen.getByRole('combobox', {name: 'Role for Nebula Studio'}));
+        await userEvent.click(screen.getByRole('option', {name: 'Original author'}));
+        await userEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        expect(onSubmit).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
+            credits: [expect.objectContaining({id: DEVELOPER, type: 'group', roles: ['original_author']})],
+        }));
+    });
+
     it('shows a refusal of the credits under them', () => {
         renderForm({
             error: new BusinessError(422, 'software.credit-unknown', [{field: 'credits', code: 'software.credit-unknown'}]),
