@@ -16,13 +16,13 @@ import {useAssistantChat} from '../model/assistant-chat-context';
 export function ChatComposer() {
     const {t} = useTranslation();
     const id = useId();
-    const {pathname} = useLocation();
+    const {pathname, search} = useLocation();
     const {conversation, draft, setDraft, send, sending, stop, error} = useAssistantChat();
     const title = useDocumentTitle();
     const run = conversation?.activeRun ?? null;
     const submit = () => {
         if (run === null) {
-            send(pathname, title);
+            send(pathname + search, title);
         }
     };
     return (

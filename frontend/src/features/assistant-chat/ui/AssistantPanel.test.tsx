@@ -188,6 +188,24 @@ describe(AssistantPanel, () => {
         });
     });
 
+    it('sends the list a page shows with its filters and page, so the assistant can read what the editor sees', async () => {
+        const fetchMock = show(new Map([
+            [CONVERSATIONS, json({id: CONVERSATION}, 201)],
+            [MESSAGES, noContent()],
+            [stateUrl(CONVERSATION, 0), json(state())],
+        ]), '/software?category=games&page=2');
+        await open();
+
+        await send('Найди тут дубли');
+
+        await waitFor(() => {
+            expect(calls(fetchMock, MESSAGES, 'POST')).toStrictEqual([{
+                text: 'Найди тут дубли',
+                page: {path: '/software?category=games&page=2', title: 'Elite — Archive', entityType: null, entityId: null},
+            }]);
+        });
+    });
+
     it('sends by Enter and keeps Shift+Enter for a new line', async () => {
         const fetchMock = show(new Map([
             [CONVERSATIONS, json({id: CONVERSATION}, 201)],

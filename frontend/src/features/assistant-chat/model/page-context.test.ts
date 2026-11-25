@@ -16,6 +16,7 @@ describe(pageContextOf, () => {
         [`/management/geography/countries/${ID}/edit`, 'country', ID],
         [`/management/geography/cities/${ID}/edit`, 'city', ID],
         ['/management/hardware/zx48/edit', 'hardware', 'zx48'],
+        [`/software/${ID}?tab=releases`, 'software', ID],
     ])('names the entry the page %s shows', (path, entityType, entityId) => {
         expect(pageContextOf(path, 'Title')).toStrictEqual({path, title: 'Title', entityType, entityId});
     });
@@ -28,6 +29,8 @@ describe(pageContextOf, () => {
         '/authors/new',
         '/management/hardware/groups/zx/edit',
         '/software/zed',
+        '/software?category=games&page=2',
+        `/software?author=${ID}`,
     ])('names no entry for the page %s', (path) => {
         expect(pageContextOf(path, 'Title')).toStrictEqual({path, title: 'Title', entityType: null, entityId: null});
     });

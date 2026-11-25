@@ -20,10 +20,14 @@ const ENTRY_PAGES: readonly (readonly [RegExp, string])[] = [
     [/^\/management\/hardware\/(?!groups\/)([a-z0-9-]+)\/edit$/u, 'hardware'],
 ];
 
-/** The page at the path, with the entry it shows when it is the page of one. */
+/**
+ * The page at the path, with its query — the filters and page of a list, which the assistant reads as the editor sees
+ * them — and the entry it shows when it is the page of one.
+ */
 export function pageContextOf(path: string, title: string): PageContext {
+    const [pathname = path] = path.split('?', 1);
     for (const [pattern, entityType] of ENTRY_PAGES) {
-        const entityId = pattern.exec(path)?.[1];
+        const entityId = pattern.exec(pathname)?.[1];
         if (entityId !== undefined) {
             return {path, title, entityType, entityId};
         }
