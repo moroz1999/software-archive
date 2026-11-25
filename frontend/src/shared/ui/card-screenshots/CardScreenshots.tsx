@@ -18,12 +18,15 @@ export function CardScreenshots({urls, alt}: CardScreenshotsProps) {
     const pictures = urls.join('\n');
     const [pointed, setPointed] = useState<{readonly pictures: string; readonly index: number} | null>(null);
     const shown = pointed?.pictures === pictures ? pointed.index : 0;
+    // A picture is put in the frame, and so loaded, only once shown: hidden ones in the frame would load at once.
+    const [seen, setSeen] = useState<{readonly pictures: string; readonly indexes: readonly number[]}>({pictures, indexes: []});
+    const shownBefore = seen.pictures === pictures ? seen.indexes : [];
 
     return (
         <div className={styles.frame} onPointerLeave={() => {
             setPointed(null);
         }}>
-            {urls.map((url, index) => (
+            {urls.map((url, index) => (index === 0 || index === shown || shownBefore.includes(index)) && (
                 <img
                     key={url}
                     src={url}
@@ -41,6 +44,10 @@ export function CardScreenshots({urls, alt}: CardScreenshotsProps) {
                             className={classNames(styles.strip, index === shown && styles.active)}
                             onPointerEnter={() => {
                                 setPointed({pictures, index});
+                                setSeen((before) => ({
+                                    pictures,
+                                    indexes: before.pictures === pictures ? [...before.indexes, index] : [index],
+                                }));
                             }}
                         />
                     ))}

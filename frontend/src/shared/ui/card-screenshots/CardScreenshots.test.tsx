@@ -28,19 +28,23 @@ function frame(container: HTMLElement): Element {
 }
 
 describe(CardScreenshots, () => {
-    it('shows the first picture in a 4:3 frame, loading the pictures lazily', () => {
+    it('shows the first picture in a 4:3 frame, lazily, and loads no other until it is pointed at', () => {
         const {container} = render(<CardScreenshots urls={URLS} alt="Elite"/>);
 
         expect(container.firstElementChild).toHaveClass('frame');
         expect(screen.getByRole('img', {name: 'Elite'})).toHaveAttribute('src', '/api/screenshots/1');
+        expect(screen.getByRole('img', {name: 'Elite'})).toHaveAttribute('loading', 'lazy');
+        expect(container.querySelectorAll('img')).toHaveLength(1);
+    });
 
-        const pictures = container.querySelectorAll('img');
+    it('keeps the pictures once shown, so going back to one loads it no more', () => {
+        const {container} = render(<CardScreenshots urls={URLS} alt="Elite"/>);
+        fireEvent.pointerEnter(strip(container, 2));
+        fireEvent.pointerLeave(frame(container));
 
-        expect(pictures).toHaveLength(3);
+        const sources = Array.from(container.querySelectorAll('img'), (picture) => picture.getAttribute('src'));
 
-        pictures.forEach((picture) => {
-            expect(picture).toHaveAttribute('loading', 'lazy');
-        });
+        expect(sources).toStrictEqual(['/api/screenshots/1', '/api/screenshots/3']);
     });
 
     it('shows the picture of the strip the pointer is over and the first once it leaves', () => {
