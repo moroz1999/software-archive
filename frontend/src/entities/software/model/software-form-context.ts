@@ -12,7 +12,7 @@ export interface SoftwareFormState {
     /** Why the last submit was refused, under the fields the refusal names; a field's text clears once it is edited. */
     readonly refusals: SoftwareFormRefusals;
     /** The change handler of a text field. */
-    readonly change: (field: 'title' | 'description' | 'releaseDate' | 'platform' | 'preservation') => (value: string) => void;
+    readonly change: (field: 'title' | 'description' | 'instructions' | 'releaseDate' | 'platform' | 'preservation') => (value: string) => void;
     /** Replaces the chosen hardware. */
     readonly changeHardware: (codes: readonly string[]) => void;
     /** Replaces the chosen categories. */

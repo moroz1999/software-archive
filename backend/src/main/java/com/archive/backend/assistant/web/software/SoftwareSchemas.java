@@ -21,9 +21,19 @@ final class SoftwareSchemas {
     static final String RELEASE_TYPES = ToolSchemas.strings(
             Arrays.stream(ReleaseType.values()).map(ReleaseType::code).toList());
 
+    /** The gallery of software a picture is of; a release has screenshots only. */
+    static final String GALLERY = """
+            "gallery": {"type": ["string", "null"], "enum": ["screenshots", "maps", "covers", "adverts", null],\
+             "description": "The gallery of the software: screenshots (none given), maps, covers or adverts; a release\
+             has screenshots only."},""";
+
     /** The fields of software besides its title and its platform, which a create requires. */
     static final String SOFTWARE = """
             "description": {"type": ["string", "null"], "description": "Empty: none."},
+            "instructions": {"type": ["string", "null"], "description": "How it is loaded, run and played, apart from\
+             the description; empty: none."},
+            "sourceUrl": {"type": ["string", "null"], "pattern": "^[hH][tT][tT][pP][sS]?://",\
+             "description": "The page of another site it is taken from, recorded as its source."},
             "releaseDate": %s,
             "hardware": {"type": ["array", "null"], "items": {"type": "string"},\
              "description": "The codes of its base hardware, of list_hardware; given, they replace it."},

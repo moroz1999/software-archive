@@ -5,6 +5,7 @@ import com.archive.backend.category.domain.CategorySet;
 import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.HardwareSet;
 import com.archive.backend.hardware.domain.PlatformCode;
+import com.archive.backend.software.domain.Gallery;
 import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.Release;
 import com.archive.backend.software.domain.ReleaseArchive;
@@ -26,6 +27,7 @@ import com.archive.backend.software.domain.SoftwareCreditDraft;
 import com.archive.backend.software.domain.SoftwareCredits;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
+import com.archive.backend.software.domain.SoftwareInstructions;
 import com.archive.backend.software.domain.SoftwareReference;
 import com.archive.backend.software.domain.SoftwareReferenceId;
 import com.archive.backend.software.domain.SoftwareReferenceType;
@@ -34,7 +36,10 @@ import com.archive.backend.user.infra.AddedByRows;
 import java.time.LocalDate;
 import java.time.Year;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -54,6 +59,7 @@ public interface SoftwareMapper {
     default Software toDomain(SoftwareEntity entity, CategorySet categories) {
         PlatformCode platform = new PlatformCode(entity.getPlatformCode());
         String description = entity.getDescription();
+        String instructions = entity.getInstructions();
         return new Software(
                 new SoftwareId(entity.getId()),
                 new SoftwareTitle(entity.getTitle()),
@@ -66,8 +72,9 @@ public interface SoftwareMapper {
                         .map(release -> toRelease(platform, release))
                         .toList(),
                 AddedByRows.toAddedBy(entity.getAddedBy()),
-                toScreenshots(entity.getScreenshots()),
-                PreservationStatus.fromCode(entity.getPreservation()));
+                toGalleries(entity.getScreenshots()),
+                PreservationStatus.fromCode(entity.getPreservation()),
+                instructions == null ? null : new SoftwareInstructions(instructions));
     }
 
     default SoftwareEntity toEntity(Software software) {
@@ -76,6 +83,8 @@ public interface SoftwareMapper {
         entity.setTitle(software.getTitle().value());
         SoftwareDescription description = software.getDescription();
         entity.setDescription(description == null ? null : description.value());
+        SoftwareInstructions instructions = software.getInstructions();
+        entity.setInstructions(instructions == null ? null : instructions.value());
         entity.setPreservation(software.getPreservation().code());
         ReleaseDate releaseDate = software.getReleaseDate();
         entity.setReleaseYear(releaseDate == null ? null : releaseDate.year().getValue());
@@ -89,8 +98,35 @@ public interface SoftwareMapper {
         entity.setReleases(software.getReleases().stream()
                 .map(SoftwareMapper::fromRelease)
                 .collect(Collectors.toCollection(ArrayList::new)));
-        entity.setScreenshots(fromScreenshots(software.getScreenshots()));
+        entity.setScreenshots(fromGalleries(software));
         return entity;
+    }
+
+    /** The pictures of each gallery, in the order of the rows. */
+    private static Map<Gallery, Screenshots> toGalleries(List<SoftwarePictureRow> rows) {
+        Map<Gallery, List<Screenshot>> pictures = new EnumMap<>(Gallery.class);
+        rows.forEach(row -> pictures.computeIfAbsent(Gallery.fromCode(row.getGallery()), gallery -> new ArrayList<>())
+                .add(new Screenshot(
+                        new ScreenshotId(row.getId()),
+                        ScreenshotFormat.fromCode(row.getFormat()),
+                        new ScreenshotFileName(row.getFileName()),
+                        row.getSize())));
+        Map<Gallery, Screenshots> galleries = new EnumMap<>(Gallery.class);
+        pictures.forEach((gallery, list) -> galleries.put(gallery, new Screenshots(list)));
+        return galleries;
+    }
+
+    /** The galleries one after another, each in its order. */
+    private static List<SoftwarePictureRow> fromGalleries(Software software) {
+        return Arrays.stream(Gallery.values())
+                .flatMap(gallery -> software.pictures(gallery).all().stream()
+                        .map(picture -> new SoftwarePictureRow(
+                                picture.id().value(),
+                                picture.format().code(),
+                                picture.name().value(),
+                                picture.size(),
+                                gallery.code())))
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     private static Screenshots toScreenshots(List<ScreenshotRow> rows) {

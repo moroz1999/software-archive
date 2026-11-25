@@ -1,5 +1,6 @@
 package com.archive.backend.software.app;
 
+import com.archive.backend.software.domain.ReleaseId;
 import com.archive.backend.software.domain.Screenshot;
 import com.archive.backend.software.domain.ScreenshotId;
 import com.archive.backend.software.domain.ScreenshotPictureRepository;
@@ -29,7 +30,10 @@ public class AddScreenshotsHandler {
                         new Screenshot(new ScreenshotId(UUID.randomUUID()), image.format(), image.name(), image.size()))
                 .toList();
         // Checked before anything is stored: no picture is kept for screenshots that are refused.
-        List<Screenshot> added = software.addScreenshots(c.releaseId(), offered, c.actor());
+        ReleaseId releaseId = c.releaseId();
+        List<Screenshot> added = releaseId == null
+                ? software.addPictures(c.gallery(), offered, c.actor())
+                : software.addScreenshots(releaseId, offered, c.actor());
         for (int i = 0; i < added.size(); i++) {
             files.store(added.get(i).id(), c.images().get(i));
         }

@@ -1,7 +1,7 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {toReleaseId, toSoftwareId} from '@/entities/software';
+import {type Gallery, toReleaseId, toSoftwareId} from '@/entities/software';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, noContent, renderWithQueries, stubFetch} from '@/shared/lib/test';
 import {EditScreenshotsProvider} from '../model/EditScreenshotsProvider';
@@ -22,9 +22,9 @@ const C = shot(3);
 const PNG = new File(['png'], 'title.png', {type: 'image/png'});
 const GIF = new File(['gif'], 'game.gif', {type: 'image/gif'});
 
-function renderEditor({enabled = true, release = false} = {}) {
+function renderEditor({enabled = true, release = false, gallery = 'screenshots'}: {readonly enabled?: boolean; readonly release?: boolean; readonly gallery?: Gallery} = {}) {
     renderWithQueries(
-        <EditScreenshotsProvider softwareId={ID} releaseId={release ? AY_MOD : null} enabled={enabled}>
+        <EditScreenshotsProvider softwareId={ID} releaseId={release ? AY_MOD : null} gallery={gallery} enabled={enabled}>
             <ScreenshotsEditor/>
         </EditScreenshotsProvider>,
     );
@@ -112,6 +112,40 @@ describe(ScreenshotsEditor, () => {
         });
 
         expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/software/${ID}/releases/${AY_MOD}/screenshots`);
+    });
+
+    it('changes the pictures of a gallery of the software under the names of the gallery', async () => {
+        const fetchMock = stubFetch(json([A]), json([B], 201), json([A, B]));
+        renderEditor({gallery: 'maps'});
+
+        const maps = await screen.findByRole('list', {name: 'Maps'});
+
+        expect(within(maps).getByRole('img', {name: 'Map 1'})).toHaveAttribute('src', A.url);
+
+        await userEvent.upload(screen.getByLabelText('Add maps'), PNG);
+
+        await vi.waitFor(() => {
+            expect(fetchMock.mock.calls[1]?.[0]).toBe(`/api/software/${ID}/maps`);
+        });
+
+        expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/software/${ID}/maps`);
+    });
+
+    it('deletes a picture of a gallery after asking under the names of the gallery', async () => {
+        const fetchMock = stubFetch(json([A, B]), noContent(), json([B]));
+        renderEditor({gallery: 'covers'});
+        await screen.findByRole('list', {name: 'Covers'});
+
+        await userEvent.click(screen.getByRole('button', {name: 'Delete cover 1'}));
+        const dialog = screen.getByRole('alertdialog', {name: 'Delete cover'});
+
+        expect(dialog).toHaveTextContent('Delete cover 1 from the archive?');
+
+        await userEvent.click(within(dialog).getByRole('button', {name: 'Delete for good'}));
+
+        await vi.waitFor(() => {
+            expect(fetchMock.mock.calls[1]?.[0]).toBe(`/api/software/${ID}/covers/${A.id}`);
+        });
     });
 
     it('refuses a file that cannot be a screenshot before sending anything', async () => {

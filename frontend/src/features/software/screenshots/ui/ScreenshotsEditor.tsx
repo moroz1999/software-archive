@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {SCREENSHOT_TYPES, type ScreenshotId} from '@/entities/software';
+import {galleryKey, SCREENSHOT_TYPES, type ScreenshotId} from '@/entities/software';
 import {useSkeleton} from '@/shared/lib/loading';
 import {Button} from '@/shared/ui/button';
 import {ConfirmDialog} from '@/shared/ui/confirm-dialog';
@@ -18,18 +18,18 @@ import styles from './ScreenshotsEditor.module.css';
 /** The screenshots inside an EditScreenshotsProvider, to add, delete and reorder. */
 export function ScreenshotsEditor() {
     const {t} = useTranslation();
-    const {query, upload, busy} = useEditScreenshots();
+    const {gallery, query, upload, busy} = useEditScreenshots();
     const skeleton = useSkeleton(query);
 
     return (
-        <Stack as="section" gap="md" ariaLabel={t('screenshots.heading')}>
-            <Heading level={2} variant="title">{t('screenshots.heading')}</Heading>
+        <Stack as="section" gap="md" ariaLabel={t(galleryKey(gallery, 'heading'))}>
+            <Heading level={2} variant="title">{t(galleryKey(gallery, 'heading'))}</Heading>
             {skeleton || query.isPending
                 ? <div data-testid="screenshots-editor-skeleton"><ScreenshotGallerySkeleton/></div>
                 : query.isSuccess && <ScreenshotList/>}
             <ScreenshotsChangeError/>
             <Stack gap="xs">
-                <FileUpload label={t('screenshots.add')} accept={SCREENSHOT_TYPES.join(',')} multiple disabled={busy} onFiles={upload}/>
+                <FileUpload label={t(galleryKey(gallery, 'add'))} accept={SCREENSHOT_TYPES.join(',')} multiple disabled={busy} onFiles={upload}/>
                 <Text variant="bodySm" tone="muted">{t('screenshots.hint')}</Text>
             </Stack>
         </Stack>
@@ -38,26 +38,26 @@ export function ScreenshotsEditor() {
 
 function ScreenshotList() {
     const {t} = useTranslation();
-    const {query, remove, busy, deleteError, deleted} = useEditScreenshots();
+    const {gallery, query, remove, busy, deleteError, deleted} = useEditScreenshots();
     // Which deletion is being asked about is the dialog's own UI state, not business state.
     const [asking, setAsking] = useState<{readonly id: ScreenshotId; readonly n: number} | null>(null);
     const screenshots = query.data ?? [];
 
     if (screenshots.length === 0) {
-        return <Text tone="muted">{t('screenshots.none')}</Text>;
+        return <Text tone="muted">{t(galleryKey(gallery, 'none'))}</Text>;
     }
     return (
         <>
-            <Grid as="ul" desktopColumns={4} tabletColumns={3} mobileColumns={2} gap="md" ariaLabel={t('screenshots.heading')}>
+            <Grid as="ul" desktopColumns={4} tabletColumns={3} mobileColumns={2} gap="md" ariaLabel={t(galleryKey(gallery, 'heading'))}>
                 {screenshots.map((screenshot, index) => {
                     const n = index + 1;
                     return (
                         <li key={screenshot.id}>
                             <Stack gap="xs">
-                                <img src={screenshot.url} alt={t('screenshots.numbered', {n})} loading="lazy" className={styles.picture}/>
+                                <img src={screenshot.url} alt={t(galleryKey(gallery, 'numbered'), {n})} loading="lazy" className={styles.picture}/>
                                 <Inline gap="xs" justify="between">
                                     <MoveScreenshotButtons index={index}/>
-                                    <Button size="sm" color="danger" ariaLabel={t('screenshots.delete', {n})} disabled={busy} onClick={() => {
+                                    <Button size="sm" color="danger" ariaLabel={t(galleryKey(gallery, 'delete'), {n})} disabled={busy} onClick={() => {
                                         setAsking({id: screenshot.id, n});
                                     }}>{t('actions.delete')}</Button>
                                 </Inline>
@@ -68,7 +68,7 @@ function ScreenshotList() {
             </Grid>
             <ConfirmDialog
                 open={asking !== null && deleted !== asking.id}
-                title={t('screenshots.deleteTitle')}
+                title={t(galleryKey(gallery, 'deleteTitle'))}
                 confirmLabel={t('actions.deleteForGood')}
                 onConfirm={() => {
                     if (asking !== null) {
@@ -81,7 +81,7 @@ function ScreenshotList() {
                 busy={busy}
                 error={deleteError}
             >
-                {asking === null ? null : t('screenshots.deleteQuestion', {n: asking.n})}
+                {asking === null ? null : t(galleryKey(gallery, 'deleteQuestion'), {n: asking.n})}
             </ConfirmDialog>
         </>
     );

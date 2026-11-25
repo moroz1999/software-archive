@@ -105,6 +105,18 @@ class FixturesIT {
     }
 
     @Test
+    void fixtureSoftwareHasAMapACoverAndInstructions() throws Exception {
+        mvc.perform(get("/api/software/{id}/maps", ELITE))
+                .andExpect(jsonPath("$[0].id").value("00000000-0000-0000-000a-000000000007"));
+        mvc.perform(get("/api/software/{id}/covers", ELITE))
+                .andExpect(jsonPath("$[0].id").value("00000000-0000-0000-000a-000000000008"));
+        mvc.perform(get("/api/screenshots/{id}", "00000000-0000-0000-000a-000000000008"))
+                .andExpect(status().isOk());
+        mvc.perform(get("/api/software/{id}", ELITE))
+                .andExpect(jsonPath("$.instructions").isNotEmpty());
+    }
+
+    @Test
     void theCardOfFixtureSoftwareWithoutScreenshotsOfItsOwnShowsThoseOfItsRelease() throws Exception {
         mvc.perform(get("/api/software/latest").param("platform", "bk").param("size", "100"))
                 .andExpect(status().isOk())

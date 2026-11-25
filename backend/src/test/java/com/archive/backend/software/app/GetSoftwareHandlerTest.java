@@ -58,6 +58,7 @@ class GetSoftwareHandlerTest {
                 "Elite",
                 null,
                 null,
+                null,
                 "unknown",
                 new SoftwarePlatform("vector", "Vector"),
                 List.of(),

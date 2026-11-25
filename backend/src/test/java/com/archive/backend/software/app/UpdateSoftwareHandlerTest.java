@@ -27,14 +27,18 @@ import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.shared.domain.error.RuleViolationException;
 import com.archive.backend.software.domain.KnownReferences;
+import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.Software;
 import com.archive.backend.software.domain.SoftwareCredits;
 import com.archive.backend.software.domain.SoftwareDescription;
+import com.archive.backend.software.domain.SoftwareInstructions;
 import com.archive.backend.software.domain.SoftwareTitle;
 import com.archive.backend.user.domain.ChangeForbiddenException;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 class UpdateSoftwareHandlerTest {
@@ -63,6 +67,33 @@ class UpdateSoftwareHandlerTest {
             assertThat(software.getReleaseDate()).isEqualTo(ReleaseDate.ofDay(LocalDate.of(1987, 1, 1)));
             assertThat(software.getPlatform()).isEqualTo(BK);
         });
+    }
+
+    @Test
+    void replacesAndClearsTheInstructions() {
+        repository.save(elite());
+
+        handler.handle(updateWithInstructions(new SoftwareInstructions("Joystick in port 1.")));
+        assertThat(repository.findById(ELITE).map(Software::getInstructions))
+                .contains(new SoftwareInstructions("Joystick in port 1."));
+
+        handler.handle(updateWithInstructions(null));
+        assertThat(repository.findById(ELITE).map(Software::getInstructions)).isEmpty();
+    }
+
+    private static UpdateSoftwareCommand updateWithInstructions(@Nullable SoftwareInstructions instructions) {
+        return new UpdateSoftwareCommand(
+                ADMIN,
+                ELITE,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                VECTOR,
+                Set.of(),
+                Set.of(),
+                List.of(),
+                PreservationStatus.UNKNOWN,
+                instructions);
     }
 
     @Test

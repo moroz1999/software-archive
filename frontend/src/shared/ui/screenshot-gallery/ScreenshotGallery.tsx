@@ -29,14 +29,18 @@ export interface ScreenshotGalleryProps {
     readonly title: string;
     /** What can be done to the screenshot at an index, laid over the foot of its thumbnail. */
     readonly controls?: ((index: number) => ReactNode) | undefined;
+    /** How the picture n of count is named; a screenshot by default. */
+    readonly pictureLabel?: ((n: number, count: number) => string) | undefined;
 }
 
 /** Screenshots as a grid of 4:3 thumbnails; a thumbnail opens its picture whole in a viewer that goes through them all. */
-export function ScreenshotGallery({urls, title, controls}: ScreenshotGalleryProps) {
+export function ScreenshotGallery({urls, title, controls, pictureLabel}: ScreenshotGalleryProps) {
     const {t} = useTranslation();
     const [open, setOpen] = useState<number | null>(null);
     const count = urls.length;
-    const label = (index: number) => t('screenshots.nOfCount', {n: index + 1, count});
+    const label = (index: number) => pictureLabel === undefined
+        ? t('screenshots.nOfCount', {n: index + 1, count})
+        : pictureLabel(index + 1, count);
 
     return (
         <>

@@ -8,6 +8,7 @@ import com.archive.backend.software.app.ListScreenshotsHandler;
 import com.archive.backend.software.app.ListScreenshotsQuery;
 import com.archive.backend.software.app.ListSoftwareReleasesHandler;
 import com.archive.backend.software.app.ListSoftwareReleasesQuery;
+import com.archive.backend.software.domain.Gallery;
 import com.archive.backend.software.domain.SoftwareId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -30,7 +31,7 @@ public class GetSoftwareTool implements ReadTool<IdArguments> {
     public String description() {
         return "Software as its page shows it: its title, description, release date, preservation status, platform, base"
                 + " hardware, categories, credits (person, group or label, with roles) and where it was imported from;"
-                + " its own screenshots; and its releases with their hardware, screenshots, archive and credits.";
+                + " its own screenshots, maps, covers and adverts; and its releases with their hardware, screenshots, archive and credits.";
     }
 
     @Override
@@ -49,6 +50,9 @@ public class GetSoftwareTool implements ReadTool<IdArguments> {
         return new SoftwareEntry(
                 software.handle(new GetSoftwareQuery(context.actor(), id, context.language())),
                 screenshots.handle(new ListScreenshotsQuery(id, null)),
+                screenshots.handle(new ListScreenshotsQuery(id, null, Gallery.MAPS)),
+                screenshots.handle(new ListScreenshotsQuery(id, null, Gallery.COVERS)),
+                screenshots.handle(new ListScreenshotsQuery(id, null, Gallery.ADVERTS)),
                 releases.handle(new ListSoftwareReleasesQuery(context.actor(), id, context.language())));
     }
 }

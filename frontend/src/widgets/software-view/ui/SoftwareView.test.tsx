@@ -62,11 +62,21 @@ const SHOTS = [
     {id: '00000000-0000-0000-0055-000000000002', url: '/api/screenshots/00000000-0000-0000-0055-000000000002'},
 ];
 
-/** Answers the details, the screenshots and the releases of the software, and who reads them. */
-function stubFetch(details: () => Response, releases: () => Response = json([AY_MOD]), me: () => Response = json(MEMBER), screenshots: () => Response = json([])) {
+/** The pictures of the other galleries of the software, none unless given. */
+interface Galleries {
+    readonly maps?: () => Response;
+    readonly covers?: () => Response;
+    readonly adverts?: () => Response;
+}
+
+/** Answers the details, the screenshots and the other galleries and the releases of the software, and who reads them. */
+function stubFetch(details: () => Response, releases: () => Response = json([AY_MOD]), me: () => Response = json(MEMBER), screenshots: () => Response = json([]), galleries: Galleries = {}) {
     return stubFetchRoutes(new Map([
         [`/api/software/${ID}`, details],
         [`/api/software/${ID}/screenshots`, screenshots],
+        [`/api/software/${ID}/maps`, galleries.maps ?? json([])],
+        [`/api/software/${ID}/covers`, galleries.covers ?? json([])],
+        [`/api/software/${ID}/adverts`, galleries.adverts ?? json([])],
         [`/api/software/${ID}/releases`, releases],
         ['/api/auth/me', me],
     ]));
@@ -177,6 +187,47 @@ describe(SoftwareView, () => {
         await waitFor(() => {
             expect(screen.queryByRole('region', {name: 'Screenshots'})).not.toBeInTheDocument();
         });
+    });
+
+    it('shows the maps, the covers and the adverts of the software, each in a gallery of its own after the screenshots', async () => {
+        stubFetch(json(ELITE), json([AY_MOD]), json(MEMBER), json(SHOTS), {maps: json(SHOTS), covers: json([SHOTS[0]])});
+        renderView(ID);
+
+        const maps = await screen.findByRole('region', {name: 'Maps'});
+
+        await expect(within(maps).findAllByRole('button', {name: /^Map \d of 2$/u})).resolves.toHaveLength(2);
+        await expect(screen.findByRole('region', {name: 'Covers'})).resolves.toBeInTheDocument();
+        expect(screen.getByRole('region', {name: 'Screenshots'}).compareDocumentPosition(maps) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+        expect(screen.queryByRole('region', {name: 'Adverts'})).not.toBeInTheDocument();
+    });
+
+    it('lets whoever may change the software move each picture of a gallery a place', async () => {
+        stubFetch(json(ELITE), json([AY_MOD]), json(MEMBER), json([]), {adverts: json(SHOTS)});
+        renderView(ID);
+
+        const adverts = await screen.findByRole('region', {name: 'Adverts'});
+
+        await expect(within(adverts).findByRole('button', {name: 'Move advert 1 right'})).resolves.toBeEnabled();
+        expect(within(adverts).getByRole('button', {name: 'Move advert 2 right'})).toBeDisabled();
+    });
+
+    it('shows the instructions of the software line by line, apart from its description', async () => {
+        stubFetch(json({...ELITE, instructions: 'LOAD ""\nPress Space to start'}));
+        renderView(ID);
+
+        const instructions = await screen.findByRole('region', {name: 'Instructions'});
+
+        expect(within(instructions).getByText('LOAD ""')).toBeInTheDocument();
+        expect(within(instructions).getByText('Press Space to start')).toBeInTheDocument();
+        expect(within(instructions).queryByText('Space trading')).not.toBeInTheDocument();
+    });
+
+    it('shows no instructions section for software without instructions', async () => {
+        stubFetch(json({...ELITE, instructions: null}));
+        renderView(ID);
+
+        await expect(screen.findByRole('heading', {level: 1, name: 'Elite'})).resolves.toBeInTheDocument();
+        expect(screen.queryByRole('region', {name: 'Instructions'})).not.toBeInTheDocument();
     });
 
     it('lets whoever may change the software move each screenshot a place, never past the ends', async () => {

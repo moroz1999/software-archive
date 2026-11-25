@@ -50,7 +50,7 @@ describe(CreateSoftwareProvider, () => {
 
         expect(fetchMock.mock.calls.find(([url]) => url === '/api/software')?.[1]).toMatchObject({
             method: 'POST',
-            body: '{"title":"Elite","description":null,"releaseDate":null,"platform":"bk","hardware":[],"categories":[],"credits":[],"preservation":"unknown"}',
+            body: '{"title":"Elite","description":null,"releaseDate":null,"platform":"bk","hardware":[],"categories":[],"credits":[],"preservation":"unknown","instructions":null}',
         });
     });
 

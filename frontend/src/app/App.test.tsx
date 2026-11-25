@@ -21,12 +21,15 @@ const CREW_DETAILS = {
     canChange: true,
 };
 
-/** What every page or the software page loads besides its own data: the platforms of the switch, the releases, the screenshots, the hardware to choose. */
+/** What every page or the software page loads besides its own data: the platforms of the switch, the releases, the screenshots, maps, covers and adverts, the hardware to choose. */
 const AROUND = new Map([
     ['/api/platforms', json([{code: 'vector', name: 'Vector'}])],
     ['/api/categories', json([])],
     [`/api/software/${ALPHA.id}/releases`, json([])],
     [`/api/software/${ALPHA.id}/screenshots`, json([])],
+    [`/api/software/${ALPHA.id}/maps`, json([])],
+    [`/api/software/${ALPHA.id}/covers`, json([])],
+    [`/api/software/${ALPHA.id}/adverts`, json([])],
     [`/api/software/${ALPHA.id}/releases/${AY_MOD}/screenshots`, json([])],
     ['/api/hardware?platform=vector', json([])],
     // A visitor: nobody is signed in.

@@ -26,6 +26,8 @@ public class SoftwareEntity {
 
     private @Nullable String description;
 
+    private @Nullable String instructions;
+
     @Column(nullable = false)
     private String preservation = "unknown";
 
@@ -72,9 +74,9 @@ public class SoftwareEntity {
     @JoinColumn(name = "software_id", nullable = false)
     private List<SoftwareCreditEntity> credits = new ArrayList<>();
 
-    /** The screenshots in their order. */
+    /** The pictures of every gallery, the galleries one after another, each in its order. */
     @ElementCollection
     @CollectionTable(name = "software_screenshot", joinColumns = @JoinColumn(name = "software_id"))
     @OrderColumn(name = "position")
-    private List<ScreenshotRow> screenshots = new ArrayList<>();
+    private List<SoftwarePictureRow> screenshots = new ArrayList<>();
 }

@@ -33,6 +33,7 @@ public class UpdateSoftwareHandler {
                 categorySets.of(c.categories()));
         software.changeCredits(creditSets.of(c.credits()));
         software.changePreservation(c.preservation());
+        software.changeInstructions(c.instructions());
         repository.save(software);
         software.pullEvents().forEach(events::publishEvent);
     }

@@ -18,7 +18,15 @@ The assistant reads only the public internet: an address of the archive's own ma
 Releases are found by the assistant on their own, apart from their software: by a word of their title, their version or the title of their software, by their software, type, release year (a release of unknown date has none), platform, hardware (the release's own, and its software's in the groups the release does not state), who is credited on them (a person or a group is found by themselves and by any of their labels, a label only where it is credited itself) and in which roles, by the name of their archive or of any file inside it, and by the MD5 digest of a file inside. The latter finds a file the archive already keeps under another release.
 
 ### What the archive has no place for
-What a source tells that would be of use to the archive but that the archive has no place for yet — photos of boxes, covers and media, manuals, a person's photo or dates of life, and the like — the assistant never drops silently and never puts into a field it does not belong to: it tells the editor in its answer what it is and where it is.
+What a source tells that would be of use to the archive but that the archive has no place for yet — photos of media, manuals, prices, magazine reviews, cheat codes, a person's photo or dates of life, and the like — the assistant never drops silently and never puts into a field it does not belong to: it tells the editor in its answer what it is and where it is.
+
+### Taking software from a site
+- The description of a site is judged first: one that reads as the official description of the work (of its authors, publisher or the box) is taken exactly and in full; informal text of fans is retold as a calm formal description of the facts it clearly states, with nothing added. The assistant tells the editor which way it went and why.
+- The rights to what the archive takes from such sites are agreed with their owners, who gave their permission: texts, pictures and files of their pages are taken without any copyright caveats.
+- Maps, covers and adverts of the work go into the galleries of the software ([software.md](software.md#pictures)); how it is loaded, run and played goes into its instructions, never into its description.
+
+### Sources
+The software the assistant adds or edits from a page of another site always remembers that page as its source, shown in Sources like the page of an import ([imports.md](imports.md#origin)). A page that is already the source of other software is refused before anything is changed, so no software is left half-added: the assistant offers to complete that software instead.
 
 ## Plans
 - A plan is one logical act: adding software from a source with its releases and credits, merging a duplicate, and so on. It is approved or dropped as a whole, with one button behind a confirmation that counts its changes and those of them that delete or merge data away; there are no per-change toggles and no undo.
@@ -33,12 +41,15 @@ What a source tells that would be of use to the archive but that the archive has
 - Releases: adding one (without its archive), editing, deleting; crediting on it and taking a credit away.
 - People and groups: adding them with their labels, locations and (of a group) members; editing, deleting (their labels stay, as labels of nobody); taking a member into a group, giving a member other roles, taking one out.
 - Labels: adding a label of nobody; renaming and relocating one (whose it is stays); attaching a label of nobody to its person or group, taking a label away from its owner, making a label a label of a group; merging a label into the person, the group or the label it duplicates; making a new person or group of a label of nobody; deleting one.
-- Files: adding screenshots of software or of a release from pictures of another site, all of them or none; giving a release its archive from a file of another site, under the name the plan gives or the one the site gives; deleting a screenshot. They obey the rules of uploads ([software.md](software.md#screenshots)).
+- Files: adding screenshots of software or of a release, or maps, covers and adverts of software, from pictures of another site, all of them or none; giving a release its archive from a file of another site, under the name the plan gives or the one the site gives; deleting a picture of any gallery. They obey the rules of uploads ([software.md](software.md#screenshots)).
 - An edit changes only what it names: the rest of the entry stays as it is when the plan runs. A list it names (credits, labels, members, locations, hardware, categories) is replaced whole.
 - Countries and cities: adding them; merging a country or a city into the one it duplicates; putting a city in a country; making a country of a city of no known country ([geo.md](geo.md#keeping)).
 - Hardware: adding an item the source clearly names and the reference book lacks ([hardware.md](hardware.md)).
 - A category the work clearly belongs to but the archive lacks is not added and not replaced by a near one: the assistant asks the editor.
 - Two people, two groups or two software cannot be merged: the assistant reports such duplicates with its evidence instead.
+
+### A full name and its short forms
+Labels of one person written fully and shortly («Иванов Георгий Иванович», «Иванов Г.И.», «Ivanov G.»): the person is made of the label with the full name, their real name written first name, patronymic, last name («Георгий Иванович Иванов»); every short form stays a label of its own, attached to the person and never merged into them, since works were made under it. A label in Latin letters is never translated: «Ivanov G.» stays as it is, a label of «Георгий Иванов». A label without the whole first and last name stays a label; no person is made of it. That the labels are one person is still told by a source or by their works, not by the likeness of the names.
 
 ## Skills
 The assistant's knowledge of how a kind of task is done in this archive — finding which person a name means, finding whether software is already in the archive, adding software from a page of another site — is written down as its skills, which it reads before such a task.

@@ -9,8 +9,10 @@ import com.archive.backend.shared.domain.ddd.DomainEvent;
 import com.archive.backend.user.domain.Actor;
 import com.archive.backend.user.domain.AddedBy;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -31,6 +33,9 @@ public final class Software {
     private final SoftwareId id;
     private SoftwareTitle title;
     private @Nullable SoftwareDescription description;
+    /** How it is loaded, run and played, apart from its description. */
+    private @Nullable SoftwareInstructions instructions;
+
     private @Nullable ReleaseDate releaseDate;
     /**
      * The base hardware the software is released for, on its platform.
@@ -49,8 +54,12 @@ public final class Software {
 
     private final List<Release> releases;
 
-    /** The software's own screenshots; those of its releases are kept by the releases. */
-    private Screenshots screenshots;
+    /**
+     * The software's own pictures, gallery by gallery; the screenshots of its releases are kept by the releases
+     * (docs/domain/software.md#pictures).
+     */
+    @Getter(lombok.AccessLevel.NONE)
+    private final Map<Gallery, Screenshots> galleries = new EnumMap<>(Gallery.class);
 
     /** Whoever added the software may change it and all its releases (docs/domain/users.md). */
     private final AddedBy addedBy;
@@ -68,8 +77,9 @@ public final class Software {
             SoftwareCredits credits,
             List<Release> releases,
             AddedBy addedBy,
-            Screenshots screenshots,
-            PreservationStatus preservation) {
+            Map<Gallery, Screenshots> galleries,
+            PreservationStatus preservation,
+            @Nullable SoftwareInstructions instructions) {
         this.id = Objects.requireNonNull(id, "id");
         this.title = Objects.requireNonNull(title, "title");
         this.description = description;
@@ -80,8 +90,11 @@ public final class Software {
         releases.forEach(release -> requireOwn(release.hardware()));
         this.releases = new ArrayList<>(releases);
         this.addedBy = Objects.requireNonNull(addedBy, "addedBy");
-        this.screenshots = Objects.requireNonNull(screenshots, "screenshots");
+        for (Gallery gallery : Gallery.values()) {
+            this.galleries.put(gallery, galleries.getOrDefault(gallery, Screenshots.EMPTY));
+        }
         this.preservation = Objects.requireNonNull(preservation, "preservation");
+        this.instructions = instructions;
     }
 
     public Software(
@@ -104,8 +117,9 @@ public final class Software {
                 credits,
                 releases,
                 addedBy,
-                Screenshots.EMPTY,
-                PreservationStatus.UNKNOWN);
+                Map.of(),
+                PreservationStatus.UNKNOWN,
+                null);
     }
 
     public static Software create(
@@ -200,7 +214,7 @@ public final class Software {
 
     /** The pictures of sizes the software has no screenshot of yet, each size once (docs/domain/imports.md). */
     public List<ScreenshotImage> screenshotsOfNewSizes(List<ScreenshotImage> images) {
-        Set<Long> sizes = screenshots.all().stream().map(Screenshot::size).collect(Collectors.toSet());
+        Set<Long> sizes = getScreenshots().all().stream().map(Screenshot::size).collect(Collectors.toSet());
         return images.stream().filter(image -> sizes.add(image.size())).toList();
     }
 
@@ -220,7 +234,7 @@ public final class Software {
         events.add(new SoftwareChanged(id));
         events.add(new SoftwareDeleted(id));
         discard(Stream.concat(
-                        screenshots.ids().stream(),
+                        galleries.values().stream().flatMap(pictures -> pictures.ids().stream()),
                         releases.stream().flatMap(release -> release.screenshots().ids().stream()))
                 .toList());
         discardArchives(releases.stream()
@@ -356,9 +370,39 @@ public final class Software {
         }
     }
 
+    /** The software's own screenshots, as its card shows them. */
+    public Screenshots getScreenshots() {
+        return pictures(Gallery.SCREENSHOTS);
+    }
+
+    /** The pictures of a gallery of the software itself. */
+    public Screenshots pictures(Gallery gallery) {
+        return galleries.getOrDefault(gallery, Screenshots.EMPTY);
+    }
+
+    /** Adds pictures to a gallery of the software, after those there are, by whoever may change it. */
+    public List<Screenshot> addPictures(Gallery gallery, List<Screenshot> added, Actor actor) {
+        changePictures(gallery, actor, current -> current.plus(added));
+        return List.copyOf(added);
+    }
+
+    public void removePicture(Gallery gallery, ScreenshotId id, Actor actor) {
+        changePictures(gallery, actor, current -> current.without(id));
+        discard(List.of(id));
+    }
+
+    /** Puts the pictures of a gallery in the order given, which names every one of them. */
+    public void reorderPictures(Gallery gallery, List<ScreenshotId> order, Actor actor) {
+        changePictures(gallery, actor, current -> current.reordered(order));
+    }
+
+    public void changeInstructions(@Nullable SoftwareInstructions instructions) {
+        this.instructions = instructions;
+    }
+
     /** The screenshots of the software itself, or of its release when one is named. */
     public Screenshots screenshots(@Nullable ReleaseId releaseId) {
-        return releaseId == null ? screenshots : existingRelease(releaseId).screenshots();
+        return releaseId == null ? getScreenshots() : existingRelease(releaseId).screenshots();
     }
 
     /**
@@ -386,13 +430,19 @@ public final class Software {
      */
     private void changeScreenshots(@Nullable ReleaseId releaseId, Actor actor, UnaryOperator<Screenshots> change) {
         if (releaseId == null) {
-            requireChangeableBy(actor);
-            screenshots = change.apply(screenshots);
-        } else {
-            Release release = existingRelease(releaseId);
-            requireReleaseChangeableBy(release, actor);
-            release.changeScreenshots(change.apply(release.screenshots()));
+            changePictures(Gallery.SCREENSHOTS, actor, change);
+            return;
         }
+        Release release = existingRelease(releaseId);
+        requireReleaseChangeableBy(release, actor);
+        release.changeScreenshots(change.apply(release.screenshots()));
+        markChanged();
+    }
+
+    /** Every change of the pictures of the software may change its card, which shows its screenshots. */
+    private void changePictures(Gallery gallery, Actor actor, UnaryOperator<Screenshots> change) {
+        requireChangeableBy(actor);
+        galleries.put(gallery, change.apply(pictures(gallery)));
         markChanged();
     }
 

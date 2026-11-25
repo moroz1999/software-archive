@@ -294,6 +294,14 @@ VALUES ('00000000-0000-0000-0001-000000000001', 0, '00000000-0000-0000-000a-0000
        ('00000000-0000-0000-0001-000000000001', 1, '00000000-0000-0000-000a-000000000002', 'png', 'elite-2.png', 755),
        ('00000000-0000-0000-0001-000000000001', 2, '00000000-0000-0000-000a-000000000003', 'png', 'elite-3.png', 465);
 
+-- Elite has a map and a cover too, each in a gallery of its own (docs/domain/software.md#pictures).
+INSERT INTO software_screenshot (software_id, position, id, format, file_name, size, gallery)
+VALUES ('00000000-0000-0000-0001-000000000001', 3, '00000000-0000-0000-000a-000000000007', 'png', 'elite-map.png', 816, 'maps'),
+       ('00000000-0000-0000-0001-000000000001', 4, '00000000-0000-0000-000a-000000000008', 'png', 'elite-cover.png', 465, 'covers');
+
+UPDATE software SET instructions = 'Load with LOAD "" and press Space to start.'
+WHERE id = '00000000-0000-0000-0001-000000000001';
+
 INSERT INTO software_release_screenshot (release_id, position, id, format, file_name, size)
 VALUES ('00000000-0000-0000-0007-000000000002', 0, '00000000-0000-0000-000a-000000000004', 'png', 'elite-ay.png', 689),
        ('00000000-0000-0000-0007-000000000004', 0, '00000000-0000-0000-000a-000000000005', 'png', 'tetris-11m-1.png', 796),

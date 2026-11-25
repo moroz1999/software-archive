@@ -18,6 +18,7 @@ import {
     SoftwareCreditList,
     SoftwareReleases,
     SoftwareReleasesProvider,
+    type Gallery,
     SoftwareScreenshots,
     ScreenshotsProvider,
     useSoftwareDetails,
@@ -77,7 +78,7 @@ function LoadedView({id}: SoftwareViewProps) {
             ) : undefined}>
             <Stack gap="xl">
                 <Details software={query.data}/>
-                <Screenshots id={id} title={query.data.title} canChange={query.data.canChange}/>
+                {GALLERIES.map((gallery) => <Screenshots key={gallery} id={id} title={query.data.title} canChange={query.data.canChange} gallery={gallery}/>)}
                 <Releases id={id}/>
                 <AdditionNote addition={query.data.added}/>
             </Stack>
@@ -87,7 +88,8 @@ function LoadedView({id}: SoftwareViewProps) {
 
 function Details({software}: {readonly software: SoftwareDetails}) {
     const {t} = useTranslation();
-    const lines = software.description?.split('\n').filter((line) => line.trim() !== '') ?? [];
+    const lines = linesOf(software.description);
+    const instructions = linesOf(software.instructions);
     return (
         <Stack gap="lg">
             <Section label={t('fields.platform')}><Text>{software.platform.name}</Text></Section>
@@ -135,8 +137,19 @@ function Details({software}: {readonly software: SoftwareDetails}) {
                     {lines.map((line, index) => <Text key={index}>{line}</Text>)}
                 </Stack>
             )}
+            {instructions.length > 0 && (
+                <Stack as="section" gap="sm" ariaLabel={t('fields.instructions')}>
+                    <Text variant="label" tone="muted">{t('fields.instructions')}</Text>
+                    {instructions.map((line, index) => <Text key={index}>{line}</Text>)}
+                </Stack>
+            )}
         </Stack>
     );
+}
+
+/** The lines of a text that hold something; none of none. */
+function linesOf(text: string | null | undefined): readonly string[] {
+    return text?.split('\n').filter((line) => line.trim() !== '') ?? [];
 }
 
 /** Where a credited name leads: the person or the group, a label to its own page. */
@@ -173,19 +186,22 @@ function Section({label, children}: {readonly label: string; readonly children: 
     );
 }
 
+/** The galleries of the software, the screenshots first (docs/domain/software.md#pictures). */
+const GALLERIES: readonly Gallery[] = ['screenshots', 'maps', 'covers', 'adverts'];
+
 /**
- * The screenshots come below the details: they are asked for once the block comes into view (docs/data-loading.md).
- * Whoever may change the software moves them right on their thumbnails.
+ * The pictures of a gallery come below the details: they are asked for once the block comes into view
+ * (docs/data-loading.md). Whoever may change the software moves them right on their thumbnails.
  */
-function Screenshots({id, title, canChange}: SoftwareViewProps & {readonly title: string; readonly canChange: boolean}) {
+function Screenshots({id, title, canChange, gallery}: SoftwareViewProps & {readonly title: string; readonly canChange: boolean; readonly gallery: Gallery}) {
     const [ref, visible] = useInViewport();
     return (
-        <ScreenshotsProvider softwareId={id} enabled={visible}>
+        <ScreenshotsProvider softwareId={id} gallery={gallery} enabled={visible}>
             {canChange ? (
-                <EditScreenshotsProvider softwareId={id} enabled={visible}>
-                    <SoftwareScreenshots title={title} viewportRef={ref} controls={(index) => <MoveScreenshotButtons index={index}/>} note={<ScreenshotsChangeError/>}/>
+                <EditScreenshotsProvider softwareId={id} gallery={gallery} enabled={visible}>
+                    <SoftwareScreenshots title={title} gallery={gallery} viewportRef={ref} controls={(index) => <MoveScreenshotButtons index={index}/>} note={<ScreenshotsChangeError/>}/>
                 </EditScreenshotsProvider>
-            ) : <SoftwareScreenshots title={title} viewportRef={ref}/>}
+            ) : <SoftwareScreenshots title={title} gallery={gallery} viewportRef={ref}/>}
         </ScreenshotsProvider>
     );
 }

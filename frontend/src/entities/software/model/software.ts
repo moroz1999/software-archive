@@ -63,6 +63,8 @@ export interface Software {
 /** One software with everything shown about it; its base hardware in the order of the groups, its categories in the order of the tree. */
 export interface SoftwareDetails extends Software {
     readonly description: string | null;
+    /** How it is loaded, run and played, apart from its description; none when unknown. */
+    readonly instructions?: string | null;
     readonly platform: SoftwarePlatform;
     readonly hardware: readonly Hardware[];
     readonly categories: readonly SoftwareCategory[];

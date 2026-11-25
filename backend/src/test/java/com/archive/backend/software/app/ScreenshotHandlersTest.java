@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.software.app.ScreenshotFixtures.RecordingEvents;
 import com.archive.backend.software.app.ScreenshotFixtures.RecordingScreenshotFiles;
+import com.archive.backend.software.domain.Gallery;
 import com.archive.backend.software.domain.ReleaseId;
 import com.archive.backend.software.domain.Screenshot;
 import com.archive.backend.software.domain.ScreenshotFileName;
@@ -109,6 +110,38 @@ class ScreenshotHandlersTest {
                 .isInstanceOfSatisfying(
                         NotFoundException.class, e -> assertThat(e.code()).isEqualTo("release.not-found"));
         assertThat(files.stored).isEmpty();
+    }
+
+    @Test
+    void addsPicturesToAGalleryOfTheSoftwareApartFromItsScreenshots() {
+        repository.save(eliteWithAyMod());
+
+        List<ScreenshotId> ids =
+                add.handle(new AddScreenshotsCommand(ADMIN, ELITE, null, List.of(PNG, GIF), Gallery.MAPS));
+
+        assertThat(stored().pictures(Gallery.MAPS).ids()).isEqualTo(ids);
+        assertThat(stored().screenshots(null).all()).isEmpty();
+        assertThat(files.stored).containsOnlyKeys(ids);
+    }
+
+    @Test
+    void reordersAndDeletesThePicturesOfAGallery() {
+        repository.save(eliteWithAyMod());
+        List<ScreenshotId> ids =
+                add.handle(new AddScreenshotsCommand(ADMIN, ELITE, null, List.of(PNG, GIF), Gallery.COVERS));
+
+        reorder.handle(
+                new ReorderScreenshotsCommand(ADMIN, ELITE, null, List.of(ids.get(1), ids.get(0)), Gallery.COVERS));
+        delete.handle(new DeleteScreenshotCommand(ADMIN, ELITE, null, ids.get(0), Gallery.COVERS));
+
+        assertThat(stored().pictures(Gallery.COVERS).ids()).containsExactly(ids.get(1));
+        assertThat(files.discarded).containsExactly(ids.get(0));
+    }
+
+    @Test
+    void aReleaseHasOnlyScreenshots() {
+        assertThatThrownBy(() -> new AddScreenshotsCommand(ADMIN, ELITE, AY_MOD, List.of(PNG), Gallery.ADVERTS))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

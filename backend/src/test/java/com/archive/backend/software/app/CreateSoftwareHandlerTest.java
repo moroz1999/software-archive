@@ -22,14 +22,18 @@ import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.shared.domain.error.RuleViolationException;
 import com.archive.backend.software.domain.KnownReferences;
+import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.ReleaseDate;
+import com.archive.backend.software.domain.Software;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
+import com.archive.backend.software.domain.SoftwareInstructions;
 import com.archive.backend.software.domain.SoftwareTitle;
 import com.archive.backend.user.domain.Actor;
 import com.archive.backend.user.domain.AddedBy;
 import com.archive.backend.user.domain.SignInRequiredException;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
@@ -56,6 +60,24 @@ class CreateSoftwareHandlerTest {
             assertThat(software.getReleaseDate()).isEqualTo(ReleaseDate.ofDay(LocalDate.of(1985, 9, 20)));
             assertThat(software.getPlatform()).isEqualTo(VECTOR);
         });
+    }
+
+    @Test
+    void storesTheInstructionsOfNewSoftware() {
+        SoftwareId id = handler.handle(new CreateSoftwareCommand(
+                ADMIN,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                VECTOR,
+                Set.of(),
+                Set.of(),
+                List.of(),
+                PreservationStatus.UNKNOWN,
+                new SoftwareInstructions("Press Space to start.")));
+
+        assertThat(repository.findById(id).map(Software::getInstructions))
+                .contains(new SoftwareInstructions("Press Space to start."));
     }
 
     @Test

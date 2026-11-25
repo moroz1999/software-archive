@@ -69,6 +69,7 @@ class ListSoftwareReleasesHandlerTest {
                 "Elite",
                 null,
                 null,
+                null,
                 "unknown",
                 new SoftwarePlatform("vector", "Vector"),
                 List.of(),
@@ -122,6 +123,7 @@ class ListSoftwareReleasesHandlerTest {
         reads.add(new SoftwareDetails(
                 ID,
                 "Elite",
+                null,
                 null,
                 null,
                 "unknown",

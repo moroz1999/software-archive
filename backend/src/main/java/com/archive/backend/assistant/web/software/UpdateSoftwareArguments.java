@@ -9,6 +9,8 @@ public record UpdateSoftwareArguments(
         UUID id,
         @Nullable String title,
         @Nullable String description,
+        @Nullable String instructions,
+        @Nullable String sourceUrl,
         @Nullable String releaseDate,
         @Nullable String platform,
         @Nullable List<String> hardware,

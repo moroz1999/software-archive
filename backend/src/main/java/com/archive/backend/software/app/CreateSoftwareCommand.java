@@ -7,6 +7,7 @@ import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.SoftwareCreditDraft;
 import com.archive.backend.software.domain.SoftwareDescription;
+import com.archive.backend.software.domain.SoftwareInstructions;
 import com.archive.backend.software.domain.SoftwareTitle;
 import com.archive.backend.user.domain.Actor;
 import java.util.List;
@@ -22,7 +23,21 @@ public record CreateSoftwareCommand(
         Set<HardwareCode> hardware,
         Set<CategoryId> categories,
         List<SoftwareCreditDraft> credits,
-        PreservationStatus preservation) {
+        PreservationStatus preservation,
+        @Nullable SoftwareInstructions instructions) {
+
+    public CreateSoftwareCommand(
+            Actor actor,
+            SoftwareTitle title,
+            @Nullable SoftwareDescription description,
+            @Nullable ReleaseDate releaseDate,
+            PlatformCode platform,
+            Set<HardwareCode> hardware,
+            Set<CategoryId> categories,
+            List<SoftwareCreditDraft> credits,
+            PreservationStatus preservation) {
+        this(actor, title, description, releaseDate, platform, hardware, categories, credits, preservation, null);
+    }
 
     public CreateSoftwareCommand(
             Actor actor,

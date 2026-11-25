@@ -7,6 +7,7 @@ description: Adding people, groups and labels, e.g. from a scene page, a group r
 - A person already in the archive: change that person (`update_author`). Do not add another one.
 - Another name of a known person or group: a label of them, not a new person or group: in `labels` of `update_author` or `update_group`, or `attach_label` for a label of nobody found to be theirs.
 - A name whose owner the source does not tell: a label of nobody (`create_label`), as it is met. Never guess its owner.
+- A full name and its short forms (Иванов Георгий Иванович, Иванов Г.И., Ivanov G.): the person is made of the full one, the short ones stay labels attached to them; see `load_skill` with `merge-and-convert`.
 - A person's display name is the name they are known by; a person needs at least one label or a real name.
 - Set the real name, notes and locations only when the source says them. What the source tells of them that the archive has no place for yet (photos, dates of life, other activities, contacts, links to their pages): tell the editor in your answer, with where it is.
 - Places:

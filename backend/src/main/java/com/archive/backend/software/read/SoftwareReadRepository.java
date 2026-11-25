@@ -68,6 +68,9 @@ public interface SoftwareReadRepository {
     /** The software's own screenshots in their order; none for unknown software. */
     List<SoftwareScreenshot> findScreenshots(UUID softwareId);
 
+    /** The pictures of a gallery of the software, by the gallery's code, in their order; none for unknown software. */
+    List<SoftwareScreenshot> findPictures(UUID softwareId, String gallery);
+
     /** Everyone credited on a release, as its page lists them. */
     List<SoftwareCredit> findReleaseCredits(UUID releaseId);
 

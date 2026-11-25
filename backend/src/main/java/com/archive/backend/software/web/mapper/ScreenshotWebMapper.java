@@ -4,6 +4,7 @@ import com.archive.backend.software.app.AddScreenshotsCommand;
 import com.archive.backend.software.app.DeleteScreenshotCommand;
 import com.archive.backend.software.app.ListScreenshotsQuery;
 import com.archive.backend.software.app.ReorderScreenshotsCommand;
+import com.archive.backend.software.domain.Gallery;
 import com.archive.backend.software.domain.ReleaseId;
 import com.archive.backend.software.domain.ScreenshotFileName;
 import com.archive.backend.software.domain.ScreenshotId;
@@ -45,31 +46,43 @@ public class ScreenshotWebMapper {
     }
 
     public ListScreenshotsQuery toList(UUID softwareId, @Nullable UUID releaseId) {
-        return new ListScreenshotsQuery(new SoftwareId(softwareId), release(releaseId));
+        return toList(softwareId, releaseId, Gallery.SCREENSHOTS);
+    }
+
+    public ListScreenshotsQuery toList(UUID softwareId, @Nullable UUID releaseId, Gallery gallery) {
+        return new ListScreenshotsQuery(new SoftwareId(softwareId), release(releaseId), gallery);
     }
 
     /** Every file is checked before any is added: an upload is taken whole or not at all. */
     public AddScreenshotsCommand toAdd(
-            Actor actor, UUID softwareId, @Nullable UUID releaseId, List<MultipartFile> files) {
+            Actor actor, UUID softwareId, @Nullable UUID releaseId, List<MultipartFile> files, Gallery gallery) {
         return new AddScreenshotsCommand(
                 actor,
                 new SoftwareId(softwareId),
                 release(releaseId),
-                files.stream().map(ScreenshotWebMapper::image).toList());
+                files.stream().map(ScreenshotWebMapper::image).toList(),
+                gallery);
     }
 
     public ReorderScreenshotsCommand toReorder(
-            Actor actor, UUID softwareId, @Nullable UUID releaseId, ScreenshotOrderDto order) {
+            Actor actor, UUID softwareId, @Nullable UUID releaseId, ScreenshotOrderDto order, Gallery gallery) {
         return new ReorderScreenshotsCommand(
                 actor,
                 new SoftwareId(softwareId),
                 release(releaseId),
-                order.order().stream().map(ScreenshotId::new).toList());
+                order.order().stream().map(ScreenshotId::new).toList(),
+                gallery);
     }
 
-    public DeleteScreenshotCommand toDelete(Actor actor, UUID softwareId, @Nullable UUID releaseId, UUID screenshotId) {
+    public DeleteScreenshotCommand toDelete(
+            Actor actor, UUID softwareId, @Nullable UUID releaseId, UUID screenshotId, Gallery gallery) {
         return new DeleteScreenshotCommand(
-                actor, new SoftwareId(softwareId), release(releaseId), new ScreenshotId(screenshotId));
+                actor, new SoftwareId(softwareId), release(releaseId), new ScreenshotId(screenshotId), gallery);
+    }
+
+    /** The gallery a request names; none names the screenshots. */
+    public static Gallery gallery(@Nullable String code) {
+        return code == null ? Gallery.SCREENSHOTS : Gallery.fromCode(code);
     }
 
     private static @Nullable ReleaseId release(@Nullable UUID releaseId) {

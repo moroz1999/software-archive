@@ -47,6 +47,20 @@ describe(fetchScreenshots, () => {
         expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/software/${ELITE}/releases/${AY_MOD}/screenshots`);
     });
 
+    it('reads, adds, reorders and deletes the pictures of a gallery of the software', async () => {
+        const fetchMock = stubFetch(json(SHOTS), json(SHOTS, 201), noContent(), noContent());
+        const png = new File(['png'], 'map.png', {type: 'image/png'});
+
+        await fetchScreenshots(ELITE, null, signal(), 'maps');
+        await uploadScreenshots(ELITE, null, [png], 'maps');
+        await reorderScreenshots(ELITE, null, [toScreenshotId(GAME), toScreenshotId(TITLE)], 'maps');
+        await deleteScreenshot(ELITE, null, toScreenshotId(TITLE), 'maps');
+
+        expect(fetchMock.mock.calls.map(([url]) => url)).toStrictEqual([
+            `/api/software/${ELITE}/maps`, `/api/software/${ELITE}/maps`, `/api/software/${ELITE}/maps/order`, `/api/software/${ELITE}/maps/${TITLE}`,
+        ]);
+    });
+
     it('fails with not found for unknown software and with a system error on a malformed answer', async () => {
         stubFetch(json({status: 404, code: 'software.not-found'}, 404), json([{id: 'x'}]));
 

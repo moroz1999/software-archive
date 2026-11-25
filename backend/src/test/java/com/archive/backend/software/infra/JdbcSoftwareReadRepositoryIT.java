@@ -178,6 +178,39 @@ class JdbcSoftwareReadRepositoryIT {
         assertThat(cardOf(ELITE)).containsExactly(shot(2), shot(1));
     }
 
+    /** Stores pictures of a gallery of the software, in the order given, from a position on. */
+    private void galleryPictures(UUID software, String gallery, int from, SoftwareScreenshot... pictures) {
+        for (int i = 0; i < pictures.length; i++) {
+            jdbc.update(
+                    "INSERT INTO software_screenshot (software_id, position, id, format, file_name, size, gallery)"
+                            + " VALUES (?, ?, ?, 'png', 'map.png', 1, ?)",
+                    software,
+                    from + i,
+                    pictures[i].id(),
+                    gallery);
+        }
+    }
+
+    @Test
+    void readsThePicturesOfEachGalleryApartInTheirOrder() {
+        softwareShots(ELITE, shot(1));
+        galleryPictures(ELITE, "maps", 10, shot(3), shot(2));
+        galleryPictures(ELITE, "covers", 20, shot(4));
+
+        assertThat(reads.findPictures(ELITE, "maps")).containsExactly(shot(3), shot(2));
+        assertThat(reads.findPictures(ELITE, "covers")).containsExactly(shot(4));
+        assertThat(reads.findPictures(ELITE, "adverts")).isEmpty();
+        assertThat(reads.findScreenshots(ELITE)).containsExactly(shot(1));
+    }
+
+    @Test
+    void theCardShowsNoPictureOfAnotherGallery() {
+        galleryPictures(ELITE, "maps", 10, shot(3));
+        releaseShots(AY_MOD, shot(5));
+
+        assertThat(cardOf(ELITE)).containsExactly(shot(5));
+    }
+
     private List<String> madeByOf(UUID software) {
         return reads.findLatest(null, PageRequest.of(0, 10)).getContent().stream()
                 .filter(summary -> summary.id().equals(software))
@@ -344,6 +377,15 @@ class JdbcSoftwareReadRepositoryIT {
         assertThat(reads.findById(TETRIS, "en"))
                 .hasValueSatisfying(
                         details -> assertThat(details.preservation()).isEqualTo("unknown"));
+    }
+
+    @Test
+    void readsTheInstructionsOfSoftware() {
+        jdbc.update("UPDATE software SET instructions = 'Press Space to start.' WHERE id = ?", ELITE);
+
+        assertThat(reads.findById(ELITE, "en"))
+                .hasValueSatisfying(
+                        details -> assertThat(details.instructions()).isEqualTo("Press Space to start."));
     }
 
     @Test

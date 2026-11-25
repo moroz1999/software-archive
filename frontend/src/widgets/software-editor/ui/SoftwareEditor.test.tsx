@@ -20,6 +20,9 @@ const TREE = [{id: GAMES, title: 'Games', children: [{id: ACTION, title: 'Action
 const SHOT = {id: '00000000-0000-0000-0055-000000000001', url: '/api/screenshots/00000000-0000-0000-0055-000000000001'};
 const AROUND = new Map([
     [`/api/software/${ID}/screenshots`, json([SHOT])],
+    [`/api/software/${ID}/maps`, json([SHOT])],
+    [`/api/software/${ID}/covers`, json([])],
+    [`/api/software/${ID}/adverts`, json([])],
     ['/api/categories', json(TREE)],
     ['/api/platforms', json([{code: 'vector', name: 'Vector'}])],
     ['/api/hardware?platform=vector', json([])],
@@ -84,6 +87,18 @@ describe(SoftwareEditor, () => {
 
         expect(within(screenshots).getByRole('img', {name: 'Screenshot 1'})).toHaveAttribute('src', SHOT.url);
         expect(screen.getByRole('button', {name: 'Add screenshots'})).toBeInTheDocument();
+    });
+
+    it('offers the maps, the covers and the adverts of the software to change after its screenshots', async () => {
+        stubFetchAround(AROUND, json(ELITE));
+        renderWithQueries(<MemoryRouter><SoftwareEditor id={toSoftwareId(ID)} onSaved={vi.fn<(id: SoftwareId) => void>()} onDeleted={vi.fn<() => void>()}/></MemoryRouter>);
+
+        const maps = await screen.findByRole('list', {name: 'Maps'});
+
+        expect(within(maps).getByRole('img', {name: 'Map 1'})).toHaveAttribute('src', SHOT.url);
+        expect(screen.getByRole('button', {name: 'Add maps'})).toBeInTheDocument();
+        await expect(screen.findByRole('button', {name: 'Add covers'})).resolves.toBeInTheDocument();
+        await expect(screen.findByRole('button', {name: 'Add adverts'})).resolves.toBeInTheDocument();
     });
 
     it('reports the software saved', async () => {

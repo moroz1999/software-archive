@@ -1,9 +1,11 @@
 import type {UseQueryResult} from '@tanstack/react-query';
-import type {Screenshot, ScreenshotId} from '@/entities/software';
+import type {Gallery, Screenshot, ScreenshotId} from '@/entities/software';
 import {createRequiredContext} from '@/shared/lib/context';
 
 /** The screenshots being changed and the changes to make (docs/domain/software.md#screenshots). */
 export interface EditScreenshotsState {
+    /** The gallery the pictures are of, which names them. */
+    readonly gallery: Gallery;
     readonly query: UseQueryResult<readonly Screenshot[]>;
     /** Uploads the files after the screenshots there are; files that cannot be screenshots are refused before sending. */
     readonly upload: (files: readonly File[]) => void;

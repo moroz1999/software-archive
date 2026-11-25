@@ -40,6 +40,7 @@ class SoftwareForms {
         return new SoftwareState(
                 details.title(),
                 details.description(),
+                details.instructions(),
                 details.releaseDate(),
                 details.platform().code(),
                 details.hardware().stream().map(SoftwareHardware::code).toList(),
@@ -66,6 +67,7 @@ class SoftwareForms {
         return new SoftwareRequestDto(
                 state.title(),
                 state.description(),
+                state.instructions(),
                 state.releaseDate(),
                 state.platform(),
                 state.hardware(),

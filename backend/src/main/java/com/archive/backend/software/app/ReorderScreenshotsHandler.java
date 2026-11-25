@@ -1,5 +1,6 @@
 package com.archive.backend.software.app;
 
+import com.archive.backend.software.domain.ReleaseId;
 import com.archive.backend.software.domain.Software;
 import com.archive.backend.software.domain.SoftwareNotFoundException;
 import com.archive.backend.software.domain.SoftwareRepository;
@@ -18,7 +19,12 @@ public class ReorderScreenshotsHandler {
     @Transactional
     public void handle(ReorderScreenshotsCommand c) {
         Software software = repository.findById(c.softwareId()).orElseThrow(SoftwareNotFoundException::new);
-        software.reorderScreenshots(c.releaseId(), c.order(), c.actor());
+        ReleaseId releaseId = c.releaseId();
+        if (releaseId == null) {
+            software.reorderPictures(c.gallery(), c.order(), c.actor());
+        } else {
+            software.reorderScreenshots(releaseId, c.order(), c.actor());
+        }
         repository.save(software);
         software.pullEvents().forEach(events::publishEvent);
     }

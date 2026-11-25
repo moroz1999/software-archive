@@ -10,6 +10,7 @@ import org.jspecify.annotations.Nullable;
 public record SoftwareRequestDto(
         @Nullable String title,
         @Nullable String description,
+        @Nullable String instructions,
         @Nullable String releaseDate,
         @Nullable String platform,
         @Nullable List<String> hardware,

@@ -78,6 +78,9 @@ export function SoftwareForm({submitLabel, actions, categories, sources}: Softwa
                 <FormField label={t('fields.description')} fullWidth error={refusals.description}>
                     {(control) => <Textarea {...control} value={values.description} onChange={change('description')} disabled={busy}/>}
                 </FormField>
+                <FormField label={t('fields.instructions')} fullWidth error={refusals.instructions}>
+                    {(control) => <Textarea {...control} value={values.instructions ?? ''} onChange={change('instructions')} disabled={busy}/>}
+                </FormField>
             </FormSection>
             <FormSection title={t('formSections.classification')} columns={1}>
                 {values.platform !== '' && (

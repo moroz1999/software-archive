@@ -4,6 +4,7 @@ import type {SoftwareId, SoftwarePlatformCode} from '../model/software';
 import type {CreditedOwner} from '../model/credited-software';
 import {fetchCreditedReleases, fetchCreditedSoftware} from './credited-software-api';
 import {fetchScreenshots} from './screenshot-api';
+import type {Gallery} from '../model/screenshot';
 import {fetchPlatformHardware, fetchReleaseFiles, fetchSoftwareRelease} from './release-api';
 import {fetchSoftware, fetchSoftwareReleases} from './software-api';
 
@@ -58,11 +59,11 @@ export function releaseFilesQuery(softwareId: SoftwareId, releaseId: ReleaseId) 
     });
 }
 
-/** The screenshots of the software itself, or of its release when one is given: a block of their pages. */
-export function screenshotsQuery(softwareId: SoftwareId, releaseId: ReleaseId | null) {
+/** The pictures of a gallery of the software itself, or the screenshots of its release when one is given: a block of their pages. */
+export function screenshotsQuery(softwareId: SoftwareId, releaseId: ReleaseId | null, gallery: Gallery = 'screenshots') {
     return queryOptions({
-        queryKey: [...SOFTWARE_QUERY_KEY, 'screenshots', softwareId, releaseId],
-        queryFn: ({signal}) => fetchScreenshots(softwareId, releaseId, signal),
+        queryKey: [...SOFTWARE_QUERY_KEY, 'screenshots', softwareId, releaseId, gallery],
+        queryFn: ({signal}) => fetchScreenshots(softwareId, releaseId, signal, gallery),
     });
 }
 

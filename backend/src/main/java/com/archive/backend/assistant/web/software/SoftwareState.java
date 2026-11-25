@@ -8,6 +8,7 @@ import org.jspecify.annotations.Nullable;
 public record SoftwareState(
         String title,
         @Nullable String description,
+        @Nullable String instructions,
         @Nullable String releaseDate,
         String platform,
         List<String> hardware,

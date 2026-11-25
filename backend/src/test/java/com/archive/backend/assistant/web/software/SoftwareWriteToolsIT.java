@@ -33,6 +33,8 @@ class SoftwareWriteToolsIT {
 
     private static final ToolContext MEMBER = new ToolContext(TestActors.MEMBER, Language.EN);
     private static final ToolContext OTHER = new ToolContext(TestActors.OTHER, Language.EN);
+    private static final String PAGE = "https://www.zxart.ee/eng/software/game/elite/";
+    private static final String OTHER_PAGE = "https://vtrd.in/elite.php";
 
     @Autowired
     private ToolCalls calls;
@@ -115,6 +117,61 @@ class SoftwareWriteToolsIT {
         assertThat(software.read("$.software.releaseDate", String.class)).isNull();
         assertThat(ToolJson.list(software, "$.software.categories")).isEmpty();
         assertThat(ToolJson.list(software, "$.software.credits")).isEmpty();
+    }
+
+    @Test
+    void keepsTheInstructionsApartFromTheDescription() {
+        UUID id = calls.write("create_software", """
+                        {"title": "Elite", "platform": "vector", "description": "Space trading.",
+                         "instructions": "Press Space to start."}
+                        """, MEMBER).uuid();
+
+        assertThat(software(id).read("$.software.instructions", String.class)).isEqualTo("Press Space to start.");
+        assertThat(ToolJson.of(calls.state("update_software", "{\"id\": \"%s\"}".formatted(id), MEMBER))
+                        .read("$.instructions", String.class))
+                .isEqualTo("Press Space to start.");
+        calls.write("update_software", "{\"id\": \"%s\", \"instructions\": \"\"}".formatted(id), MEMBER);
+        assertThat(software(id).read("$.software.instructions", String.class)).isNull();
+        assertThat(software(id).read("$.software.description", String.class)).isEqualTo("Space trading.");
+    }
+
+    @Test
+    void recordsThePageTheSoftwareWasTakenFromAsItsSource() {
+        UUID id = calls.write("create_software", """
+                        {"title": "Elite", "platform": "vector", "sourceUrl": "%s"}
+                        """.formatted(PAGE), MEMBER).uuid();
+
+        DocumentContext software = software(id);
+        assertThat(software.read("$.software.sources[0].archive", String.class)).isEqualTo("zxart.ee");
+        assertThat(software.read("$.software.sources[0].url", String.class)).isEqualTo(PAGE);
+    }
+
+    @Test
+    void addsAnotherSourcePageOnUpdateAndTheSameOneOnce() {
+        UUID id = calls.write("create_software", """
+                        {"title": "Elite", "platform": "vector", "sourceUrl": "%s"}
+                        """.formatted(PAGE), MEMBER).uuid();
+
+        calls.write("update_software", "{\"id\": \"%s\", \"sourceUrl\": \"%s\"}".formatted(id, PAGE), MEMBER);
+        calls.write("update_software", "{\"id\": \"%s\", \"sourceUrl\": \"%s\"}".formatted(id, OTHER_PAGE), MEMBER);
+
+        assertThat(ToolJson.list(software(id), "$.software.sources[*].url"))
+                .containsExactlyInAnyOrder(PAGE, OTHER_PAGE);
+    }
+
+    @Test
+    void refusesThePageOfOtherSoftwareAddingNothing() {
+        calls.write("create_software", """
+                {"title": "Elite", "platform": "vector", "sourceUrl": "%s"}
+                """.formatted(PAGE), MEMBER);
+
+        assertThatThrownBy(() -> calls.write("create_software", """
+                        {"title": "Elite 2", "platform": "vector", "sourceUrl": "%s"}
+                        """.formatted(PAGE), MEMBER))
+                .isInstanceOfSatisfying(
+                        BusinessException.class, e -> assertThat(e.code()).isEqualTo("software.page-taken"));
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM software WHERE title = 'Elite 2'", Integer.class))
+                .isZero();
     }
 
     @Test

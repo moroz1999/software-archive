@@ -30,6 +30,13 @@ class InMemorySoftwareReadRepository implements SoftwareReadRepository {
     private final Map<UUID, List<SoftwareScreenshot>> screenshots = new HashMap<>();
     private @Nullable String lastPlatform;
 
+    private final Map<String, List<SoftwareScreenshot>> pictures = new HashMap<>();
+
+    /** The pictures of a gallery of the software with the id, by the gallery's code. */
+    void addPictures(UUID softwareId, String gallery, SoftwareScreenshot... ofGallery) {
+        pictures.put(softwareId + "/" + gallery, List.of(ofGallery));
+    }
+
     /** The screenshots of the software or the release with the id. */
     void addScreenshots(UUID ownerId, SoftwareScreenshot... ofOwner) {
         screenshots.put(ownerId, List.of(ofOwner));
@@ -123,6 +130,13 @@ class InMemorySoftwareReadRepository implements SoftwareReadRepository {
     @Override
     public List<CreditedRelease> findReleasesCreditedOnLabel(UUID labelId) {
         return List.of();
+    }
+
+    @Override
+    public List<SoftwareScreenshot> findPictures(UUID softwareId, String gallery) {
+        return gallery.equals("screenshots")
+                ? findScreenshots(softwareId)
+                : pictures.getOrDefault(softwareId + "/" + gallery, List.of());
     }
 
     @Override

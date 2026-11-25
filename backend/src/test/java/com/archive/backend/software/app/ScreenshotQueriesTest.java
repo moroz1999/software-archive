@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.archive.backend.shared.domain.error.NotFoundException;
+import com.archive.backend.software.domain.Gallery;
 import com.archive.backend.software.domain.ReleaseId;
 import com.archive.backend.software.domain.ScreenshotId;
 import com.archive.backend.software.domain.SoftwareId;
@@ -50,6 +51,17 @@ class ScreenshotQueriesTest {
                 .containsExactly(TITLE, GAME);
         assertThat(list.handle(new ListScreenshotsQuery(new SoftwareId(ELITE), new ReleaseId(AY_MOD))))
                 .containsExactly(AY);
+    }
+
+    @Test
+    void listsThePicturesOfAGalleryOfTheSoftware() {
+        elite();
+        reads.addPictures(ELITE, "maps", AY);
+
+        assertThat(list.handle(new ListScreenshotsQuery(new SoftwareId(ELITE), null, Gallery.MAPS)))
+                .containsExactly(AY);
+        assertThat(list.handle(new ListScreenshotsQuery(new SoftwareId(ELITE), null, Gallery.COVERS)))
+                .isEmpty();
     }
 
     @Test

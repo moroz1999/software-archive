@@ -27,6 +27,7 @@ export interface SoftwareFormValues {
     readonly credits?: readonly MemberRoleValue[];
     /** The code of the chosen preservation status; unknown when absent. */
     readonly preservation?: string;
+    readonly instructions?: string;
 }
 
 /** A platform the form offers. */
@@ -45,6 +46,7 @@ export interface SoftwareDraft {
     readonly categories: readonly string[];
     readonly credits: readonly MemberRoleValue[];
     readonly preservation: PreservationStatus;
+    readonly instructions: string | null;
 }
 
 export interface SoftwareFormErrors {
@@ -88,6 +90,7 @@ export function validateSoftwareForm(values: SoftwareFormValues): SoftwareFormRe
             categories: values.categories,
             credits: values.credits ?? [],
             preservation: toPreservationStatus(values.preservation ?? 'unknown'),
+            instructions: textOrNull(values.instructions),
         },
     };
 }
@@ -103,5 +106,11 @@ export function toSoftwareFormValues(software?: SoftwareDetails): SoftwareFormVa
         categories: software?.categories.map((category) => category.id) ?? [],
         credits: software?.credits ?? [],
         preservation: software?.preservation ?? 'unknown',
+        instructions: software?.instructions ?? '',
     };
+}
+
+/** A text as given, or none when it holds nothing but spaces. */
+function textOrNull(value: string | undefined): string | null {
+    return value === undefined || value.trim() === '' ? null : value;
 }

@@ -18,6 +18,7 @@ export {
     softwarePath,
 } from './config/paths';
 export {releaseDateText} from './lib/release-date';
+export {galleryKey, type GalleryText} from './lib/gallery-texts';
 export {releaseYear} from './lib/release-year';
 export {type ReleaseDetails, type ReleaseId, type ReleaseType, requireReleaseId, type SoftwareRelease, toReleaseId} from './model/release';
 export {fileSizeText, type ReleaseArchive, RELEASE_ARCHIVE_MAX_BYTES, releaseArchiveProblem} from './model/release-archive';
@@ -30,6 +31,7 @@ export {ReleaseFormProvider, type ReleaseFormProviderProps} from './model/Releas
 export {useReleaseDetails} from './model/release-details-context';
 export {ReleaseDetailsProvider, type ReleaseDetailsProviderProps} from './model/ReleaseDetailsProvider';
 export {
+    type Gallery,
     movedScreenshot,
     type Screenshot,
     SCREENSHOT_MAX_BYTES,

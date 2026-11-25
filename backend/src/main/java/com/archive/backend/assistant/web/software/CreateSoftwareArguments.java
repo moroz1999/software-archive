@@ -8,6 +8,8 @@ import org.jspecify.annotations.Nullable;
 public record CreateSoftwareArguments(
         String title,
         @Nullable String description,
+        @Nullable String instructions,
+        @Nullable String sourceUrl,
         @Nullable String releaseDate,
         String platform,
         @Nullable List<String> hardware,

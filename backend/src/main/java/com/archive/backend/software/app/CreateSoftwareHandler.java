@@ -37,6 +37,7 @@ public class CreateSoftwareHandler {
                 creditSets.of(c.credits()),
                 addedBy);
         software.changePreservation(c.preservation());
+        software.changeInstructions(c.instructions());
         repository.save(software);
         software.pullEvents().forEach(events::publishEvent);
         return software.getId();

@@ -65,7 +65,7 @@ export const resources = {
         },
         formSections: {main: 'Main', classification: 'Classification', credits: 'Credits', hardwareAndArchive: 'Hardware and archive', names: 'Names', geography: 'Geography', members: 'Members', account: 'Account', groups: 'Groups', sources: 'Sources'},
         fields: {
-            title: 'Title', platform: 'Platform', description: 'Description', releaseDate: 'Release date', releaseDateHint: 'A year, such as 1987, or a day, such as 12.05.1987.', version: 'Version',
+            title: 'Title', platform: 'Platform', description: 'Description', instructions: 'Instructions', releaseDate: 'Release date', releaseDateHint: 'A year, such as 1987, or a day, such as 12.05.1987.', version: 'Version',
             type: 'Type', preservation: 'Preservation status', hardware: 'Hardware', categories: 'Categories', credits: 'Credits', participant: 'Person or group',
             choosePlatform: 'Choose a platform', chooseType: 'Choose a type',
             platformLocked: 'Remove the hardware to change the platform.',
@@ -319,6 +319,23 @@ export const resources = {
         },
         software: {delete: 'Delete software', deleteQuestion: 'Delete “{{title}}” from the archive?', source: 'Program on other sites', software: 'Software', creditedAs: 'as {{name}}',
             preservation: {unknown: 'Unknown', 'missing-in-action': 'Missing in action', donationware: 'Donationware', 'in-sales': 'In sales'}},
+        galleries: {
+            maps: {
+                heading: 'Maps', numbered: 'Map {{n}}', nOfCount: 'Map {{n}} of {{count}}', none: 'No maps yet.', add: 'Add maps',
+                moveLeft: 'Move map {{n}} left', moveRight: 'Move map {{n}} right', delete: 'Delete map {{n}}',
+                deleteTitle: 'Delete map', deleteQuestion: 'Delete map {{n}} from the archive?',
+            },
+            covers: {
+                heading: 'Covers', numbered: 'Cover {{n}}', nOfCount: 'Cover {{n}} of {{count}}', none: 'No covers yet.', add: 'Add covers',
+                moveLeft: 'Move cover {{n}} left', moveRight: 'Move cover {{n}} right', delete: 'Delete cover {{n}}',
+                deleteTitle: 'Delete cover', deleteQuestion: 'Delete cover {{n}} from the archive?',
+            },
+            adverts: {
+                heading: 'Adverts', numbered: 'Advert {{n}}', nOfCount: 'Advert {{n}} of {{count}}', none: 'No adverts yet.', add: 'Add adverts',
+                moveLeft: 'Move advert {{n}} left', moveRight: 'Move advert {{n}} right', delete: 'Delete advert {{n}}',
+                deleteTitle: 'Delete advert', deleteQuestion: 'Delete advert {{n}} from the archive?',
+            },
+        },
         screenshots: {
             heading: 'Screenshots', numbered: 'Screenshot {{n}}', nOfCount: 'Screenshot {{n}} of {{count}}',
             previous: 'Previous screenshot', next: 'Next screenshot', none: 'No screenshots yet.', add: 'Add screenshots',
@@ -405,7 +422,7 @@ export const resources = {
         },
         formSections: {main: 'Основное', classification: 'Классификация', credits: 'Авторы', hardwareAndArchive: 'Оборудование и архив', names: 'Имена', geography: 'География', members: 'Участники', account: 'Учётная запись', groups: 'Группы', sources: 'Источники'},
         fields: {
-            title: 'Название', platform: 'Платформа', description: 'Описание', releaseDate: 'Дата выпуска', releaseDateHint: 'Год, например 1987, или день, например 12.05.1987.', version: 'Версия',
+            title: 'Название', platform: 'Платформа', description: 'Описание', instructions: 'Инструкция', releaseDate: 'Дата выпуска', releaseDateHint: 'Год, например 1987, или день, например 12.05.1987.', version: 'Версия',
             type: 'Тип', preservation: 'Статус сохранности', hardware: 'Оборудование', categories: 'Категории', credits: 'Авторы', participant: 'Человек или группа',
             choosePlatform: 'Выберите платформу', chooseType: 'Выберите тип',
             platformLocked: 'Удалите оборудование, чтобы изменить платформу.',
@@ -668,6 +685,23 @@ export const resources = {
         },
         software: {delete: 'Удалить программу', deleteQuestion: 'Удалить «{{title}}» из архива?', source: 'Программа на других сайтах', software: 'Софт', creditedAs: 'как {{name}}',
             preservation: {unknown: 'Неизвестно', 'missing-in-action': 'Потеряна', donationware: 'За донат', 'in-sales': 'В продаже'}},
+        galleries: {
+            maps: {
+                heading: 'Карты', numbered: 'Карта {{n}}', nOfCount: 'Карта {{n}} из {{count}}', none: 'Карт пока нет.', add: 'Добавить карты',
+                moveLeft: 'Сдвинуть карту {{n}} влево', moveRight: 'Сдвинуть карту {{n}} вправо', delete: 'Удалить карту {{n}}',
+                deleteTitle: 'Удалить карту', deleteQuestion: 'Удалить карту {{n}} из архива?',
+            },
+            covers: {
+                heading: 'Обложки', numbered: 'Обложка {{n}}', nOfCount: 'Обложка {{n}} из {{count}}', none: 'Обложек пока нет.', add: 'Добавить обложки',
+                moveLeft: 'Сдвинуть обложку {{n}} влево', moveRight: 'Сдвинуть обложку {{n}} вправо', delete: 'Удалить обложку {{n}}',
+                deleteTitle: 'Удалить обложку', deleteQuestion: 'Удалить обложку {{n}} из архива?',
+            },
+            adverts: {
+                heading: 'Рекламки', numbered: 'Рекламка {{n}}', nOfCount: 'Рекламка {{n}} из {{count}}', none: 'Рекламок пока нет.', add: 'Добавить рекламки',
+                moveLeft: 'Сдвинуть рекламку {{n}} влево', moveRight: 'Сдвинуть рекламку {{n}} вправо', delete: 'Удалить рекламку {{n}}',
+                deleteTitle: 'Удалить рекламку', deleteQuestion: 'Удалить рекламку {{n}} из архива?',
+            },
+        },
         screenshots: {
             heading: 'Скриншоты', numbered: 'Скриншот {{n}}', nOfCount: 'Скриншот {{n}} из {{count}}',
             previous: 'Предыдущий скриншот', next: 'Следующий скриншот', none: 'Скриншотов пока нет.', add: 'Добавить скриншоты',

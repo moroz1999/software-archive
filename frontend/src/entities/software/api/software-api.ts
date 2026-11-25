@@ -34,6 +34,7 @@ function toBody(draft: SoftwareDraft): unknown {
         categories: draft.categories,
         credits: draft.credits.map(({id, type, roles}) => ({id, type, roles})),
         preservation: draft.preservation,
+        instructions: draft.instructions,
     };
 }
 
@@ -89,6 +90,7 @@ export async function fetchSoftware(id: SoftwareId, signal: AbortSignal): Promis
             }),
             origins: readOrigins(dto['origins']),
             preservation: toPreservationStatus(readString(dto, 'preservation')),
+            instructions: readNullableString(dto, 'instructions'),
             added: readAddition(dto['added']),
             canChange: readBoolean(dto, 'canChange'),
         };

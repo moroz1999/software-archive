@@ -112,7 +112,23 @@ describe(SoftwareForm, () => {
             categories: [],
             credits: [],
             preservation: 'unknown',
+            instructions: null,
         });
+    });
+
+    it('takes the instructions after the description, apart from it', async () => {
+        const {onSubmit} = renderForm();
+        const main = screen.getByRole('region', {name: 'Main'});
+        const instructions = within(main).getByRole('textbox', {name: 'Instructions'});
+
+        expect(within(main).getByRole('textbox', {name: 'Description'}).compareDocumentPosition(instructions) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+
+        await userEvent.type(screen.getByRole('textbox', {name: 'Title'}), 'Elite');
+        await userEvent.type(screen.getByRole('textbox', {name: 'Instructions'}), 'Press Space to start');
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Platform'}), 'BK');
+        await userEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        expect(onSubmit).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({description: null, instructions: 'Press Space to start'}));
     });
 
     it('chooses the preservation status of the software, unknown until it is known', async () => {

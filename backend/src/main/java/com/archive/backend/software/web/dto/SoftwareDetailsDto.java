@@ -9,6 +9,7 @@ public record SoftwareDetailsDto(
         UUID id,
         String title,
         @Nullable String description,
+        @Nullable String instructions,
         @Nullable String releaseDate,
         String preservation,
         SoftwarePlatformDto platform,

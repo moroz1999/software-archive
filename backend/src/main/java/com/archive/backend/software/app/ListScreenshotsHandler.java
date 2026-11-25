@@ -23,7 +23,7 @@ public class ListScreenshotsHandler {
             throw new SoftwareNotFoundException();
         }
         if (q.releaseId() == null) {
-            return reads.findScreenshots(softwareId);
+            return reads.findPictures(softwareId, q.gallery().code());
         }
         UUID releaseId = q.releaseId().value();
         if (!reads.releaseExists(softwareId, releaseId)) {

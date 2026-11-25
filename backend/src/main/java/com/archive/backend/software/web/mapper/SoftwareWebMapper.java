@@ -11,6 +11,7 @@ import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
+import com.archive.backend.software.domain.SoftwareInstructions;
 import com.archive.backend.software.domain.SoftwareTitle;
 import com.archive.backend.software.read.CreditedRelease;
 import com.archive.backend.software.read.CreditedSoftware;
@@ -111,7 +112,8 @@ public interface SoftwareWebMapper {
                 toHardware(request.hardware()),
                 toCategories(request.categories()),
                 CreditRequests.toCredits(request.credits()),
-                toPreservation(request.preservation()));
+                toPreservation(request.preservation()),
+                toInstructions(request.instructions()));
     }
 
     default UpdateSoftwareCommand toUpdate(Actor actor, UUID id, SoftwareRequestDto request) {
@@ -125,7 +127,8 @@ public interface SoftwareWebMapper {
                 toHardware(request.hardware()),
                 toCategories(request.categories()),
                 CreditRequests.toCredits(request.credits()),
-                toPreservation(request.preservation()));
+                toPreservation(request.preservation()),
+                toInstructions(request.instructions()));
     }
 
     // Request scalars -> value objects.
@@ -144,6 +147,10 @@ public interface SoftwareWebMapper {
 
     private static @Nullable SoftwareDescription toDescription(@Nullable String value) {
         return value == null ? null : new SoftwareDescription(value);
+    }
+
+    private static @Nullable SoftwareInstructions toInstructions(@Nullable String value) {
+        return value == null ? null : new SoftwareInstructions(value);
     }
 
     private static PlatformCode toPlatform(@Nullable String value) {

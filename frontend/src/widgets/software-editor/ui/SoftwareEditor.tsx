@@ -18,7 +18,7 @@ export interface SoftwareEditorProps {
     readonly onDeleted: () => void;
 }
 
-/** The page of editing one software: deleting next to its title, its form with its categories, and its screenshots below. */
+/** The page of editing one software: deleting next to its title, its form with its categories, and its screenshots, maps, covers and adverts below. */
 export function SoftwareEditor(props: SoftwareEditorProps) {
     return (
         <SoftwareDetailsProvider key={props.id} id={props.id}>
@@ -60,6 +60,9 @@ function LoadedEditor({id, onSaved, onDeleted}: SoftwareEditorProps) {
                     />
                 </EditSoftwareProvider>
                 <ScreenshotsEditorSection softwareId={id}/>
+                <ScreenshotsEditorSection softwareId={id} gallery="maps"/>
+                <ScreenshotsEditorSection softwareId={id} gallery="covers"/>
+                <ScreenshotsEditorSection softwareId={id} gallery="adverts"/>
             </Stack>
         </PageLayout>
     );

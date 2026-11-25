@@ -39,12 +39,13 @@ public class DeleteScreenshotTool implements WriteTool<DeleteScreenshotArguments
                   "properties": {
                     "softwareId": {"type": "string", "format": "uuid"},
                     "releaseId": {"type": ["string", "null"], "format": "uuid", "description": "Of a release; none: of the software itself."},
+                    %s
                     "screenshotId": {"type": "string", "format": "uuid"}
                   },
                   "required": ["softwareId", "screenshotId"],
                   "additionalProperties": false
                 }
-                """;
+                """.formatted(SoftwareSchemas.GALLERY);
     }
 
     @Override
@@ -64,7 +65,10 @@ public class DeleteScreenshotTool implements WriteTool<DeleteScreenshotArguments
 
     @Override
     public SoftwareScreenshot state(ToolContext context, DeleteScreenshotArguments a) {
-        return screenshots.handle(mapper.toList(a.softwareId(), a.releaseId())).stream()
+        return screenshots
+                .handle(mapper.toList(
+                        a.softwareId(), a.releaseId(), AddScreenshotsTool.gallery(a.releaseId(), a.gallery())))
+                .stream()
                 .filter(screenshot -> screenshot.id().equals(a.screenshotId()))
                 .findFirst()
                 .orElseThrow(ScreenshotNotFoundException::new);
@@ -72,7 +76,12 @@ public class DeleteScreenshotTool implements WriteTool<DeleteScreenshotArguments
 
     @Override
     public Written write(ToolContext context, DeleteScreenshotArguments a) {
-        handler.handle(mapper.toDelete(context.actor(), a.softwareId(), a.releaseId(), a.screenshotId()));
+        handler.handle(mapper.toDelete(
+                context.actor(),
+                a.softwareId(),
+                a.releaseId(),
+                a.screenshotId(),
+                AddScreenshotsTool.gallery(a.releaseId(), a.gallery())));
         return Written.of(a.softwareId());
     }
 }

@@ -3,6 +3,7 @@ import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {useTranslation} from 'react-i18next';
 import {
     deleteScreenshot,
+    type Gallery,
     movedScreenshot,
     type ReleaseId,
     reorderScreenshots,
@@ -22,16 +23,18 @@ export interface EditScreenshotsProviderProps {
     readonly softwareId: SoftwareId;
     /** The release whose screenshots these are; none for the software's own. */
     readonly releaseId?: ReleaseId | null;
+    /** The gallery of the software these pictures are of; screenshots by default. */
+    readonly gallery?: Gallery;
     /** The block has come into view: only then are the screenshots asked for (docs/data-loading.md). */
     readonly enabled: boolean;
     readonly children: ReactNode;
 }
 
 /** Adding, deleting and reordering the screenshots of software or of its release. */
-export function EditScreenshotsProvider({softwareId, releaseId = null, enabled, children}: EditScreenshotsProviderProps) {
+export function EditScreenshotsProvider({softwareId, releaseId = null, gallery = 'screenshots', enabled, children}: EditScreenshotsProviderProps) {
     const {t} = useTranslation();
     const queryClient = useQueryClient();
-    const screenshots = screenshotsQuery(softwareId, releaseId);
+    const screenshots = screenshotsQuery(softwareId, releaseId, gallery);
     const query = useQuery({...screenshots, enabled});
     // Why the files chosen last cannot be screenshots, found before anything is sent.
     const [problem, setProblem] = useState<ScreenshotFileProblem | null>(null);
@@ -42,11 +45,11 @@ export function EditScreenshotsProvider({softwareId, releaseId = null, enabled, 
         await queryClient.invalidateQueries({queryKey: SOFTWARE_QUERY_KEY, refetchType: 'none'});
     };
     const upload = useMutation({
-        mutationFn: (files: readonly File[]) => uploadScreenshots(softwareId, releaseId, files),
+        mutationFn: (files: readonly File[]) => uploadScreenshots(softwareId, releaseId, files, gallery),
         onSuccess: refresh,
     });
     const reorder = useMutation({
-        mutationFn: (order: readonly ScreenshotId[]) => reorderScreenshots(softwareId, releaseId, order),
+        mutationFn: (order: readonly ScreenshotId[]) => reorderScreenshots(softwareId, releaseId, order, gallery),
         onSuccess: refresh,
         onError: async (error) => {
             // Changed meanwhile: shown as they are now, to be moved again.
@@ -56,7 +59,7 @@ export function EditScreenshotsProvider({softwareId, releaseId = null, enabled, 
         },
     });
     const remove = useMutation({
-        mutationFn: (id: ScreenshotId) => deleteScreenshot(softwareId, releaseId, id),
+        mutationFn: (id: ScreenshotId) => deleteScreenshot(softwareId, releaseId, id, gallery),
         onSuccess: refresh,
     });
 
@@ -71,6 +74,7 @@ export function EditScreenshotsProvider({softwareId, releaseId = null, enabled, 
     const changeError = businessErrorOf(upload.error) ?? businessErrorOf(reorder.error);
 
     const state: EditScreenshotsState = {
+        gallery,
         query,
         upload: (files) => {
             start();

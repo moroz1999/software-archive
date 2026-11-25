@@ -15,6 +15,7 @@ import com.archive.backend.category.domain.CategorySet;
 import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.HardwareSet;
 import com.archive.backend.hardware.domain.PlatformCode;
+import com.archive.backend.software.domain.Gallery;
 import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.Release;
 import com.archive.backend.software.domain.ReleaseArchive;
@@ -35,6 +36,7 @@ import com.archive.backend.software.domain.SoftwareCreditDraft;
 import com.archive.backend.software.domain.SoftwareCredits;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
+import com.archive.backend.software.domain.SoftwareInstructions;
 import com.archive.backend.software.domain.SoftwareReference;
 import com.archive.backend.software.domain.SoftwareReferenceId;
 import com.archive.backend.software.domain.SoftwareReferenceType;
@@ -296,6 +298,50 @@ class JpaSoftwareRepositoryIT {
         assertThat(loaded.screenshots(null).all())
                 .containsExactly(shot(1, ScreenshotFormat.PNG), shot(2, ScreenshotFormat.GIF));
         assertThat(loaded.screenshots(AY_MOD).all()).containsExactly(shot(3, ScreenshotFormat.WEBP));
+    }
+
+    @Test
+    void storesEveryGalleryOfTheSoftwareApartInItsOrder() {
+        Software software = elite();
+        software.addScreenshots(null, List.of(shot(1, ScreenshotFormat.PNG)), ADMIN);
+        software.addPictures(
+                Gallery.MAPS, List.of(shot(2, ScreenshotFormat.GIF), shot(3, ScreenshotFormat.PNG)), ADMIN);
+        software.addPictures(Gallery.COVERS, List.of(shot(4, ScreenshotFormat.JPEG)), ADMIN);
+        software.addPictures(Gallery.ADVERTS, List.of(shot(5, ScreenshotFormat.PNG)), ADMIN);
+        repository.save(software);
+        springDataSoftwareRepository.flush();
+        entityManager.clear();
+
+        Software loaded = repository.findById(ID).orElseThrow();
+        assertThat(loaded.screenshots(null).all()).containsExactly(shot(1, ScreenshotFormat.PNG));
+        assertThat(loaded.pictures(Gallery.MAPS).all())
+                .containsExactly(shot(2, ScreenshotFormat.GIF), shot(3, ScreenshotFormat.PNG));
+        assertThat(loaded.pictures(Gallery.COVERS).all()).containsExactly(shot(4, ScreenshotFormat.JPEG));
+        assertThat(loaded.pictures(Gallery.ADVERTS).all()).containsExactly(shot(5, ScreenshotFormat.PNG));
+    }
+
+    @Test
+    void storesAndRestoresTheInstructions() {
+        Software software = elite();
+        software.changeInstructions(new SoftwareInstructions("RUN \"ELITE\""));
+        repository.save(software);
+        springDataSoftwareRepository.flush();
+        entityManager.clear();
+
+        assertThat(repository.findById(ID).orElseThrow().getInstructions())
+                .isEqualTo(new SoftwareInstructions("RUN \"ELITE\""));
+    }
+
+    private static Software elite() {
+        return Software.create(
+                ID,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                NO_HARDWARE,
+                CategorySet.EMPTY,
+                SoftwareCredits.EMPTY,
+                BY_OTHER);
     }
 
     @Test

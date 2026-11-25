@@ -29,6 +29,7 @@ import com.archive.backend.software.app.ListScreenshotsHandler;
 import com.archive.backend.software.app.ListScreenshotsQuery;
 import com.archive.backend.software.app.ReorderScreenshotsCommand;
 import com.archive.backend.software.app.ReorderScreenshotsHandler;
+import com.archive.backend.software.domain.Gallery;
 import com.archive.backend.software.domain.ReleaseId;
 import com.archive.backend.software.domain.ReleaseNotFoundException;
 import com.archive.backend.software.domain.ScreenshotFormat;
@@ -52,6 +53,8 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -177,6 +180,57 @@ class ScreenshotControllerTest {
         ArgumentCaptor<AddScreenshotsCommand> sent = ArgumentCaptor.forClass(AddScreenshotsCommand.class);
         verify(addHandler).handle(sent.capture());
         assertThat(sent.getValue().releaseId()).isEqualTo(new ReleaseId(AY_MOD));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"maps", "covers", "adverts"})
+    void listsThePicturesOfAGalleryOfTheSoftware(String gallery) throws Exception {
+        when(listHandler.handle(new ListScreenshotsQuery(new SoftwareId(ELITE), null, Gallery.fromCode(gallery))))
+                .thenReturn(List.of(new SoftwareScreenshot(TITLE)));
+
+        mvc.perform(get("/api/software/{softwareId}/" + gallery, ELITE))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].url").value("/api/screenshots/" + TITLE));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"maps", "covers", "adverts"})
+    void uploadsPicturesToAGalleryOfTheSoftware(String gallery) throws Exception {
+        when(addHandler.handle(any(AddScreenshotsCommand.class))).thenReturn(List.of(new ScreenshotId(TITLE)));
+
+        mvc.perform(multipart("/api/software/{softwareId}/" + gallery, ELITE).file(file(ScreenshotImages.png())))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$[0].id").value(TITLE.toString()));
+
+        ArgumentCaptor<AddScreenshotsCommand> sent = ArgumentCaptor.forClass(AddScreenshotsCommand.class);
+        verify(addHandler).handle(sent.capture());
+        assertThat(sent.getValue().gallery()).isEqualTo(Gallery.fromCode(gallery));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"maps", "covers", "adverts"})
+    void reordersAndDeletesThePicturesOfAGallery(String gallery) throws Exception {
+        mvc.perform(put("/api/software/{softwareId}/" + gallery + "/order", ELITE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"order\":[\"" + GAME + "\",\"" + TITLE + "\"]}"))
+                .andExpect(status().isNoContent());
+        mvc.perform(delete("/api/software/{softwareId}/" + gallery + "/{id}", ELITE, TITLE))
+                .andExpect(status().isNoContent());
+
+        verify(reorderHandler)
+                .handle(new ReorderScreenshotsCommand(
+                        Actor.anonymous(),
+                        new SoftwareId(ELITE),
+                        null,
+                        List.of(new ScreenshotId(GAME), new ScreenshotId(TITLE)),
+                        Gallery.fromCode(gallery)));
+        verify(deleteHandler)
+                .handle(new DeleteScreenshotCommand(
+                        Actor.anonymous(),
+                        new SoftwareId(ELITE),
+                        null,
+                        new ScreenshotId(TITLE),
+                        Gallery.fromCode(gallery)));
     }
 
     @Test

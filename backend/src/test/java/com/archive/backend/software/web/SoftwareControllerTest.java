@@ -1,6 +1,7 @@
 package com.archive.backend.software.web;
 
 import static com.archive.backend.user.TestActors.ADDED;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -41,6 +42,7 @@ import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
+import com.archive.backend.software.domain.SoftwareInstructions;
 import com.archive.backend.software.domain.SoftwareNotFoundException;
 import com.archive.backend.software.domain.SoftwarePlatformLockedException;
 import com.archive.backend.software.domain.SoftwareTitle;
@@ -61,6 +63,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -197,6 +200,7 @@ class SoftwareControllerTest {
                         "Elite",
                         null,
                         null,
+                        null,
                         "unknown",
                         new SoftwarePlatform("vector", "Vector"),
                         List.of(),
@@ -215,6 +219,50 @@ class SoftwareControllerTest {
                 .andExpect(jsonPath("$.origins[0].origin").value("vektor-06c.ru"))
                 .andExpect(jsonPath("$.origins[0].externalId").value("7"))
                 .andExpect(jsonPath("$.origins[0].url").value(page));
+    }
+
+    @Test
+    void returnsTheInstructionsOfTheSoftwareApartFromItsDescription() throws Exception {
+        when(getHandler.handle(new GetSoftwareQuery(Actor.anonymous(), new SoftwareId(ID), Language.EN)))
+                .thenReturn(new SoftwareDetails(
+                        ID,
+                        "Elite",
+                        "Space trading",
+                        "Press Space to start.",
+                        null,
+                        "unknown",
+                        new SoftwarePlatform("vector", "Vector"),
+                        List.of(),
+                        List.of(),
+                        List.of(),
+                        List.of(),
+                        List.of(),
+                        ADDED,
+                        null,
+                        false));
+
+        mvc.perform(get("/api/software/{id}", ID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.description").value("Space trading"))
+                .andExpect(jsonPath("$.instructions").value("Press Space to start."));
+    }
+
+    @Test
+    void createsAndUpdatesSoftwareWithItsInstructions() throws Exception {
+        String body = "{\"title\":\"Elite\",\"platform\":\"vector\",\"instructions\":\"Press Space to start.\"}";
+        mvc.perform(
+                post("/api/software").contentType(MediaType.APPLICATION_JSON).content(body));
+        mvc.perform(put("/api/software/{id}", ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isNoContent());
+
+        ArgumentCaptor<CreateSoftwareCommand> created = ArgumentCaptor.forClass(CreateSoftwareCommand.class);
+        verify(createHandler).handle(created.capture());
+        assertThat(created.getValue().instructions()).isEqualTo(new SoftwareInstructions("Press Space to start."));
+        ArgumentCaptor<UpdateSoftwareCommand> updated = ArgumentCaptor.forClass(UpdateSoftwareCommand.class);
+        verify(updateHandler).handle(updated.capture());
+        assertThat(updated.getValue().instructions()).isEqualTo(new SoftwareInstructions("Press Space to start."));
     }
 
     @Test

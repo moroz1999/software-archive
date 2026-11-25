@@ -3,6 +3,9 @@ import {isUuid} from '@/shared/lib/uuid';
 
 export type ScreenshotId = Brand<string, 'ScreenshotId'>;
 
+/** The galleries of pictures of software (docs/domain/software.md#pictures); a release has screenshots only. */
+export type Gallery = 'screenshots' | 'maps' | 'covers' | 'adverts';
+
 /** A screenshot of software or of a release and the address of its picture (docs/domain/software.md#screenshots). */
 export interface Screenshot {
     readonly id: ScreenshotId;

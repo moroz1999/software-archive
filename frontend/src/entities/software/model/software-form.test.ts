@@ -6,14 +6,14 @@ describe(validateSoftwareForm, () => {
     it('turns filled values into a draft', () => {
         expect(validateSoftwareForm({title: 'Elite', description: 'Space trading', releaseDate: '20.09.1985', platform: 'vector', hardware: [], categories: []})).toStrictEqual({
             ok: true,
-            draft: {title: 'Elite', description: 'Space trading', releaseDate: '1985-09-20', platform: 'vector', hardware: [], categories: [], credits: [], preservation: 'unknown'},
+            draft: {title: 'Elite', description: 'Space trading', releaseDate: '1985-09-20', platform: 'vector', hardware: [], categories: [], credits: [], preservation: 'unknown', instructions: null},
         });
     });
 
     it('turns empty optional values into unknown ones', () => {
         expect(validateSoftwareForm({title: 'Elite', description: '  ', releaseDate: '', platform: 'vector', hardware: [], categories: []})).toStrictEqual({
             ok: true,
-            draft: {title: 'Elite', description: null, releaseDate: null, platform: 'vector', hardware: [], categories: [], credits: [], preservation: 'unknown'},
+            draft: {title: 'Elite', description: null, releaseDate: null, platform: 'vector', hardware: [], categories: [], credits: [], preservation: 'unknown', instructions: null},
         });
     });
 
@@ -60,6 +60,19 @@ describe(validateSoftwareForm, () => {
     });
 });
 
+describe('the instructions of the draft', () => {
+    it('are the text given, blank ones none', () => {
+        expect(validateSoftwareForm({title: 'Elite', description: '', releaseDate: '', platform: 'vector', hardware: [], categories: [], instructions: 'Press Space'})).toMatchObject({
+            ok: true,
+            draft: {instructions: 'Press Space'},
+        });
+        expect(validateSoftwareForm({title: 'Elite', description: '', releaseDate: '', platform: 'vector', hardware: [], categories: [], instructions: '  '})).toMatchObject({
+            ok: true,
+            draft: {instructions: null},
+        });
+    });
+});
+
 describe('the hardware of the draft', () => {
     it('is the checked hardware', () => {
         expect(validateSoftwareForm({title: 'Elite', description: '', releaseDate: '', platform: 'vector', hardware: ['ay8910'], categories: []})).toMatchObject({
@@ -71,7 +84,7 @@ describe('the hardware of the draft', () => {
 
 describe(toSoftwareFormValues, () => {
     it('is empty for new software', () => {
-        expect(toSoftwareFormValues()).toStrictEqual({title: '', description: '', releaseDate: '', platform: '', hardware: [], categories: [], credits: [], preservation: 'unknown'});
+        expect(toSoftwareFormValues()).toStrictEqual({title: '', description: '', releaseDate: '', platform: '', hardware: [], categories: [], credits: [], preservation: 'unknown', instructions: ''});
     });
 
     it('holds the values of existing software, unknown ones empty', () => {
@@ -86,7 +99,8 @@ describe(toSoftwareFormValues, () => {
             hardware: [],
             categories: [],
             preservation: 'in-sales',
-        })).toStrictEqual({title: 'Elite', description: '', releaseDate: '20.09.1985', platform: 'bk', hardware: [], categories: [], credits: [], preservation: 'in-sales'});
+            instructions: 'Press Space to start',
+        })).toStrictEqual({title: 'Elite', description: '', releaseDate: '20.09.1985', platform: 'bk', hardware: [], categories: [], credits: [], preservation: 'in-sales', instructions: 'Press Space to start'});
     });
 
     it('holds the codes of the hardware of the software', () => {

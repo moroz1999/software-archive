@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.archive.backend.IntegrationTest;
+import com.archive.backend.assistant.web.tool.ToolArgumentsException;
 import com.archive.backend.assistant.web.tool.ToolCalls;
 import com.archive.backend.assistant.web.tool.ToolContext;
 import com.archive.backend.assistant.web.tool.ToolJson;
@@ -95,6 +96,41 @@ class FileWriteToolsIT {
     }
 
     @Test
+    void addsPicturesToAGalleryOfTheSoftwareApartFromItsScreenshots() {
+        String add = gallery("maps", null, "/one.png");
+        assertThat(ToolJson.list(ToolJson.of(calls.state("add_screenshots", add, MEMBER)), "$"))
+                .isEmpty();
+
+        calls.write("add_screenshots", add, MEMBER);
+        calls.write("add_screenshots", gallery("covers", null, "/two.png"), MEMBER);
+
+        DocumentContext software = software();
+        assertThat(ToolJson.list(software, "$.maps")).hasSize(1);
+        assertThat(ToolJson.list(software, "$.covers")).hasSize(1);
+        assertThat(ToolJson.list(software, "$.screenshots")).isEmpty();
+    }
+
+    @Test
+    void givesAReleaseScreenshotsOnly() {
+        assertThatThrownBy(() -> calls.write("add_screenshots", gallery("adverts", ay, "/one.png"), MEMBER))
+                .isInstanceOf(ToolArgumentsException.class);
+
+        assertThat(ToolJson.list(release(), "$.screenshots")).isEmpty();
+    }
+
+    @Test
+    void deletesAPictureOfAGallery() {
+        calls.write("add_screenshots", gallery("adverts", null, "/one.png", "/two.png"), MEMBER);
+        String first = software().read("$.adverts[0].id", String.class);
+
+        calls.write("delete_screenshot", """
+                {"softwareId": "%s", "screenshotId": "%s", "gallery": "adverts"}
+                """.formatted(elite, first), MEMBER);
+
+        assertThat(ToolJson.list(software(), "$.adverts[*].id")).hasSize(1).doesNotContain(first);
+    }
+
+    @Test
     void addsNoneOfTheScreenshotsWhenOneIsNoPicture() {
         assertThatThrownBy(() -> calls.write("add_screenshots", screenshots(null, "/one.png", "/page.html"), MEMBER))
                 .isInstanceOf(BusinessException.class);
@@ -167,6 +203,11 @@ class FileWriteToolsIT {
         }
         return "{\"softwareId\": \"%s\", \"releaseId\": %s, \"urls\": [%s]}"
                 .formatted(elite, release == null ? "null" : "\"" + release + "\"", urls);
+    }
+
+    private String gallery(String gallery, @Nullable UUID release, String... paths) {
+        String add = screenshots(release, paths);
+        return add.substring(0, add.length() - 1) + ", \"gallery\": \"" + gallery + "\"}";
     }
 
     private String archive(@Nullable String fileName) {

@@ -6,6 +6,7 @@ import com.archive.backend.software.app.GetScreenshotFileHandler;
 import com.archive.backend.software.app.GetScreenshotFileQuery;
 import com.archive.backend.software.app.ListScreenshotsHandler;
 import com.archive.backend.software.app.ReorderScreenshotsHandler;
+import com.archive.backend.software.domain.Gallery;
 import com.archive.backend.software.domain.ScreenshotId;
 import com.archive.backend.software.read.ScreenshotFile;
 import com.archive.backend.software.web.dto.ScreenshotDto;
@@ -43,6 +44,8 @@ public class ScreenshotController {
 
     private static final String OF_SOFTWARE = "/api/software/{softwareId}/screenshots";
     private static final String OF_RELEASE = "/api/software/{softwareId}/releases/{releaseId}/screenshots";
+    /** The other galleries of the software, each beside its screenshots; a release has screenshots only. */
+    private static final String OF_GALLERY = "/api/software/{softwareId}/{gallery:maps|covers|adverts}";
 
     /** A picture never changes under its id: a new one is a new screenshot. */
     private static final CacheControl FOREVER =
@@ -69,7 +72,8 @@ public class ScreenshotController {
     @ResponseStatus(HttpStatus.CREATED)
     public List<ScreenshotDto> add(
             Actor actor, @PathVariable UUID softwareId, @RequestPart("files") List<MultipartFile> files) {
-        return webMapper.toAdded(addHandler.handle(webMapper.toAdd(actor, softwareId, null, files)));
+        return webMapper.toAdded(
+                addHandler.handle(webMapper.toAdd(actor, softwareId, null, files, Gallery.SCREENSHOTS)));
     }
 
     @PostMapping(path = OF_RELEASE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -79,13 +83,14 @@ public class ScreenshotController {
             @PathVariable UUID softwareId,
             @PathVariable UUID releaseId,
             @RequestPart("files") List<MultipartFile> files) {
-        return webMapper.toAdded(addHandler.handle(webMapper.toAdd(actor, softwareId, releaseId, files)));
+        return webMapper.toAdded(
+                addHandler.handle(webMapper.toAdd(actor, softwareId, releaseId, files, Gallery.SCREENSHOTS)));
     }
 
     @PutMapping(OF_SOFTWARE + "/order")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void reorder(Actor actor, @PathVariable UUID softwareId, @RequestBody ScreenshotOrderDto order) {
-        reorderHandler.handle(webMapper.toReorder(actor, softwareId, null, order));
+        reorderHandler.handle(webMapper.toReorder(actor, softwareId, null, order, Gallery.SCREENSHOTS));
     }
 
     @PutMapping(OF_RELEASE + "/order")
@@ -95,20 +100,53 @@ public class ScreenshotController {
             @PathVariable UUID softwareId,
             @PathVariable UUID releaseId,
             @RequestBody ScreenshotOrderDto order) {
-        reorderHandler.handle(webMapper.toReorder(actor, softwareId, releaseId, order));
+        reorderHandler.handle(webMapper.toReorder(actor, softwareId, releaseId, order, Gallery.SCREENSHOTS));
     }
 
     @DeleteMapping(OF_SOFTWARE + "/{screenshotId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(Actor actor, @PathVariable UUID softwareId, @PathVariable UUID screenshotId) {
-        deleteHandler.handle(webMapper.toDelete(actor, softwareId, null, screenshotId));
+        deleteHandler.handle(webMapper.toDelete(actor, softwareId, null, screenshotId, Gallery.SCREENSHOTS));
     }
 
     @DeleteMapping(OF_RELEASE + "/{screenshotId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteOfRelease(
             Actor actor, @PathVariable UUID softwareId, @PathVariable UUID releaseId, @PathVariable UUID screenshotId) {
-        deleteHandler.handle(webMapper.toDelete(actor, softwareId, releaseId, screenshotId));
+        deleteHandler.handle(webMapper.toDelete(actor, softwareId, releaseId, screenshotId, Gallery.SCREENSHOTS));
+    }
+
+    @GetMapping(OF_GALLERY)
+    public List<ScreenshotDto> listOfGallery(@PathVariable UUID softwareId, @PathVariable String gallery) {
+        return webMapper.toDtos(listHandler.handle(webMapper.toList(softwareId, null, Gallery.fromCode(gallery))));
+    }
+
+    @PostMapping(path = OF_GALLERY, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public List<ScreenshotDto> addToGallery(
+            Actor actor,
+            @PathVariable UUID softwareId,
+            @PathVariable String gallery,
+            @RequestPart("files") List<MultipartFile> files) {
+        return webMapper.toAdded(
+                addHandler.handle(webMapper.toAdd(actor, softwareId, null, files, Gallery.fromCode(gallery))));
+    }
+
+    @PutMapping(OF_GALLERY + "/order")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void reorderOfGallery(
+            Actor actor,
+            @PathVariable UUID softwareId,
+            @PathVariable String gallery,
+            @RequestBody ScreenshotOrderDto order) {
+        reorderHandler.handle(webMapper.toReorder(actor, softwareId, null, order, Gallery.fromCode(gallery)));
+    }
+
+    @DeleteMapping(OF_GALLERY + "/{screenshotId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteOfGallery(
+            Actor actor, @PathVariable UUID softwareId, @PathVariable String gallery, @PathVariable UUID screenshotId) {
+        deleteHandler.handle(webMapper.toDelete(actor, softwareId, null, screenshotId, Gallery.fromCode(gallery)));
     }
 
     /** The picture as it was uploaded. */

@@ -2,6 +2,7 @@ package com.archive.backend.assistant.web.software;
 
 import com.archive.backend.assistant.web.remote.FetchUrlTool;
 import com.archive.backend.assistant.web.tool.ChangeKind;
+import com.archive.backend.assistant.web.tool.ToolArgumentsException;
 import com.archive.backend.assistant.web.tool.ToolContext;
 import com.archive.backend.assistant.web.tool.WriteTool;
 import com.archive.backend.assistant.web.tool.Written;
@@ -13,6 +14,7 @@ import com.archive.backend.remote.read.DownloadedFile;
 import com.archive.backend.software.app.AddScreenshotsCommand;
 import com.archive.backend.software.app.AddScreenshotsHandler;
 import com.archive.backend.software.app.ListScreenshotsHandler;
+import com.archive.backend.software.domain.Gallery;
 import com.archive.backend.software.domain.ReleaseId;
 import com.archive.backend.software.domain.ScreenshotFileName;
 import com.archive.backend.software.domain.ScreenshotImage;
@@ -27,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 /** Adds screenshots of software or of its release from pictures of another site, as the upload of screenshots does. */
@@ -59,12 +62,13 @@ public class AddScreenshotsTool implements WriteTool<AddScreenshotsArguments> {
                   "properties": {
                     "softwareId": {"type": "string", "format": "uuid"},
                     "releaseId": {"type": ["string", "null"], "format": "uuid", "description": "Of a release; none: of the software itself."},
+                    %s
                     "urls": {"type": "array", "minItems": 1, "maxItems": 20, "items": %s}
                   },
                   "required": ["softwareId", "urls"],
                   "additionalProperties": false
                 }
-                """.formatted(FetchUrlTool.URL);
+                """.formatted(SoftwareSchemas.GALLERY, FetchUrlTool.URL);
     }
 
     @Override
@@ -84,7 +88,7 @@ public class AddScreenshotsTool implements WriteTool<AddScreenshotsArguments> {
 
     @Override
     public List<SoftwareScreenshot> state(ToolContext context, AddScreenshotsArguments a) {
-        return screenshots.handle(mapper.toList(a.softwareId(), a.releaseId()));
+        return screenshots.handle(mapper.toList(a.softwareId(), a.releaseId(), gallery(a.releaseId(), a.gallery())));
     }
 
     @Override
@@ -99,12 +103,22 @@ public class AddScreenshotsTool implements WriteTool<AddScreenshotsArguments> {
                     context.actor(),
                     new SoftwareId(a.softwareId()),
                     a.releaseId() == null ? null : new ReleaseId(a.releaseId()),
-                    files.stream().map(AddScreenshotsTool::image).toList()));
+                    files.stream().map(AddScreenshotsTool::image).toList(),
+                    gallery(a.releaseId(), a.gallery())));
         } finally {
             files.forEach(DownloadedFile::close);
         }
         UUID release = a.releaseId();
         return Written.of(release == null ? a.softwareId() : release);
+    }
+
+    /** The gallery the arguments name; a release has screenshots only. */
+    static Gallery gallery(@Nullable UUID release, @Nullable String code) {
+        Gallery gallery = ScreenshotWebMapper.gallery(code);
+        if (release != null && gallery != Gallery.SCREENSHOTS) {
+            throw new ToolArgumentsException("A release has screenshots only: give the gallery without the releaseId.");
+        }
+        return gallery;
     }
 
     /** The download judged by its first bytes and its size, streamed from where it lies to where it is kept. */

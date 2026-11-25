@@ -115,7 +115,7 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     @Override
     public Optional<SoftwareDetails> findById(UUID id, String language) {
         return jdbc.sql("""
-                        SELECT s.title, s.description, s.preservation, %s AS release_date, p.code, %s AS name, s.added_by, %s
+                        SELECT s.title, s.description, s.instructions, s.preservation, %s AS release_date, p.code, %s AS name, s.added_by, %s
                         FROM software s
                         JOIN platform p ON p.code = s.platform_code
                         WHERE s.id = :id
@@ -127,6 +127,7 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                         id,
                         rs.getString("title"),
                         rs.getString("description"),
+                        rs.getString("instructions"),
                         rs.getString("release_date"),
                         rs.getString("preservation"),
                         new SoftwarePlatform(rs.getString("code"), rs.getString("name")),
@@ -448,8 +449,20 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     }
 
     @Override
+    public List<SoftwareScreenshot> findPictures(UUID softwareId, String gallery) {
+        return jdbc.sql("""
+                        SELECT id FROM software_screenshot WHERE software_id = :id AND gallery = :gallery
+                        ORDER BY position
+                        """)
+                .param("id", softwareId)
+                .param("gallery", gallery)
+                .query((rs, row) -> new SoftwareScreenshot(rs.getObject("id", UUID.class)))
+                .list();
+    }
+
+    @Override
     public List<SoftwareScreenshot> findScreenshots(UUID softwareId) {
-        return screenshots("software_screenshot", "software_id", softwareId);
+        return findPictures(softwareId, "screenshots");
     }
 
     @Override

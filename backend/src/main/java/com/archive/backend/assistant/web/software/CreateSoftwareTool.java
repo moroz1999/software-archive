@@ -8,6 +8,7 @@ import com.archive.backend.assistant.web.tool.Written;
 import com.archive.backend.software.app.CreateSoftwareHandler;
 import com.archive.backend.software.web.dto.SoftwareRequestDto;
 import com.archive.backend.software.web.mapper.SoftwareWebMapper;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,7 @@ public class CreateSoftwareTool implements WriteTool<CreateSoftwareArguments> {
 
     private final CreateSoftwareHandler handler;
     private final SoftwareWebMapper mapper;
+    private final SourcePages sources;
 
     @Override
     public String name() {
@@ -69,16 +71,19 @@ public class CreateSoftwareTool implements WriteTool<CreateSoftwareArguments> {
 
     @Override
     public Written write(ToolContext context, CreateSoftwareArguments a) {
+        sources.requireFree(a.sourceUrl(), null);
         SoftwareRequestDto request = new SoftwareRequestDto(
                 a.title(),
                 Changes.text(a.description()),
+                Changes.text(a.instructions()),
                 Changes.text(a.releaseDate()),
                 a.platform(),
                 a.hardware(),
                 a.categoryIds(),
                 SoftwareForms.credits(a.credits()),
                 a.preservation());
-        return Written.of(
-                handler.handle(mapper.toCreate(context.actor(), request)).value());
+        UUID id = handler.handle(mapper.toCreate(context.actor(), request)).value();
+        sources.record(a.sourceUrl(), id);
+        return Written.of(id);
     }
 }
