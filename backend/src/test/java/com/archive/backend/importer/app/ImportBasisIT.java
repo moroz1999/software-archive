@@ -76,6 +76,12 @@ class ImportBasisIT {
     @Autowired
     private JdbcTemplate jdbc;
 
+    /**
+     * When the last run of the test started. Each run starts a second after the one before, not by the clock: the
+     * latest report is the run started last, and the clock of a busy machine may give two runs one moment or turn back.
+     */
+    private Instant started = Instant.now();
+
     @BeforeEach
     void serveTheSite() {
         cleanUp();
@@ -330,8 +336,13 @@ class ImportBasisIT {
 
     private ImportSummary run(@Nullable BasisCategory category) {
         ImportRunId id = new ImportRunId(UUID.randomUUID());
-        runs.save(ImportRun.start(id, new ImportScope("caglrc.cc", category), Instant.now()));
+        runs.save(ImportRun.start(id, new ImportScope("caglrc.cc", category), nextStart()));
         return handler.handle(new ImportBasisCommand(id, category));
+    }
+
+    private Instant nextStart() {
+        started = started.plusSeconds(1);
+        return started;
     }
 
     private UUID software(String title) {

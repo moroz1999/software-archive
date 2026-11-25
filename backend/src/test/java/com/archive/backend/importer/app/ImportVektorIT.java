@@ -95,6 +95,12 @@ class ImportVektorIT {
     @Autowired
     private JdbcTemplate jdbc;
 
+    /**
+     * When the last run of the test started. Each run starts a second after the one before, not by the clock: the
+     * latest report is the run started last, and the clock of a busy machine may give two runs one moment or turn back.
+     */
+    private Instant started = Instant.now();
+
     @AfterEach
     void cleanUp() {
         jdbc.update("DELETE FROM software WHERE added_by = ?", Importer.ID.value());
@@ -480,8 +486,13 @@ class ImportVektorIT {
     /** Runs the import as a start does: in a run of its own, whose report it writes. */
     private ImportSummary run(@Nullable VektorSection section) {
         ImportRunId id = new ImportRunId(UUID.randomUUID());
-        runs.save(ImportRun.start(id, new ImportScope("vektor-06c.ru", section), Instant.now()));
+        runs.save(ImportRun.start(id, new ImportScope("vektor-06c.ru", section), nextStart()));
         return handler.handle(new ImportVektorCommand(id, section));
+    }
+
+    private Instant nextStart() {
+        started = started.plusSeconds(1);
+        return started;
     }
 
     private void servePrograms() {

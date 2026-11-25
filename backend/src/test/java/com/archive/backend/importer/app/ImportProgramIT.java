@@ -162,6 +162,12 @@ class ImportProgramIT {
     @Autowired
     private JdbcTemplate jdbc;
 
+    /**
+     * When the last run of the test started. Each run starts a second after the one before, not by the clock: the
+     * latest report is the run started last, and the clock of a busy machine may give two runs one moment or turn back.
+     */
+    private Instant started = Instant.now();
+
     @BeforeEach
     void knownCity() {
         TestActors.store(jdbc);
@@ -953,8 +959,13 @@ class ImportProgramIT {
 
     private void importProgram(SourceProgram program) {
         ImportRunId run = new ImportRunId(UUID.randomUUID());
-        runs.save(ImportRun.start(run, new ImportScope(ARCHIVE, null), Instant.now()));
+        runs.save(ImportRun.start(run, new ImportScope(ARCHIVE, null), nextStart()));
         handler.handle(new ImportProgramCommand(run, program));
+    }
+
+    private Instant nextStart() {
+        started = started.plusSeconds(1);
+        return started;
     }
 
     private SoftwareId ourSoftware(String title, byte[] file) {
