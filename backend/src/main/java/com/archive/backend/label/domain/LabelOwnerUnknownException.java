@@ -8,6 +8,11 @@ public class LabelOwnerUnknownException extends RuleViolationException {
     private static final long serialVersionUID = 1L;
 
     public LabelOwnerUnknownException() {
-        super("label.owner-unknown", "The owner is not in the archive.", "owner");
+        this("The owner is not in the archive.");
+    }
+
+    /** The same refusal, saying which entry is missing. */
+    public LabelOwnerUnknownException(String message) {
+        super("label.owner-unknown", message, "owner");
     }
 }

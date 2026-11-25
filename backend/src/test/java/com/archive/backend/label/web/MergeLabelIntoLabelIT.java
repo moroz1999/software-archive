@@ -214,6 +214,7 @@ class MergeLabelIntoLabelIT {
         merge(GHOST, id(99), ADMIN)
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.code").value("label.owner-unknown"))
+                .andExpect(jsonPath("$.detail").value("The label to merge into is not in the archive."))
                 .andExpect(jsonPath("$.errors[0].field").value("label"));
         mvc.perform(get("/api/labels/{id}", GHOST)).andExpect(status().isOk());
     }

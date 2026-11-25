@@ -32,7 +32,9 @@ public class MergeLabelIntoLabelHandler {
         if (c.into().equals(c.label())) {
             throw new LabelMergedIntoItselfException();
         }
-        Label into = labels.lock(c.into()).orElseThrow(() -> new LabelOwnerUnknownException().onField("label"));
+        Label into = labels.lock(c.into())
+                .orElseThrow(() -> new LabelOwnerUnknownException("The label to merge into is not in the archive.")
+                        .onField("label"));
         LabelHandOver.release(c.label(), c.actor(), authors, groups, events);
         Label label = labels.lockOfNobody(c.label()).orElseThrow(LabelOwnedException::new);
         into.absorb(label);

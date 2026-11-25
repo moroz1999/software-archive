@@ -28,6 +28,9 @@ What a source tells that would be of use to the archive but that the archive has
 ### Sources
 The software the assistant adds or edits from a page of another site always remembers that page as its source, shown in Sources like the page of an import ([imports.md](imports.md#origin)). A page that is already the source of other software is refused before anything is changed, so no software is left half-added: the assistant offers to complete that software instead.
 
+### Ids
+A model copying a long id now and then swaps or mixes its digits, and then finds nothing. So the assistant copies ids exactly, and an id not found is checked against the result it came from and looked up again, never taken for an entry gone.
+
 ## Plans
 - A plan is one logical act: adding software from a source with its releases and credits, merging a duplicate, and so on. It is approved or dropped as a whole, with one button behind a confirmation that counts its changes and those of them that delete or merge data away; there are no per-change toggles and no undo.
 - Each change of a plan shows its kind (adding, editing, deleting, crediting or taking a member in, taking a credit or a member away, attaching a label, taking a label away from its owner, merging, making a person or a group of a label, adding files, deleting a file), the entry it changes, and each field it sets beside what the entry holds now. An id a change takes from an earlier one is shown as made by that change.
