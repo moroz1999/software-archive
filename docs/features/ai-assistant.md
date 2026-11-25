@@ -14,6 +14,7 @@ The tools are adapters over the use cases, in `assistant/web`, beside the contro
 - An entry is read as its page shows it: `get_software` (with its screenshots and releases), `get_release` (with its screenshots and the file tree of its archive, if it has one), `get_author`, `get_group`, `get_label` (each with the software and releases credited on it). They answer the read models of their domains.
 - `find_names` is the credit picker of the software form: the only search that finds labels of nobody.
 - `find_places` runs `FindPlacesHandler` of the geo domain: `JdbcGeoReadRepository.findPlaces` matches every name of a country or a city by the key the duplicates are compared by (`JdbcGeoDuplicates.key`).
+- `describe_write_tool` answers a write tool by its name: what it does, its kind, the type of entry it changes and its schema, which the model reads before it plans the tool. It takes the list of write tools, not the registry, which holds it.
 - `ToolCatalogIT` checks every tool: its description, its schema closed, and its schema naming exactly the components of its arguments record (and of the records in its lists), requiring those that are not `@Nullable`.
 
 ### Write tools
@@ -24,7 +25,7 @@ The tools are adapters over the use cases, in `assistant/web`, beside the contro
 - A tool goes through the module's own form: it builds the request DTO of its controller and converts it with the module's web mapper, so a write by the assistant is checked exactly as one by the form. The commands without a form body (deleting, attaching, merging, making an owner of a label) are built directly, as their controllers build them.
 - An edit is the form sent whole: `*Forms` reads the entry as it is and `Changes` lays the arguments given over it (a field left out stays, an empty text clears it, a list given replaces it). `set_*_credit`, `remove_*_credit`, `set_group_member` and `remove_group_member` change one item of that list; taking away one that is not there is refused.
 - Places and hardware go through the management's own requests (`PlaceRequestDto`, `HardwareRequestDto`) and mappers; `NamesArguments` gives the Russian name and the English one. A geo merge or move shows the city or the country as the management reads it.
-- `update_label` keeps the owner the label has; `detach_label` is the label form sent with no owner. Uploads (archives, screenshots) are not written yet.
+- `update_label` keeps the owner the label has; `detach_label` is the label form sent with no owner. Files come from other sites ([Other sites](#other-sites)).
 - The schemas take their enumerations from the domain: credit and member roles, reference types, release types, preservation statuses. Roles outside them are refused before the use case runs.
 - `*WriteToolsIT`, one per area, run each tool through `ToolCalls` against the database and read the effect back with the read tools.
 
@@ -47,3 +48,38 @@ The `remote` module reads what other sites serve, for the tools only: `FetchPage
 - A refusal is `RemoteRequestRefusedException`, told to the model like any business exception.
 
 `fetch_url` and `view_image` read; `view_image` reads a screenshot of the archive from its stored file too. `add_screenshots` downloads every picture before it adds any and hands them to `AddScreenshotsHandler` as an upload would; `set_release_archive` sends the release whole with the archive (`ReleaseWebMapper.toUpdateWithArchive`); `delete_screenshot` shows the screenshot and deletes it.
+
+## Chat
+
+### Access and storage
+
+- `UserGroup.AI_ASSISTANT` (`ai-assistant`) is given on purpose like the administrator and the moderator (`GrantedGroups`); `Actor.mayUseAssistant()` holds for a signed-in member of it. Every use case of the chat checks it first (`ChatAccess`), then that the conversation is the actor's: another's does not exist for them (`ConversationNotFoundException`, `PlanNotFoundException`).
+- `V39__assistant_chat.sql` keeps `assistant_conversation` (owner, title, last activity, `last_seq`), `assistant_message` (`seq`, role, kind, text, JSON payload), `assistant_plan` (title, status, its changes as one JSON array) and `assistant_run` (type, plan, status, the stop asked for, steps, tokens, error). Deleting a conversation, or its owner's account, deletes what it holds.
+- The domain is `assistant/domain/chat`: `Conversation` (titled after its first message, cut to 80 characters on one line), `ConversationMessage` (never changed; its repository gives it the next `seq` by `UPDATE … SET last_seq = last_seq + 1 … RETURNING` on the conversation's row), `Run` and `Plan` with `PlanAction`. The `Jdbc*Repository` classes read a row to be changed `FOR UPDATE`, so two starters cannot claim one run.
+- Message kinds and what their payload holds: `text` (of the editor: `page`), `toolCall` (`callId`, `tool`, `arguments`, `result`), `plan` (`callId`, `planId`, `arguments`), `planProgress` (`planId`, `position`, `status`), `error`, `stopped`. The read side names kinds and statuses in camel case (`toolCall`, `waitingApproval`).
+
+### The model
+
+`LanguageModel` is a port of the read side (`ModelRequest` of `ModelMessage`s and `ModelTool`s, `ModelReply`); `AskModelHandler` asks it in no transaction of its own, so a run holds no database connection while the model thinks. `OpenAiLanguageModel` implements it over the OpenAI Responses API with function tools and `store: false`, through OkHttp: a picture goes as an `input_image` data URL; a refused request, a response `failed` and a key that is not set (`assistant.openai.api-key`, from `OPENAI_API_KEY`) are `ModelFailedException`. The model is `assistant.openai.model`. Every exchange is logged under `assistant.exchanges`: of a request only the input items not logged before in its run (for its first request, those after the model's last turn), pictures as `<type, size>`; then the raw response without its echo of the tools, or the failure.
+
+### A run
+
+`ChatService` is what a transport calls; the REST controller now, a socket or an MCP server later. `send` stores the message (`SendMessageHandler`: one run at a time per conversation, `AssistantBusyException`, unless the active one is past `Run.DEAD_AFTER`, 15 minutes, and is failed as dead; a proposed plan is superseded) and hands the run to `RunLauncher`, which `BackgroundRunLauncher` puts on `applicationTaskExecutor`.
+
+`AgentRunner` claims the run and loops: before each step it checks the stop asked for (a `stopped` message) and its limits, 50 steps and 5 minutes (an `error`); `ConversationHistory` turns the stored messages into the model's — the system prompt (`SystemPrompt`, the rules and the list of skills) first, the page an editor wrote from appended to their message, a tool call as the call and its result, a plan as the call of `propose_plan`, plan progress and a stop as system notes, errors left out. The model is offered every read tool and `propose_plan`. Each reply is stored before it is acted on: prose as `text`, each call as `toolCall` with its result; a call that fails is told as `Error: …` and the run goes on. A picture `view_image` showed follows the result of its call in the requests of this run only; the result stored says only its type and size. A reply without calls ends the run `done`.
+
+### Plans
+
+`PlanProposer` checks `propose_plan` (`title`, `actions` of `tool` and `arguments`, nothing else): each change must name a write tool; `PlanReferences` finds its `{"$ref": N}` and refuses one to itself or a later change; a change without references reads its state (`ToolCalls.state`), one with them has its arguments checked against the schema with a stand-in id (`ToolCalls.check`). A plan that does not hold goes back to the model as `Error: Change N (tool): …`; one that holds is stored (`ProposePlanHandler`), told as a `plan` message, and ends the run `waitingApproval`. Privileges and rules are checked when a change is made.
+
+`approve` marks the plan executing and launches `PlanExecutor`: each change through its write tool as the editor, the references replaced by the ids the earlier ones produced, each outcome stored on the plan (`RecordPlanStepHandler`) and told as `planProgress`; the first failure skips the rest; a stop asked for skips the rest and ends there. Otherwise a `chat` run follows at once, so the assistant sums up or plans the rest. `cancel` drops a proposed plan and tells it. Every change is a transaction of its own; a plan is not one.
+
+`FailUnfinishedRunsHandler` runs when the application is ready: a run still queued or running was ended by the restart and fails with an `error` message; a plan being made is interrupted — its running change fails without being made again, the rest are skipped.
+
+### State and endpoint
+
+`GetConversationStateHandler` answers the messages after a `seq`, every plan, the active run and `refs`: the entries mentioned as `[[type:id]]` in the messages, and in the changes of plans every id of a field named `id`, `<name>Id` or `<name>Ids` and every id a change produced (`Mentions`), found by id alone through `JdbcEntityRefReadRepository` with their Russian names and the paths of their pages; an id of nothing is left out.
+
+`AssistantController` (`/api/assistant`): `GET /conversations`, `POST /conversations` (201), `GET /conversations/{id}?afterSeq=`, `POST /conversations/{id}/messages` (`text`, `page`: `path`, `title`, `entityType`, `entityId`; 202), `POST /conversations/{id}/stop` (204), `DELETE /conversations/{id}` (204), `POST /plans/{id}/approve` (202), `POST /plans/{id}/cancel` (204). Payloads, arguments and states are answered as JSON, not as strings.
+
+Tests: the domain (`RunTest`, `PlanTest`, `ConversationTest`), `PlanReferencesTest`, `ConversationHistoryTest`, `OpenAiLanguageModelTest` (against a local server), `AssistantControllerTest`, and `AssistantChatIT`: the chat through `ChatService` with `ScriptedLanguageModel` and runs made at once in the test's thread and transaction (`AssistantTestConfiguration`).

@@ -60,3 +60,10 @@ auth:
   public-url: http://localhost:5173
   mail-from: no-reply@localhost
   secure-cookies: true
+
+assistant:
+  openai:
+    # The key of the AI assistant; without one it says it is not configured.
+    api-key: ${OPENAI_API_KEY:}
+    model: gpt-6-luna
+    base-url: https://api.openai.com/v1

@@ -28,6 +28,8 @@ The frontend dev server proxies `/api` to the backend at `API_PROXY_TARGET` (fro
 
 The backend connects to PostgreSQL on `localhost:5432` and applies Flyway migrations on start. Spring DevTools restarts the application when compiled classes change.
 
+The AI assistant asks OpenAI with the key in the `OPENAI_API_KEY` environment variable of the backend; without it the assistant answers that it is not configured, and the rest of the archive works as ever. The tests never ask OpenAI.
+
 On start the backend also builds the search collections in Typesense when there are none yet; `make reindex` starts it building them anew from the database (`--search.rebuild=true`). Without Typesense the backend still starts and saves edits; the search catches up once Typesense is back ([features/search.md](features/search.md)).
 
 Uploaded files live in `upload` at the root of the repository: screenshots in `upload/images` (`screenshots.storage-path`), release archives in `upload/releases`, outside the containers and git: both are business data like the database, so keep and back them up together with it ([features/screenshots.md](features/screenshots.md#storage)). The fixtures profile puts the fixture pictures there.

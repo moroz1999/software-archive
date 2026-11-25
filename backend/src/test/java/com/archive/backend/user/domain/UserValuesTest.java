@@ -104,6 +104,12 @@ class UserValuesTest {
     }
 
     @Test
+    void theAiAssistantGroupIsGivenOnPurposeToo() {
+        assertThat(GrantedGroups.ofCodes(List.of("admin", "ai-assistant")))
+                .isEqualTo(new GrantedGroups(Set.of(UserGroup.ADMIN, UserGroup.AI_ASSISTANT)));
+    }
+
+    @Test
     void membersAndPublicVisitorsAreNotGivenOnPurpose() {
         assertInvalid(() -> GrantedGroups.ofCodes(List.of("member")), "user.group-invalid");
         assertInvalid(() -> GrantedGroups.ofCodes(List.of("public-visitor")), "user.group-invalid");

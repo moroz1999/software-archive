@@ -27,6 +27,11 @@ public class ToolCalls {
         return state(writeTool(name), json, context);
     }
 
+    /** That the arguments fit the write tool, without reading what it changes. */
+    public void check(String name, String json) {
+        arguments.parse(writeTool(name), json);
+    }
+
     public Written write(String name, String json, ToolContext context) {
         return write(writeTool(name), json, context);
     }

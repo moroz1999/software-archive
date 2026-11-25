@@ -61,6 +61,7 @@ services:
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED: "true"
       SCREENSHOTS_STORAGEPATH: /data/upload/images
       RELEASEARCHIVES_STORAGEPATH: /data/upload/releases
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
     volumes:
       - uploads:/data/upload
     networks: [internal]

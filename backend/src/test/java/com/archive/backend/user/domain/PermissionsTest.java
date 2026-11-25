@@ -112,6 +112,18 @@ class PermissionsTest {
     }
 
     @Test
+    void onlyTheMembersOfItsGroupTalkToTheAssistant() {
+        Actor editor = new Actor(
+                new UserId(UUID.fromString("00000000-0000-0000-0000-0000000000a1")),
+                Set.of(UserGroup.MEMBER, UserGroup.AI_ASSISTANT));
+
+        assertThat(editor.mayUseAssistant()).isTrue();
+        assertThat(ADMIN_AMY.mayUseAssistant()).isFalse();
+        assertThat(MEMBER_ZED.mayUseAssistant()).isFalse();
+        assertThat(Actor.anonymous().mayUseAssistant()).isFalse();
+    }
+
+    @Test
     void onlyAnAdministratorPassesAsOne() {
         Actor admin =
                 new Actor(new UserId(UUID.fromString("00000000-0000-0000-0000-0000000000ad")), Set.of(UserGroup.ADMIN));

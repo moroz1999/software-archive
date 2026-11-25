@@ -47,4 +47,4 @@ The assistant's knowledge of how a kind of task is done in this archive — find
 The assistant answers in the language the editor wrote in. It does not fill names kept in several languages, except of a country, a city or an item of hardware it adds: the Russian name, and the English one when it knows it.
 
 ## Conversations
-An editor has any number of conversations, each with its own history, and sees only their own. One task runs in a conversation at a time.
+An editor has any number of conversations, each with its own history, and sees only their own; a conversation is titled after its first message. One task runs in a conversation at a time: the editor writes again once the assistant has answered, proposed a plan or been stopped. A task takes at most 50 steps and 5 minutes; past them the assistant stops and says so. A task the assistant was in the middle of when the archive restarted fails, and a change of a plan being made then is not made again. A conversation stays until the editor deletes it.

@@ -60,6 +60,7 @@ class ToolCatalogIT {
                         "find_places",
                         "fetch_url",
                         "view_image",
+                        "describe_write_tool",
                         "list_options",
                         "load_skill");
     }

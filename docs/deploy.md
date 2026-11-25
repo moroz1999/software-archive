@@ -17,3 +17,5 @@ Letters (the confirmation links of registration) go through an external SMTP rel
 ## Not set up yet
 
 - Permissions of accounts are configured in the database.
+
+The AI assistant asks OpenAI with `OPENAI_API_KEY` from `.env.prod`; left empty, the assistant answers that it is not configured. Its exchanges with the model are logged under the logger `assistant.exchanges`.

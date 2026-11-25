@@ -69,6 +69,13 @@ public record Actor(@Nullable UserId id, Set<UserGroup> groups) {
     }
 
     /**
+     * Whether they may talk to the AI assistant: the members of its group only.
+     */
+    public boolean mayUseAssistant() {
+        return id != null && groups.contains(UserGroup.AI_ASSISTANT);
+    }
+
+    /**
      * Whether they may keep the countries and the cities: administrators only.
      */
     public boolean mayKeepPlaces() {

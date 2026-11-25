@@ -8,12 +8,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * The groups an administrator gives a user on purpose: administrator and moderator.
+ * The groups an administrator gives a user on purpose: administrator, moderator and AI assistant.
  */
 @ValueObject
 public record GrantedGroups(Set<UserGroup> groups) {
 
-    private static final Set<UserGroup> GIVEN_ON_PURPOSE = EnumSet.of(UserGroup.ADMIN, UserGroup.MODERATOR);
+    private static final Set<UserGroup> GIVEN_ON_PURPOSE =
+            EnumSet.of(UserGroup.ADMIN, UserGroup.MODERATOR, UserGroup.AI_ASSISTANT);
 
     public GrantedGroups {
         if (!GIVEN_ON_PURPOSE.containsAll(groups)) {
@@ -42,6 +43,6 @@ public record GrantedGroups(Set<UserGroup> groups) {
 
     private static InvalidValueException invalid() {
         return new InvalidValueException(
-                "user.group-invalid", "Only administrators and moderators are given on purpose.");
+                "user.group-invalid", "Only administrators, moderators and the AI assistant are given on purpose.");
     }
 }

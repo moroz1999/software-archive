@@ -9,6 +9,7 @@ import com.archive.backend.shared.domain.ddd.ValueObject;
 public enum UserGroup {
     ADMIN("admin"),
     MODERATOR("moderator"),
+    AI_ASSISTANT("ai-assistant"),
     MEMBER("member"),
     PUBLIC_VISITOR("public-visitor");
 
