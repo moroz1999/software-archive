@@ -1,12 +1,13 @@
 package com.archive.backend.group.read;
 
+import com.archive.backend.shared.read.ExternalOrigin;
 import com.archive.backend.user.read.Addition;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 /**
- * One group with everything shown on its page, under its name.
+ * One group with everything shown on its page, under its name, and where imports took it from.
  */
 public record GroupDetails(
         UUID id,
@@ -18,6 +19,7 @@ public record GroupDetails(
         List<GroupMember> members,
         List<RelatedGroup> memberGroups,
         List<RelatedGroup> groups,
+        List<ExternalOrigin> origins,
         Addition added,
         @Nullable UUID addedBy,
         boolean canChange) {
@@ -33,12 +35,24 @@ public record GroupDetails(
             List<RelatedGroup> memberGroups,
             List<RelatedGroup> groups,
             Addition added) {
-        this(id, name, notes, types, labels, locations, members, memberGroups, groups, added, null, false);
+        this(id, name, notes, types, labels, locations, members, memberGroups, groups, List.of(), added, null, false);
     }
 
     /** The same group, telling whether the actor may change it. */
     public GroupDetails withCanChange(boolean canChange) {
         return new GroupDetails(
-                id, name, notes, types, labels, locations, members, memberGroups, groups, added, addedBy, canChange);
+                id,
+                name,
+                notes,
+                types,
+                labels,
+                locations,
+                members,
+                memberGroups,
+                groups,
+                origins,
+                added,
+                addedBy,
+                canChange);
     }
 }

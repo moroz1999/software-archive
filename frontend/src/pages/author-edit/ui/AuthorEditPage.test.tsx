@@ -7,7 +7,7 @@ import {json, noContent, renderWithQueries, stubFetchAround} from '@/shared/lib/
 import {loadAuthorEditPage, preloadAuthorEditPage} from '../index';
 
 const ID = '00000000-0000-0000-0003-000000000001';
-const ZED = {id: ID, name: 'Zed', realName: 'John Doe', notes: null, labels: [], locations: [], groups: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true};
+const ZED = {id: ID, name: 'Zed', realName: 'John Doe', notes: null, labels: [], locations: [], groups: [], origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true};
 
 /** What the page loads besides the author: the countries of the locations editor. */
 const AROUND = new Map([['/api/countries', json([])]]);

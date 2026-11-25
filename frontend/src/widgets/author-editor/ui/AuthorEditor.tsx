@@ -4,6 +4,7 @@ import {DeleteAuthorButton} from '@/features/author/delete';
 import {EditAuthorProvider} from '@/features/author/edit';
 import {useSkeleton} from '@/shared/lib/loading';
 import {Button} from '@/shared/ui/button';
+import {OriginList} from '@/shared/ui/origin-list';
 import {PageLayout} from '@/shared/ui/page-layout';
 import {AuthorLabels, AuthorLocations} from './AuthorFields';
 
@@ -50,6 +51,7 @@ function LoadedEditor({id, onSaved, onDeleted}: AuthorEditorProps) {
                     submitLabel={t('actions.save')}
                     labels={<AuthorLabels/>}
                     locations={<AuthorLocations/>}
+                    sources={<OriginList origins={query.data.origins}/>}
                     actions={<Button href={authorPath(id)} color="secondary">{t('actions.cancel')}</Button>}
                 />
             </EditAuthorProvider>

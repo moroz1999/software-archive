@@ -21,7 +21,7 @@ The page of one group at `/groups/{id}` ([domain/authors.md](../domain/authors.m
 
 ## REST
 
-`GET /api/groups/{id}` — `{id, name, notes, types: [code], labels: [{id, name}], locations: [{country, city, primary}], members: [{id, type, name, personId, personName}], memberGroups: [{id, name}], groups: [{id, name}]}`; `name` and the names of related groups are the groups' names; a member's `id` is the person, or the label (`type` `author-label`) they were a member under; `personId` is `null` for a label of nobody, `personName` `null` when it is the member's label; `added: {by, at}` as for authors ([author-view.md](author-view.md#rest)); `404 group.not-found`, `400` for a malformed id.
+`GET /api/groups/{id}` — `{id, name, notes, types: [code], labels: [{id, name}], locations: [{country, city, primary}], members: [{id, type, name, personId, personName}], memberGroups: [{id, name}], groups: [{id, name}], origins: [{origin, externalId, url}]}`; `origins` as for authors; `name` and the names of related groups are the groups' names; a member's `id` is the person, or the label (`type` `author-label`) they were a member under; `personId` is `null` for a label of nobody, `personName` `null` when it is the member's label; `added: {by, at}` as for authors ([author-view.md](author-view.md#rest)); `404 group.not-found`, `400` for a malformed id.
 
 `GET /api/groups/{id}/software` — `[{id, title, releaseDate, screenshots, madeBy, credits: [{as, roles}]}]`, the card fields of the software list; `as` is `null` for a credit by the group itself; an unknown group gets `[]`.
 

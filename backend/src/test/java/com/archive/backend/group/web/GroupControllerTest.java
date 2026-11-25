@@ -49,6 +49,7 @@ import com.archive.backend.label.domain.UnmarkedLabelDraft;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
 import com.archive.backend.shared.domain.Language;
+import com.archive.backend.shared.read.ExternalOrigin;
 import com.archive.backend.shared.web.ApiExceptionHandler;
 import com.archive.backend.user.domain.Actor;
 import java.util.List;
@@ -163,6 +164,30 @@ class GroupControllerTest {
     @Test
     void answers400ForAMalformedCity() throws Exception {
         mvc.perform(get("/api/groups").param("city", "not-a-uuid")).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void returnsWhereImportsTookTheGroupFromByTheSourceArchiveAndTheIdThere() throws Exception {
+        when(getHandler.handle(new GetGroupQuery(Actor.anonymous(), new GroupId(ID), Language.RU)))
+                .thenReturn(new GroupDetails(
+                        ID,
+                        "Crew Ltd",
+                        null,
+                        List.of(),
+                        List.of(),
+                        List.of(),
+                        List.of(),
+                        List.of(),
+                        List.of(),
+                        List.of(new ExternalOrigin("vektor-06c.ru", "Crew", null)),
+                        ADDED,
+                        null,
+                        false));
+
+        mvc.perform(get("/api/groups/{id}", ID).header("Accept-Language", "ru"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.origins[0].origin").value("vektor-06c.ru"))
+                .andExpect(jsonPath("$.origins[0].externalId").value("Crew"));
     }
 
     @Test

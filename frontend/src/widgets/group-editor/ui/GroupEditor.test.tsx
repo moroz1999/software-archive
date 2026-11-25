@@ -20,7 +20,7 @@ const CREW = {
     members: [],
     memberGroups: [],
     groups: [],
-    added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
+    origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
     canChange: true,
 };
 
@@ -46,6 +46,15 @@ describe(GroupEditor, () => {
 
         await expect(screen.findByRole('checkbox', {name: 'demogroup'})).resolves.toBeChecked();
         expect(screen.getByRole('checkbox', {name: 'crack group'})).not.toBeChecked();
+    });
+
+    it('shows where imports took the group from, as text', async () => {
+        stubFetchAround(AROUND, json({...CREW, origins: [{origin: 'caglrc.cc', externalId: '17', url: null}]}));
+        renderEditor();
+
+        await screen.findByRole('textbox', {name: 'Name'});
+
+        expect(within(screen.getByRole('region', {name: 'Sources'})).getByRole('listitem')).toHaveTextContent('caglrc.cc17');
     });
 
     it('leads back from the editing to the group and the groups', async () => {

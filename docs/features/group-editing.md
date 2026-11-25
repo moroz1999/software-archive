@@ -14,7 +14,8 @@ The edit page shows Groups › the name, leading to the group's page, › "Editi
 
 ## Form
 
-- In one narrow column, in sections: Main (Name, required, at most 255 characters; Types, required; Notes, multi-line), Names (Labels), Geography (Locations), Members; Cancel and the submit button at its bottom right — the same layout as the author form ([author-editing.md](author-editing.md)).
+- In one narrow column, in sections: Main (Name, required, at most 255 characters; Types, required; Notes, multi-line), Names (Labels), Geography (Locations), Members, and on editing Sources; Cancel and the submit button at its bottom right — the same layout as the author form ([author-editing.md](author-editing.md)).
+- Sources, on editing: for every import the entry came from, the source archive and the id there as text — the name it is known by there, when the source gives it no id ([domain/imports.md](../domain/imports.md#origin)) — the id leading to the page there when it has one; "None" when no import brought it. Not editable (`OriginList`).
 - Types: a checkbox for every type of the reference book, under its code; none chosen is a group of no known type.
 - Labels and Locations: the same editors as for authors, but the labels have no "Display name" — a group is always shown under its name; exactly one primary location; a label taken away stays in the archive as a label of nobody.
 - Members: people and their aliases are found remotely by name; every selected member has removable role chips. The form replaces the complete roster.

@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
 import com.archive.backend.IntegrationTest;
+import com.archive.backend.shared.read.ExternalOrigin;
 import com.archive.backend.software.read.ReleaseDetails;
 import com.archive.backend.software.read.SoftwareCategory;
 import com.archive.backend.software.read.SoftwareCategoryStep;
@@ -303,6 +304,22 @@ class JdbcSoftwareReadRepositoryIT {
                         assertThat(details.sources()).containsExactly(new SoftwareSource("vektor-06c.ru", page)));
         assertThat(reads.findById(TETRIS, "en"))
                 .hasValueSatisfying(details -> assertThat(details.sources()).isEmpty());
+    }
+
+    @Test
+    void readsTheIdsOfTheSoftwareInTheArchivesItWasImportedFromAlsoWithoutAPageThere() {
+        jdbc.update(
+                "INSERT INTO external_origin (origin, kind, external_id, entity_id, url) VALUES ('vektor-06c.ru', 'SOFTWARE', '7', ?, ?)",
+                ELITE,
+                "https://vektor-06c.ru/elite/");
+        jdbc.update(
+                "INSERT INTO external_origin (origin, kind, external_id, entity_id) VALUES ('caglrc.cc', 'SOFTWARE', '12', ?)",
+                ELITE);
+
+        assertThat(reads.findById(ELITE, "en").orElseThrow().origins())
+                .containsExactly(
+                        new ExternalOrigin("caglrc.cc", "12", null),
+                        new ExternalOrigin("vektor-06c.ru", "7", "https://vektor-06c.ru/elite/"));
     }
 
     @Test

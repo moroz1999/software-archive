@@ -11,6 +11,7 @@ import com.archive.backend.group.read.RelatedGroup;
 import com.archive.backend.label.read.LetterFilterSql;
 import com.archive.backend.label.read.MainNameSql;
 import com.archive.backend.label.read.PlatformFilterSql;
+import com.archive.backend.shared.read.ExternalOrigins;
 import com.archive.backend.user.read.AdditionSql;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -134,6 +135,7 @@ public class JdbcGroupReadRepository implements GroupReadRepository {
                         members(id),
                         related(id, "member_group_id", "group_id"),
                         related(id, "group_id", "member_group_id"),
+                        ExternalOrigins.of(jdbc, "GROUP", id),
                         AdditionSql.of(rs),
                         rs.getObject("added_by", UUID.class),
                         false))

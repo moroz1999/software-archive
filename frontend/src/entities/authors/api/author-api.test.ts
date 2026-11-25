@@ -16,7 +16,7 @@ const ZED = {
         {id: '00000000-0000-0000-0005-000000000001', name: 'Crew', as: 'Axe'},
         {id: '00000000-0000-0000-0005-000000000002', name: 'Band', as: null},
     ],
-    added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
+    origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
     canChange: true,
 };
 

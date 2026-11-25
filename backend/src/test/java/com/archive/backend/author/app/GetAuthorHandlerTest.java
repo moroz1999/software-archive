@@ -52,7 +52,7 @@ class GetAuthorHandlerTest {
     @Test
     void tellsWhetherTheActorMayChangeThePerson() {
         reads.add(new AuthorDetails(
-                ID, "Zed", null, null, List.of(), List.of(), List.of(), ADDED, MEMBER_ID.value(), false));
+                ID, "Zed", null, null, List.of(), List.of(), List.of(), List.of(), ADDED, MEMBER_ID.value(), false));
 
         assertThat(handler.handle(new GetAuthorQuery(MEMBER, new AuthorId(ID), Language.EN))
                         .canChange())

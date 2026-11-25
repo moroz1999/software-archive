@@ -14,7 +14,8 @@ The edit page shows Authors › the main name, leading to the author's page, ›
 
 ## Form
 
-- In one narrow column, in sections ([design-system/form.md](../design-system/form.md)): Main (Real name, at most 255 characters; Notes, multi-line), Names (Labels), Geography (Locations); Cancel and the submit button at its bottom right.
+- In one narrow column, in sections ([design-system/form.md](../design-system/form.md)): Main (Real name, at most 255 characters; Notes, multi-line), Names (Labels), Geography (Locations), and on editing Sources; Cancel and the submit button at its bottom right.
+- Sources, on editing: for every import the entry came from, the source archive and the id there as text — the name it is known by there, when the source gives it no id ([domain/imports.md](../domain/imports.md#origin)) — the id leading to the page there when it has one; "None" when no import brought it. Not editable (`OriginList`).
 - An author needs a real name or at least one label: without either, "Enter a real name or add a label." shows under Real name on submit.
 - Labels: one line per label: its name, the "Display name" radio and × to take it away; "Add label" adds an empty line. A name is required, at most 255 characters, its error under its row. Exactly one label is the display name: the first label added becomes it, taking it away passes it to the first label left. Renaming keeps the label with its credits and memberships.
 - A label removed from the form is not deleted: it stays in the archive as a label of nobody, with its credits and memberships. Deleting a label is a separate action.

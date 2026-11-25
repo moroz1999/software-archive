@@ -12,7 +12,7 @@ const ELITE = {id: ID, title: 'Elite', description: 'Space trading', releaseDate
         id: '00000000-0000-0000-0006-000000000002',
         title: 'Action',
         branch: [{id: '00000000-0000-0000-0006-000000000001', title: 'Games'}, {id: '00000000-0000-0000-0006-000000000002', title: 'Action'}],
-    }], credits: [], sources: [], preservation: 'unknown', added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true};
+    }], credits: [], sources: [], preservation: 'unknown', origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true};
 const GAMES = '00000000-0000-0000-0006-000000000001';
 const ACTION = '00000000-0000-0000-0006-000000000002';
 const TREE = [{id: GAMES, title: 'Games', children: [{id: ACTION, title: 'Action', children: []}]}];
@@ -37,6 +37,15 @@ describe(SoftwareEditor, () => {
         expect(screen.getByTestId('software-editor-skeleton')).toBeInTheDocument();
         await expect(screen.findByRole('textbox', {name: 'Title'})).resolves.toHaveValue('Elite');
         expect(screen.getByRole('button', {name: 'Delete'})).toBeInTheDocument();
+    });
+
+    it('shows where imports took the software from, as text, with its ids there', async () => {
+        stubFetchAround(AROUND, json({...ELITE, origins: [{origin: 'vektor-06c.ru', externalId: '7', url: 'https://vektor-06c.ru/elite/'}]}));
+        renderWithQueries(<MemoryRouter><SoftwareEditor id={toSoftwareId(ID)} onSaved={vi.fn<(id: SoftwareId) => void>()} onDeleted={vi.fn<() => void>()}/></MemoryRouter>);
+
+        await screen.findByRole('textbox', {name: 'Title'});
+
+        expect(within(screen.getByRole('region', {name: 'Sources'})).getByRole('link', {name: '7'})).toHaveAttribute('href', 'https://vektor-06c.ru/elite/');
     });
 
     it('leads back from the editing to the software and on through the catalog', async () => {

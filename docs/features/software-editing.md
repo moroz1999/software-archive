@@ -14,7 +14,8 @@ The edit page shows the breadcrumbs of the software ([software-view.md](software
 
 ## Form
 
-- Layout: a two-column form ([design-system/form.md](../design-system/form.md)) in sections — Main (Title, Platform, Release date, Description), Classification (Hardware, Categories), Credits; Cancel and the submit button at its bottom right.
+- Layout: a two-column form ([design-system/form.md](../design-system/form.md)) in sections — Main (Title, Platform, Release date, Description), Classification (Hardware, Categories), Credits, and on editing Sources; Cancel and the submit button at its bottom right.
+- Sources, on editing: for every import the entry came from, the source archive and the id there as text — the name it is known by there, when the source gives it no id ([domain/imports.md](../domain/imports.md#origin)) — the id leading to the page there when it has one; "None" when no import brought it. Not editable (`OriginList`).
 - Fields: Title (required, at most 255 characters), Platform (required, chosen from the archive's platforms; a new form starts with the platform of the switch, [platform-switch.md](platform-switch.md)), Description (multi-line), Release date (a year or a day, one text field with a hint: `1987` or `12.05.1987`; the API keeps the ISO day).
 - Hardware: once a platform is chosen, its hardware by group, picked with the same picker as a release's ([design-system/multi-select-filter.md](../design-system/multi-select-filter.md)); a skeleton while it loads.
 - Categories: under the hardware, the whole tree of categories ([domain/categories.md](../domain/categories.md)) to check any number in, none included ([design-system/tree-checklist.md](../design-system/tree-checklist.md)); a skeleton while it loads.
@@ -38,7 +39,7 @@ The edit page shows the breadcrumbs of the software ([software-view.md](software
 
 | Call | Answer | Errors |
 |---|---|---|
-| `GET /api/software/{id}` | `200` software details, including the credits with the nullable owner id used by the view, the pages of the archives it was imported from, the code of its `preservation` status, and `added: {by, at}`: who added it (their user name, `null` once the account is gone) and when | `404 software.not-found`; `400` for a malformed id |
+| `GET /api/software/{id}` | `200` software details, including the credits with the nullable owner id used by the view, the pages of the archives it was imported from, `origins: [{origin, externalId, url}]` — every import it came from with its id there, `url` `null` without a page there — the code of its `preservation` status, and `added: {by, at}`: who added it (their user name, `null` once the account is gone) and when | `404 software.not-found`; `400` for a malformed id |
 | `POST /api/software` with the form values; credits are `{id, type, roles}`, the type `author`, `author-label`, `group` or `group-label` | `201`, `Location: /api/software/{id}`, `{id}` | Format errors (`400 software.reference-type-invalid`, `software.reference-id-required`, `software.credit-role-invalid`, `software.credit-duplicate`); `422` for an unknown hardware or category, `422 software.credit-unknown` (field `credits`) for anyone credited not in the archive |
 | `PUT /api/software/{id}` (same body) | `204` | `404 software.not-found`; `422 software.platform-locked` (field `platform`) when the platform changes while a release has hardware; the errors of `POST` |
 | `DELETE /api/software/{id}` | `204` | `404 software.not-found` |

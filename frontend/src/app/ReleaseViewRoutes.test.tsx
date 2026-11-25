@@ -21,7 +21,7 @@ const SOFTWARE = {
     categories: [],
     credits: [],
     sources: [], preservation: 'unknown',
-    added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
+    origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
     canChange: true,
 };
 

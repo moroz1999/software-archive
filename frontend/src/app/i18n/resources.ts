@@ -201,6 +201,7 @@ export const resources = {
                 forbidden: 'Only the members of the AI assistant group use the assistant.',
             },
         },
+        origins: {none: 'None'},
         pagination: {label: 'Pages', previous: 'Previous', next: 'Next'},
         loading: {refreshing: 'Refreshing', searching: 'Searching'},
         selection: {remove: 'Remove {{name}}', selected_one: '{{count}} selected', selected_other: '{{count}} selected'},
@@ -257,7 +258,6 @@ export const resources = {
             makeAuthorQuestion: 'Make a person known as “{{name}}”?', makeGroupQuestion: 'Make a group named “{{name}}”?',
             takenAway: 'It will no longer be a label of {{owner}}.',
             nameField: 'Name', delete: 'Delete label', deleteQuestion: 'Delete “{{name}}” from the archive? Its credits and memberships go with it.',
-            noSources: 'None',
             makeErrors: {
                 displayName: 'This label is the display name of its owner: choose another display name for them first.',
                 onlyName: 'This label is the only name of its owner: it cannot be taken away from them.',
@@ -546,6 +546,7 @@ export const resources = {
                 forbidden: 'Помощником пользуются только участники группы ИИ-помощника.',
             },
         },
+        origins: {none: 'Нет'},
         pagination: {label: 'Страницы', previous: 'Назад', next: 'Вперёд'},
         loading: {refreshing: 'Обновление', searching: 'Поиск'},
         selection: {
@@ -605,7 +606,6 @@ export const resources = {
             makeAuthorQuestion: 'Сделать человека, известного как «{{name}}»?', makeGroupQuestion: 'Сделать группу с названием «{{name}}»?',
             takenAway: 'Он больше не будет псевдонимом {{owner}}.',
             nameField: 'Имя', delete: 'Удалить псевдоним', deleteQuestion: 'Удалить «{{name}}» из архива? Его участие в работах и группах удалится вместе с ним.',
-            noSources: 'Нет',
             makeErrors: {
                 displayName: 'Это основной псевдоним владельца: сначала выберите ему другой основной.',
                 onlyName: 'Это единственное имя владельца: его нельзя у него забрать.',

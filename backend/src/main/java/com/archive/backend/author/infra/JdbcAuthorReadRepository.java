@@ -10,6 +10,7 @@ import com.archive.backend.geo.read.LocationsSql;
 import com.archive.backend.label.read.LetterFilterSql;
 import com.archive.backend.label.read.MainNameSql;
 import com.archive.backend.label.read.PlatformFilterSql;
+import com.archive.backend.shared.read.ExternalOrigins;
 import com.archive.backend.user.read.AdditionSql;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -137,6 +138,7 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
                         labels(id),
                         locations(id, language),
                         groups(id),
+                        ExternalOrigins.of(jdbc, "AUTHOR", id),
                         AdditionSql.of(rs),
                         rs.getObject("added_by", UUID.class),
                         false))

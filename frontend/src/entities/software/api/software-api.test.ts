@@ -48,7 +48,7 @@ describe(fetchSoftware, () => {
             ],
             sources: [{archive: 'vektor-06c.ru', url: 'https://vektor-06c.ru/programmnoe-obespechenie/arkadnye-igry/joe-blade-/'}],
             preservation: 'missing-in-action',
-            added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
+            origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
             canChange: true,
         }));
 
@@ -61,7 +61,7 @@ describe(fetchSoftware, () => {
             ],
             sources: [{archive: 'vektor-06c.ru', url: 'https://vektor-06c.ru/programmnoe-obespechenie/arkadnye-igry/joe-blade-/'}],
             preservation: 'missing-in-action',
-            added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
+            origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
             canChange: true,
         });
         expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/software/${ID}`);
@@ -70,7 +70,7 @@ describe(fetchSoftware, () => {
     it('fails with a system error on an unknown preservation status', async () => {
         stubFetch(json({
             id: ID, title: 'Elite', description: null, releaseDate: null, platform: VECTOR, hardware: [], categories: [], credits: [], sources: [],
-            preservation: 'lost', added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true,
+            preservation: 'lost', origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true,
         }));
 
         await expect(fetchSoftware(ID, new AbortController().signal)).rejects.toBeInstanceOf(SystemError);
@@ -107,7 +107,7 @@ describe(fetchSoftware, () => {
     it('reads hardware of a group the archive added, with the name of its group', async () => {
         stubFetch(json({
             id: ID, title: 'Elite', description: null, releaseDate: null, platform: VECTOR, hardware: [{code: 'gpu', name: 'GPU', group: 'video', groupName: 'Video'}],
-            categories: [], credits: [], sources: [], preservation: 'missing-in-action', added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true,
+            categories: [], credits: [], sources: [], preservation: 'missing-in-action', origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true,
         }));
 
         await expect(fetchSoftware(ID, new AbortController().signal)).resolves.toMatchObject({

@@ -14,11 +14,13 @@ export interface AuthorFormProps {
     /** The editor of the author's locations, wired to the form through useAuthorForm. */
     readonly locations?: ReactNode;
     /** More buttons before the submit button, such as Cancel. */
+    /** Where imports took it from, shown and not edited. */
+    readonly sources?: ReactNode;
     readonly actions?: ReactNode;
 }
 
 /** The fields of an author inside an AuthorFormProvider, which holds their values and checks them. */
-export function AuthorForm({submitLabel, labels, locations, actions}: AuthorFormProps) {
+export function AuthorForm({submitLabel, labels, locations, sources, actions}: AuthorFormProps) {
     const {t} = useTranslation();
     const {values, errors, refusals, change, submit, busy, error} = useAuthorForm();
 
@@ -35,6 +37,7 @@ export function AuthorForm({submitLabel, labels, locations, actions}: AuthorForm
             </FormSection>
             {labels !== undefined && <FormSection title={t('formSections.names')}>{labels}</FormSection>}
             {locations !== undefined && <FormSection title={t('formSections.geography')}>{locations}</FormSection>}
+            {sources !== undefined && <FormSection title={t('formSections.sources')} columns={1}>{sources}</FormSection>}
             <FormActions>
                 {actions}
                 <Button type="submit" loading={busy}>{submitLabel}</Button>

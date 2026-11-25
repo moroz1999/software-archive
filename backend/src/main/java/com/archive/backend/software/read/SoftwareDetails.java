@@ -1,5 +1,6 @@
 package com.archive.backend.software.read;
 
+import com.archive.backend.shared.read.ExternalOrigin;
 import com.archive.backend.user.read.Addition;
 import java.util.List;
 import java.util.UUID;
@@ -7,8 +8,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * One software with everything shown about it; its base hardware by group, then by name; its categories in the order
- * of the tree; everyone credited on it; the pages of the archives it was imported from; the code of its preservation
- * status.
+ * of the tree; everyone credited on it; the pages of the archives it was imported from, and its ids there; the code
+ * of its preservation status.
  */
 public record SoftwareDetails(
         UUID id,
@@ -21,6 +22,7 @@ public record SoftwareDetails(
         List<SoftwareCategory> categories,
         List<SoftwareCredit> credits,
         List<SoftwareSource> sources,
+        List<ExternalOrigin> origins,
         Addition added,
         @Nullable UUID addedBy,
         boolean canChange) {
@@ -46,6 +48,7 @@ public record SoftwareDetails(
                 hardware,
                 categories,
                 credits,
+                List.of(),
                 List.of(),
                 added,
                 null,
@@ -77,6 +80,7 @@ public record SoftwareDetails(
                 categories,
                 credits,
                 sources,
+                origins,
                 added,
                 addedBy,
                 canChange);

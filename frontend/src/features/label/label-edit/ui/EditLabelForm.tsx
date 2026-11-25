@@ -9,8 +9,9 @@ import {Form, FormActions, FormField, FormFieldset, FormMessage, FormSection} fr
 import {Inline} from '@/shared/ui/inline';
 import {Input} from '@/shared/ui/input';
 import {MultiEntityAutocomplete} from '@/shared/ui/multi-entity-autocomplete';
+import {OriginList} from '@/shared/ui/origin-list';
 import {Stack} from '@/shared/ui/stack';
-import {Text, TextLink} from '@/shared/ui/typography';
+import {Text} from '@/shared/ui/typography';
 import {useEditLabel} from '../model/edit-label-context';
 
 export interface EditLabelFormProps {
@@ -46,7 +47,7 @@ export function EditLabelForm({actions}: EditLabelFormProps) {
                 />
             </FormSection>
             <FormSection title={t('formSections.sources')} columns={1}>
-                <Sources label={label}/>
+                <OriginList origins={label.origins}/>
             </FormSection>
             <FormActions>
                 {actions}
@@ -92,24 +93,4 @@ function OwnerShown({label}: {readonly label: LabelDetails}) {
                 {label.owner.note !== null && <Text variant="bodySm" tone="muted">{label.owner.note}</Text>}
             </Inline>
         );
-}
-
-/** Every import the label came from: the source archive and the id there, leading to its page there when it has one. */
-function Sources({label}: {readonly label: LabelDetails}) {
-    const {t} = useTranslation();
-    if (label.origins.length === 0) {
-        return <Text tone="muted">{t('label.noSources')}</Text>;
-    }
-    return (
-        <Stack as="ul" gap="xs">
-            {label.origins.map((origin) => (
-                <li key={`${origin.origin} ${origin.externalId}`}>
-                    <Inline gap="sm" align="baseline" wrap>
-                        <Text tone="muted">{origin.origin}</Text>
-                        {origin.url === null ? <Text>{origin.externalId}</Text> : <Text><TextLink href={origin.url}>{origin.externalId}</TextLink></Text>}
-                    </Inline>
-                </li>
-            ))}
-        </Stack>
-    );
 }

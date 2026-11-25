@@ -1,4 +1,4 @@
-import {type Addition, NotFoundError} from '@/shared/api';
+import {type Addition, type ExternalOrigin, NotFoundError} from '@/shared/api';
 import {type Brand} from '@/shared/lib/brand';
 import {titleProblem} from '@/shared/lib/form-rules';
 import {isUuid} from '@/shared/lib/uuid';
@@ -69,6 +69,8 @@ export interface SoftwareDetails extends Software {
     readonly credits?: readonly SoftwareCredit[];
     /** The pages of the archives it was imported from (docs/domain/imports.md). */
     readonly sources?: readonly SoftwareSource[];
+    /** Where imports took it from, with its ids there. */
+    readonly origins: readonly ExternalOrigin[];
     readonly preservation: PreservationStatus;
     /** Who added it and when. */
     readonly added: Addition;

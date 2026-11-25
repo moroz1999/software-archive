@@ -75,6 +75,7 @@ class ListSoftwareReleasesHandlerTest {
                 List.of(),
                 List.of(),
                 List.of(),
+                List.of(),
                 ADDED,
                 null,
                 false));
@@ -125,6 +126,7 @@ class ListSoftwareReleasesHandlerTest {
                 null,
                 "unknown",
                 new SoftwarePlatform("vector", "Vector"),
+                List.of(),
                 List.of(),
                 List.of(),
                 List.of(),

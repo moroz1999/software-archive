@@ -1,4 +1,4 @@
-import {deleteResource, getJson, mapResponse, postJson, putJson, readAddition, readArray, readBoolean, readNullableString, readObject, readString} from '@/shared/api';
+import {deleteResource, getJson, mapResponse, postJson, putJson, readAddition, readArray, readBoolean, readNullableString, readObject, readOrigins, readString} from '@/shared/api';
 import {type AuthorDetails, type AuthorGroup, type AuthorId, type AuthorLabel, type AuthorLocation, toAuthorId} from '../model/author';
 import type {AuthorDraft} from '../model/author-form';
 
@@ -49,6 +49,7 @@ export async function fetchAuthor(id: AuthorId, signal: AbortSignal): Promise<Au
             labels: readArray(dto['labels'], 'labels').map(parseLabel),
             locations: readArray(dto['locations'], 'locations').map(parseLocation),
             groups: readArray(dto['groups'], 'groups').map(parseGroup),
+            origins: readOrigins(dto['origins']),
             added: readAddition(dto['added']),
             canChange: readBoolean(dto, 'canChange'),
         };

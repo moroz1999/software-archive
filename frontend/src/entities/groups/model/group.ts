@@ -1,4 +1,4 @@
-import {type Addition, NotFoundError} from '@/shared/api';
+import {type Addition, type ExternalOrigin, NotFoundError} from '@/shared/api';
 import {type Brand} from '@/shared/lib/brand';
 import {isUuid} from '@/shared/lib/uuid';
 
@@ -50,6 +50,8 @@ export interface GroupDetails {
     readonly members: readonly GroupMember[];
     readonly memberGroups: readonly RelatedGroup[];
     readonly groups: readonly RelatedGroup[];
+    /** Where imports took it from. */
+    readonly origins: readonly ExternalOrigin[];
     /** Who added it and when. */
     readonly added: Addition;
     /** Whether whoever reads it may change it, as the archive tells. */

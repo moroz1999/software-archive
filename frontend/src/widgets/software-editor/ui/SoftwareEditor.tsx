@@ -5,6 +5,7 @@ import {softwareBreadcrumbs} from '@/features/software/catalog';
 import {ScreenshotsEditorSection} from '@/features/software/screenshots';
 import {useSkeleton} from '@/shared/lib/loading';
 import {Button} from '@/shared/ui/button';
+import {OriginList} from '@/shared/ui/origin-list';
 import {PageLayout} from '@/shared/ui/page-layout';
 import {Stack} from '@/shared/ui/stack';
 import {SoftwareCategoriesField} from './SoftwareCategoriesField';
@@ -55,6 +56,7 @@ function LoadedEditor({id, onSaved, onDeleted}: SoftwareEditorProps) {
                         submitLabel={t('actions.save')}
                         actions={<Button href={softwarePath(id)} color="secondary">{t('actions.cancel')}</Button>}
                         categories={<SoftwareCategoriesField/>}
+                        sources={<OriginList origins={query.data.origins}/>}
                     />
                 </EditSoftwareProvider>
                 <ScreenshotsEditorSection softwareId={id}/>

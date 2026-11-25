@@ -75,6 +75,7 @@ describe(validateAuthorForm, () => {
 describe(toAuthorFormValues, () => {
     it('holds a location in a city of no known country with the name of the city', () => {
         expect(toAuthorFormValues({
+            origins: [],
             added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true,
             id: toAuthorId('00000000-0000-0000-0003-000000000001'),
             name: 'Zed',
@@ -93,6 +94,7 @@ describe(toAuthorFormValues, () => {
 
     it('holds the values of an existing author, unknown ones empty', () => {
         expect(toAuthorFormValues({
+            origins: [],
             added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true,
             id: toAuthorId('00000000-0000-0000-0003-000000000001'),
             name: 'Zed',

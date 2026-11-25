@@ -89,7 +89,7 @@ describe('UI localization', () => {
             labels: [],
             locations: [{countryId: '00000000-0000-0000-0002-000000000006', country, cityId: '00000000-0000-0000-0002-000000000601', city, primary: true}],
             groups: [],
-            added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
+            origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
             canChange: false,
         });
         vi.stubGlobal('fetch', vi.fn<typeof fetch>((input, init) => {
@@ -154,7 +154,7 @@ describe('UI localization', () => {
                 categories: [],
                 credits: [],
                 sources: [], preservation: 'unknown',
-                added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
+                origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
                 canChange: true,
             })],
             [`/api/software/${SOFTWARE_ID}/screenshots`, json([])],

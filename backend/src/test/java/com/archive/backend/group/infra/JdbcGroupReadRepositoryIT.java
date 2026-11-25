@@ -13,6 +13,7 @@ import com.archive.backend.group.read.GroupLabel;
 import com.archive.backend.group.read.GroupLocation;
 import com.archive.backend.group.read.GroupMember;
 import com.archive.backend.group.read.RelatedGroup;
+import com.archive.backend.shared.read.ExternalOrigin;
 import com.archive.backend.user.TestActors;
 import java.util.List;
 import java.util.UUID;
@@ -324,5 +325,24 @@ class JdbcGroupReadRepositoryIT {
     private static GroupMember labelMember(
             UUID label, String title, String name, @Nullable UUID person, @Nullable String personName) {
         return new GroupMember(label, "author-label", title, name, person, personName, List.of("unknown"));
+    }
+
+    @Test
+    void readsWhereImportsTookTheGroupFromByTheSourceArchiveAndTheIdThere() {
+        jdbc.update(
+                "INSERT INTO external_origin (origin, kind, external_id, entity_id, url) VALUES ('caglrc.cc', 'GROUP', '42', ?, ?)",
+                CREW,
+                "https://caglrc.cc/authors/42");
+        jdbc.update(
+                "INSERT INTO external_origin (origin, kind, external_id, entity_id) VALUES ('vektor-06c.ru', 'GROUP', 'Zed', ?)",
+                CREW);
+        jdbc.update(
+                "INSERT INTO external_origin (origin, kind, external_id, entity_id) VALUES ('vektor-06c.ru', 'LABEL', 'Zed', ?)",
+                CREW_LABEL);
+
+        assertThat(reads.findById(CREW, "en").orElseThrow().origins())
+                .containsExactly(
+                        new ExternalOrigin("caglrc.cc", "42", "https://caglrc.cc/authors/42"),
+                        new ExternalOrigin("vektor-06c.ru", "Zed", null));
     }
 }

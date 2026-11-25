@@ -18,7 +18,7 @@ The edit page shows Authors › the label, leading to its page, › "Editing". A
 - In one narrow column, in sections, the same layout as the author form ([author-editing.md](author-editing.md)): Main (Name, required, at most 255 characters), Whose label, Geography (Locations), Sources; Cancel and "Save" at its bottom right.
 - Whose label: for administrators, "Person or group" searching people and groups by name, filled with the current owner; emptying it leaves the label to nobody. "Display name" is offered once another person is chosen; a group has none, and the display name among the labels a person already has is chosen in the person's form. Anybody else sees whose the label is, or "Not known yet whose label this is", without changing it.
 - Locations: the editor of the author form — Country and City, "Primary" and ×; exactly one location is primary.
-- Sources: for every import the label came from, the source archive and the id there, the id leading to the source page when the source has one; "None" when it was not imported. Not editable.
+- Sources: for every import the label came from, the source archive and the id there, the id leading to the source page when the source has one; "None" when it was not imported. Not editable (`OriginList`).
 - Format rules are checked before sending; errors appear under their fields on submit and clear when the field is edited.
 - While saving, the fields and the buttons are locked.
 

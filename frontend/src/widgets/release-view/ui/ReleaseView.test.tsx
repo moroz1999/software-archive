@@ -19,7 +19,7 @@ const ELITE = {
     categories: [],
     credits: [],
     sources: [], preservation: 'unknown',
-    added: {by: 'Admin', at: '2026-01-01T00:00:00Z'},
+    origins: [], added: {by: 'Admin', at: '2026-01-01T00:00:00Z'},
     canChange: false,
 };
 const AY_MOD = {

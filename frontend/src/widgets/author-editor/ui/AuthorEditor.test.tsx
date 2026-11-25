@@ -18,7 +18,7 @@ const ZED = {
     labels: [{id: ZED_LABEL, name: 'Zed', display: true}],
     locations: [{countryId: FINLAND, country: 'Finland', cityId: HELSINKI, city: 'Helsinki', primary: true}],
     groups: [],
-    added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
+    origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
     canChange: true,
 };
 
@@ -65,6 +65,15 @@ describe(AuthorEditor, () => {
 
         expect(screen.getByRole('heading', {level: 1, name: 'Edit author'})).toBeInTheDocument();
         expect(screen.getByRole('link', {name: 'Cancel'})).toHaveAttribute('href', `/authors/${ID}`);
+    });
+
+    it('shows where imports took the author from, as text', async () => {
+        stubFetchAround(AROUND, json({...ZED, origins: [{origin: 'caglrc.cc', externalId: '42', url: null}]}));
+        renderEditor();
+
+        await screen.findByRole('textbox', {name: 'Real name'});
+
+        expect(within(screen.getByRole('region', {name: 'Sources'})).getByRole('listitem')).toHaveTextContent('caglrc.cc42');
     });
 
     it('groups its fields in sections', async () => {

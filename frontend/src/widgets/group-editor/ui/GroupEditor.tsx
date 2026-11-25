@@ -4,6 +4,7 @@ import {DeleteGroupButton} from '@/features/group/delete';
 import {EditGroupProvider} from '@/features/group/edit';
 import {useSkeleton} from '@/shared/lib/loading';
 import {Button} from '@/shared/ui/button';
+import {OriginList} from '@/shared/ui/origin-list';
 import {PageLayout} from '@/shared/ui/page-layout';
 import {GroupLabels, GroupLocations} from './GroupFields';
 
@@ -50,6 +51,7 @@ function LoadedEditor({id, onSaved, onDeleted}: GroupEditorProps) {
                     submitLabel={t('actions.save')}
                     labels={<GroupLabels/>}
                     locations={<GroupLocations/>}
+                    sources={<OriginList origins={query.data.origins}/>}
                     actions={<Button href={groupPath(id)} color="secondary">{t('actions.cancel')}</Button>}
                 />
             </EditGroupProvider>

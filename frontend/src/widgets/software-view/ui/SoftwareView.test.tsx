@@ -40,7 +40,7 @@ const ELITE = {
     credits: [],
     sources: [],
     preservation: 'unknown',
-    added: {by: 'Zork', at: '2026-03-04T05:06:07Z'},
+    origins: [], added: {by: 'Zork', at: '2026-03-04T05:06:07Z'},
     canChange: true,
 };
 const AY_MOD = {

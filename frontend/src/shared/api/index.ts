@@ -4,6 +4,7 @@ export {endSession, getSession, loadSession, resetSessionForTests, type Session,
 export {businessErrorMessage, type BusinessMessages} from './messages';
 export {type FieldRefusals, type FormRefusal, splitRefusal, unedited} from './form-refusal';
 export {type Addition, readAddition} from './addition';
+export {type ExternalOrigin, readOrigins} from './external-origin';
 export {mapResponse, readArray, readBoolean, readNullableString, readNumber, readObject, readString, readStringArray, type JsonObject} from './parse';
 export {parsePage, type Page} from './page';
 export {reportSystemError, subscribeSystemErrors, type SystemErrorReport} from './system-errors';

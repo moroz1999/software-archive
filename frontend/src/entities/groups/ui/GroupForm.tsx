@@ -17,11 +17,13 @@ export interface GroupFormProps {
     /** The editor of the group's locations, wired to the form through useGroupForm. */
     readonly locations?: ReactNode;
     /** More buttons before the submit button, such as Cancel. */
+    /** Where imports took it from, shown and not edited. */
+    readonly sources?: ReactNode;
     readonly actions?: ReactNode;
 }
 
 /** The fields of a group inside a GroupFormProvider, which holds their values and checks them. */
-export function GroupForm({submitLabel, labels, locations, actions}: GroupFormProps) {
+export function GroupForm({submitLabel, labels, locations, sources, actions}: GroupFormProps) {
     const {t} = useTranslation();
     const {values, errors, refusals, change, changeMembers, submit, busy, error} = useGroupForm();
 
@@ -50,6 +52,7 @@ export function GroupForm({submitLabel, labels, locations, actions}: GroupFormPr
                     error={refusals.members}
                 />
             </FormSection>
+            {sources !== undefined && <FormSection title={t('formSections.sources')} columns={1}>{sources}</FormSection>}
             <FormActions>
                 {actions}
                 <Button type="submit" loading={busy}>{submitLabel}</Button>

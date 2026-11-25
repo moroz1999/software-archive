@@ -13,6 +13,7 @@ public record AuthorDetailsDto(
         List<LabelDto> labels,
         List<LocationDto> locations,
         List<GroupDto> groups,
+        List<OriginDto> origins,
         AddedDto added,
         boolean canChange) {
 
@@ -29,4 +30,8 @@ public record AuthorDetailsDto(
 
     /** Who added the entry, {@code null} once their account was deleted, and when. */
     public record AddedDto(@Nullable String by, Instant at) {}
+
+    /** An import the entry came from: the source archive, the id there and its page there, if it has one. */
+    public record OriginDto(
+            String origin, String externalId, @Nullable String url) {}
 }

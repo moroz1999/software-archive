@@ -64,6 +64,7 @@ class GetSoftwareHandlerTest {
                 List.of(),
                 List.of(),
                 List.of(),
+                List.of(),
                 ADDED,
                 MEMBER_ID.value(),
                 false));

@@ -3,6 +3,7 @@ package com.archive.backend.software.infra;
 import com.archive.backend.category.read.CategoryTitleSql;
 import com.archive.backend.hardware.read.HardwareNameSql;
 import com.archive.backend.label.read.MainNameSql;
+import com.archive.backend.shared.read.ExternalOrigins;
 import com.archive.backend.software.read.CardMadeBySql;
 import com.archive.backend.software.read.CardScreenshotsSql;
 import com.archive.backend.software.read.CreditedRelease;
@@ -133,6 +134,7 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                         categories(id, language),
                         credits(SOFTWARE_CREDITS, id),
                         sources(id),
+                        ExternalOrigins.of(jdbc, "SOFTWARE", id),
                         AdditionSql.of(rs),
                         rs.getObject("added_by", UUID.class),
                         false))

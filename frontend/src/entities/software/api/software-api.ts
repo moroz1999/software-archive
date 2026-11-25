@@ -1,4 +1,4 @@
-import {deleteResource, getJson, mapResponse, postJson, putJson, readAddition, readArray, readBoolean, readNullableString, readObject, readString} from '@/shared/api';
+import {deleteResource, getJson, mapResponse, postJson, putJson, readAddition, readArray, readBoolean, readNullableString, readObject, readOrigins, readString} from '@/shared/api';
 import {type SoftwareRelease, toReleaseId, toReleaseType} from '../model/release';
 import {
     type Hardware,
@@ -87,6 +87,7 @@ export async function fetchSoftware(id: SoftwareId, signal: AbortSignal): Promis
                 const source = readObject(item, 'source');
                 return {archive: readString(source, 'archive'), url: readString(source, 'url')};
             }),
+            origins: readOrigins(dto['origins']),
             preservation: toPreservationStatus(readString(dto, 'preservation')),
             added: readAddition(dto['added']),
             canChange: readBoolean(dto, 'canChange'),

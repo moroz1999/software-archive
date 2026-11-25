@@ -48,6 +48,7 @@ import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
 import com.archive.backend.shared.domain.Language;
+import com.archive.backend.shared.read.ExternalOrigin;
 import com.archive.backend.shared.web.ApiExceptionHandler;
 import com.archive.backend.user.domain.Actor;
 import java.util.List;
@@ -185,6 +186,29 @@ class AuthorControllerTest {
     @Test
     void answers400ForAMalformedCity() throws Exception {
         mvc.perform(get("/api/authors").param("city", "not-a-uuid")).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void returnsWhereImportsTookTheAuthorFromByTheSourceArchiveAndTheIdThere() throws Exception {
+        when(getHandler.handle(new GetAuthorQuery(Actor.anonymous(), new AuthorId(ID), Language.RU)))
+                .thenReturn(new AuthorDetails(
+                        ID,
+                        "Zed",
+                        null,
+                        null,
+                        List.of(),
+                        List.of(),
+                        List.of(),
+                        List.of(new ExternalOrigin("caglrc.cc", "42", null)),
+                        ADDED,
+                        null,
+                        false));
+
+        mvc.perform(get("/api/authors/{id}", ID).header("Accept-Language", "ru"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.origins[0].origin").value("caglrc.cc"))
+                .andExpect(jsonPath("$.origins[0].externalId").value("42"))
+                .andExpect(jsonPath("$.origins[0].url").value(nullValue()));
     }
 
     @Test
