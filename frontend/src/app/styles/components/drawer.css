@@ -1,0 +1,20 @@
+:root {
+    /* Width of the drawer; the whole window when it is narrower. */
+    --drawer-width: 440px;
+
+    /* Surface, text and the line between the drawer and the page, and between its parts. */
+    --drawer-bg: var(--surface);
+    --drawer-text: var(--text-color);
+    --drawer-border: var(--border-light);
+
+    /* Shadow lifting the drawer off the page. */
+    --drawer-shadow: var(--shadow-lg);
+
+    /* Padding of the header, the body and the footer. */
+    --drawer-header-padding: var(--space-12) var(--space-16);
+    --drawer-body-padding: var(--space-16);
+    --drawer-footer-padding: var(--space-12) var(--space-16);
+
+    /* Stacking layer: over the page and its overlays, under dialogs. */
+    --drawer-layer: var(--layer-overlay);
+}

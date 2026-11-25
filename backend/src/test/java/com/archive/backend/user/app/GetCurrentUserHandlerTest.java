@@ -85,4 +85,12 @@ class GetCurrentUserHandlerTest {
                 .hasValueSatisfying(
                         user -> assertThat(user.abilities()).containsExactly("add-entries", "keep-categories"));
     }
+
+    @Test
+    void tellsAMemberOfTheAiAssistantGroupThatTheyMayUseIt() {
+        assertThat(handler.handle(new GetCurrentUserQuery(
+                        new Actor(id(1), Set.of(UserGroup.MEMBER, UserGroup.AI_ASSISTANT)), null)))
+                .hasValueSatisfying(
+                        user -> assertThat(user.abilities()).containsExactly("add-entries", "use-assistant"));
+    }
 }

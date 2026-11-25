@@ -28,7 +28,7 @@ The frontend dev server proxies `/api` to the backend at `API_PROXY_TARGET` (fro
 
 The backend connects to PostgreSQL on `localhost:5432` and applies Flyway migrations on start. Spring DevTools restarts the application when compiled classes change.
 
-The AI assistant asks OpenAI with the key in the `OPENAI_API_KEY` environment variable of the backend; without it the assistant answers that it is not configured, and the rest of the archive works as ever. The tests never ask OpenAI.
+The AI assistant asks OpenAI with the key in the `OPENAI_API_KEY` environment variable of the backend: `make run` takes it from the git-ignored `.env`; a backend started from the IDE needs it in its run configuration; without it the assistant answers that it is not configured, and the rest of the archive works as ever. The tests never ask OpenAI.
 
 On start the backend also builds the search collections in Typesense when there are none yet; `make reindex` starts it building them anew from the database (`--search.rebuild=true`). Without Typesense the backend still starts and saves edits; the search catches up once Typesense is back ([features/search.md](features/search.md)).
 

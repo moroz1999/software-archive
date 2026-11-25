@@ -1,3 +1,4 @@
+import type {KeyboardEvent} from 'react';
 import {classNames} from '@/shared/lib/class-names';
 import styles from './Textarea.module.css';
 
@@ -14,12 +15,14 @@ export interface TextareaProps {
     /** Id of the element describing the textarea, such as its error. */
     readonly describedBy?: string | undefined;
     readonly disabled?: boolean;
+    /** A key pressed in it, such as Enter that sends what is written. */
+    readonly onKeyDown?: (event: KeyboardEvent<HTMLTextAreaElement>) => void;
     /** External contour only; see docs/styles.md. */
     readonly className?: string;
 }
 
 /** Multi-line text input, resizable vertically. */
-export function Textarea({id, value, onChange, rows = 4, ariaLabel, invalid = false, describedBy, disabled, className}: TextareaProps) {
+export function Textarea({id, value, onChange, rows = 4, ariaLabel, invalid = false, describedBy, disabled, onKeyDown, className}: TextareaProps) {
     return (
         <textarea
             id={id}
@@ -28,6 +31,7 @@ export function Textarea({id, value, onChange, rows = 4, ariaLabel, invalid = fa
             onChange={(event) => {
                 onChange(event.target.value);
             }}
+            onKeyDown={onKeyDown}
             aria-label={ariaLabel}
             aria-invalid={invalid}
             aria-describedby={describedBy}

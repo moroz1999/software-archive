@@ -1,0 +1,12 @@
+.fields {
+    margin: 0;
+}
+
+.value {
+    margin: 0;
+}
+
+.message {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}

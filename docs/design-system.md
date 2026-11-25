@@ -31,7 +31,7 @@ Built:
 - Navigation: [NavBar, NavBarLink](design-system/nav-bar.md), [NavChips, NavChip](design-system/nav-chips.md), [Tabs, Tab](design-system/tabs.md), [Pagination](design-system/pagination.md)
 - Forms: [Input, Textarea](design-system/input.md), [Select](design-system/select.md), [Form, FormSection, FormField, FormFieldset, FormRow, FormMessage, FormActions](design-system/form.md), [Checkbox](design-system/checkbox.md), [MultiSelectFilter](design-system/multi-select-filter.md), [MultiEntityAutocomplete](design-system/multi-entity-autocomplete.md), [MemberRoleEditor](design-system/member-role-editor.md), [TreeChecklist](design-system/tree-checklist.md), [FileUpload](design-system/file-upload.md)
 - Loading: [Skeleton](design-system/skeletons.md), [Spinner](design-system/spinner.md), [LoadingState](design-system/loading-states.md)
-- Errors and overlays: [ErrorState](design-system/error-state.md), [Dialog, ErrorDialog](design-system/dialog.md), [ConfirmDialog](design-system/confirm-dialog.md), [IconPopover](design-system/icon-popover.md), [PopoverMenu, PopoverMenuItem](design-system/popover-menu.md), [AnchoredOverlay](design-system/anchored-overlay.md)
+- Errors and overlays: [ErrorState](design-system/error-state.md), [Dialog, ErrorDialog](design-system/dialog.md), [Drawer](design-system/drawer.md), [ConfirmDialog](design-system/confirm-dialog.md), [IconPopover](design-system/icon-popover.md), [PopoverMenu, PopoverMenuItem](design-system/popover-menu.md), [AnchoredOverlay](design-system/anchored-overlay.md)
 
 Planned, built when a feature first needs them (each gets its document then):
 

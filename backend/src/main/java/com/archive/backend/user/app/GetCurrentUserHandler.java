@@ -45,6 +45,9 @@ public class GetCurrentUserHandler {
         if (actor.mayKeepCategories()) {
             abilities.add("keep-categories");
         }
+        if (actor.mayUseAssistant()) {
+            abilities.add("use-assistant");
+        }
         return List.copyOf(abilities);
     }
 }

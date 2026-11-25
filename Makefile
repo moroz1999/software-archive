@@ -2,6 +2,10 @@
 # The backend runs on the host through the Maven wrapper, the frontend inside its container (it owns node_modules).
 
 MVNW := cd backend && ./mvnw
+
+# The OpenAI key of the AI assistant, from the git-ignored .env, for the backend run here (docs/local-dev.md).
+-include .env
+export OPENAI_API_KEY
 FRONTEND := docker compose exec frontend npm run
 
 .DEFAULT_GOAL := help

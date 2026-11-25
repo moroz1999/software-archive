@@ -12,7 +12,7 @@ export function EditUserFormSkeleton() {
                     <Skeleton className={styles.input}/>
                 </Stack>
             ))}
-            {['admin', 'moderator'].map((group) => <Skeleton key={group} className={styles.label}/>)}
+            {['admin', 'moderator', 'ai-assistant'].map((group) => <Skeleton key={group} className={styles.label}/>)}
             <Skeleton className={styles.button}/>
         </Stack>
     );

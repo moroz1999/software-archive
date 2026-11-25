@@ -1,7 +1,7 @@
 # Input, Textarea
 
 - `Input` — one-line text (`type="text"`, default), a search (`type="search"`) or a day (`type="date"`, ISO `YYYY-MM-DD` value); `placeholder` hints while it is empty.
-- `Textarea` — multi-line text, `rows` visible lines (4 by default), resizable vertically.
+- `Textarea` — multi-line text, `rows` visible lines (4 by default), resizable vertically; `onKeyDown` lets a form act on a key, such as Enter that sends a message.
 - Both are controlled: `value` and `onChange(value)` with the new text, never the DOM event.
 - `invalid` marks the control with the error border and `aria-invalid`; `describedBy` points to its error. Inside a `FormField` these and `id` come from the field.
 - `ariaLabel` names a control that has no label; `disabled` locks it.

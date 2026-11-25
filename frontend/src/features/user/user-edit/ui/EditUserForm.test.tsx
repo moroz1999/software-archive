@@ -85,6 +85,32 @@ describe(EditUserForm, () => {
         expect(sent(fetchMock)).toStrictEqual(['{"name":"Rob","email":"rob@example.com","groups":["admin"]}']);
     });
 
+    it('gives and takes the AI assistant by its own checkbox, keeping it for one who has it', async () => {
+        const {fetchMock, onSaved} = show({...BOB, groups: ['member', 'ai-assistant']});
+
+        expect(screen.getByRole('checkbox', {name: 'AI assistant'})).toBeChecked();
+        expect(screen.getByRole('checkbox', {name: 'Moderator'})).not.toBeChecked();
+
+        await userEvent.click(screen.getByRole('checkbox', {name: 'Moderator'}));
+        await save();
+
+        await vi.waitFor(() => {
+            expect(onSaved).toHaveBeenCalledExactlyOnceWith();
+        });
+
+        await userEvent.click(screen.getByRole('checkbox', {name: 'AI assistant'}));
+        await save();
+
+        await vi.waitFor(() => {
+            expect(onSaved).toHaveBeenCalledTimes(2);
+        });
+
+        expect(sent(fetchMock)).toStrictEqual([
+            '{"name":"Bob","email":"bob@example.com","groups":["moderator","ai-assistant"]}',
+            '{"name":"Bob","email":"bob@example.com","groups":["moderator"]}',
+        ]);
+    });
+
     it('offers no groups to an unconfirmed account and saves it with none', async () => {
         const {fetchMock, onSaved} = show(AXE);
 

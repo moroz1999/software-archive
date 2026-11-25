@@ -13,6 +13,7 @@ describe(toUserGroup, () => {
         expect(toUserGroup('admin')).toBe('admin');
         expect(toUserGroup('moderator')).toBe('moderator');
         expect(toUserGroup('member')).toBe('member');
+        expect(toUserGroup('ai-assistant')).toBe('ai-assistant');
         expect(toUserGroup('owner')).toBeNull();
     });
 });

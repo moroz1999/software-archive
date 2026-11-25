@@ -1,7 +1,7 @@
 import {type EmailProblem, emailProblem, type GrantedGroup, type UserEntry, type UserNameProblem, userNameProblem} from '@/entities/users';
 
 /** The groups given on purpose, in the order the form offers them. */
-export const GRANTED_GROUPS: readonly GrantedGroup[] = ['admin', 'moderator'];
+export const GRANTED_GROUPS: readonly GrantedGroup[] = ['admin', 'moderator', 'ai-assistant'];
 
 export interface UserFormValues {
     readonly name: string;

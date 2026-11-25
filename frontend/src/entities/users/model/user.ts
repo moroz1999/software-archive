@@ -6,10 +6,10 @@ import {isUuid} from '@/shared/lib/uuid';
 export type UserId = Brand<string, 'UserId'>;
 
 /** A user group: what a user may do comes from their groups (docs/domain/users.md). */
-export type UserGroup = 'admin' | 'moderator' | 'member';
+export type UserGroup = 'admin' | 'moderator' | 'member' | 'ai-assistant';
 
 /** What a user may do beyond reading, as the archive tells it (docs/domain/users.md). */
-export type Ability = 'add-entries' | 'keep-categories';
+export type Ability = 'add-entries' | 'keep-categories' | 'use-assistant';
 
 /** The signed-in user. */
 export interface CurrentUser {
@@ -21,7 +21,7 @@ export interface CurrentUser {
 }
 
 /** A group an administrator gives on purpose; every confirmed user is a member besides. */
-export type GrantedGroup = 'admin' | 'moderator';
+export type GrantedGroup = 'admin' | 'moderator' | 'ai-assistant';
 
 /** An account in the list of users an administrator keeps. */
 export interface UserEntry {
@@ -56,14 +56,14 @@ export function requireUserId(raw: string | undefined): UserId {
     return id;
 }
 
-const USER_GROUPS: readonly string[] = ['admin', 'moderator', 'member'] satisfies UserGroup[];
+const USER_GROUPS: readonly string[] = ['admin', 'moderator', 'member', 'ai-assistant'] satisfies UserGroup[];
 
 /** The group of a code; null for a code this interface does not know. */
 export function toUserGroup(raw: string): UserGroup | null {
     return USER_GROUPS.includes(raw) ? raw as UserGroup : null;
 }
 
-const ABILITIES: readonly string[] = ['add-entries', 'keep-categories'] satisfies Ability[];
+const ABILITIES: readonly string[] = ['add-entries', 'keep-categories', 'use-assistant'] satisfies Ability[];
 
 /** The ability of a code; null for a code this interface does not know. */
 export function toAbility(raw: string): Ability | null {

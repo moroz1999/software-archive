@@ -9,9 +9,10 @@ import {Text} from '@/shared/ui/typography';
 import {useEditUser} from '../model/edit-user-context';
 import {GRANTED_GROUPS} from '../model/user-form';
 
-const GROUP_KEYS: Readonly<Record<GrantedGroup, 'users.groups.admin' | 'users.groups.moderator'>> = {
+const GROUP_KEYS: Readonly<Record<GrantedGroup, 'users.groups.admin' | 'users.groups.moderator' | 'users.groups.ai-assistant'>> = {
     admin: 'users.groups.admin',
     moderator: 'users.groups.moderator',
+    'ai-assistant': 'users.groups.ai-assistant',
 };
 
 export interface EditUserFormProps {

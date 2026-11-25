@@ -1,0 +1,31 @@
+.drawer {
+    position: fixed;
+    inset-block: 0;
+    right: 0;
+    z-index: var(--drawer-layer);
+    display: flex;
+    flex-direction: column;
+    width: var(--drawer-width);
+    max-width: 100%;
+    border-left: var(--drawer-border);
+    background: var(--drawer-bg);
+    box-shadow: var(--drawer-shadow);
+    color: var(--drawer-text);
+}
+
+.header {
+    padding: var(--drawer-header-padding);
+    border-bottom: var(--drawer-border);
+}
+
+.body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: var(--drawer-body-padding);
+}
+
+.footer {
+    padding: var(--drawer-footer-padding);
+    border-top: var(--drawer-border);
+}

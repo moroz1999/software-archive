@@ -20,10 +20,11 @@ import styles from './UserList.module.css';
 
 const SKELETON_ROWS = [1, 2, 3, 4, 5, 6];
 
-const GROUP_KEYS: Readonly<Record<UserGroup, 'users.groups.admin' | 'users.groups.moderator' | 'users.groups.member'>> = {
+const GROUP_KEYS: Readonly<Record<UserGroup, 'users.groups.admin' | 'users.groups.moderator' | 'users.groups.member' | 'users.groups.ai-assistant'>> = {
     admin: 'users.groups.admin',
     moderator: 'users.groups.moderator',
     member: 'users.groups.member',
+    'ai-assistant': 'users.groups.ai-assistant',
 };
 
 export interface UserListProps {

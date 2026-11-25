@@ -8,6 +8,7 @@ import {MainMenu} from './MainMenu';
 
 const MEMBER = {id: '00000000-0000-0000-0009-000000000001', name: 'Zed', email: 'zed@example.com', groups: ['member'], abilities: ['add-entries']};
 const ADMIN = {...MEMBER, groups: ['admin', 'member'], abilities: ['add-entries', 'keep-categories']};
+const EDITOR = {...MEMBER, groups: ['admin', 'member', 'ai-assistant'], abilities: ['add-entries', 'keep-categories', 'use-assistant']};
 
 function renderAt(path: string, me: () => Response = noContent()) {
     stubFetchRoutes(new Map([
@@ -58,6 +59,19 @@ describe(MainMenu, () => {
         await vi.waitFor(() => {
             expect(screen.queryByRole('link', {name: 'Management'})).not.toBeInTheDocument();
         });
+    });
+
+    it('offers the AI assistant to a member of its group', async () => {
+        renderAt('/', json(EDITOR));
+
+        await expect(screen.findByRole('button', {name: 'AI assistant'})).resolves.toBeInTheDocument();
+    });
+
+    it('does not offer the AI assistant to an administrator outside its group, nor to a visitor', async () => {
+        renderAt('/', json(ADMIN));
+
+        await expect(screen.findByRole('link', {name: 'Management'})).resolves.toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'AI assistant'})).not.toBeInTheDocument();
     });
 
     it('offers the quick search', () => {

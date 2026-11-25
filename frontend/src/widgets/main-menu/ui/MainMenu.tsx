@@ -3,7 +3,8 @@ import {CATEGORIES_PATH} from '@/entities/categories';
 import {PlatformSwitch} from '@/entities/platforms';
 import {GROUPS_PATH} from '@/entities/groups';
 import {SOFTWARE_LIST_PATH} from '@/entities/software';
-import {MANAGEMENT_PATH, useCurrentUser} from '@/entities/users';
+import {MANAGEMENT_PATH, useAbility, useCurrentUser} from '@/entities/users';
+import {AssistantPanel} from '@/features/assistant-chat';
 import {LanguageSwitch} from '@/features/language-switch';
 import {QuickSearch} from '@/features/search';
 import {AccountMenu} from '@/features/user/sign-in';
@@ -16,8 +17,9 @@ import {useTranslation} from 'react-i18next';
 export function MainMenu() {
     const {t} = useTranslation();
     const administrator = useCurrentUser().user?.groups.includes('admin') ?? false;
+    const assistant = useAbility('use-assistant');
     return (
-        <NavBar label={t('navigation.mainMenu')} actions={<Inline gap="sm"><QuickSearch/><PlatformSwitch/><LanguageSwitch/><AccountMenu/></Inline>}>
+        <NavBar label={t('navigation.mainMenu')} actions={<Inline gap="sm">{assistant && <AssistantPanel/>}<QuickSearch/><PlatformSwitch/><LanguageSwitch/><AccountMenu/></Inline>}>
             <NavBarLink href={HOME_PATH} end>{t('navigation.home')}</NavBarLink>
             <NavBarLink href={SOFTWARE_LIST_PATH}>{t('navigation.software')}</NavBarLink>
             <NavBarLink href={AUTHORS_PATH}>{t('navigation.authors')}</NavBarLink>
