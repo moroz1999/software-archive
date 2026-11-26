@@ -21,7 +21,9 @@ class ClasspathSkillReadRepositoryTest {
                         "add-authors",
                         "import-software",
                         "sort-out-duplicates",
-                        "merge-and-convert");
+                        "author-rules",
+                        "merge-labels",
+                        "merge-places");
         assertThat(skills.all()).allSatisfy(skill -> {
             assertThat(skill.description()).as(skill.name()).isNotBlank();
             assertThat(skill.instructions()).as(skill.name()).isNotBlank().doesNotStartWith("---");

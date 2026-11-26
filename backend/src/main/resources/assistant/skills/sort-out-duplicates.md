@@ -13,7 +13,7 @@ description: Finding and sorting out duplicates among people, groups, labels or 
 - Duplicates: the facts agree and nothing contradicts. Different people, places or times mean namesakes: leave them, and say why.
 - Facts too thin to decide either way: list the pair for the editor and ask. Never merge on names alone.
 - Nothing of either entry may be lost: what one has, the kept one gets.
-- How each duplicate is merged or converted, and what goes with it: `load_skill` with `merge-and-convert`.
+- How each duplicate is merged or converted, and what goes with it: `load_skill` with `merge-labels` for labels, `merge-places` for countries and cities.
 - Propose one plan per duplicate, each saying what you compared and why they are one.
 - Two people, two groups or two software cannot be merged yet: report them with your evidence instead of a plan.
 - Answer with a short table: each pair found, the verdict (duplicate, namesake, unsure) and why.

@@ -8,7 +8,7 @@ description: Adding software from a page of another site.
 - Read the page with `fetch_url`; a page cut at its limit (`truncated`) may hold more than you see. Take only what the page says.
 - First identify the page's people and groups: call `load_skill` with `find-author` and follow it.
 - Then call `load_skill` with `find-software` and follow it. Same work: offer to change the stored software (`update_software`), not to add another (`create_software`).
-- Add a person, a group or a label only when no one of that name exists, or when `find-author` says the stored namesake is somebody else; say so in the plan.
+- Add a person, a group or a label only when no one of that name exists, or when `find-author` says the stored namesake is somebody else; say so in the plan. Before adding or crediting anybody, call `load_skill` with `author-rules` and follow it.
 - Software is for exactly one platform: find it with `list_platforms`.
 - Put it into a leaf category of `list_categories` (e.g. Arcade under Games), never into a top-level section. A category the work clearly belongs to but the archive lacks: do not put it into a near one instead; ask the editor in your answer, naming the category and where in the tree it would go.
 - Credits: each person, group or label once, with all their roles from `list_options` (developer, publisher, code, music…). Credit the label the page names, not its owner instead. Work on a copy (cracking, intro, adaptation, translation) is a credit of the release, not of the software. Who made the original that a port, a conversion or a remake is made from is credited on it as `original_author`.

@@ -37,6 +37,8 @@ The tools are adapters over the use cases, in `assistant/web`, beside the contro
 
 A skill is a Markdown file in `backend/src/main/resources/assistant/skills/`: `<name>.md`, opened by a frontmatter of `name` (the file's name) and `description` (when to load it); the rest is the instructions. `ClasspathSkillReadRepository` reads them; a file that breaks this is refused, and `ClasspathSkillReadRepositoryTest` reads the archive's skills, so a broken one fails the build. `load_skill` answers one; an unknown name is `SkillNotFoundException`, naming the skills there are.
 
+Every rule has one skill. A skill of a task (`import-software`, `add-authors`, `sort-out-duplicates`) holds only its steps and loads the skills of the rules it needs: how people, groups, labels and places are written down is `author-rules`, whatever task writes them; merging and converting are `merge-labels` and `merge-places`. A rule of the whole work, for every task, is in the system prompt and in no skill.
+
 ## Other sites
 
 The `remote` module reads what other sites serve, for the tools only: `FetchPageHandler`, `ViewImageHandler` and `DownloadFileHandler` take a `RemoteUrl` (absolute, `http`/`https`, with a host) and go through `RemoteResources`, a read port that `GuardedRemoteResources` implements with OkHttp:
