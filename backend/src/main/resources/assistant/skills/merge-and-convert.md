@@ -15,6 +15,7 @@ A label is a name works are credited under; it belongs to a person, to a group, 
 - `make_author_of_label`: a label is a person not yet in the archive. A new person of its name replaces the label: its credits, memberships, locations and origin become the person's. Look for the person with `find-author` first. A label of somebody is taken away from them, by the rules of `detach_label`.
 - `make_group_of_label`: the same for a group, of the types given; the groups the label was a member of get the new group as a member group.
 - Choosing: another name of somebody, written apart (a nickname, an old name), is attached or given, not merged: merging loses the name. Merge only a name that is the same name written otherwise.
+- A label that adds nothing the owner lacks (only their label or real name, e.g. «Roger M.W. /Alcosoft» for Alcosoft, real name Roger M.W.) is merged into them, not attached.
 
 ### A full name and its short forms
 Labels of one person written fully and shortly, e.g. «Иванов Георгий Иванович», «Иванов Г.И.» and «Ivanov G.»:
