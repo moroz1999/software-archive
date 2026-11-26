@@ -27,13 +27,14 @@ describe(MainMenu, () => {
         vi.unstubAllGlobals();
     });
 
-    it('shows the archive logo before the main menu in the header', () => {
-        renderAt('/');
+    it('links the archive logo before the main menu to the home page', () => {
+        renderAt('/software');
 
         const header = within(screen.getByRole('banner'));
-        const logo = header.getByRole('img', {name: 'Ретротека'});
+        const logo = header.getByRole('link', {name: 'Ретротека'});
         const menu = header.getByRole('navigation', {name: 'Main menu'});
 
+        expect(logo).toHaveAttribute('href', '/');
         expect(logo).toAppearBefore(menu);
     });
 

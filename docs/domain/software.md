@@ -39,7 +39,7 @@ A release (a version) is a version of the software. It never lives apart from it
 - A release's hardware is chosen from the hardware of its software's platform.
 - A release has credits of its own, by the same rules as the credits of software ([Credits](#credits)): who made, cracked, adapted or otherwise worked on this version. They are kept apart from the credits of the software: neither is shown or counted as the other, and the authors of the software, its card, the catalog and search go by the credits of the software alone. The credits of a release are shown on its page and with it among the releases of its software, in the table and on cards.
 - On the page of the software its releases can be sorted by title or year and narrowed to one type.
-- A release may have one downloadable archive of any file type, up to 100 MB. Its original file name and size are shown to visitors.
+- A release may have one downloadable archive of any file type, up to 100 MB. Its page shows the original file name and size. The release card also shows the size, while the table offers the download link alone.
 - The archive can be added or replaced while saving the release, or removed without deleting the release. Deleting the release or its software deletes the archive.
 - The downloadable file is the root of a file tree. Containers such as ZIP files are opened recursively, and directories and files inside them keep their hierarchy and order. A tree is never partial: when anything inside the file cannot be read, or it nests or expands too far, the whole file stays without known contents and is shown as unreadable.
 - Every file and container has an MD5 digest; directories do not. A file is marked executable by the fixed list of executable extensions of its platform. On Vector, files with the `.rom`, `.com`, `.r0m` and `.vec` extensions are executable and are never opened as containers.
@@ -64,9 +64,9 @@ Besides its screenshots, software has three more galleries of its own: maps (of 
 
 ## Credits
 
-Credits tell who made the software, who published it and who worked on it. Developing and publishing are roles like any other, not separate lists: a studio that developed and published a game is credited once with both roles.
+Credits tell who made the software, who published it and who worked on it.
 
-- Visitors see these credited people and groups as the software's authors.
+- The software page shows developers and publishers in dedicated fields. Someone credited with both roles appears in both fields. The Authors section shows the other credited people, groups and labels. Empty fields are omitted.
 - Anyone is credited: a person, a group, or the exact label of either under which they did the work. Each of them is credited once per software, with all their roles.
 - A credit has one or several roles (developer, publisher, code, graphics, music, etc.); without a chosen role it is recorded as unknown.
 - The author of the original — of the work a port, a conversion or a remake is made from — is credited on it as the original author. It is a role of the software itself, so it tells where the software comes from like the others.

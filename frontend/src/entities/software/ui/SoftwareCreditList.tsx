@@ -13,22 +13,24 @@ export interface SoftwareCreditListProps {
     readonly creditHref?: CreditHref | undefined;
     /** Small, without a name of its own: inside a row of releases or on a card. */
     readonly compact?: boolean;
+    /** The enclosing field already identifies the role. */
+    readonly namesOnly?: boolean;
 }
 
 /** Whoever is credited on software or a release, each with the roles known (docs/domain/software.md#credits). */
-export function SoftwareCreditList({credits, creditHref, compact = false}: SoftwareCreditListProps) {
+export function SoftwareCreditList({credits, creditHref, compact = false, namesOnly = false}: SoftwareCreditListProps) {
     const {t} = useTranslation();
     const variant = compact ? 'bodySm' : 'body';
     return (
-        <Stack as="ul" gap="xs" {...(compact ? {} : {ariaLabel: t('fields.credits')})}>
+        <Stack as="ul" gap="xs" {...(compact || namesOnly ? {} : {ariaLabel: t('fields.credits')})}>
             {credits.map((credit) => {
                 const href = creditHref?.(credit) ?? null;
+                const roles = namesOnly ? [] : credit.roles.filter((role) => role !== 'unknown');
                 return (
                     <li key={`${credit.type}:${credit.id}`}>
                         <Inline gap="xs" align="center" wrap>
                             <Text as="span" variant={variant}>{href === null ? credit.title : <TextLink href={href}>{credit.title}</TextLink>}</Text>
-                            {/* An unknown role tells nothing to a reader. */}
-                            {credit.roles.filter((role) => role !== 'unknown').map((role) => <Chip key={role} size="sm">{t(`roles.software.${role}`)}</Chip>)}
+                            {roles.map((role) => <Chip key={role} size="sm">{t(`roles.software.${role}`)}</Chip>)}
                         </Inline>
                     </li>
                 );

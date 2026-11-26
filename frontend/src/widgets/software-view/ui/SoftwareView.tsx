@@ -130,11 +130,7 @@ function Details({software}: {readonly software: SoftwareDetails}) {
                     </Stack>
                 </Stack>
             )}
-            {(software.credits?.length ?? 0) > 0 && (
-                <Section label={t('fields.credits')}>
-                    <SoftwareCreditList credits={software.credits ?? []} creditHref={creditHref}/>
-                </Section>
-            )}
+            <ProgramCredits credits={software.credits ?? []}/>
             <RelatedPrograms label={t('software.includedInCompilations')} programs={software.compilations}/>
             {(software.sources?.length ?? 0) > 0 && (
                 <Stack as="section" gap="xs" ariaLabel={t('software.source')}>
@@ -155,6 +151,36 @@ function Details({software}: {readonly software: SoftwareDetails}) {
                     {instructions.map((line, index) => <Text key={index}>{line}</Text>)}
                 </Stack>
             )}
+        </Stack>
+    );
+}
+
+function ProgramCredits({credits}: {readonly credits: readonly SoftwareCredit[]}) {
+    const {t} = useTranslation();
+    const developers = credits.filter((credit) => credit.roles.includes('developer'));
+    const publishers = credits.filter((credit) => credit.roles.includes('publisher'));
+    const authors = credits.filter((credit) => !credit.roles.includes('developer') && !credit.roles.includes('publisher'));
+    return (
+        <>
+            <CreditField label={t('roles.software.developer')} credits={developers}/>
+            <CreditField label={t('roles.software.publisher')} credits={publishers}/>
+            {authors.length > 0 && (
+                <Section label={t('fields.credits')}>
+                    <SoftwareCreditList credits={authors} creditHref={creditHref}/>
+                </Section>
+            )}
+        </>
+    );
+}
+
+function CreditField({label, credits}: {readonly label: string; readonly credits: readonly SoftwareCredit[]}) {
+    if (credits.length === 0) {
+        return null;
+    }
+    return (
+        <Stack as="section" gap="xs" ariaLabel={label}>
+            <Text variant="label" tone="muted">{label}</Text>
+            <SoftwareCreditList credits={credits} creditHref={creditHref} namesOnly/>
         </Stack>
     );
 }

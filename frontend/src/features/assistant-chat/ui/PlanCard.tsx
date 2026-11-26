@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useId, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Button} from '@/shared/ui/button';
 import {Chip} from '@/shared/ui/chip';
@@ -93,6 +93,7 @@ const KINDS = ['create', 'update', 'delete', 'link', 'unlink', 'attach', 'detach
 
 function PlanChange({action, refs, failed}: {readonly action: PlanAction; readonly refs: Refs; readonly failed: number | null}) {
     const {t, i18n} = useTranslation();
+    const headingId = useId();
     const words = (field: string, value: string): string | null => {
         if (field === 'flag') {
             return FLAGS.includes(value) ? t(`assistant.plan.flags.${value}`) : null;
@@ -104,31 +105,35 @@ function PlanChange({action, refs, failed}: {readonly action: PlanAction; readon
     const label = (field: string) => (FIELDS.includes(field) ? t(`assistant.plan.fields.${field}`) : field);
     const target = actionTarget(action, refs);
     return (
-        <Stack as="li" gap="xs" ariaLabel={t('assistant.plan.change', {n: action.position})}>
-            <Text variant="bodySm" tone="strong">
-                {`${String(action.position)}. `}
-                {ENTITIES.includes(action.entityType) ? t(`assistant.plan.entities.${action.entityType}`) : action.entityType}
-                {' · '}
-                {KINDS.includes(action.kind) ? t(`assistant.plan.kinds.${action.kind}`) : action.kind}
-                {target.length > 0 && <>{' '}<Segments segments={target}/></>}
-            </Text>
-            {rows.length > 0 && (
-                <dl className={styles.fields}>
-                    {rows.map((row) => (
-                        <div key={row.field}>
-                            <dt><Text variant="caption" tone="muted" as="span">{label(row.field)}</Text></dt>
-                            <dd aria-label={label(row.field)} className={styles.value}>
-                                <Text variant="bodySm" as="span">
-                                    {row.before !== null && <><Segments segments={row.before}/>{' → '}</>}
-                                    <Segments segments={row.after}/>
-                                </Text>
-                            </dd>
-                        </div>
-                    ))}
-                </dl>
-            )}
-            <ActionStatus action={action} failed={failed}/>
-        </Stack>
+        <li aria-label={t('assistant.plan.change', {n: action.position})}>
+            <Panel as="section" labelledBy={headingId} variant="flat" radius="sm" padding="sm">
+                <Stack gap="xs">
+                    <Text id={headingId} variant="bodySm" tone="strong" className={styles.message}>
+                        {`${String(action.position)}. `}
+                        {ENTITIES.includes(action.entityType) ? t(`assistant.plan.entities.${action.entityType}`) : action.entityType}
+                        {' · '}
+                        {KINDS.includes(action.kind) ? t(`assistant.plan.kinds.${action.kind}`) : action.kind}
+                        {target.length > 0 && <>{' '}<Segments segments={target}/></>}
+                    </Text>
+                    {rows.length > 0 && (
+                        <dl className={styles.fields}>
+                            {rows.map((row) => (
+                                <Inline key={row.field} gap="xs" align="baseline">
+                                    <dt><Text variant="caption" tone="muted" as="span">{label(row.field)}</Text></dt>
+                                    <dd aria-label={label(row.field)} className={styles.value}>
+                                        <Text variant="bodySm" as="span">
+                                            {row.before !== null && <><Segments segments={row.before}/>{' → '}</>}
+                                            <Segments segments={row.after}/>
+                                        </Text>
+                                    </dd>
+                                </Inline>
+                            ))}
+                        </dl>
+                    )}
+                    <ActionStatus action={action} failed={failed}/>
+                </Stack>
+            </Panel>
+        </li>
     );
 }
 

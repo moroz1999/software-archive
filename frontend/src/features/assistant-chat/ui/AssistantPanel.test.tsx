@@ -375,6 +375,19 @@ describe(AssistantPanel, () => {
         expect(change(3)).toHaveTextContent(/Release.*Add/u);
     });
 
+    it('puts the details of each proposed operation in its own named section', async () => {
+        await openConversation(state({messages: [QUESTION, PLAN_MESSAGE], plans: [plan('proposed')]}));
+        const shown = within(await within(assistant()).findByRole('list', {name: 'Changes'}));
+
+        const edit = within(shown.getByRole('region', {name: /^1\. Software · Edit Elite$/u}));
+        const addition = within(shown.getByRole('region', {name: /^2\. Software · Add/u}));
+        const release = within(shown.getByRole('region', {name: /^3\. Release · Add/u}));
+
+        expect(edit.getByRole('definition', {name: 'year'})).toHaveTextContent('1984 → 1985');
+        expect(addition.getByRole('definition', {name: 'Title'})).toHaveTextContent('Elite Plus');
+        expect(release.getByRole('definition', {name: 'Software'})).toHaveTextContent('made by change 2');
+    });
+
     it('shows the entry a change edits, and what it holds beside what it becomes', async () => {
         await openConversation(state({messages: [QUESTION, PLAN_MESSAGE], plans: [plan('proposed')]}));
         await within(assistant()).findByRole('region', {name: 'Исправить Elite и добавить Elite Plus'});

@@ -39,11 +39,23 @@ describe(NavBar, () => {
         expect(screen.getByRole('link', {name: 'Authors'})).toHaveAttribute('href', '/authors');
     });
 
-    it('holds controls apart from the links', () => {
-        render(<MemoryRouter><NavBar label="Main" actions={<span>Switch</span>}><NavBarLink href="/">Home</NavBarLink></NavBar></MemoryRouter>);
+    it('gives the logo, navigation and controls separate places in the header row', () => {
+        render(
+            <MemoryRouter>
+                <NavBar label="Main" brand={{src: '/light.svg', darkSrc: '/dark.svg', alt: 'Archive', width: 95, height: 36, href: '/'}} actions={<span>Switch</span>}>
+                    <NavBarLink href="/">Home</NavBarLink>
+                </NavBar>
+            </MemoryRouter>,
+        );
 
-        expect(screen.getByText('Switch')).toBeInTheDocument();
-        expect(screen.getByRole('navigation', {name: 'Main'})).not.toHaveTextContent('Switch');
+        const logo = screen.getByRole('link', {name: 'Archive'});
+        const navigation = screen.getByRole('navigation', {name: 'Main'});
+        const controls = screen.getByText('Switch');
+
+        expect(navigation.parentElement).toBe(logo.parentElement);
+        expect(navigation.parentElement).toBe(controls.parentElement?.parentElement);
+        expect(logo).toAppearBefore(navigation);
+        expect(navigation).toAppearBefore(controls);
     });
 
     it('marks the link of the current section, including the pages inside it', () => {

@@ -176,7 +176,7 @@ describe(SoftwareReleases, () => {
         expect(within(screen.getByRole('article', {name: 'Elite'})).queryByRole('link', {name: 'Crew'})).not.toBeInTheDocument();
     });
 
-    it('offers the archive of a release for download in its row of the table', async () => {
+    it('offers the release archive for download in the table without showing its size', async () => {
         stubFetch(json([{...AY_MOD, archive: ARCHIVE}, ORIGINAL]));
         renderReleases();
 
@@ -184,7 +184,7 @@ describe(SoftwareReleases, () => {
         const row = within(table).getByRole('row', {name: /Elite AY/u});
 
         expect(within(row).getByRole('link', {name: 'Download Elite AY'})).toHaveAttribute('href', ARCHIVE.url);
-        expect(row).toHaveTextContent('1.5 KB');
+        expect(row).not.toHaveTextContent('1.5 KB');
         expect(within(within(table).getByRole('row', {name: /^Elite(?! AY)/u})).queryByRole('link', {name: /^Download/u})).not.toBeInTheDocument();
     });
 

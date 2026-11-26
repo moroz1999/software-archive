@@ -23,8 +23,8 @@ export function MainMenu() {
     return (
         <NavBar
             label={t('navigation.mainMenu')}
-            brand={{src: logoLight, darkSrc: logoDark, alt: SITE_NAME, width: 95, height: 36}}
-            actions={<Inline gap="sm">{assistant && <AssistantPanel/>}<QuickSearch/><PlatformSwitch/><LanguageSwitch/><AccountMenu/></Inline>}
+            brand={{src: logoLight, darkSrc: logoDark, alt: SITE_NAME, width: 95, height: 36, href: HOME_PATH}}
+            actions={<Inline gap="sm" justify="end" wrap>{assistant && <AssistantPanel/>}<QuickSearch/><PlatformSwitch/><LanguageSwitch/><AccountMenu/></Inline>}
         >
             <NavBarLink href={HOME_PATH} end>{t('navigation.home')}</NavBarLink>
             <NavBarLink href={SOFTWARE_LIST_PATH}>{t('navigation.software')}</NavBarLink>

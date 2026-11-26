@@ -218,15 +218,9 @@ function ReleaseTable({softwareId, releases, actions, creditHref, sort, onSort}:
     );
 }
 
-/** The archive of a release to download, with its size. */
 function Download({release, archive}: {readonly release: SoftwareRelease; readonly archive: ReleaseArchive}) {
     const {t} = useTranslation();
-    return (
-        <Inline gap="sm" align="center" wrap>
-            <Button href={archive.url} target="_self" color="secondary" ariaLabel={t('release.downloadNamed', {title: release.title})}>{t('release.download')}</Button>
-            <Text as="span" variant="bodySm" tone="muted">{fileSizeText(archive.size)}</Text>
-        </Inline>
-    );
+    return <Button href={archive.url} target="_self" color="secondary" ariaLabel={t('release.downloadNamed', {title: release.title})}>{t('release.download')}</Button>;
 }
 
 function ReleaseCards({softwareId, releases, actions, creditHref}: ReleaseListProps) {
@@ -269,7 +263,12 @@ function ReleaseCard({softwareId, release, actions, creditHref}: ReleaseCardProp
                     </Inline>
                 )}
                 {release.credits.length > 0 && <SoftwareCreditList credits={release.credits} creditHref={creditHref} compact/>}
-                {release.archive != null && <Download release={release} archive={release.archive}/>}
+                {release.archive != null && (
+                    <Inline gap="sm" align="center" wrap>
+                        <Download release={release} archive={release.archive}/>
+                        <Text as="span" variant="bodySm" tone="muted">{fileSizeText(release.archive.size)}</Text>
+                    </Inline>
+                )}
                 {actions?.(release)}
             </Stack>
         </Panel>

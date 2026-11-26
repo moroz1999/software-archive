@@ -7,11 +7,15 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    justify-content: space-between;
     gap: var(--nav-bar-actions-gap);
     max-width: var(--nav-bar-max-width);
     margin: 0 auto;
     padding: var(--nav-bar-padding);
+}
+
+.row > nav {
+    flex: 1 1 auto;
+    max-width: 100%;
 }
 
 .brandImage {
@@ -20,11 +24,14 @@
 
 .actions {
     flex: none;
+    max-width: 100%;
+    margin-inline-start: auto;
 }
 
 .list {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     gap: var(--nav-bar-gap);
     margin: 0;
     padding: 0;

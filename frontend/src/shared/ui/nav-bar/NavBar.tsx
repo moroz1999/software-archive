@@ -1,7 +1,6 @@
 import type {ReactNode} from 'react';
 import {Link, useLocation} from 'react-router';
 import {classNames} from '@/shared/lib/class-names';
-import {Inline} from '@/shared/ui/inline';
 import styles from './NavBar.module.css';
 
 interface NavBarBrand {
@@ -10,6 +9,7 @@ interface NavBarBrand {
     readonly alt: string;
     readonly width: number;
     readonly height: number;
+    readonly href?: string;
 }
 
 export interface NavBarProps {
@@ -27,21 +27,24 @@ export function NavBar({label, children, brand, actions}: NavBarProps) {
     return (
         <header className={styles.bar}>
             <div className={styles.row}>
-                <Inline align="center" gap="lg" wrap>
-                    {brand !== undefined && (
-                        <picture>
-                            <source media="(prefers-color-scheme: dark)" srcSet={brand.darkSrc}/>
-                            <img className={styles.brandImage} src={brand.src} alt={brand.alt} width={brand.width} height={brand.height}/>
-                        </picture>
-                    )}
-                    <nav aria-label={label}>
-                        <ul className={styles.list}>{children}</ul>
-                    </nav>
-                </Inline>
+                {brand !== undefined && <Brand {...brand}/>}
+                <nav aria-label={label}>
+                    <ul className={styles.list}>{children}</ul>
+                </nav>
                 {actions !== undefined && <div className={styles.actions}>{actions}</div>}
             </div>
         </header>
     );
+}
+
+function Brand({src, darkSrc, alt, width, height, href}: NavBarBrand) {
+    const picture = (
+        <picture>
+            <source media="(prefers-color-scheme: dark)" srcSet={darkSrc}/>
+            <img className={styles.brandImage} src={src} alt={alt} width={width} height={height}/>
+        </picture>
+    );
+    return href === undefined ? picture : <Link to={href}>{picture}</Link>;
 }
 
 export interface NavBarLinkProps {

@@ -474,31 +474,38 @@ describe(SoftwareView, () => {
         expect(screen.getByRole('region', {name: 'Программа на других сайтах'})).toBeInTheDocument();
     });
 
-    it('leads from the groups among the credits to the group pages and from every label to its page', async () => {
+    it('shows developers and publishers in separate fields with links to their pages', async () => {
         stubFetch(json({...ELITE, credits: GROUP_CREDITS}));
         renderView(ID);
 
-        const credits = await screen.findByRole('list', {name: 'Credits'});
+        const developers = await screen.findByRole('region', {name: 'Developer'});
+        const publishers = screen.getByRole('region', {name: 'Publisher'});
 
-        expect(within(credits).getByRole('link', {name: 'J.P. — Jane Publisher'})).toHaveAttribute('href', `/labels/${AUTHOR_LABEL}`);
-        expect(within(credits).getByRole('link', {name: 'Solar Studio'})).toHaveAttribute('href', `/groups/${GROUP}`);
-        expect(within(credits).getByRole('link', {name: 'Sol — Solar Studio'})).toHaveAttribute('href', `/labels/${GROUP_LABEL}`);
-    });
-
-    it('names the developers and publishers among the credits by their roles', async () => {
-        stubFetch(json({...ELITE, credits: GROUP_CREDITS}));
-        renderView(ID);
-
-        const credits = await screen.findByRole('list', {name: 'Credits'});
-
-        expect(within(credits).getAllByRole('listitem').map((item) => item.textContent)).toStrictEqual([
-            'J.P. — Jane PublisherPublisher',
-            'Solar StudioDeveloper',
-            'Sol — Solar StudioDeveloperPublisher',
+        expect(within(developers).getAllByRole('link').map((link) => [link.textContent, link.getAttribute('href')])).toStrictEqual([
+            ['Solar Studio', `/groups/${GROUP}`],
+            ['Sol — Solar Studio', `/labels/${GROUP_LABEL}`],
         ]);
+        expect(within(publishers).getAllByRole('link').map((link) => [link.textContent, link.getAttribute('href')])).toStrictEqual([
+            ['J.P. — Jane Publisher', `/labels/${AUTHOR_LABEL}`],
+            ['Sol — Solar Studio', `/labels/${GROUP_LABEL}`],
+        ]);
+        expect(screen.queryByRole('list', {name: 'Credits'})).not.toBeInTheDocument();
     });
 
-    it('leaves the unknown role out of the credits', async () => {
+    it('keeps the other authors and their roles in the general credits', async () => {
+        stubFetch(json({...ELITE, credits: [
+            ...GROUP_CREDITS,
+            {id: AUTHOR, type: 'author', title: 'Jane Doe', roles: ['code'], ownerId: AUTHOR},
+        ]}));
+        renderView(ID);
+
+        const credits = await screen.findByRole('list', {name: 'Credits'});
+
+        expect(within(credits).getAllByRole('listitem').map((item) => item.textContent)).toStrictEqual(['Jane DoeCode']);
+        expect(within(credits).getByRole('link', {name: 'Jane Doe'})).toHaveAttribute('href', `/authors/${AUTHOR}`);
+    });
+
+    it('omits the publisher field when nobody is credited as publisher and keeps authors with unknown roles', async () => {
         stubFetch(json({...ELITE, credits: [
             {id: AUTHOR, type: 'author', title: 'Jane Doe', roles: ['unknown'], ownerId: AUTHOR},
             {id: GROUP, type: 'group', title: 'Solar Studio', roles: ['developer'], ownerId: GROUP},
@@ -507,7 +514,9 @@ describe(SoftwareView, () => {
 
         const credits = await screen.findByRole('list', {name: 'Credits'});
 
-        expect(within(credits).getAllByRole('listitem').map((item) => item.textContent)).toStrictEqual(['Jane Doe', 'Solar StudioDeveloper']);
+        expect(screen.getByRole('region', {name: 'Developer'})).toHaveTextContent('Solar Studio');
+        expect(screen.queryByRole('region', {name: 'Publisher'})).not.toBeInTheDocument();
+        expect(within(credits).getAllByRole('listitem').map((item) => item.textContent)).toStrictEqual(['Jane Doe']);
     });
 
     it('leads from a credited label of nobody to the page of the label', async () => {
