@@ -8,9 +8,9 @@
     --badge-border-width: var(--border-width-thin);
 
     /* Primary variant: background, text and border. */
-    --badge-primary-bg: var(--primary-500);
-    --badge-primary-text: var(--white);
-    --badge-primary-border: var(--primary-600);
+    --badge-primary-bg: var(--primary-solid-bg);
+    --badge-primary-text: var(--primary-solid-text);
+    --badge-primary-border: var(--primary-solid-bg);
 
     /* Secondary variant: background, text and border. */
     --badge-secondary-bg: var(--secondary-100);

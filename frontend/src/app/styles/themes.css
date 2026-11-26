@@ -13,6 +13,11 @@
     --link-color: var(--primary-600);
     --link-alt-color: var(--warning-400);
 
+    /* Solid primary fills share a foreground across themes. */
+    --primary-solid-bg: var(--primary-600);
+    --primary-solid-hover-bg: color-mix(in srgb, var(--primary-solid-bg), var(--black) 12%);
+    --primary-solid-text: var(--white);
+
     /* Surfaces. */
     --surface: var(--white);
     --background-page: var(--secondary-50);
@@ -35,6 +40,7 @@
     :root {
         --text-color: var(--secondary-900);
         --link-color: var(--primary-700);
+        --primary-solid-bg: var(--primary-400);
         --surface: var(--secondary-100);
         --background-dark: var(--secondary-100);
         --background-deep: var(--secondary-50);

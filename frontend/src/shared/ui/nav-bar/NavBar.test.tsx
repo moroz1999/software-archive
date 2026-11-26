@@ -15,6 +15,22 @@ function renderAt(path: string) {
 }
 
 describe(NavBar, () => {
+    it('provides a separate logo image for visitors who prefer a dark theme', () => {
+        render(
+            <MemoryRouter>
+                <NavBar label="Main" brand={{src: '/light.svg', darkSrc: '/dark.svg', alt: 'Archive', width: 95, height: 36}}>
+                    <NavBarLink href="/">Home</NavBarLink>
+                </NavBar>
+            </MemoryRouter>,
+        );
+
+        const logo = screen.getByRole('img', {name: 'Archive'});
+        const darkLogo = logo.closest('picture')?.querySelector('source[media="(prefers-color-scheme: dark)"]');
+
+        expect(logo).toHaveAttribute('src', '/light.svg');
+        expect(darkLogo).toHaveAttribute('srcset', '/dark.svg');
+    });
+
     it('is a labelled navigation with a list of links', () => {
         renderAt('/');
 

@@ -17,9 +17,9 @@
     --pagination-item-hover-bg: var(--background-deep);
 
     /* Current page: border, background, text and weight. */
-    --pagination-current-border: var(--primary-500);
-    --pagination-current-bg: var(--primary-500);
-    --pagination-current-text: var(--white);
+    --pagination-current-border: var(--primary-solid-bg);
+    --pagination-current-bg: var(--primary-solid-bg);
+    --pagination-current-text: var(--primary-solid-text);
     --pagination-current-font-weight: var(--font-weight-medium);
 
     /* Opacity of a locked item. */

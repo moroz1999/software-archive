@@ -21,9 +21,9 @@
     --nav-chips-chip-hover-bg: var(--background-deep);
 
     /* Active chip: border, background and text. */
-    --nav-chips-active-border: var(--primary-500);
-    --nav-chips-active-bg: var(--primary-500);
-    --nav-chips-active-text: var(--white);
+    --nav-chips-active-border: var(--primary-solid-bg);
+    --nav-chips-active-bg: var(--primary-solid-bg);
+    --nav-chips-active-text: var(--primary-solid-text);
 
     /* Opacity of a locked chip. */
     --nav-chips-disabled-opacity: 0.5;
