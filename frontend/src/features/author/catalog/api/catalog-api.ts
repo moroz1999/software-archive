@@ -5,8 +5,6 @@ import {getJson, mapResponse, type Page, parsePage, readNullableString, readObje
 import type {AuthorCatalogEntry} from '../model/catalog';
 import type {AuthorCatalogFilter} from '../model/catalog-filter';
 
-/** Entries on one page of the catalog. */
-const PAGE_SIZE = 100;
 
 /** An entry is of a person or of a label, never both. */
 function parseEntry(item: unknown): AuthorCatalogEntry {
@@ -29,7 +27,7 @@ export async function fetchAuthorCatalogPage(
     platform: PlatformCode | null,
     signal: AbortSignal,
 ): Promise<Page<AuthorCatalogEntry>> {
-    const search = new URLSearchParams({page: String(filter.page), size: String(PAGE_SIZE)});
+    const search = new URLSearchParams({page: String(filter.page)});
     for (const [key, value] of [['letter', filter.letter], ['country', filter.country], ['city', filter.city]] as const) {
         if (value !== null) {
             search.set(key, value);

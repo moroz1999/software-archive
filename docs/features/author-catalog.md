@@ -26,6 +26,6 @@ The filter lives in the address — `/authors?letter=Б&country={id}&city={id}&p
 
 | Call | Answer | Errors |
 |---|---|---|
-| `GET /api/authors?letter=&country=&city=&platform=&page=&size=` | page of `{personId, labelId, name, note}`, exactly one of `personId` (a person) and `labelId` (a label); `note` is shown next to the name, `null` for nothing | `400 label.letter-invalid`, `400 platform.code-invalid`; `400` for a malformed id |
+| `GET /api/authors?letter=&country=&city=&platform=&page=&size=` | page of `{personId, labelId, name, note}`, exactly one of `personId` (a person) and `labelId` (a label); `note` is shown next to the name, `null` for nothing; 100 entries a page unless `size` is given | `400 label.letter-invalid`, `400 platform.code-invalid`; `400` for a malformed id |
 | `GET /api/countries` | `[{id, name}]` by name | |
 | `GET /api/countries/{id}/cities` | `[{id, name}]` by name; empty for an unknown country | `400` for a malformed id |

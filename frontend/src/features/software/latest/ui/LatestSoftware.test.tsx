@@ -36,15 +36,15 @@ describe(LatestSoftware, () => {
         expect(screen.getByTestId('latest-software-skeleton')).toBeInTheDocument();
         await expect(screen.findByRole('article', {name: 'Elite'})).resolves.toHaveTextContent('1984');
         expect(screen.queryByTestId('latest-software-skeleton')).not.toBeInTheDocument();
-        expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/software/latest?size=12', expect.anything());
+        expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/software/latest', expect.anything());
     });
 
     it('shows the latest software of the chosen platform and follows the switch', async () => {
         localStorage.setItem('archive.platform', 'bk');
         const fetchMock = stubFetchRoutes(new Map([
             ['/api/platforms', json([{code: 'agat', name: 'Agat'}, {code: 'bk', name: 'BK'}])],
-            ['/api/software/latest?size=12&platform=bk', json(pageResponse([ELITE], {size: 12}))],
-            ['/api/software/latest?size=12&platform=agat', json(pageResponse([MINER], {size: 12}))],
+            ['/api/software/latest?platform=bk', json(pageResponse([ELITE], {size: 12}))],
+            ['/api/software/latest?platform=agat', json(pageResponse([MINER], {size: 12}))],
         ]));
         renderLatest({withSwitch: true});
 
@@ -52,18 +52,18 @@ describe(LatestSoftware, () => {
         await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Platform'}), await screen.findByRole('option', {name: 'Agat'}));
 
         await expect(screen.findByRole('article', {name: 'Manic Miner'})).resolves.toBeInTheDocument();
-        expect(fetchMock.mock.calls.map(([url]) => url)).toContain('/api/software/latest?size=12&platform=agat');
+        expect(fetchMock.mock.calls.map(([url]) => url)).toContain('/api/software/latest?platform=agat');
     });
 
     it('keeps the shown software under a spinner, without a skeleton, while another platform loads', async () => {
         let answerAgat: (() => void) | undefined;
         const fetchMock = stubFetchRoutes(new Map([
             ['/api/platforms', json([{code: 'agat', name: 'Agat'}])],
-            ['/api/software/latest?size=12', json(pageResponse([ELITE], {size: 12}))],
+            ['/api/software/latest', json(pageResponse([ELITE], {size: 12}))],
         ]));
         const original = fetchMock.getMockImplementation();
         fetchMock.mockImplementation(async (input, init) => {
-            if (input === '/api/software/latest?size=12&platform=agat') {
+            if (input === '/api/software/latest?platform=agat') {
                 await new Promise<void>((resolve) => {
                     answerAgat = resolve;
                 });

@@ -25,7 +25,7 @@ describe('UI localization', () => {
         return stubFetchRoutes(new Map([
             ['/api/platforms', json([])],
             ['/api/auth/me', noContent()],
-            ['/api/software/latest?size=12', status === 200 ? json(pageResponse([])) : json({status}, status)],
+            ['/api/software/latest', status === 200 ? json(pageResponse([])) : json({status}, status)],
         ]));
     }
 

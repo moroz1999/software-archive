@@ -107,7 +107,7 @@ describe('label adding route', () => {
     });
 
     it('returns to the author catalog on Cancel', async () => {
-        await openForm({'GET /api/authors?page=0&size=100': json({content: [], page: {size: 100, number: 0, totalElements: 0, totalPages: 0}})});
+        await openForm({'GET /api/authors?page=0': json({content: [], page: {size: 100, number: 0, totalElements: 0, totalPages: 0}})});
 
         await userEvent.click(screen.getByRole('link', {name: 'Cancel'}));
 

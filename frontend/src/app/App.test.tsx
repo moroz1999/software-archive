@@ -74,14 +74,14 @@ describe(App, () => {
         render(<StrictMode><App router={appRouter()} queryClient={queryClient}/></StrictMode>);
 
         await expect(screen.findByText('Fixture Software Alpha')).resolves.toBeInTheDocument();
-        expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/software/latest?size=12', expect.anything());
+        expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/software/latest', expect.anything());
     });
 
     it('opens the sections of the archive from the main menu, which stays over every page', async () => {
         stubRoutes([
-            ['/api/software/latest?size=12', json(pageResponse([ALPHA], {size: 12}))],
-            ['/api/software?page=0&size=30', json(pageResponse([ALPHA]))],
-            ['/api/authors?page=0&size=100', json(pageResponse([{personId: ZED, labelId: null, name: 'Zed', note: null}], {size: 100}))],
+            ['/api/software/latest', json(pageResponse([ALPHA], {size: 12}))],
+            ['/api/software?page=0', json(pageResponse([ALPHA]))],
+            ['/api/authors?page=0', json(pageResponse([{personId: ZED, labelId: null, name: 'Zed', note: null}], {size: 100}))],
             ['/api/countries', json([])],
             [`/api/authors/${ZED}`, json(ZED_DETAILS)],
         ]);
@@ -108,8 +108,8 @@ describe(App, () => {
 
     it('opens the groups from the main menu, a group from the catalog and its members from the group', async () => {
         stubRoutes([
-            ['/api/software/latest?size=12', json(pageResponse([ALPHA], {size: 12}))],
-            ['/api/groups?page=0&size=100', json(pageResponse([{groupId: CREW, labelId: null, name: 'Crew Ltd', note: null}], {size: 100}))],
+            ['/api/software/latest', json(pageResponse([ALPHA], {size: 12}))],
+            ['/api/groups?page=0', json(pageResponse([{groupId: CREW, labelId: null, name: 'Crew Ltd', note: null}], {size: 100}))],
             ['/api/countries', json([])],
             [`/api/groups/${CREW}`, json(CREW_DETAILS)],
             [`/api/authors/${ZED}`, json(ZED_DETAILS)],

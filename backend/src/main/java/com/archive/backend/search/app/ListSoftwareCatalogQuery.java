@@ -28,6 +28,9 @@ public record ListSoftwareCatalogQuery(
         Language language,
         Pageable pageable) {
 
+    /** The software of a page of the catalog, on the site and to the assistant alike. */
+    public static final int PAGE_SIZE = 30;
+
     public ListSoftwareCatalogQuery {
         platforms = List.copyOf(platforms);
         hardware = List.copyOf(hardware);

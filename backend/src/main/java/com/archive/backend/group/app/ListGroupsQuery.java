@@ -12,4 +12,8 @@ public record ListGroupsQuery(
         @Nullable CountryId country,
         @Nullable CityId city,
         @Nullable PlatformCode platform,
-        Pageable pageable) {}
+        Pageable pageable) {
+
+    /** The entries of a page of the group catalog, on the site and to the assistant alike. */
+    public static final int PAGE_SIZE = 100;
+}

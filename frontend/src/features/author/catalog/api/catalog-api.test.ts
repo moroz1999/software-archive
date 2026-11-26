@@ -23,7 +23,7 @@ describe(fetchAuthorCatalogPage, () => {
 
         const page = await fetchAuthorCatalogPage(parseCatalogFilter(new URLSearchParams()), null, new AbortController().signal);
 
-        expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/authors?page=0&size=100');
+        expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/authors?page=0');
         expect(page.items).toStrictEqual([
             {kind: 'label', labelId: LABEL, name: 'Axe', note: 'John Doe'},
             {kind: 'person', personId: PERSON, name: 'John Doe', note: 'Zed'},
@@ -35,7 +35,7 @@ describe(fetchAuthorCatalogPage, () => {
 
         await fetchAuthorCatalogPage(parseCatalogFilter(new URLSearchParams(`letter=%23&country=${COUNTRY}&city=${CITY}&page=2`)), null, new AbortController().signal);
 
-        expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/authors?page=1&size=100&letter=%23&country=${COUNTRY}&city=${CITY}`);
+        expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/authors?page=1&letter=%23&country=${COUNTRY}&city=${CITY}`);
     });
 
     it('asks only for the entries of the chosen platform', async () => {
@@ -43,7 +43,7 @@ describe(fetchAuthorCatalogPage, () => {
 
         await fetchAuthorCatalogPage(parseCatalogFilter(new URLSearchParams('letter=A')), toPlatformCode('bk'), new AbortController().signal);
 
-        expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/authors?page=0&size=100&letter=A&platform=bk');
+        expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/authors?page=0&letter=A&platform=bk');
     });
 
     it('fails with a system error on a malformed answer', async () => {

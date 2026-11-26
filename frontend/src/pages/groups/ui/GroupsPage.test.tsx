@@ -28,7 +28,7 @@ describe('GroupsPage', () => {
     it('preloads the catalog of the address, the countries and the cities of the chosen country', async () => {
         const fetchMock = stubFetchRoutes(new Map([
             ['/api/auth/me', json(MEMBER)],
-            [`/api/groups?page=0&size=100&letter=Z&country=${FINLAND}`, json(pageResponse([{groupId: CREW, labelId: null, name: 'Crew', note: null}], {size: 100}))],
+            [`/api/groups?page=0&letter=Z&country=${FINLAND}`, json(pageResponse([{groupId: CREW, labelId: null, name: 'Crew', note: null}], {size: 100}))],
             ['/api/countries', json([{id: FINLAND, name: 'Finland'}])],
             [`/api/countries/${FINLAND}/cities`, json([])],
         ]));
@@ -44,7 +44,7 @@ describe('GroupsPage', () => {
     it('leads to adding a group', async () => {
         stubFetchRoutes(new Map([
             ['/api/auth/me', json(MEMBER)],
-            ['/api/groups?page=0&size=100', json(pageResponse([], {size: 100}))],
+            ['/api/groups?page=0', json(pageResponse([], {size: 100}))],
             ['/api/countries', json([])],
         ]));
 
@@ -56,7 +56,7 @@ describe('GroupsPage', () => {
     it('offers a public visitor no adding', async () => {
         stubFetchRoutes(new Map([
             ['/api/auth/me', noContent()],
-            ['/api/groups?page=0&size=100', json(pageResponse([], {size: 100}))],
+            ['/api/groups?page=0', json(pageResponse([], {size: 100}))],
             ['/api/countries', json([])],
         ]));
 

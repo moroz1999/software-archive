@@ -7,6 +7,7 @@ import com.archive.backend.software.app.DeleteSoftwareHandler;
 import com.archive.backend.software.app.GetSoftwareHandler;
 import com.archive.backend.software.app.GetSoftwareQuery;
 import com.archive.backend.software.app.ListLatestSoftwareHandler;
+import com.archive.backend.software.app.ListLatestSoftwareQuery;
 import com.archive.backend.software.app.ListSoftwareReleasesHandler;
 import com.archive.backend.software.app.ListSoftwareReleasesQuery;
 import com.archive.backend.software.app.UpdateSoftwareHandler;
@@ -25,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -56,7 +58,8 @@ public class SoftwareController {
      */
     @GetMapping("/latest")
     public Page<SoftwareListItemDto> latest(
-            @RequestParam(required = false) @Nullable String platform, Pageable pageable) {
+            @RequestParam(required = false) @Nullable String platform,
+            @PageableDefault(size = ListLatestSoftwareQuery.PAGE_SIZE) Pageable pageable) {
         return latestHandler.handle(webMapper.toLatestQuery(platform, pageable)).map(webMapper::toListItem);
     }
 

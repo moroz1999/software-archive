@@ -6,6 +6,7 @@ import com.archive.backend.group.app.DeleteGroupHandler;
 import com.archive.backend.group.app.GetGroupHandler;
 import com.archive.backend.group.app.GetGroupQuery;
 import com.archive.backend.group.app.ListGroupsHandler;
+import com.archive.backend.group.app.ListGroupsQuery;
 import com.archive.backend.group.app.UpdateGroupHandler;
 import com.archive.backend.group.domain.GroupId;
 import com.archive.backend.group.web.dto.GroupCatalogEntryDto;
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -52,7 +54,7 @@ public class GroupController {
             @RequestParam(required = false) @Nullable UUID country,
             @RequestParam(required = false) @Nullable UUID city,
             @RequestParam(required = false) @Nullable String platform,
-            Pageable pageable) {
+            @PageableDefault(size = ListGroupsQuery.PAGE_SIZE) Pageable pageable) {
         return listHandler
                 .handle(webMapper.toListQuery(letter, country, city, platform, pageable))
                 .map(webMapper::toCatalogEntry);

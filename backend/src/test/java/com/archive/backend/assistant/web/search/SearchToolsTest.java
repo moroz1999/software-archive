@@ -185,7 +185,7 @@ class SearchToolsTest {
         assertThat(captor.getValue().keyword()).isNull();
         assertThat(captor.getValue().platforms()).isEmpty();
         assertThat(captor.getValue().hardware()).isEmpty();
-        assertThat(captor.getValue().pageable()).isEqualTo(PageRequest.of(0, 50));
+        assertThat(captor.getValue().pageable()).isEqualTo(PageRequest.of(0, ListSoftwareCatalogQuery.PAGE_SIZE));
     }
 
     @Test
@@ -238,7 +238,7 @@ class SearchToolsTest {
         verify(handler).handle(captor.capture());
         assertThat(captor.getValue().letter()).isEqualTo(new LabelLetter("#"));
         assertThat(captor.getValue().country()).isNull();
-        assertThat(captor.getValue().pageable()).isEqualTo(PageRequest.of(0, 50));
+        assertThat(captor.getValue().pageable()).isEqualTo(PageRequest.of(0, ListGroupsQuery.PAGE_SIZE));
     }
 
     @Test

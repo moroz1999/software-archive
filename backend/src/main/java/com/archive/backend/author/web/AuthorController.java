@@ -6,6 +6,7 @@ import com.archive.backend.author.app.DeleteAuthorHandler;
 import com.archive.backend.author.app.GetAuthorHandler;
 import com.archive.backend.author.app.GetAuthorQuery;
 import com.archive.backend.author.app.ListAuthorsHandler;
+import com.archive.backend.author.app.ListAuthorsQuery;
 import com.archive.backend.author.app.UpdateAuthorHandler;
 import com.archive.backend.author.domain.AuthorId;
 import com.archive.backend.author.web.dto.AuthorCatalogEntryDto;
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -52,7 +54,7 @@ public class AuthorController {
             @RequestParam(required = false) @Nullable UUID country,
             @RequestParam(required = false) @Nullable UUID city,
             @RequestParam(required = false) @Nullable String platform,
-            Pageable pageable) {
+            @PageableDefault(size = ListAuthorsQuery.PAGE_SIZE) Pageable pageable) {
         return listHandler
                 .handle(webMapper.toListQuery(letter, country, city, platform, pageable))
                 .map(webMapper::toCatalogEntry);

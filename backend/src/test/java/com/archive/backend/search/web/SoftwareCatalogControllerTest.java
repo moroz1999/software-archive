@@ -117,7 +117,8 @@ class SoftwareCatalogControllerTest {
         mvc.perform(get("/api/software")).andExpect(status().isOk());
 
         assertThat(asked())
-                .isEqualTo(new ListSoftwareCatalogQuery(null, null, null, null, null, PageRequest.of(0, 20)));
+                .isEqualTo(new ListSoftwareCatalogQuery(
+                        null, null, null, null, null, PageRequest.of(0, ListSoftwareCatalogQuery.PAGE_SIZE)));
     }
 
     @Test
@@ -178,7 +179,7 @@ class SoftwareCatalogControllerTest {
                         List.of(new PlatformCode("bk"), new PlatformCode("vector")),
                         List.of(new HardwareCode("ay8910"), new HardwareCode("z80")),
                         Language.EN,
-                        PageRequest.of(0, 20)));
+                        PageRequest.of(0, ListSoftwareCatalogQuery.PAGE_SIZE)));
     }
 
     @Test

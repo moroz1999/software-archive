@@ -30,7 +30,7 @@ const ENTRIES = [
 const COUNTRIES = [{id: FINLAND, name: 'Finland'}, {id: NORWAY, name: 'Norway'}];
 const FINNISH_CITIES = [{id: HELSINKI, name: 'Helsinki'}];
 
-const ALL = '/api/authors?page=0&size=100';
+const ALL = '/api/authors?page=0';
 
 function catalogPage(items: readonly unknown[], totalPages = 1, number = 0) {
     return json(pageResponse(items, {size: 100, number, totalPages, totalElements: items.length}));
@@ -129,7 +129,7 @@ describe(AuthorCatalog, () => {
 
     it('offers all letters, the current one marked, each keeping the place filters and starting from the first page', async () => {
         const filtered = `/authors?letter=B&country=${FINLAND}&page=2`;
-        stubFetchRoutes(routes({[`/api/authors?page=1&size=100&letter=B&country=${FINLAND}`]: catalogPage(ENTRIES, 2, 1)}));
+        stubFetchRoutes(routes({[`/api/authors?page=1&letter=B&country=${FINLAND}`]: catalogPage(ENTRIES, 2, 1)}));
         openCatalog(filtered);
 
         const letters = await screen.findByRole('navigation', {name: 'First letter'});
@@ -152,8 +152,8 @@ describe(AuthorCatalog, () => {
     it('narrows the catalog to the chosen country, then offers its cities', async () => {
         stubFetchRoutes(routes({
             [ALL]: catalogPage(ENTRIES),
-            [`/api/authors?page=0&size=100&country=${FINLAND}`]: catalogPage([ENTRIES[2]]),
-            [`/api/authors?page=0&size=100&country=${FINLAND}&city=${HELSINKI}`]: catalogPage([ENTRIES[0]]),
+            [`/api/authors?page=0&country=${FINLAND}`]: catalogPage([ENTRIES[2]]),
+            [`/api/authors?page=0&country=${FINLAND}&city=${HELSINKI}`]: catalogPage([ENTRIES[0]]),
         }));
         const router = openCatalog();
         await entryNames();
@@ -181,8 +181,8 @@ describe(AuthorCatalog, () => {
 
     it('forgets the city when the country changes', async () => {
         stubFetchRoutes(routes({
-            [`/api/authors?page=0&size=100&country=${FINLAND}&city=${HELSINKI}`]: catalogPage(ENTRIES),
-            [`/api/authors?page=0&size=100&country=${NORWAY}`]: catalogPage([]),
+            [`/api/authors?page=0&country=${FINLAND}&city=${HELSINKI}`]: catalogPage(ENTRIES),
+            [`/api/authors?page=0&country=${NORWAY}`]: catalogPage([]),
             [`/api/countries/${NORWAY}/cities`]: json([]),
         }));
         const router = openCatalog(`/authors?country=${FINLAND}&city=${HELSINKI}`);
@@ -198,7 +198,7 @@ describe(AuthorCatalog, () => {
         const fetchMock = stubFetchRoutes(routes({[ALL]: catalogPage(ENTRIES)}));
         const original = fetchMock.getMockImplementation();
         fetchMock.mockImplementation(async (input, init) => {
-            if (input === `/api/authors?page=0&size=100&country=${FINLAND}`) {
+            if (input === `/api/authors?page=0&country=${FINLAND}`) {
                 await new Promise<void>((resolve) => {
                     answerFinland = resolve;
                 });
@@ -228,7 +228,7 @@ describe(AuthorCatalog, () => {
     });
 
     it('shows the entries of a filter that answers at once with no spinner and no locked controls', async () => {
-        stubFetchRoutes(routes({[ALL]: catalogPage(ENTRIES), [`/api/authors?page=0&size=100&country=${FINLAND}`]: catalogPage([ENTRIES[2]])}));
+        stubFetchRoutes(routes({[ALL]: catalogPage(ENTRIES), [`/api/authors?page=0&country=${FINLAND}`]: catalogPage([ENTRIES[2]])}));
         openCatalog();
         await entryNames();
 
@@ -244,7 +244,7 @@ describe(AuthorCatalog, () => {
     });
 
     it('leads to the other pages of the catalog', async () => {
-        stubFetchRoutes(routes({[`/api/authors?page=0&size=100&letter=A`]: catalogPage(ENTRIES, 3)}));
+        stubFetchRoutes(routes({[`/api/authors?page=0&letter=A`]: catalogPage(ENTRIES, 3)}));
         openCatalog('/authors?letter=A');
 
         const pages = await screen.findByRole('navigation', {name: 'Pages'});
@@ -254,7 +254,7 @@ describe(AuthorCatalog, () => {
     });
 
     it('says so when no author matches', async () => {
-        stubFetchRoutes(routes({[`/api/authors?page=0&size=100&letter=Q`]: catalogPage([])}));
+        stubFetchRoutes(routes({[`/api/authors?page=0&letter=Q`]: catalogPage([])}));
         openCatalog('/authors?letter=Q');
 
         await expect(screen.findByText('No authors found.')).resolves.toBeInTheDocument();

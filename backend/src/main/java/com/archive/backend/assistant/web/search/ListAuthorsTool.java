@@ -47,6 +47,6 @@ public class ListAuthorsTool implements ReadTool<CatalogArguments> {
                 a.countryId() == null ? null : new CountryId(a.countryId()),
                 a.cityId() == null ? null : new CityId(a.cityId()),
                 a.platform() == null ? null : new PlatformCode(a.platform()),
-                ToolPages.of(a.page(), a.size()))));
+                ToolPages.of(a.page(), a.size(), ListAuthorsQuery.PAGE_SIZE))));
     }
 }

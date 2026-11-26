@@ -28,7 +28,7 @@ describe('AuthorsPage', () => {
     it('preloads the catalog of the address, the countries and the cities of the chosen country', async () => {
         const fetchMock = stubFetchRoutes(new Map([
             ['/api/auth/me', json(MEMBER)],
-            [`/api/authors?page=0&size=100&letter=Z&country=${FINLAND}`, json(pageResponse([{personId: ZED, labelId: null, name: 'Zed', note: null}], {size: 100}))],
+            [`/api/authors?page=0&letter=Z&country=${FINLAND}`, json(pageResponse([{personId: ZED, labelId: null, name: 'Zed', note: null}], {size: 100}))],
             ['/api/countries', json([{id: FINLAND, name: 'Finland'}])],
             [`/api/countries/${FINLAND}/cities`, json([])],
         ]));
@@ -44,7 +44,7 @@ describe('AuthorsPage', () => {
     it('leads to adding an author', async () => {
         stubFetchRoutes(new Map([
             ['/api/auth/me', json(MEMBER)],
-            ['/api/authors?page=0&size=100', json(pageResponse([], {size: 100}))],
+            ['/api/authors?page=0', json(pageResponse([], {size: 100}))],
             ['/api/countries', json([])],
         ]));
 
@@ -56,7 +56,7 @@ describe('AuthorsPage', () => {
     it('leads to adding a label', async () => {
         stubFetchRoutes(new Map([
             ['/api/auth/me', json(MEMBER)],
-            ['/api/authors?page=0&size=100', json(pageResponse([], {size: 100}))],
+            ['/api/authors?page=0', json(pageResponse([], {size: 100}))],
             ['/api/countries', json([])],
         ]));
 
@@ -68,7 +68,7 @@ describe('AuthorsPage', () => {
     it('offers a public visitor no adding', async () => {
         stubFetchRoutes(new Map([
             ['/api/auth/me', noContent()],
-            ['/api/authors?page=0&size=100', json(pageResponse([], {size: 100}))],
+            ['/api/authors?page=0', json(pageResponse([], {size: 100}))],
             ['/api/countries', json([])],
         ]));
 

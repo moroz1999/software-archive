@@ -36,7 +36,7 @@ describe(fetchSoftwareCatalog, () => {
 
         await fetchSoftwareCatalog(filterOf(''), null, new AbortController().signal);
 
-        expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/software?page=0&size=30');
+        expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/software?page=0');
     });
 
     it('asks with the keyword, the filters, the page and the platform', async () => {
@@ -49,7 +49,7 @@ describe(fetchSoftwareCatalog, () => {
         );
 
         expect(fetchMock.mock.calls[0]?.[0]).toBe(
-            `/api/software?page=1&size=30&q=elite+2&year=1987&category=${GAMES}&country=${FINLAND}&platform=bk`,
+            `/api/software?page=1&q=elite+2&year=1987&category=${GAMES}&country=${FINLAND}&platform=bk`,
         );
     });
 
@@ -63,7 +63,7 @@ describe(fetchSoftwareCatalog, () => {
         );
 
         expect(fetchMock.mock.calls[0]?.[0]).toBe(
-            `/api/software?page=0&size=30&country=${FINLAND}&city=${HELSINKI}&platforms=bk%2Cvector&hardware=ay8910%2Cz80`,
+            `/api/software?page=0&country=${FINLAND}&city=${HELSINKI}&platforms=bk%2Cvector&hardware=ay8910%2Cz80`,
         );
     });
 
@@ -72,7 +72,7 @@ describe(fetchSoftwareCatalog, () => {
 
         await fetchSoftwareCatalog(filterOf('platforms=bk&hardware=ay8910'), toPlatformCode('vector'), new AbortController().signal);
 
-        expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/software?page=0&size=30&platform=vector&hardware=ay8910');
+        expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/software?page=0&platform=vector&hardware=ay8910');
     });
 
     it('reads the cards, the page and the values of every filter', async () => {

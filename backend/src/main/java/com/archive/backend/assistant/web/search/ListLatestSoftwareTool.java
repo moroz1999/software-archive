@@ -49,6 +49,7 @@ public class ListLatestSoftwareTool implements ReadTool<ListLatestSoftwareArgume
     @Override
     public Object read(ToolContext context, ListLatestSoftwareArguments a) {
         return ToolPage.of(handler.handle(new ListLatestSoftwareQuery(
-                a.platform() == null ? null : new PlatformCode(a.platform()), ToolPages.of(a.page(), a.size()))));
+                a.platform() == null ? null : new PlatformCode(a.platform()),
+                ToolPages.of(a.page(), a.size(), ListLatestSoftwareQuery.PAGE_SIZE))));
     }
 }

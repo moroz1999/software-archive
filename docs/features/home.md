@@ -9,4 +9,4 @@ The home page (`/`, "Recently added") shows the fresh software ([domain/software
 
 ## REST
 
-`GET /api/software/latest?size={n}&platform={code}` — the page contract of the software list, newest first; only the size and the platform are taken from the request.
+`GET /api/software/latest?size={n}&platform={code}` — the page contract of the software list, newest first; only the size and the platform are taken from the request, 12 software unless the size is given.

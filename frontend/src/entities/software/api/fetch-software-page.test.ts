@@ -15,7 +15,7 @@ describe(fetchLatestSoftware, () => {
 
         await fetchLatestSoftware(null, new AbortController().signal);
 
-        expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/software/latest?size=12');
+        expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/software/latest');
     });
 
     it('requests only the latest software of the given platform', async () => {
@@ -23,7 +23,7 @@ describe(fetchLatestSoftware, () => {
 
         await fetchLatestSoftware('msx', new AbortController().signal);
 
-        expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/software/latest?size=12&platform=msx');
+        expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/software/latest?platform=msx');
     });
 
     it('reads the screenshots each card shows, none when missing', async () => {

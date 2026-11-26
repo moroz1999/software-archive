@@ -21,7 +21,7 @@ describe(LatestSoftware, () => {
             <MemoryRouter><PlatformSelectionProvider><LatestSoftwareProvider><LatestSoftware/></LatestSoftwareProvider></PlatformSelectionProvider></MemoryRouter>,
         );
         await vi.waitFor(() => {
-            expect(fetchMock).toHaveBeenCalledWith('/api/software/latest?size=12', expect.anything());
+            expect(fetchMock).toHaveBeenCalledWith('/api/software/latest', expect.anything());
         });
 
         await new Promise((resolve) => {

@@ -42,7 +42,7 @@ The way through the catalog, not a filter ([domain/search.md](../domain/search.m
 
 ## REST
 
-`GET /api/software?q={keyword}&platform={code}&year={year}&category={categoryId}&country={countryId}&city={cityId}&platforms={codes}&hardware={codes}&page={n}&size={size}` — every parameter optional; a blank keyword is none; `platforms` and `hardware` are codes joined by commas. Hardware is named in the language of `Accept-Language`.
+`GET /api/software?q={keyword}&platform={code}&year={year}&category={categoryId}&country={countryId}&city={cityId}&platforms={codes}&hardware={codes}&page={n}&size={size}` — every parameter optional; a blank keyword is none; `platforms` and `hardware` are codes joined by commas; 30 software a page unless `size` is given. Hardware is named in the language of `Accept-Language`.
 
 - `content` — the page of software (`id`, `title`, `releaseDate` as a year (`1987`), an ISO day or `null`, `screenshots` of the card as `[{id, url}]`, `madeBy` — the names of who made it, in their order); `page` — `size`, `number`, `totalElements`, `totalPages`.
 - `facets` — `years`, `countries`, `cities`, `platforms`: the values of each filter, `{value, count}`; `hardware`: `{value, name, group, groupName, count}`, by the order of the groups then by name, a group shown under its `groupName`, a chosen code no software has any more with count 0. Each is counted over the whole result in the category. The values of a chosen filter are counted without its own condition. Categories are not counted.

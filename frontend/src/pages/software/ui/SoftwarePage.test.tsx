@@ -40,7 +40,7 @@ describe('SoftwarePage', () => {
     });
 
     it('shows the catalog under the page title', async () => {
-        stubFetchRoutes(new Map([...ROUTES, ['/api/software?page=0&size=30', catalog()]]));
+        stubFetchRoutes(new Map([...ROUTES, ['/api/software?page=0', catalog()]]));
 
         renderRoute();
 
@@ -50,7 +50,7 @@ describe('SoftwarePage', () => {
     });
 
     it('offers to add software and leads from a card to its software', async () => {
-        stubFetchRoutes(new Map([...ROUTES, ['/api/software?page=0&size=30', catalog()]]));
+        stubFetchRoutes(new Map([...ROUTES, ['/api/software?page=0', catalog()]]));
 
         renderRoute();
 
@@ -59,7 +59,7 @@ describe('SoftwarePage', () => {
     });
 
     it('preloads the catalog of the address, the categories and the countries, and appears with them in time', async () => {
-        const fetchMock = stubFetchRoutes(new Map([...ROUTES, ['/api/software?page=0&size=30&year=1985', catalog()]]));
+        const fetchMock = stubFetchRoutes(new Map([...ROUTES, ['/api/software?page=0&year=1985', catalog()]]));
 
         renderRoute('/software?year=1985');
 
@@ -69,19 +69,19 @@ describe('SoftwarePage', () => {
         expect(screen.getByRole('link', {name: 'Games'})).toBeInTheDocument();
         expect(screen.queryByTestId('software-catalog-skeleton')).not.toBeInTheDocument();
         expect(fetchMock.mock.calls.map(([url]) => url)).toStrictEqual(expect.arrayContaining([
-            '/api/software?page=0&size=30&year=1985', '/api/categories', '/api/countries',
+            '/api/software?page=0&year=1985', '/api/categories', '/api/countries',
         ]));
     });
 
     it('preloads the catalog of the category in the path', async () => {
-        const fetchMock = stubFetchRoutes(new Map([...ROUTES, [`/api/software?page=0&size=30&category=${GAMES}`, catalog()]]));
+        const fetchMock = stubFetchRoutes(new Map([...ROUTES, [`/api/software?page=0&category=${GAMES}`, catalog()]]));
 
         renderRoute(`/software/category/${GAMES}`);
 
         await screen.findByRole('heading', {level: 1, name: 'Software'});
 
         expect(screen.getByRole('article', {name: 'Fixture Software Alpha'})).toBeInTheDocument();
-        expect(fetchMock.mock.calls.map(([url]) => url)).toContain(`/api/software?page=0&size=30&category=${GAMES}`);
+        expect(fetchMock.mock.calls.map(([url]) => url)).toContain(`/api/software?page=0&category=${GAMES}`);
     });
 
     it('appears with a skeleton when the preload takes longer than the window', async () => {
@@ -89,7 +89,7 @@ describe('SoftwarePage', () => {
         const fetchMock = stubFetchRoutes(ROUTES);
         const base = fetchMock.getMockImplementation();
         fetchMock.mockImplementation((input, init) => {
-            if (input === '/api/software?page=0&size=30') {
+            if (input === '/api/software?page=0') {
                 return new Promise((resolve) => {
                     respond = resolve;
                 });
@@ -107,7 +107,7 @@ describe('SoftwarePage', () => {
     });
 
     it('offers a public visitor no adding', async () => {
-        stubFetchRoutes(new Map([...ROUTES, ['/api/auth/me', noContent()], ['/api/software?page=0&size=30', catalog()]]));
+        stubFetchRoutes(new Map([...ROUTES, ['/api/auth/me', noContent()], ['/api/software?page=0', catalog()]]));
 
         renderRoute();
 

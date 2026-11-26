@@ -24,6 +24,6 @@ describe('HomePage', () => {
         await expect(screen.findByRole('heading', {level: 1, name: 'Recently added'})).resolves.toBeInTheDocument();
         expect(screen.getByRole('article', {name: 'Elite'})).toBeInTheDocument();
         expect(screen.queryByTestId('latest-software-skeleton')).not.toBeInTheDocument();
-        expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/software/latest?size=12', expect.anything());
+        expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/software/latest', expect.anything());
     });
 });

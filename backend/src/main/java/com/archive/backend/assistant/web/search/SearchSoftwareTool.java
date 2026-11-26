@@ -80,7 +80,7 @@ public class SearchSoftwareTool implements ReadTool<SearchSoftwareArguments> {
                         codes(a.platforms()).stream().map(PlatformCode::new).toList(),
                         codes(a.hardware()).stream().map(HardwareCode::new).toList(),
                         context.language(),
-                        ToolPages.of(a.page(), a.size())))
+                        ToolPages.of(a.page(), a.size(), ListSoftwareCatalogQuery.PAGE_SIZE)))
                 .catalog()
                 .items());
     }
