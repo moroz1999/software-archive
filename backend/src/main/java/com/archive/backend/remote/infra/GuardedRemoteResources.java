@@ -21,6 +21,9 @@ import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Base64;
@@ -28,6 +31,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -39,7 +45,8 @@ import org.springframework.stereotype.Component;
 /**
  * Requests to other sites through OkHttp, every address passing the {@link AddressPolicy}: the first and each
  * redirect, at most five, by every address its name resolves to, the connection made to the addresses checked, so a
- * second answer of the name server cannot lead it elsewhere. No proxy, no cookies, a neutral User-Agent.
+ * second answer of the name server cannot lead it elsewhere. No proxy, no cookies, a neutral User-Agent. Certificates
+ * are not checked: old sites the archive reads often serve broken chains, and what it reads from them is public.
  */
 @Component
 public class GuardedRemoteResources implements RemoteResources {
@@ -66,8 +73,23 @@ public class GuardedRemoteResources implements RemoteResources {
     private static final Pattern PLAIN_NAME =
             Pattern.compile("filename\\s*=\\s*(\"([^\"]*)\"|[^;]+)", Pattern.CASE_INSENSITIVE);
 
+    private static final X509TrustManager TRUST_ALL = new X509TrustManager() {
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType) {}
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType) {}
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return new X509Certificate[0];
+        }
+    };
+
     private final AddressPolicy policy;
     private final OkHttpClient client = new OkHttpClient.Builder()
+            .sslSocketFactory(trustAllContext().getSocketFactory(), TRUST_ALL)
+            .hostnameVerifier((hostname, session) -> true)
             .followRedirects(false)
             .followSslRedirects(false)
             .proxy(Proxy.NO_PROXY)
@@ -196,6 +218,16 @@ public class GuardedRemoteResources implements RemoteResources {
             }
         }
         return addresses;
+    }
+
+    private static SSLContext trustAllContext() {
+        try {
+            SSLContext context = SSLContext.getInstance("TLS");
+            context.init(null, new TrustManager[] {TRUST_ALL}, new SecureRandom());
+            return context;
+        } catch (GeneralSecurityException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     private static Response execute(OkHttpClient client, HttpUrl url) {
