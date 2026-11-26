@@ -3,7 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {Button} from '@/shared/ui/button';
 import {ConfirmDialog} from '@/shared/ui/confirm-dialog';
 import {CloseIcon} from '@/shared/ui/icon';
-import {Inline} from '@/shared/ui/inline';
+import {ListItem} from '@/shared/ui/list-item';
 import {Spinner} from '@/shared/ui/spinner';
 import {Stack} from '@/shared/ui/stack';
 import {Text} from '@/shared/ui/typography';
@@ -26,20 +26,22 @@ export function ConversationList() {
                 : (
                     <Stack as="ul" gap="xs" ariaLabel={t('assistant.conversations')}>
                         {conversations.map((entry) => (
-                            <Inline as="li" key={entry.id} gap="xs" align="center" justify="between">
-                                <Button color="transparent" size="sm" onClick={() => {
+                            <ListItem
+                                key={entry.id}
+                                onPick={() => {
                                     openConversation(entry.id);
                                 }}
-                                >
-                                    {titleOf(entry)}
-                                </Button>
-                                <Button color="transparent" size="sm" square ariaLabel={t('assistant.deleteConversation', {title: titleOf(entry)})} onClick={() => {
-                                    setDeleting(entry);
-                                }}
-                                >
-                                    <CloseIcon/>
-                                </Button>
-                            </Inline>
+                                trailing={(
+                                    <Button color="transparent" size="sm" square ariaLabel={t('assistant.deleteConversation', {title: titleOf(entry)})} onClick={() => {
+                                        setDeleting(entry);
+                                    }}
+                                    >
+                                        <CloseIcon/>
+                                    </Button>
+                                )}
+                            >
+                                {titleOf(entry)}
+                            </ListItem>
                         ))}
                     </Stack>
                 )}

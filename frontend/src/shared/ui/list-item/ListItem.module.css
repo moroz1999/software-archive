@@ -1,0 +1,39 @@
+.item {
+    display: flex;
+    align-items: center;
+    gap: var(--list-item-gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.pick {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    padding: var(--list-item-pick-padding);
+    border: 0;
+    border-radius: var(--list-item-pick-radius);
+    outline: none;
+    background-color: transparent;
+    color: var(--list-item-pick-text);
+    font-family: inherit;
+    text-align: start;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+}
+
+.pick:hover {
+    background-color: var(--list-item-pick-hover-bg);
+}
+
+.pick:focus-visible {
+    box-shadow: var(--list-item-pick-focus-ring);
+}
+
+.trailing {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: var(--list-item-gap);
+}

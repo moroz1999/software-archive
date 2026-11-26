@@ -1,0 +1,15 @@
+:root {
+    /* Between the title and the trailing controls, and between those controls. */
+    --list-item-gap: var(--gap-xs);
+
+    /* Title: padding and corner radius of its clickable box. */
+    --list-item-pick-padding: var(--space-4) var(--space-8);
+    --list-item-pick-radius: var(--radius-lg);
+
+    /* Title: text color and background on hover. */
+    --list-item-pick-text: var(--text-color);
+    --list-item-pick-hover-bg: var(--secondary-200);
+
+    /* Keyboard focus ring of the title. */
+    --list-item-pick-focus-ring: 0 0 0 var(--border-width-thick) var(--border-focused);
+}

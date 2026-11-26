@@ -26,7 +26,7 @@ All components live in `frontend/src/shared/ui/`, one folder each with an `index
 Built:
 
 - Layout: [Stack](design-system/stack.md), [Inline](design-system/inline.md), [Inset](design-system/inset.md), [Grid, GridItem](design-system/grid.md), [CardGrid](design-system/card-grid.md), [Panel](design-system/panel.md), [PageLayout](design-system/page-layout.md), [Breadcrumbs](design-system/breadcrumbs.md)
-- Content: [Text, Heading, Label, TextLink](design-system/typography.md), [Badge](design-system/badge.md), [Chip](design-system/chip.md), [ImagePlaceholder](design-system/image-placeholder.md), [CardScreenshots](design-system/card-screenshots.md), [ScreenshotGallery, ScreenshotGallerySkeleton](design-system/screenshot-gallery.md), [Table](design-system/table.md), [Tree](design-system/tree.md), [OriginList](design-system/origin-list.md)
+- Content: [Text, Heading, Label, TextLink](design-system/typography.md), [Badge](design-system/badge.md), [Chip](design-system/chip.md), [ImagePlaceholder](design-system/image-placeholder.md), [CardScreenshots](design-system/card-screenshots.md), [ScreenshotGallery, ScreenshotGallerySkeleton](design-system/screenshot-gallery.md), [Table](design-system/table.md), [ListItem](design-system/list-item.md), [Tree](design-system/tree.md), [OriginList](design-system/origin-list.md)
 - Controls: [Button](design-system/button.md), [Toggle](design-system/toggle.md)
 - Navigation: [NavBar, NavBarLink](design-system/nav-bar.md), [NavChips, NavChip](design-system/nav-chips.md), [Tabs, Tab](design-system/tabs.md), [Pagination](design-system/pagination.md)
 - Forms: [Input, Textarea](design-system/input.md), [Select](design-system/select.md), [Form, FormSection, FormField, FormFieldset, FormRow, FormMessage, FormActions](design-system/form.md), [Checkbox](design-system/checkbox.md), [MultiSelectFilter](design-system/multi-select-filter.md), [MultiEntityAutocomplete](design-system/multi-entity-autocomplete.md), [MemberRoleEditor](design-system/member-role-editor.md), [TreeChecklist](design-system/tree-checklist.md), [FileUpload](design-system/file-upload.md)
@@ -44,7 +44,6 @@ Planned, built when a feature first needs them (each gets its document then):
 ### Typography and content
 - `Preformatted` — fixed-width text with its own horizontal scroll
 - `ItemData` — grouped key-value panel
-- `ListItem` — pickable row with a second line and trailing actions
 - `Steps` — vertical list of process steps with a status marker
 - `Chips` — a wrapping row of chips
 - `Medal` — circular placement badge

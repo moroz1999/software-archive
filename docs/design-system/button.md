@@ -10,4 +10,5 @@
 - `loading` (buttons only) while the button's action runs: locked and `aria-busy`.
 - `ariaLabel` names icon-only buttons.
 - A press plays a ripple from the pressed point; it is skipped under `prefers-reduced-motion`.
+- In a row it never shrinks below its label: the text beside it gives way (no wider than its container, where a long label ends in an ellipsis).
 - `className` — external contour only.
