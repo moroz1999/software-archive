@@ -1,7 +1,7 @@
 import {type ReactNode, useId} from 'react';
 import {useTranslation} from 'react-i18next';
 import {groupPath} from '@/entities/groups';
-import {SoftwareCard, SoftwareCardSkeleton, softwarePath} from '@/entities/software';
+import {type Software, SoftwareCard, SoftwareCardSkeleton, softwarePath} from '@/entities/software';
 import {useSkeleton} from '@/shared/lib/loading';
 import {Button} from '@/shared/ui/button';
 import {CardGrid} from '@/shared/ui/card-grid';
@@ -34,7 +34,12 @@ const TITLE_KEYS: Readonly<Record<FoundKind, 'search.authors' | 'search.groups' 
 };
 
 /** The full search: the kinds to search, a page of the one list of the matches and its pages; inside a FullSearchProvider. */
-export function FullSearch() {
+export interface FullSearchProps {
+    /** What each card holds under it, outside its link, such as voting. */
+    readonly cardFooter?: ((software: Software) => ReactNode) | undefined;
+}
+
+export function FullSearch({cardFooter}: FullSearchProps = {}) {
     const {filter} = useFullSearch();
     if (filter.keyword === null) {
         return null;
@@ -42,7 +47,7 @@ export function FullSearch() {
     return (
         <Stack gap="xl">
             <Kinds/>
-            <Results/>
+            <Results cardFooter={cardFooter}/>
         </Stack>
     );
 }
@@ -96,7 +101,7 @@ function Section({title, children}: {readonly title: string; readonly children: 
     );
 }
 
-function Matches({set}: {readonly set: FoundSet}) {
+function Matches({set, cardFooter}: {readonly set: FoundSet} & FullSearchProps) {
     const {t} = useTranslation();
     switch (set.kind) {
         case 'author':
@@ -138,7 +143,7 @@ function Matches({set}: {readonly set: FoundSet}) {
         case 'software':
             return (
                 <CardGrid>
-                    {set.items.map((software) => <li key={software.id}><SoftwareCard software={software} href={softwarePath(software.id)}/></li>)}
+                    {set.items.map((software) => <li key={software.id}><SoftwareCard software={software} href={softwarePath(software.id)} footer={cardFooter?.(software)}/></li>)}
                 </CardGrid>
             );
     }
@@ -155,7 +160,7 @@ function ResultsSkeleton() {
     );
 }
 
-function Results() {
+function Results({cardFooter}: FullSearchProps) {
     const {t} = useTranslation();
     const {filter, result, changing} = useFullSearch();
     const skeleton = useSkeleton(result);
@@ -175,7 +180,7 @@ function Results() {
             <Stack gap="xl">
                 {sets.map((set) => (
                     <Section key={set.kind} title={t(TITLE_KEYS[set.kind], {count: set.total})}>
-                        <Matches set={set}/>
+                        <Matches set={set} cardFooter={cardFooter}/>
                     </Section>
                 ))}
                 <Pagination page={page.number} totalPages={page.totalPages} hrefOf={(number) => fullSearchHref({...filter, page: number})} disabled={changing}/>

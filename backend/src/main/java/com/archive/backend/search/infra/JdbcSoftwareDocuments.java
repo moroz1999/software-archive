@@ -7,6 +7,7 @@ import com.archive.backend.search.domain.SoftwareDocuments;
 import com.archive.backend.software.read.CardMadeBySql;
 import com.archive.backend.software.read.CardScreenshotsSql;
 import com.archive.backend.software.read.ReleaseDateSql;
+import com.archive.backend.vote.read.CardRatingSql;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -23,7 +24,7 @@ import org.springframework.stereotype.Repository;
  * Builds the software documents of the search with plain SQL: the categories of software with every category above
  * them; the countries and the cities of the people and groups credited on it by themselves or by a label, by any of
  * their locations, for the roles of the software itself; its hardware and that of every release of it, by group
- * (docs/domain/search.md#software-catalog); and what its card shows.
+ * (docs/domain/search.md#software-catalog); and what its card shows, its rating among it.
  */
 @Repository
 @RequiredArgsConstructor
@@ -83,7 +84,9 @@ public class JdbcSoftwareDocuments implements SoftwareDocuments {
                     + CardScreenshotsSql.of("s") + """
              AS screenshots,
             """ + CardMadeBySql.of("s") + """
-             AS made_by
+             AS made_by,
+            """ + CardRatingSql.of("s") + """
+
             FROM software s
             """;
 
@@ -119,7 +122,9 @@ public class JdbcSoftwareDocuments implements SoftwareDocuments {
                 list(rs.getArray("screenshots"), UUID.class),
                 list(rs.getArray("made_by"), String.class),
                 list(rs.getArray("cities"), UUID.class),
-                byGroup(list(rs.getArray("hardware"), String.class)));
+                byGroup(list(rs.getArray("hardware"), String.class)),
+                rs.getDouble("rating"),
+                rs.getInt("votes_amount"));
     }
 
     /** The codes of hardware by their group, from {@code group:code}. */

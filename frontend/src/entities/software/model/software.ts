@@ -58,6 +58,14 @@ export interface Software {
     readonly screenshots?: readonly Screenshot[];
     /** Who made it, as its card names them (docs/domain/software.md#card). */
     readonly madeBy?: readonly string[];
+    /** The rating its card shows, from a list that gives it; 0 and 0 for software nobody voted on (docs/domain/voting.md). */
+    readonly rating?: CardRating;
+}
+
+/** The rating of software and the number of votes behind it. */
+export interface CardRating {
+    readonly rating: number;
+    readonly votesAmount: number;
 }
 
 /** One software with everything shown about it; its base hardware in the order of the groups, its categories in the order of the tree. */

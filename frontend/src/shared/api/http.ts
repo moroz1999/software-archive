@@ -48,6 +48,11 @@ export async function putJson(path: string, body: unknown): Promise<void> {
     await send(path, withJson('PUT', body));
 }
 
+/** PUTs a JSON body and returns the JSON answer. */
+export async function putJsonForAnswer(path: string, body: unknown): Promise<unknown> {
+    return readJson(await send(path, withJson('PUT', body)));
+}
+
 /** DELETEs a resource; the backend answers with no content. */
 export async function deleteResource(path: string): Promise<void> {
     await send(path, {method: 'DELETE', headers: {Accept: 'application/json'}});

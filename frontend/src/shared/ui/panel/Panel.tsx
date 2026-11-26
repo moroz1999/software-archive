@@ -30,6 +30,8 @@ export interface PanelProps {
      * client-side; anything else is a plain link. Nothing inside may be interactive.
      */
     readonly href?: string;
+    /** Interactive content after the body of a linked panel, outside its link, such as a vote. */
+    readonly footer?: ReactNode;
     /** External contour only; see docs/styles.md. */
     readonly className?: string;
 }
@@ -58,6 +60,7 @@ export function Panel({
     contentBleed = false,
     as: Element = 'div',
     href,
+    footer,
     className,
 }: PanelProps) {
     const titleId = useId();
@@ -87,6 +90,7 @@ export function Panel({
             )}
         >
             {href === undefined ? content : <PanelLink href={href} labelledBy={nameId}>{content}</PanelLink>}
+            {footer}
         </Element>
     );
 }

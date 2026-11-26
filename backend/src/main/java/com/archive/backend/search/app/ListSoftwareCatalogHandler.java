@@ -4,6 +4,7 @@ import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.hardware.read.HardwareItem;
 import com.archive.backend.hardware.read.HardwareReadRepository;
+import com.archive.backend.search.domain.CatalogOrder;
 import com.archive.backend.search.read.CodeCount;
 import com.archive.backend.search.read.HardwareCount;
 import com.archive.backend.search.read.SoftwareCatalog;
@@ -19,6 +20,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,8 +49,17 @@ public class ListSoftwareCatalogHandler {
         // Hardware the archive does not have is on no software: nothing is found.
         SoftwareCatalogPage page = known.size() < chosen.size()
                 ? new SoftwareCatalogPage(Page.empty(q.pageable()), new SoftwareCatalogFacets(List.of(), List.of()))
-                : catalog.find(filter(q, known), q.pageable());
+                : catalog.find(filter(q, known), ordered(q));
         return new SoftwareCatalogAnswer(page, named(page.facets().hardware(), chosen, q));
+    }
+
+    /** The page asked for, sorted by rating when the catalog is ordered so; by title it needs no sort of its own. */
+    private static Pageable ordered(ListSoftwareCatalogQuery q) {
+        Pageable page = q.pageable();
+        return q.order() == CatalogOrder.RATING
+                ? PageRequest.of(
+                        page.getPageNumber(), page.getPageSize(), Sort.by(Sort.Direction.DESC, SoftwareCatalog.RATING))
+                : PageRequest.of(page.getPageNumber(), page.getPageSize());
     }
 
     private static SoftwareCatalogFilter filter(ListSoftwareCatalogQuery q, Map<String, HardwareItem> known) {

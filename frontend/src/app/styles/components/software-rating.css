@@ -1,0 +1,5 @@
+:root {
+    /* The bone of the stars and their summary while the rating loads. */
+    --software-rating-skeleton-height: 28px;
+    --software-rating-skeleton-width: 240px;
+}

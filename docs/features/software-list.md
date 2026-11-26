@@ -1,11 +1,11 @@
 # Software List
 
-The software page ("Software" in the main menu, [main-menu.md](main-menu.md)) is the catalog of software ([domain/search.md](../domain/search.md#software-catalog)): a grid of cards, 30 to a page — full rows of one, two or three cards, as many as fit beside the categories — sorted by title whatever the case, of the platform chosen in the switch ([platform-switch.md](platform-switch.md)), gone through by categories and narrowed by a keyword, a year, a country with its city, and the platforms and hardware. It is read from the search index ([search.md](search.md)).
+The software page ("Software" in the main menu, [main-menu.md](main-menu.md)) is the catalog of software ([domain/search.md](../domain/search.md#software-catalog)): a grid of cards, 30 to a page — full rows of one, two or three cards, as many as fit beside the categories — sorted by title whatever the case or by rating, of the platform chosen in the switch ([platform-switch.md](platform-switch.md)), gone through by categories and narrowed by a keyword, a year, a country with its city, and the platforms and hardware. It is read from the search index ([search.md](search.md)).
 
 ## Address
 
 - `/software` — every category; `/software/category/{categoryId}` — the software of the category and its whole subtree.
-- The rest is in the query: `q` the keyword, `year`, `country` (an id), `city` (an id, only with a country), `platforms` and `hardware` (codes joined by commas, as `platforms=bk,vector&hardware=ay8910`), `page` counted from 1; what is not chosen and the first page are left out. Every filter is changed by going to its address, so a filter can be shared and the back button works.
+- The rest is in the query: `q` the keyword, `year`, `country` (an id), `city` (an id, only with a country), `platforms` and `hardware` (codes joined by commas, as `platforms=bk,vector&hardware=ay8910`), `order=rating` for the order by rating, `page` counted from 1; what is not chosen and the first page are left out. Every filter is changed by going to its address, so a filter can be shared and the back button works.
 - A query value that cannot be a filter is ignored. A category in the path that is not an id is the not found page; an id that no category has finds nothing.
 
 ## Page
@@ -18,6 +18,7 @@ The software page ("Software" in the main menu, [main-menu.md](main-menu.md)) is
 - **Search** — a field over the cards. The keyword finds software by the beginning of the words of its title and alternative titles; it is looked for once the visitor stops typing for 300 ms, from the first page.
 - **Year** and **Country** — selects with "Any year" and "Any country", each value with its count, as "1987 (2)"; years go in order, countries by count. Choosing a value goes to its first page and keeps the category and the other filters.
 - **City** — a select with "Any city", locked until a country is chosen: the cities of that country with software, each with its count. Another country forgets the city.
+- **Order** — a select of "By title" and "By rating" ([domain/search.md](../domain/search.md#software-catalog)); choosing goes to the first page and keeps the category and the filters.
 - **Hardware** — a button that opens a window of checkboxes, one per value with its count, as "AY-3-8910 (1)", grouped in columns under the group names: "Platforms" first while the switch shows every platform, then the groups of the hardware in their fixed order ([domain/hardware.md](../domain/hardware.md)); a group with nothing to offer is left out. The hardware is named in the interface language. "Apply" goes to the first page of what is checked, "Reset" to the first page with none of it; closing the window otherwise, as by Escape, changes nothing. The button names what is chosen, as "Hardware: BK, AY-3-8910"; an item chosen that leaves nothing stays offered with 0, so it can be unchecked.
 
 ## Categories
@@ -29,9 +30,10 @@ The way through the catalog, not a filter ([domain/search.md](../domain/search.m
 ## Card
 
 - A 4:3 picture slot with the screenshots of the card ([screenshots.md](screenshots.md#card)): pointing across it goes through them; the image placeholder when there are none.
-- The whole card is one link to the software's page ([software-view.md](software-view.md)), named by the title; it holds nothing else interactive.
+- The whole card is one link to the software's page ([software-view.md](software-view.md)), named by the title; it holds nothing else interactive. Only the vote under it lies outside the link.
 - The title in one line, cut with an ellipsis when too long.
 - Under it, muted, who made the software on the left and the release year on the right, wrapping when they do not fit ([domain/software.md](../domain/software.md#card)); each is left out when unknown.
+- Under them, outside the link, the vote on the software, the same as on its page and of the same size: the stars of the rating with the number of votes in their tooltip; a signed-in user gives their stars there, sees their own vote as a number beside them and withdraws it with the cross ([voting.md](voting.md)). The same vote is on every card of software: on the home page, in the search, on the pages of people, groups and labels.
 
 ## Loading and errors
 
@@ -42,8 +44,8 @@ The way through the catalog, not a filter ([domain/search.md](../domain/search.m
 
 ## REST
 
-`GET /api/software?q={keyword}&platform={code}&year={year}&category={categoryId}&country={countryId}&city={cityId}&platforms={codes}&hardware={codes}&page={n}&size={size}` — every parameter optional; a blank keyword is none; `platforms` and `hardware` are codes joined by commas; 30 software a page unless `size` is given. Hardware is named in the language of `Accept-Language`.
+`GET /api/software?q={keyword}&platform={code}&year={year}&category={categoryId}&country={countryId}&city={cityId}&platforms={codes}&hardware={codes}&order={title|rating}&page={n}&size={size}` — every parameter optional, the order by title without one; a blank keyword is none; `platforms` and `hardware` are codes joined by commas; 30 software a page unless `size` is given. Hardware is named in the language of `Accept-Language`.
 
-- `content` — the page of software (`id`, `title`, `releaseDate` as a year (`1987`), an ISO day or `null`, `screenshots` of the card as `[{id, url}]`, `madeBy` — the names of who made it, in their order); `page` — `size`, `number`, `totalElements`, `totalPages`.
+- `content` — the page of software (`id`, `title`, `releaseDate` as a year (`1987`), an ISO day or `null`, `screenshots` of the card as `[{id, url}]`, `madeBy` — the names of who made it, in their order; `rating` and `votesAmount`, 0 and 0 for software nobody voted on); `page` — `size`, `number`, `totalElements`, `totalPages`.
 - `facets` — `years`, `countries`, `cities`, `platforms`: the values of each filter, `{value, count}`; `hardware`: `{value, name, group, groupName, count}`, by the order of the groups then by name, a group shown under its `groupName`, a chosen code no software has any more with count 0. Each is counted over the whole result in the category. The values of a chosen filter are counted without its own condition. Categories are not counted.
-- 400 for an invalid platform code (`platform.code-invalid`), an invalid hardware code (`hardware.code-invalid`), or a year, category, country or city that is not a number or an id.
+- 400 for an unknown order (`catalog.order-invalid`), an invalid platform code (`platform.code-invalid`), an invalid hardware code (`hardware.code-invalid`), or a year, category, country or city that is not a number or an id.

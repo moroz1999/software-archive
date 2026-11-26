@@ -1,0 +1,20 @@
+:root {
+    /* The height of one star, the medium and the small set. */
+    --rating-stars-md-height: 28px;
+    --rating-stars-sm-height: 20px;
+
+    /* The stars beyond the rating, and those it fills. */
+    --rating-stars-empty-color: var(--secondary-200);
+    --rating-stars-filled-color: var(--warning-500);
+
+    /* Keyboard focus on a star. */
+    --rating-stars-focus-outline: var(--border-width-thin) solid var(--focus-ring-color);
+    --rating-stars-focus-radius: var(--radius-sm);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* The stars beyond the rating stand back from a dark page. */
+        --rating-stars-empty-color: var(--secondary-700);
+    }
+}

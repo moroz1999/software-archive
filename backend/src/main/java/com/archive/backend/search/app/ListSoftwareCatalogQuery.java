@@ -6,6 +6,7 @@ import com.archive.backend.geo.domain.CountryId;
 import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.search.domain.CatalogKeyword;
+import com.archive.backend.search.domain.CatalogOrder;
 import com.archive.backend.search.domain.ReleaseYear;
 import com.archive.backend.shared.domain.Language;
 import java.util.List;
@@ -26,6 +27,7 @@ public record ListSoftwareCatalogQuery(
         List<PlatformCode> platforms,
         List<HardwareCode> hardware,
         Language language,
+        CatalogOrder order,
         Pageable pageable) {
 
     /** The software of a page of the catalog, on the site and to the assistant alike. */
@@ -36,6 +38,32 @@ public record ListSoftwareCatalogQuery(
         hardware = List.copyOf(hardware);
     }
 
+    /** Sorted by title. */
+    public ListSoftwareCatalogQuery(
+            @Nullable CatalogKeyword keyword,
+            @Nullable PlatformCode platform,
+            @Nullable ReleaseYear year,
+            @Nullable CategoryId category,
+            @Nullable CountryId country,
+            @Nullable CityId city,
+            List<PlatformCode> platforms,
+            List<HardwareCode> hardware,
+            Language language,
+            Pageable pageable) {
+        this(
+                keyword,
+                platform,
+                year,
+                category,
+                country,
+                city,
+                platforms,
+                hardware,
+                language,
+                CatalogOrder.TITLE,
+                pageable);
+    }
+
     public ListSoftwareCatalogQuery(
             @Nullable CatalogKeyword keyword,
             @Nullable PlatformCode platform,
@@ -43,6 +71,17 @@ public record ListSoftwareCatalogQuery(
             @Nullable CategoryId category,
             @Nullable CountryId country,
             Pageable pageable) {
-        this(keyword, platform, year, category, country, null, List.of(), List.of(), Language.EN, pageable);
+        this(
+                keyword,
+                platform,
+                year,
+                category,
+                country,
+                null,
+                List.of(),
+                List.of(),
+                Language.EN,
+                CatalogOrder.TITLE,
+                pageable);
     }
 }

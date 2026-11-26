@@ -95,6 +95,14 @@ public class TypesenseSearchIndex implements SearchIndex {
                                 .name("made_by")
                                 .type(FieldTypes.STRING_ARRAY)
                                 .index(false)
+                                .optional(true),
+                        // The catalog's other order: the best rated first, software nobody voted on having 0.
+                        new Field().name("rating").type(FieldTypes.FLOAT).sort(true),
+                        // Shown on the card only.
+                        new Field()
+                                .name("votes_amount")
+                                .type(FieldTypes.INT32)
+                                .index(false)
                                 .optional(true)));
                 // The hardware of the software and of its releases, each item as its group and its code: the groups
                 // are filtered by apart, whichever groups the reference book has.
@@ -190,6 +198,8 @@ public class TypesenseSearchIndex implements SearchIndex {
         doc.put("countries", d.countries().stream().map(UUID::toString).toList());
         doc.put("screenshots", d.screenshots().stream().map(UUID::toString).toList());
         doc.put("made_by", d.madeBy());
+        doc.put("rating", d.rating());
+        doc.put("votes_amount", d.votesAmount());
         doc.put("cities", d.cities().stream().map(UUID::toString).toList());
         doc.put(
                 HARDWARE_FIELD,

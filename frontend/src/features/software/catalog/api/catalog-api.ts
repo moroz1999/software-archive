@@ -33,6 +33,7 @@ export async function fetchSoftwareCatalog(
         ['platform', platform],
         ['platforms', platforms],
         ['hardware', hardware],
+        ['order', filter.order === 'rating' ? 'rating' : null],
     ] as const;
     for (const [key, value] of values) {
         if (value !== null) {

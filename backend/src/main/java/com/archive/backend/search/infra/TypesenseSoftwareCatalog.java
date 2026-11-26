@@ -111,7 +111,10 @@ public class TypesenseSoftwareCatalog implements SoftwareCatalog {
 
         List<MultiSearchCollectionParameters> searches = new ArrayList<>();
         MultiSearchCollectionParameters page = search(filter, facets, null);
-        page.setSortBy("title_sort:asc");
+        page.setSortBy(
+                pageable.getSort().getOrderFor(SoftwareCatalog.RATING) == null
+                        ? "title_sort:asc"
+                        : "rating:desc,title_sort:asc");
         page.setPage(pageable.getPageNumber() + 1);
         page.setPerPage(pageable.getPageSize());
         facetBy(page, open);
@@ -265,6 +268,8 @@ public class TypesenseSoftwareCatalog implements SoftwareCatalog {
                         : List.of(),
                 doc.get("made_by") instanceof List<?> madeBy
                         ? madeBy.stream().map(String::valueOf).toList()
-                        : List.of());
+                        : List.of(),
+                doc.get("rating") instanceof Number rating ? rating.doubleValue() : 0,
+                doc.get("votes_amount") instanceof Number votes ? votes.intValue() : 0);
     }
 }

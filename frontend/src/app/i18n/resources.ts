@@ -62,6 +62,7 @@ export const resources = {
             search: 'Search', year: 'Year', anyYear: 'Any year', allCategories: 'All categories',
             withCount: '{{label}} ({{count}})',
             hardware: 'Hardware', hardwareChosen: 'Hardware: {{names}}', platforms: 'Platforms', apply: 'Apply', reset: 'Reset',
+            order: 'Order', orderByTitle: 'By title', orderByRating: 'By rating',
         },
         formSections: {main: 'Main', classification: 'Classification', credits: 'Credits', hardwareAndArchive: 'Hardware and archive', names: 'Names', geography: 'Geography', members: 'Members', account: 'Account', groups: 'Groups', sources: 'Sources'},
         fields: {
@@ -284,6 +285,13 @@ export const resources = {
             deleteQuestion: 'Delete “{{name}}” from the archive? Its labels stay in the archive as labels of nobody, with their credits.',
             typeNames: {demogroup: 'Demo group', 'crack group': 'Crack group', 'game studio': 'Game studio', label: 'Label'},
         },
+        rating: {
+            title: 'Rating', label: 'Rating {{rating}} of 5', none: 'No votes yet.',
+            votesAmount_one: '{{count}} vote', votesAmount_other: '{{count}} votes',
+            give_one: 'Give {{count}} star', give_other: 'Give {{count}} stars',
+            withdraw: 'Withdraw your vote', signInToVote: 'Sign in to vote.',
+            votes: 'Votes', nobodyVoted: 'Nobody has voted yet.', stars: '{{stars}} of 5',
+        },
         release: {
             add: 'Add release', addTo: 'Add release to {{title}}', edit: 'Edit release', editOf: 'Edit release of {{title}}',
             delete: 'Delete release', releases: 'Releases', noReleases: 'No releases known yet.', view: 'View', table: 'Table',
@@ -429,6 +437,7 @@ export const resources = {
             search: 'Поиск', year: 'Год', anyYear: 'Любой год', allCategories: 'Все категории',
             withCount: '{{label}} ({{count}})',
             hardware: 'Железо', hardwareChosen: 'Железо: {{names}}', platforms: 'Платформы', apply: 'Применить', reset: 'Сбросить',
+            order: 'Порядок', orderByTitle: 'По названию', orderByRating: 'По рейтингу',
         },
         formSections: {main: 'Основное', classification: 'Классификация', credits: 'Авторы', hardwareAndArchive: 'Оборудование и архив', names: 'Имена', geography: 'География', members: 'Участники', account: 'Учётная запись', groups: 'Группы', sources: 'Источники'},
         fields: {
@@ -658,6 +667,15 @@ export const resources = {
             memberGroups: 'Группы-участники', memberOf: 'Входит в группы', delete: 'Удалить группу',
             deleteQuestion: 'Удалить «{{name}}» из архива? Её псевдонимы останутся в архиве ничьими, вместе с участием в работах.',
             typeNames: {demogroup: 'Демо-группа', 'crack group': 'Крэк-группа', 'game studio': 'Игровая студия', label: 'Лейбл'},
+        },
+        rating: {
+            title: 'Рейтинг', label: 'Рейтинг {{rating}} из 5', none: 'Голосов пока нет.',
+            votesAmount_one: '{{count}} голос', votesAmount_few: '{{count}} голоса',
+            votesAmount_many: '{{count}} голосов', votesAmount_other: '{{count}} голоса',
+            give_one: 'Поставить {{count}} звезду', give_few: 'Поставить {{count}} звезды',
+            give_many: 'Поставить {{count}} звёзд', give_other: 'Поставить {{count}} звезды',
+            withdraw: 'Снять оценку', signInToVote: 'Войдите, чтобы голосовать.',
+            votes: 'Голоса', nobodyVoted: 'Пока никто не голосовал.', stars: '{{stars}} из 5',
         },
         release: {
             add: 'Добавить релиз', addTo: 'Добавить релиз для {{title}}', edit: 'Редактировать релиз',

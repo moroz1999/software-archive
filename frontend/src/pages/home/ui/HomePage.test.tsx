@@ -3,7 +3,8 @@ import {screen} from '@testing-library/react';
 import {createMemoryRouter, RouterProvider} from 'react-router';
 import {PlatformSelectionProvider} from '@/entities/platforms';
 import {createQueryClient} from '@/shared/api';
-import {json, pageResponse, renderWithQueries, stubFetch} from '@/shared/lib/test';
+import {CurrentUserProvider} from '@/entities/users';
+import {json, noContent, pageResponse, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {loadHomePage, preloadHomePage} from '../index';
 
 const ELITE = {id: '00000000-0000-0000-0001-000000000001', title: 'Elite', releaseDate: '1984-09-20'};
@@ -14,16 +15,16 @@ describe('HomePage', () => {
     });
 
     it('appears with the latest software when the preload makes it in time', async () => {
-        const fetchMock = stubFetch(json(pageResponse([ELITE], {size: 12})));
+        const fetchMock = stubFetchRoutes(new Map([['/api/software/latest', json(pageResponse([ELITE], {size: 12}))], ['/api/auth/me', noContent()]]));
         const queryClient = createQueryClient();
         const router = createMemoryRouter([
             {path: '/', loader: preloadHomePage(queryClient), lazy: {Component: loadHomePage}, HydrateFallback: () => null},
         ], {initialEntries: ['/']});
-        renderWithQueries(<PlatformSelectionProvider><RouterProvider router={router}/></PlatformSelectionProvider>, queryClient);
+        renderWithQueries(<CurrentUserProvider><PlatformSelectionProvider><RouterProvider router={router}/></PlatformSelectionProvider></CurrentUserProvider>, queryClient);
 
         await expect(screen.findByRole('heading', {level: 1, name: 'Recently added'})).resolves.toBeInTheDocument();
         expect(screen.getByRole('article', {name: 'Elite'})).toBeInTheDocument();
         expect(screen.queryByTestId('latest-software-skeleton')).not.toBeInTheDocument();
-        expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/software/latest', expect.anything());
+        expect(fetchMock.mock.calls.filter(([url]) => url === '/api/software/latest')).toHaveLength(1);
     });
 });

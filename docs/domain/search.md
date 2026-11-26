@@ -24,6 +24,8 @@ Within a category the catalog is narrowed by a word and by filters:
 - **platforms** — while the switch shows every platform ([platform-switch.md](../features/platform-switch.md)): software of any of the platforms checked. With one platform in the switch the catalog is of it alone and offers no platforms.
 - **hardware** — the hardware of the software itself and of every one of its releases ([hardware.md](hardware.md)). The items checked in one group, as two computers, are any of them; every group checked is needed, and the platforms are a group of their own: "BK, Vector-06C and AY-3-8910" finds software for the BK or the Vector-06C that has the AY-3-8910. The hardware offered is only of the platform in the switch, since the software found is; a code the archive has no hardware for finds nothing.
 
+The catalog is ordered by title, or by rating: the best rated software first, equal ratings by title, software nobody voted on last ([voting.md](voting.md#rating)). The order keeps the category, the word and the filters.
+
 A fact of software that the catalog goes through or is narrowed by — its year, each of its categories and the categories above them — leads from the page of the software to the catalog of that value alone. A release has no such facts: its own year is not the year of its software.
 
 Every filter offers only the values that the rest of the chosen conditions leave, each with the count of software over the whole result, not only the page shown. The values of a filter already chosen are counted without it, so the visitor can switch it to another value at once.

@@ -4,8 +4,11 @@ import {parsePlatformCode, type PlatformCode} from '@/entities/platforms';
 import {SOFTWARE_LIST_PATH} from '@/entities/software';
 import {pageParam, parsePageParam} from '@/shared/lib/page-param';
 
+/** The order of the cards: by title, or the best rated first (docs/domain/search.md#software-catalog). */
+export type CatalogOrder = 'title' | 'rating';
+
 /**
- * What the catalog shows: its keyword, its filters and its page, counted from 0. A city is chosen within its country;
+ * What the catalog shows: its keyword, its filters, the order of its cards and its page, counted from 0. A city is chosen within its country;
  * of the platforms any one will do, of the hardware any item of a group, and every group chosen.
  */
 export interface SoftwareCatalogFilter {
@@ -17,6 +20,7 @@ export interface SoftwareCatalogFilter {
     readonly platforms: readonly PlatformCode[];
     /** The codes of the hardware chosen. */
     readonly hardware: readonly string[];
+    readonly order: CatalogOrder;
     readonly page: number;
 }
 
@@ -58,6 +62,7 @@ export function parseCatalogFilter(category: string | undefined, search: URLSear
         city: country === null ? null : parseCityId(search.get('city')),
         platforms: parseList(search.get('platforms'), parsePlatformCode),
         hardware: parseList(search.get('hardware'), parseHardwareCode),
+        order: search.get('order') === 'rating' ? 'rating' : 'title',
         page: parsePageParam(search.get('page')),
     };
 }
@@ -77,6 +82,7 @@ export function catalogHref(filter: SoftwareCatalogFilter): string {
         ['city', filter.city],
         ['platforms', joined(filter.platforms)],
         ['hardware', joined(filter.hardware)],
+        ['order', filter.order === 'rating' ? 'rating' : null],
         ['page', pageParam(filter.page)],
     ] as const;
     for (const [key, value] of values) {
@@ -91,5 +97,5 @@ export function catalogHref(filter: SoftwareCatalogFilter): string {
 
 /** The address of the whole catalog narrowed only by the values given: where a fact of software leads. */
 export function catalogHrefOf(only: Partial<Pick<SoftwareCatalogFilter, 'year' | 'category'>>): string {
-    return catalogHref({keyword: null, year: null, category: null, country: null, city: null, platforms: [], hardware: [], page: 0, ...only});
+    return catalogHref({keyword: null, year: null, category: null, country: null, city: null, platforms: [], hardware: [], order: 'title', page: 0, ...only});
 }

@@ -52,4 +52,10 @@ describe(Panel, () => {
 
         expect(screen.getByRole('article')).toHaveTextContent('Body');
     });
+
+    it('puts its footer after a linked body, outside the link', () => {
+        render(<MemoryRouter><Panel title="Elite" href="/software/1" footer={<button type="button">Vote</button>}>Body</Panel></MemoryRouter>);
+
+        expect(screen.getByRole('link', {name: 'Elite'})).not.toContainElement(screen.getByRole('button', {name: 'Vote'}));
+    });
 });

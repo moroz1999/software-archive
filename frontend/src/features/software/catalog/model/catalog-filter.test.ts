@@ -8,7 +8,7 @@ import {catalogHref, parseCatalogFilter} from './catalog-filter';
 const GAMES = '00000000-0000-0000-00fd-0000000000c1';
 const FINLAND = '00000000-0000-0000-00fd-0000000000f1';
 const HELSINKI = '00000000-0000-0000-00fd-0000000000e1';
-const NONE = {city: null, platforms: [], hardware: []};
+const NONE = {city: null, platforms: [], hardware: [], order: 'title'} as const;
 
 function parse(search: string, category?: string) {
     return parseCatalogFilter(category, new URLSearchParams(search));
@@ -57,6 +57,12 @@ describe(parseCatalogFilter, () => {
         expect(() => parse('', 'games')).toThrow(NotFoundError);
     });
 
+    it('reads the order of the cards, by title unless by rating', () => {
+        expect(parse('order=rating').order).toBe('rating');
+        expect(parse('order=title').order).toBe('title');
+        expect(parse('order=votes').order).toBe('title');
+    });
+
     it('ignores a year and a country that cannot be ones', () => {
         expect(parse('year=nineteen&country=43')).toMatchObject({year: null, country: null});
         expect(parse('year=19.5').year).toBeNull();
@@ -78,8 +84,14 @@ describe(catalogHref, () => {
     it('writes the city, the platforms and the hardware after the country', () => {
         expect(catalogHref({
             keyword: null, year: null, category: null, country: toCountryId(FINLAND), city: toCityId(HELSINKI),
-            platforms: [toPlatformCode('bk'), toPlatformCode('vector')], hardware: ['ay8910', 'z80'], page: 0,
+            platforms: [toPlatformCode('bk'), toPlatformCode('vector')], hardware: ['ay8910', 'z80'], order: 'title', page: 0,
         })).toBe(`/software?country=${FINLAND}&city=${HELSINKI}&platforms=bk%2Cvector&hardware=ay8910%2Cz80`);
+    });
+
+    it('writes the order by rating before the page and leaves the order by title out', () => {
+        expect(catalogHref({keyword: null, year: 1989, category: null, country: null, ...NONE, order: 'rating', page: 1}))
+            .toBe('/software?year=1989&order=rating&page=2');
+        expect(catalogHref({keyword: null, year: null, category: null, country: null, ...NONE, page: 0})).toBe('/software');
     });
 
     it('puts the category alone in the path', () => {
@@ -89,8 +101,8 @@ describe(catalogHref, () => {
     it('is read back as the same filter', () => {
         const filter = {
             keyword: 'Элита 2', year: 1987, category: toCategoryId(GAMES), country: toCountryId(FINLAND), city: toCityId(HELSINKI),
-            platforms: [toPlatformCode('bk')], hardware: ['ay8910'], page: 4,
-        };
+            platforms: [toPlatformCode('bk')], hardware: ['ay8910'], order: 'rating', page: 4,
+        } as const;
 
         expect(readBack(catalogHref(filter))).toStrictEqual(filter);
         expect(readBack(catalogHref({...filter, category: null}))).toStrictEqual({...filter, category: null});

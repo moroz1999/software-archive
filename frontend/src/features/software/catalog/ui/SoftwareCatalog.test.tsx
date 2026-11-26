@@ -1,3 +1,6 @@
+import type {ReactNode} from 'react';
+import {Button} from '@/shared/ui/button';
+import type {Software} from '@/entities/software';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen, waitFor, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -59,8 +62,8 @@ function routes(catalogs: Record<string, () => Response>): Map<string, () => Res
     ]);
 }
 
-function openCatalog(path = '/software') {
-    const element = <PlatformSelectionProvider><PlatformSwitch/><SoftwareCatalogProvider><SoftwareCatalog/></SoftwareCatalogProvider></PlatformSelectionProvider>;
+function openCatalog(path = '/software', cardFooter?: (software: Software) => ReactNode) {
+    const element = <PlatformSelectionProvider><PlatformSwitch/><SoftwareCatalogProvider><SoftwareCatalog cardFooter={cardFooter}/></SoftwareCatalogProvider></PlatformSelectionProvider>;
     const router = createMemoryRouter([
         {path: '/software', element},
         {path: SOFTWARE_CATEGORY_ROUTE, element},
@@ -431,5 +434,37 @@ describe(SoftwareCatalog, () => {
         });
 
         expect(screen.queryAllByRole('article')).toHaveLength(0);
+    });
+
+    it('puts what it is given under each card, outside its link, with the software of the card', async () => {
+        stubFetchRoutes(routes({[ALL]: catalog([{...ELITE, rating: 4.0769, votesAmount: 3}, EXOLON])}));
+        openCatalog('/software', (software) => <Button>{`Vote on ${software.title}`}</Button>);
+
+        const [elite] = await screen.findAllByRole('article');
+        const vote = within(elite ?? document.body).getByRole('button', {name: 'Vote on Elite'});
+
+        expect(within(elite ?? document.body).getByRole('link', {name: 'Elite'})).not.toContainElement(vote);
+        expect(screen.getByRole('button', {name: 'Vote on Exolon'})).toBeInTheDocument();
+    });
+
+    it('offers the cards by title or by rating and goes to the first page in the order chosen', async () => {
+        stubFetchRoutes(routes({
+            '/api/software?page=1&year=1987': catalog([ELITE, EXOLON], {number: 1, totalPages: 2}),
+            '/api/software?page=0&year=1987&order=rating': catalog([EXOLON, ELITE]),
+        }));
+        const router = openCatalog('/software?year=1987&page=2');
+
+        const order = await screen.findByRole('combobox', {name: 'Order'});
+
+        expect(within(order).getAllByRole('option').map((option) => option.textContent)).toStrictEqual(['By title', 'By rating']);
+        expect(order).toHaveValue('title');
+
+        await userEvent.selectOptions(order, 'rating');
+
+        expect(router.state.location.search).toBe('?year=1987&order=rating');
+
+        await waitFor(() => {
+            expect(screen.getAllByRole('article').map((card) => within(card).getByRole('heading').textContent)).toStrictEqual(['Exolon', 'Elite']);
+        });
     });
 });

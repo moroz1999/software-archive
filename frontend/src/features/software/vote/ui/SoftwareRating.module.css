@@ -1,0 +1,4 @@
+.bone {
+    height: var(--software-rating-skeleton-height);
+    width: var(--software-rating-skeleton-width);
+}

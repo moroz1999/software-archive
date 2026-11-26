@@ -10,9 +10,9 @@ import {loadSoftwareViewPage, preloadSoftwareViewPage} from '../index';
 const ID = '00000000-0000-0000-0001-000000000001';
 const ELITE = {id: ID, title: 'Elite', description: null, releaseDate: '1984-09-20', platform: {code: 'vector', name: 'Vector'}, hardware: [], categories: [], credits: [], sources: [], preservation: 'unknown', origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true};
 
-/** Answers the software, its releases and that a public visitor reads them. */
+/** Answers the software, its releases, pictures, rating and votes, and that a public visitor reads them. */
 function stubFetch(software: () => Response) {
-    return stubFetchRoutes(new Map([[`/api/software/${ID}`, software], [`/api/software/${ID}/releases`, json([])], [`/api/software/${ID}/screenshots`, json([])], ['/api/auth/me', noContent()]]));
+    return stubFetchRoutes(new Map([[`/api/software/${ID}`, software], [`/api/software/${ID}/releases`, json([])], [`/api/software/${ID}/screenshots`, json([])], [`/api/software/${ID}/maps`, json([])], [`/api/software/${ID}/covers`, json([])], [`/api/software/${ID}/adverts`, json([])], [`/api/software/${ID}/rating`, json({rating: 4.0769, votesAmount: 3, myVote: null})], [`/api/software/${ID}/votes`, json([])], ['/api/auth/me', noContent()]]));
 }
 
 function renderRoute(id: string) {
@@ -38,6 +38,16 @@ describe('SoftwareViewPage', () => {
 
         expect(screen.getByText('20.09.1984')).toBeInTheDocument();
         expect(screen.queryByTestId('software-view-skeleton')).not.toBeInTheDocument();
+    });
+
+    it('appears with the rating of the software, preloaded with its details', async () => {
+        stubFetch(json(ELITE));
+
+        renderRoute(ID);
+
+        await screen.findByRole('heading', {level: 1, name: 'Elite'});
+
+        expect(screen.getByRole('img', {name: 'Rating 4.08 of 5'})).toBeInTheDocument();
     });
 
     it('opens the editing of the software', async () => {

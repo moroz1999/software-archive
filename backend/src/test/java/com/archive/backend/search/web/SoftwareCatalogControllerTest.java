@@ -16,6 +16,7 @@ import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.search.app.ListSoftwareCatalogHandler;
 import com.archive.backend.search.app.ListSoftwareCatalogQuery;
 import com.archive.backend.search.domain.CatalogKeyword;
+import com.archive.backend.search.domain.CatalogOrder;
 import com.archive.backend.search.domain.ReleaseYear;
 import com.archive.backend.search.read.CodeCount;
 import com.archive.backend.search.read.HardwareCount;
@@ -227,5 +228,45 @@ class SoftwareCatalogControllerTest {
                 .thenThrow(new IllegalStateException("Typesense down"));
 
         mvc.perform(get("/api/software")).andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void answersEveryCardWithItsRating() throws Exception {
+        when(handler.handle(any(ListSoftwareCatalogQuery.class)))
+                .thenReturn(new SoftwareCatalogAnswer(
+                        new SoftwareCatalogPage(
+                                new PageImpl<>(
+                                        List.of(new SoftwareCatalogItem(
+                                                ELITE, "Elite", null, List.of(), List.of(), 4.08, 3)),
+                                        PageRequest.of(0, 20),
+                                        1),
+                                new SoftwareCatalogFacets(List.of(), List.of())),
+                        List.of()));
+
+        mvc.perform(get("/api/software"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].rating").value(4.08))
+                .andExpect(jsonPath("$.content[0].votesAmount").value(3));
+    }
+
+    @Test
+    void asksForTheCatalogByRating() throws Exception {
+        mvc.perform(get("/api/software").param("order", "rating")).andExpect(status().isOk());
+
+        assertThat(asked().order()).isEqualTo(CatalogOrder.RATING);
+    }
+
+    @Test
+    void asksForTheCatalogByTitleWithoutAnOrder() throws Exception {
+        mvc.perform(get("/api/software")).andExpect(status().isOk());
+
+        assertThat(asked().order()).isEqualTo(CatalogOrder.TITLE);
+    }
+
+    @Test
+    void answers400ForAnUnknownOrder() throws Exception {
+        mvc.perform(get("/api/software").param("order", "votes"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("catalog.order-invalid"));
     }
 }

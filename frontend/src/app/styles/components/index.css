@@ -66,6 +66,9 @@
 @import url("./table.css");
 @import url("./tabs.css");
 @import url("./textarea.css");
+@import url("./rating-stars.css");
+@import url("./software-rating.css");
+@import url("./software-votes.css");
 @import url("./toggle.css");
 @import url("./tree.css");
 @import url("./tree-checklist.css");

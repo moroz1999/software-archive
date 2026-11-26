@@ -7,6 +7,7 @@ import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.search.app.ListSoftwareCatalogQuery;
 import com.archive.backend.search.domain.CatalogKeyword;
+import com.archive.backend.search.domain.CatalogOrder;
 import com.archive.backend.search.domain.ReleaseYear;
 import com.archive.backend.search.read.IdCount;
 import com.archive.backend.search.read.SoftwareCatalogAnswer;
@@ -43,6 +44,7 @@ public interface SoftwareCatalogWebMapper {
                 codes(p.platforms()).stream().map(PlatformCode::new).toList(),
                 codes(p.hardware()).stream().map(HardwareCode::new).toList(),
                 language,
+                CatalogOrder.of(p.order()),
                 pageable);
     }
 

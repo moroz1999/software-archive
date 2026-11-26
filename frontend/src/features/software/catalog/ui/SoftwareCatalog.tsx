@@ -1,8 +1,8 @@
-import {useEffect, useState} from 'react';
+import {type ReactNode, useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import type {CategoryId, CategoryNode} from '@/entities/categories';
 import {toCityId, toCountryId} from '@/entities/locations';
-import {SoftwareCard, SoftwareCardSkeleton, softwarePath} from '@/entities/software';
+import {type Software, SoftwareCard, SoftwareCardSkeleton, softwarePath} from '@/entities/software';
 import {useSkeleton} from '@/shared/lib/loading';
 import {CardGrid} from '@/shared/ui/card-grid';
 import {FormField} from '@/shared/ui/form';
@@ -28,12 +28,17 @@ const SKELETON_CARDS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 const KEYWORD_DELAY_MS = 300;
 
 /** The software catalog: the categories to go through beside the keyword, the filters, the cards and the pages; inside a SoftwareCatalogProvider. */
-export function SoftwareCatalog() {
+export interface SoftwareCatalogProps {
+    /** What each card holds under it, outside its link, such as voting. */
+    readonly cardFooter?: ((software: Software) => ReactNode) | undefined;
+}
+
+export function SoftwareCatalog({cardFooter}: SoftwareCatalogProps = {}) {
     return (
         <SidebarLayout aside={<Categories/>}>
             <Stack gap="lg">
                 <Filters/>
-                <Cards/>
+                <Cards cardFooter={cardFooter}/>
             </Stack>
         </SidebarLayout>
     );
@@ -147,6 +152,22 @@ function Filters() {
                 )}
             </FormField>
             <HardwareFilter/>
+            <FormField label={t('filters.order')} className={styles.filter}>
+                {(control) => (
+                    <Select
+                        id={control.id}
+                        value={filter.order}
+                        onChange={(value) => {
+                            show({...filter, order: value === 'rating' ? 'rating' : 'title', page: 0});
+                        }}
+                        options={[
+                            {value: 'title', label: t('filters.orderByTitle')},
+                            {value: 'rating', label: t('filters.orderByRating')},
+                        ]}
+                        disabled={changing}
+                    />
+                )}
+            </FormField>
         </Inline>
     );
 }
@@ -196,7 +217,7 @@ function Categories() {
     );
 }
 
-function Cards() {
+function Cards({cardFooter}: SoftwareCatalogProps) {
     const {t} = useTranslation();
     const {filter, catalog, changing} = useSoftwareCatalog();
     const skeleton = useSkeleton(catalog);
@@ -224,7 +245,7 @@ function Cards() {
                 <CardGrid>
                     {page.items.map((software) => (
                         <li key={software.id}>
-                            <SoftwareCard software={software} href={softwarePath(software.id)}/>
+                            <SoftwareCard software={software} href={softwarePath(software.id)} footer={cardFooter?.(software)}/>
                         </li>
                     ))}
                 </CardGrid>

@@ -1,8 +1,11 @@
+import type {ReactNode} from 'react';
+import {Button} from '@/shared/ui/button';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
 import {PlatformSelectionProvider, PlatformSwitch} from '@/entities/platforms';
+import type {Software} from '@/entities/software';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, pageResponse, stubFetch, stubFetchRoutes, renderWithQueries} from '@/shared/lib/test';
 import {LatestSoftwareProvider} from '../model/LatestSoftwareProvider';
@@ -11,9 +14,9 @@ import {LatestSoftware} from './LatestSoftware';
 const ELITE = {id: '00000000-0000-0000-0001-000000000001', title: 'Elite', releaseDate: '1984-09-20'};
 const MINER = {id: '00000000-0000-0000-0001-000000000002', title: 'Manic Miner', releaseDate: null};
 
-function renderLatest({withSwitch = false} = {}) {
+function renderLatest({withSwitch = false, cardFooter}: {readonly withSwitch?: boolean; readonly cardFooter?: (software: Software) => ReactNode} = {}) {
     renderWithQueries(
-        <MemoryRouter><PlatformSelectionProvider>{withSwitch && <PlatformSwitch/>}<LatestSoftwareProvider><LatestSoftware/></LatestSoftwareProvider></PlatformSelectionProvider></MemoryRouter>,
+        <MemoryRouter><PlatformSelectionProvider>{withSwitch && <PlatformSwitch/>}<LatestSoftwareProvider><LatestSoftware cardFooter={cardFooter}/></LatestSoftwareProvider></PlatformSelectionProvider></MemoryRouter>,
     );
 }
 
@@ -95,6 +98,16 @@ describe(LatestSoftware, () => {
 
         await expect(screen.findByRole('link', {name: 'Manic Miner'})).resolves.toHaveAttribute('href', `/software/${MINER.id}`);
         expect(screen.getAllByRole('heading', {level: 3}).map((title) => title.textContent)).toStrictEqual(['Manic Miner', 'Elite']);
+    });
+
+    it('puts what it is given under each card, outside its link, with the software of the card', async () => {
+        stubFetch(json(pageResponse([ELITE, MINER], {size: 12})));
+        renderLatest({cardFooter: (software) => <Button>{`Vote on ${software.title}`}</Button>});
+
+        const vote = await screen.findByRole('button', {name: 'Vote on Elite'});
+
+        expect(screen.getByRole('link', {name: 'Elite'})).not.toContainElement(vote);
+        expect(screen.getByRole('button', {name: 'Vote on Manic Miner'})).toBeInTheDocument();
     });
 
     it('says so when the archive has no software', async () => {

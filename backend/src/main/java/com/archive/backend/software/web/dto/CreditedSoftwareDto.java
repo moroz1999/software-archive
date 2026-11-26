@@ -11,7 +11,9 @@ public record CreditedSoftwareDto(
         @Nullable String releaseDate,
         List<ScreenshotDto> screenshots,
         List<String> madeBy,
-        List<OwnCreditDto> credits) {
+        List<OwnCreditDto> credits,
+        double rating,
+        int votesAmount) {
 
     /** {@code as} names the label of the credit when it is not the main name of the person or the group. */
     public record OwnCreditDto(@Nullable String as, List<String> roles) {}

@@ -53,6 +53,29 @@ describe(fetchSoftwareCatalog, () => {
         );
     });
 
+    it('asks for the cards by rating only when the order is by rating', async () => {
+        const fetchMock = stubFetch(catalogResponse([]));
+
+        await fetchSoftwareCatalog(filterOf('order=rating&year=1987'), null, new AbortController().signal);
+        await fetchSoftwareCatalog(filterOf('year=1987'), null, new AbortController().signal);
+
+        expect(fetchMock.mock.calls.map((call) => call[0])).toStrictEqual([
+            '/api/software?page=0&year=1987&order=rating',
+            '/api/software?page=0&year=1987',
+        ]);
+    });
+
+    it('gives each card its rating, 0 of 0 votes to software nobody voted on', async () => {
+        stubFetch(catalogResponse([
+            {id: ELITE, title: 'Elite', releaseDate: null, screenshots: [], madeBy: [], rating: 4.0769, votesAmount: 3},
+            {id: '00000000-0000-0000-00fd-000000000002', title: 'Exolon', releaseDate: null, screenshots: [], madeBy: [], rating: 0, votesAmount: 0},
+        ]));
+
+        const catalog = await fetchSoftwareCatalog(filterOf(''), null, new AbortController().signal);
+
+        expect(catalog.page.items.map((item) => item.rating)).toStrictEqual([{rating: 4.0769, votesAmount: 3}, {rating: 0, votesAmount: 0}]);
+    });
+
     it('asks with the city, the platforms and the hardware chosen', async () => {
         const fetchMock = stubFetch(catalogResponse([]));
 

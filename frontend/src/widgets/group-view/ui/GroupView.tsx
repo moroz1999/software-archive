@@ -5,6 +5,7 @@ import {labelPath, toLabelId} from '@/entities/labels';
 import {locationText, primaryFirst} from '@/entities/locations';
 import {groupEditPath, type GroupDetails, GroupDetailsProvider, type GroupId, groupPath, GROUPS_PATH, type GroupMember, type RelatedGroup, useGroupDetails} from '@/entities/groups';
 import {CreditedReleaseList, CreditedSoftwareList} from '@/entities/software';
+import {SoftwareCardVote} from '@/features/software/vote';
 import {PopoverMenu, PopoverMenuItem} from '@/shared/ui/popover-menu';
 import {Chip} from '@/shared/ui/chip';
 import {Inline} from '@/shared/ui/inline';
@@ -54,7 +55,7 @@ function LoadedView() {
             ) : undefined}>
             <Stack gap="xl">
                 <Details group={query.data}/>
-                <CreditedSoftwareList owner={{kind: 'groups', id: query.data.id}}/>
+                <CreditedSoftwareList owner={{kind: 'groups', id: query.data.id}} cardFooter={(software) => <SoftwareCardVote software={software}/>}/>
                 <CreditedReleaseList owner={{kind: 'groups', id: query.data.id}}/>
                 <AdditionNote addition={query.data.added}/>
             </Stack>

@@ -34,10 +34,11 @@ public class SoftwareCatalogController {
             @RequestParam(required = false) @Nullable UUID city,
             @RequestParam(required = false) @Nullable List<String> platforms,
             @RequestParam(required = false) @Nullable List<String> hardware,
+            @RequestParam(required = false) @Nullable String order,
             Language language,
             @PageableDefault(size = ListSoftwareCatalogQuery.PAGE_SIZE) Pageable pageable) {
         return webMapper.toCatalog(handler.handle(webMapper.toQuery(
-                new SoftwareCatalogParams(keyword, platform, year, category, country, city, platforms, hardware),
+                new SoftwareCatalogParams(keyword, platform, year, category, country, city, platforms, hardware, order),
                 language,
                 pageable)));
     }

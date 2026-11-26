@@ -26,6 +26,7 @@ import {
 import {toCategoryId} from '@/entities/categories';
 import {catalogHrefOf, softwareBreadcrumbs} from '@/features/software/catalog';
 import {EditScreenshotsProvider, MoveScreenshotButtons, ScreenshotsChangeError} from '@/features/software/screenshots';
+import {SoftwareRating, SoftwareRatingProvider, SoftwareVotes, SoftwareVotesProvider} from '@/features/software/vote';
 import {useInViewport} from '@/shared/lib/screen';
 import {Button} from '@/shared/ui/button';
 import {PopoverMenu, PopoverMenuItem} from '@/shared/ui/popover-menu';
@@ -78,8 +79,10 @@ function LoadedView({id}: SoftwareViewProps) {
             ) : undefined}>
             <Stack gap="xl">
                 <Details software={query.data}/>
+                <SoftwareRatingProvider id={id}><SoftwareRating/></SoftwareRatingProvider>
                 {GALLERIES.map((gallery) => <Screenshots key={gallery} id={id} title={query.data.title} canChange={query.data.canChange} gallery={gallery}/>)}
                 <Releases id={id}/>
+                <Votes id={id}/>
                 <AdditionNote addition={query.data.added}/>
             </Stack>
         </PageLayout>
@@ -145,6 +148,12 @@ function Details({software}: {readonly software: SoftwareDetails}) {
             )}
         </Stack>
     );
+}
+
+/** Who voted on the software, asked for once the block comes into view. */
+function Votes({id}: SoftwareViewProps) {
+    const [ref, visible] = useInViewport();
+    return <SoftwareVotesProvider id={id} enabled={visible}><SoftwareVotes viewportRef={ref}/></SoftwareVotesProvider>;
 }
 
 /** The lines of a text that hold something; none of none. */

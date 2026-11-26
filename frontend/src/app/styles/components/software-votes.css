@@ -1,0 +1,5 @@
+:root {
+    /* A row of the votes while they load: a name, the stars and a day. */
+    --software-votes-skeleton-row-height: 20px;
+    --software-votes-skeleton-row-width: 320px;
+}

@@ -20,6 +20,7 @@ import com.archive.backend.search.domain.SearchEntity;
 import com.archive.backend.search.domain.SearchEntityType;
 import com.archive.backend.search.domain.SearchOutbox;
 import com.archive.backend.software.domain.SoftwareChanged;
+import com.archive.backend.vote.domain.SoftwareRated;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -47,6 +48,12 @@ public class EnqueueSearchDocumentsHandler {
         enqueue(SearchEntityType.AUTHOR, owners.peopleCreditedOn(software));
         enqueue(SearchEntityType.GROUP, owners.groupsCreditedOn(software));
         enqueue(SearchEntityType.AUTHOR, owners.labelsOfNobodyCreditedOn(software));
+    }
+
+    /** The card of the software shows its rating, and the catalog is sorted by it. */
+    @EventListener
+    public void on(SoftwareRated event) {
+        enqueueSoftware(List.of(event.software().value()));
     }
 
     /** A new label of nobody is found among the people. */

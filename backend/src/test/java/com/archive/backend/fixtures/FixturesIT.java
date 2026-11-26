@@ -331,4 +331,16 @@ class FixturesIT {
         return ((List<Map<String, Object>>) Objects.requireNonNull(release.get("hardware")))
                 .stream().map(item -> (String) item.get("code")).toList();
     }
+
+    @Test
+    void fixtureSoftwareHasVotesAndTheRatingTheyGive() throws Exception {
+        // 5, 5 and 4: (14 + 3.8 × 10) / (3 + 10).
+        mvc.perform(get("/api/software/{id}/rating", ELITE))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.rating").value(4.0))
+                .andExpect(jsonPath("$.votesAmount").value(3));
+        mvc.perform(get("/api/software/{id}/votes", ELITE)).andExpect(jsonPath("$", hasSize(3)));
+        // One vote and one withdrawn: (3 + 3.8 × 10) / (1 + 10).
+        mvc.perform(get("/api/software/{id}/votes", KHRYUKOSTYAG)).andExpect(jsonPath("$", hasSize(1)));
+    }
 }

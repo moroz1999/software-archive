@@ -9,3 +9,4 @@
 - `contentBleed` lets the body go edge to edge, clipped by the corners — for images on cards.
 - `as`: `div` (default) | `section` | `article`.
 - `href` makes the whole panel one link, named as the panel is, that lifts under the pointer and rings under keyboard focus — for cards. Nothing inside it may be interactive.
+- `footer` — what is done on a linked panel itself, such as a vote: after the body, outside the link.

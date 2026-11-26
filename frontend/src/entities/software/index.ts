@@ -48,7 +48,7 @@ export {PlatformHardwareProvider, type PlatformHardwareProviderProps} from './mo
 export {
     type Hardware,
     type ReleaseDate,
-    type Software,
+    type CardRating, type Software,
     type SoftwareCategory,
     type SoftwareCredit,
     type SoftwareDetails,

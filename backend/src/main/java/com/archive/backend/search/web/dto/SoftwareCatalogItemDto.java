@@ -9,4 +9,6 @@ public record SoftwareCatalogItemDto(
         String title,
         @Nullable String releaseDate,
         List<CardScreenshotDto> screenshots,
-        List<String> madeBy) {}
+        List<String> madeBy,
+        double rating,
+        int votesAmount) {}

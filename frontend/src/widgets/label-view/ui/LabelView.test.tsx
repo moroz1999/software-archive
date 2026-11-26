@@ -3,6 +3,7 @@ import {screen, waitFor, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {createMemoryRouter, RouterProvider, useParams} from 'react-router';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
+import {CurrentUserProvider} from '@/entities/users';
 import {breadcrumbSteps, json, noContent, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
 import {toLabelId} from '@/entities/labels';
 import {LabelView} from './LabelView';
@@ -17,7 +18,9 @@ const GHOST = {id: ID, name: 'Ghost', owner: null, groups: [{id: CREW, name: 'Cr
 const SOFTWARE_URL = `/api/labels/${ID}/software`;
 const RELEASES_URL = `/api/labels/${ID}/releases`;
 const NO_RELEASES: readonly [string, () => Response] = [RELEASES_URL, json([])];
-const NO_SOFTWARE = new Map([[SOFTWARE_URL, json([])], NO_RELEASES]);
+/** A public visitor reads the page. */
+const ME: readonly [string, () => Response] = ['/api/auth/me', noContent()];
+const NO_SOFTWARE = new Map([ME, [SOFTWARE_URL, json([])], NO_RELEASES]);
 const RELEASE_SOFTWARE = '00000000-0000-0000-0001-000000000031';
 const RELEASE = '00000000-0000-0000-0007-000000000031';
 
@@ -33,7 +36,7 @@ function openLabel() {
         {path: '/authors/:id', element: <p>Author page</p>},
         {path: '/groups/:id', element: <p>Group page</p>},
     ], {initialEntries: [`/labels/${ID}`]});
-    renderWithQueries(<RouterProvider router={router}/>);
+    renderWithQueries(<CurrentUserProvider><RouterProvider router={router}/></CurrentUserProvider>);
 }
 
 async function openActions() {
@@ -94,7 +97,7 @@ describe(LabelView, () => {
 
 
     it('lists the releases the label is credited on as cards with its roles', async () => {
-        stubFetchAround(new Map([[SOFTWARE_URL, json([])], [RELEASES_URL, json([
+        stubFetchAround(new Map([ME, [SOFTWARE_URL, json([])], [RELEASES_URL, json([
             {
                 id: RELEASE, softwareId: RELEASE_SOFTWARE, softwareTitle: 'Elite', title: 'Elite AY', version: '1.1', type: 'adaptation',
                 releaseDate: '1987', screenshots: [], credits: [{as: null, roles: ['release', 'unknown']}],
@@ -123,7 +126,7 @@ describe(LabelView, () => {
     });
 
     it('lists the software the label is credited on', async () => {
-        stubFetchAround(new Map([NO_RELEASES, [SOFTWARE_URL, json([
+        stubFetchAround(new Map([ME, NO_RELEASES, [SOFTWARE_URL, json([
             {id: ELITE, title: 'Elite', releaseDate: '1985', screenshots: [], madeBy: ['Ghost'], credits: [{as: null, roles: ['code']}]},
         ])]]), json(GHOST));
         openLabel();
@@ -210,7 +213,7 @@ describe(LabelView, () => {
     });
 
     it('opens saying whose the label is and making a group in their own windows, out of the closed menu', async () => {
-        stubFetchAround(new Map([...NO_SOFTWARE, ['/api/group-types', json([])]]), json(GHOST));
+        stubFetchAround(new Map([ME, ...NO_SOFTWARE, ['/api/group-types', json([])]]), json(GHOST));
         openLabel();
 
         await openActions();

@@ -4,7 +4,8 @@ import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
-/** The conditions of the catalog as the query of its address gives them; platforms and hardware are joined by commas. */
+/** The conditions of the catalog as the query of its address gives them; platforms and hardware are joined by commas;
+ * the order is that of the cards. */
 public record SoftwareCatalogParams(
         @Nullable String keyword,
         @Nullable String platform,
@@ -13,4 +14,5 @@ public record SoftwareCatalogParams(
         @Nullable UUID country,
         @Nullable UUID city,
         @Nullable List<String> platforms,
-        @Nullable List<String> hardware) {}
+        @Nullable List<String> hardware,
+        @Nullable String order) {}

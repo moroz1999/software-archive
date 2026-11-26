@@ -53,6 +53,10 @@ search:
   worker:
     delay: 1s
 
+voting:
+  # The average vote of the archive every rating leans towards, as on ZX-Art (docs/domain/voting.md#rating).
+  average-vote: 3.8
+
 auth:
   # Local development only; production sets its own secret of at least 32 bytes.
   jwt-secret: local-development-secret-of-32-bytes-at-least

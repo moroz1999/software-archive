@@ -67,9 +67,17 @@ interface Galleries {
     readonly maps?: () => Response;
     readonly covers?: () => Response;
     readonly adverts?: () => Response;
+    readonly rating?: () => Response;
+    readonly votes?: () => Response;
+    readonly vote?: () => Response;
 }
 
-/** Answers the details, the screenshots and the other galleries and the releases of the software, and who reads them. */
+const RATED = {rating: 4.0769, votesAmount: 3, myVote: null};
+
+/**
+ * Answers the details, the screenshots and the other galleries, the releases, the rating and the votes of the software,
+ * and who reads them.
+ */
 function stubFetch(details: () => Response, releases: () => Response = json([AY_MOD]), me: () => Response = json(MEMBER), screenshots: () => Response = json([]), galleries: Galleries = {}) {
     return stubFetchRoutes(new Map([
         [`/api/software/${ID}`, details],
@@ -78,6 +86,9 @@ function stubFetch(details: () => Response, releases: () => Response = json([AY_
         [`/api/software/${ID}/covers`, galleries.covers ?? json([])],
         [`/api/software/${ID}/adverts`, galleries.adverts ?? json([])],
         [`/api/software/${ID}/releases`, releases],
+        [`/api/software/${ID}/rating`, galleries.rating ?? json(RATED)],
+        [`/api/software/${ID}/votes`, galleries.votes ?? json([])],
+        [`/api/software/${ID}/vote`, galleries.vote ?? json(RATED)],
         ['/api/auth/me', me],
     ]));
 }
@@ -624,5 +635,43 @@ describe(SoftwareView, () => {
         renderView(ID);
 
         await expect(screen.findByText('Added on 4 March 2026')).resolves.toBeInTheDocument();
+    });
+
+    it('shows the rating of the software among its details', async () => {
+        stubFetch(json(ELITE));
+        renderView(ID);
+
+        const rating = await screen.findByRole('region', {name: 'Rating'});
+
+        await expect(within(rating).findByRole('group', {name: 'Rating 4.08 of 5'})).resolves.toHaveAttribute('title', '3 votes');
+    });
+
+    it('shows who voted on the software below its releases', async () => {
+        stubFetch(json(ELITE), json([AY_MOD]), json(MEMBER), json([]), {votes: json([{voter: 'Zork', value: 5, castAt: '2026-11-24T10:00:00Z'}])});
+        renderView(ID);
+
+        const votes = await screen.findByRole('region', {name: 'Votes'});
+
+        await expect(within(votes).findByText('Zork')).resolves.toBeInTheDocument();
+        expect(screen.getByRole('region', {name: 'Releases'}).compareDocumentPosition(votes) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+
+    it('shows the vote of the reader among the votes once they gave it', async () => {
+        let voted = false;
+        stubFetch(json(ELITE), json([AY_MOD]), json(MEMBER), json([]), {
+            votes: () => voted ? json([{voter: 'Zed', value: 5, castAt: '2026-11-26T10:00:00Z'}])() : json([])(),
+            vote: () => {
+                voted = true;
+                return json({rating: 3.9, votesAmount: 1, myVote: 5})();
+            },
+        });
+        renderView(ID);
+
+        const votes = await screen.findByRole('region', {name: 'Votes'});
+        await within(votes).findByText('Nobody has voted yet.');
+
+        await userEvent.click(screen.getByRole('button', {name: 'Give 5 stars'}));
+
+        await expect(within(votes).findByText('Zed')).resolves.toBeInTheDocument();
     });
 });

@@ -23,6 +23,7 @@ import com.archive.backend.software.read.SoftwareScreenshot;
 import com.archive.backend.software.read.SoftwareSource;
 import com.archive.backend.software.read.SoftwareSummary;
 import com.archive.backend.user.read.AdditionSql;
+import com.archive.backend.vote.read.CardRatingSql;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -81,7 +82,7 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
         List<SoftwareSummary> content = jdbc.sql("SELECT s.id, s.title, " + ReleaseDateSql.of("s")
                         + " AS release_date, " + CardScreenshotsSql.of("s")
                         + " AS screenshots, " + CardMadeBySql.of("s")
-                        + " AS made_by FROM software s" + where + " ORDER BY " + order
+                        + " AS made_by, " + CardRatingSql.of("s") + " FROM software s" + where + " ORDER BY " + order
                         + " LIMIT :limit OFFSET :offset")
                 .params(params)
                 .query((rs, row) -> new SoftwareSummary(
@@ -89,7 +90,9 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                         rs.getString("title"),
                         rs.getString("release_date"),
                         screenshots(rs),
-                        Arrays.asList((String[]) rs.getArray("made_by").getArray())))
+                        Arrays.asList((String[]) rs.getArray("made_by").getArray()),
+                        rs.getDouble("rating"),
+                        rs.getInt("votes_amount")))
                 .list();
         return new PageImpl<>(content, pageable, total);
     }
@@ -253,7 +256,8 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
         }
         return jdbc.sql("SELECT s.id, s.title, " + ReleaseDateSql.of("s") + " AS release_date, "
                         + CardScreenshotsSql.of("s") + " AS screenshots, " + CardMadeBySql.of("s")
-                        + " AS made_by FROM software s WHERE s.id IN (:ids) ORDER BY " + ReleaseDateSql.order("s")
+                        + " AS made_by, " + CardRatingSql.of("s") + " FROM software s WHERE s.id IN (:ids) ORDER BY "
+                        + ReleaseDateSql.order("s")
                         + ", lower(s.title), s.id")
                 .param("ids", credits.keySet())
                 .query((rs, row) -> {
@@ -264,7 +268,9 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                             rs.getString("release_date"),
                             screenshots(rs),
                             Arrays.asList((String[]) rs.getArray("made_by").getArray()),
-                            List.copyOf(credits.getOrDefault(id, List.of())));
+                            List.copyOf(credits.getOrDefault(id, List.of())),
+                            rs.getDouble("rating"),
+                            rs.getInt("votes_amount"));
                 })
                 .list();
     }

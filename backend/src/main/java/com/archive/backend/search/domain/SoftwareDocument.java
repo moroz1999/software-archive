@@ -9,7 +9,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * What the search knows of software (docs/features/search.md#collections): its categories with all their ancestors,
- * the countries and the cities of the owners of its credited labels, its hardware and that of its releases by group, and the screenshots and the names of who made it its card shows.
+ * the countries and the cities of the owners of its credited labels, its hardware and that of its releases by group, and the screenshots, the names of who made it and the rating its
+ * card shows, the catalog being sorted by the rating too.
  */
 @ValueObject
 public record SoftwareDocument(
@@ -24,8 +25,40 @@ public record SoftwareDocument(
         List<UUID> screenshots,
         List<String> madeBy,
         List<UUID> cities,
-        Map<String, List<String>> hardware)
+        Map<String, List<String>> hardware,
+        double rating,
+        int votesAmount)
         implements SearchDocument {
+
+    public SoftwareDocument(
+            UUID id,
+            String title,
+            @Nullable String releaseDate,
+            List<String> alternativeTitles,
+            String platform,
+            @Nullable Integer year,
+            List<UUID> categories,
+            List<UUID> countries,
+            List<UUID> screenshots,
+            List<String> madeBy,
+            List<UUID> cities,
+            Map<String, List<String>> hardware) {
+        this(
+                id,
+                title,
+                releaseDate,
+                alternativeTitles,
+                platform,
+                year,
+                categories,
+                countries,
+                screenshots,
+                madeBy,
+                cities,
+                hardware,
+                0,
+                0);
+    }
 
     public SoftwareDocument(
             UUID id,

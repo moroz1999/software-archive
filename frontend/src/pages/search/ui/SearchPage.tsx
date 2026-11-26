@@ -1,5 +1,6 @@
 import {useTranslation} from 'react-i18next';
 import {FullSearch, FullSearchProvider, useFullSearch} from '@/features/search';
+import {SoftwareCardVote} from '@/features/software/vote';
 import {PageLayout} from '@/shared/ui/page-layout';
 
 export function SearchPage() {
@@ -22,7 +23,7 @@ function SearchLayout() {
     }
     return (
         <PageLayout title={title}>
-            <FullSearch/>
+            <FullSearch cardFooter={(software) => <SoftwareCardVote software={software}/>}/>
         </PageLayout>
     );
 }

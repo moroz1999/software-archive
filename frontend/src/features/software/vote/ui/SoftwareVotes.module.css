@@ -1,0 +1,4 @@
+.bone {
+    height: var(--software-votes-skeleton-row-height);
+    width: var(--software-votes-skeleton-row-width);
+}

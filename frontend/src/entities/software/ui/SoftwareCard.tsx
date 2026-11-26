@@ -16,18 +16,31 @@ export interface SoftwareCardProps {
     readonly href: string;
     /** More under who made it and the year, such as the roles of the person whose page lists the card. */
     readonly children?: ReactNode;
+    /** Under the card, outside its link: what is done on the card itself, such as voting. */
+    readonly footer?: ReactNode;
 }
 
 /**
  * A piece of software as a card leading to its page as a whole: its picture, its title, who made it and its release
- * year — on one line when both fit, the year moving under the names when not.
+ * year — on one line when both fit, the year moving under the names when not; under it, outside the link, what is done on the
+ * card, such as voting.
  */
-export function SoftwareCard({software, href, children}: SoftwareCardProps) {
+export function SoftwareCard({software, href, children, footer}: SoftwareCardProps) {
     const titleId = useId();
     const {t} = useTranslation();
     const madeBy = software.madeBy ?? [];
     return (
-        <Panel as="article" labelledBy={titleId} radius="xl" padding="none" contentBleed href={href}>
+        <Panel
+            as="article"
+            labelledBy={titleId}
+            radius="xl"
+            padding="none"
+            contentBleed
+            href={href}
+            footer={footer === undefined ? undefined : (
+                <Inset padding="lg" side="inline"><Inset padding="lg" side="bottom">{footer}</Inset></Inset>
+            )}
+        >
             {software.screenshots !== undefined && software.screenshots.length > 0
                 ? <CardScreenshots urls={software.screenshots.map((screenshot) => screenshot.url)} alt={software.title}/>
                 : <ImagePlaceholder label={t('empty.noScreenshot')}/>}

@@ -10,6 +10,7 @@ import com.archive.backend.search.domain.SearchEntityType;
 import com.archive.backend.search.domain.SoftwareDocument;
 import com.archive.backend.search.read.CodeCount;
 import com.archive.backend.search.read.IdCount;
+import com.archive.backend.search.read.SoftwareCatalog;
 import com.archive.backend.search.read.SoftwareCatalogFilter;
 import com.archive.backend.search.read.SoftwareCatalogItem;
 import com.archive.backend.search.read.SoftwareCatalogPage;
@@ -24,6 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.testcontainers.typesense.TypesenseContainer;
 
 /**
@@ -384,5 +386,48 @@ class TypesenseSoftwareCatalogIT {
         probe.freeze();
 
         assertThatThrownBy(() -> find(vector())).isInstanceOf(RuntimeException.class);
+    }
+
+    /** The software with the rating its votes give it. */
+    private static SoftwareDocument rated(SoftwareDocument d, double rating, int votesAmount) {
+        return new SoftwareDocument(
+                d.id(),
+                d.title(),
+                d.releaseDate(),
+                d.alternativeTitles(),
+                d.platform(),
+                d.year(),
+                d.categories(),
+                d.countries(),
+                d.screenshots(),
+                d.madeBy(),
+                d.cities(),
+                d.hardware(),
+                rating,
+                votesAmount);
+    }
+
+    @Test
+    void listsTheSoftwareByRatingTheEqualOnesByTitleAndTheUnratedLast() {
+        SearchCollection collection = index.create(SearchEntityType.SOFTWARE);
+        index.load(collection, List.of(rated(EXOLON, 4.08, 3), rated(ELITE, 4.08, 3), rated(TETRIS, 4.5, 20), DEMO));
+        index.switchTo(collection);
+
+        SoftwareCatalogPage page =
+                catalog.find(vector(), PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, SoftwareCatalog.RATING)));
+
+        assertThat(titles(page)).containsExactly("tetris", "Elite", "Exolon", "Demo");
+    }
+
+    @Test
+    void givesTheRatingOnTheCard() {
+        SearchCollection collection = index.create(SearchEntityType.SOFTWARE);
+        index.load(collection, List.of(rated(ELITE, 4.08, 3)));
+        index.switchTo(collection);
+
+        SoftwareCatalogItem card = find(vector()).items().getContent().get(0);
+
+        assertThat(card.rating()).isEqualTo(4.08);
+        assertThat(card.votesAmount()).isEqualTo(3);
     }
 }

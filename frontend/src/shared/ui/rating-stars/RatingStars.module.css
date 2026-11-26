@@ -1,0 +1,50 @@
+/* The stars and their buttons share one cell: the buttons lie over the stars they give. */
+.ratingStars {
+    display: inline-grid;
+    flex-shrink: 0;
+    vertical-align: middle;
+}
+
+.md {
+    --rating-stars-current-height: var(--rating-stars-md-height);
+}
+
+.sm {
+    --rating-stars-current-height: var(--rating-stars-sm-height);
+}
+
+.stars {
+    grid-area: 1 / 1;
+    height: var(--rating-stars-current-height);
+    width: calc(var(--rating-stars-current-height) * 5);
+}
+
+.empty {
+    fill: var(--rating-stars-empty-color);
+}
+
+.filled {
+    fill: var(--rating-stars-filled-color);
+}
+
+.buttons {
+    display: grid;
+    grid-area: 1 / 1;
+    grid-template-columns: repeat(5, 1fr);
+}
+
+.star {
+    padding: 0;
+    border: 0;
+    border-radius: var(--rating-stars-focus-radius);
+    background: transparent;
+    cursor: pointer;
+}
+
+.star:disabled {
+    cursor: default;
+}
+
+.star:focus-visible {
+    outline: var(--rating-stars-focus-outline);
+}

@@ -3,7 +3,8 @@ import {screen, waitFor, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
-import {breadcrumbSteps, json, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
+import {CurrentUserProvider} from '@/entities/users';
+import {breadcrumbSteps, json, noContent, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
 import {toGroupId} from '@/entities/groups';
 import {GroupView} from './GroupView';
 
@@ -42,14 +43,16 @@ const CREW = {
 const SOFTWARE_URL = `/api/groups/${ID}/software`;
 const RELEASES_URL = `/api/groups/${ID}/releases`;
 const NO_RELEASES: readonly [string, () => Response] = [RELEASES_URL, json([])];
-const NO_SOFTWARE = new Map([[SOFTWARE_URL, json([])], NO_RELEASES]);
+/** A public visitor reads the page. */
+const ME: readonly [string, () => Response] = ['/api/auth/me', noContent()];
+const NO_SOFTWARE = new Map([ME, [SOFTWARE_URL, json([])], NO_RELEASES]);
 const RELEASE_SOFTWARE = '00000000-0000-0000-0001-000000000031';
 const RELEASE = '00000000-0000-0000-0007-000000000031';
 const ELITE = '00000000-0000-0000-0001-000000000001';
 const TETRIS = '00000000-0000-0000-0001-000000000002';
 
 function renderView() {
-    renderWithQueries(<MemoryRouter><GroupView id={toGroupId(ID)}/></MemoryRouter>);
+    renderWithQueries(<CurrentUserProvider><MemoryRouter><GroupView id={toGroupId(ID)}/></MemoryRouter></CurrentUserProvider>);
 }
 
 function itemsOf(name: string): string[] {
@@ -87,7 +90,7 @@ describe(GroupView, () => {
 
 
     it('lists the releases the group is credited on as cards with its roles', async () => {
-        stubFetchAround(new Map([[SOFTWARE_URL, json([])], [RELEASES_URL, json([
+        stubFetchAround(new Map([ME, [SOFTWARE_URL, json([])], [RELEASES_URL, json([
             {
                 id: RELEASE, softwareId: RELEASE_SOFTWARE, softwareTitle: 'Elite', title: 'Elite AY', version: '1.1', type: 'adaptation',
                 releaseDate: '1987', screenshots: [], credits: [{as: 'CRW', roles: ['release', 'unknown']}],
@@ -116,7 +119,7 @@ describe(GroupView, () => {
     });
 
     it('lists the software the group is credited on as cards with its roles', async () => {
-        stubFetchAround(new Map([NO_RELEASES, [SOFTWARE_URL, json([
+        stubFetchAround(new Map([ME, NO_RELEASES, [SOFTWARE_URL, json([
             {id: ELITE, title: 'Elite', releaseDate: '1985', screenshots: [], madeBy: ['Crew'], credits: [{as: null, roles: ['developer']}]},
             {id: TETRIS, title: 'Tetris', releaseDate: null, screenshots: [], madeBy: [], credits: [{as: 'CRW', roles: ['publisher']}]},
         ])]]), json(CREW));

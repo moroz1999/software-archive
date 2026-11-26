@@ -4,7 +4,8 @@ import userEvent from '@testing-library/user-event';
 import {createMemoryRouter, RouterProvider} from 'react-router';
 import {PlatformSelectionProvider} from '@/entities/platforms';
 import {createQueryClient, subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
-import {json, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
+import {CurrentUserProvider} from '@/entities/users';
+import {json, noContent, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {loadSearchPage, preloadSearchPage, shouldPreloadSearchPage} from '../index';
 
 const ELITE = {id: '00000000-0000-0000-00fd-000000000001', title: 'Elite', releaseDate: '1987-05-01'};
@@ -23,7 +24,7 @@ function found(page = 0, sets: readonly unknown[] = [
 const NOTHING = json({sets: [], page: {size: 50, number: 0, totalElements: 0, totalPages: 0}});
 
 function routes(answers: [string, () => Response][]): Map<string, () => Response> {
-    return new Map([['/api/platforms', json([])], ...answers]);
+    return new Map([['/api/platforms', json([])], ['/api/auth/me', noContent()], ...answers]);
 }
 
 function renderRoute(path: string) {
@@ -31,12 +32,12 @@ function renderRoute(path: string) {
     const router = createMemoryRouter([
         {path: '/search', loader: preloadSearchPage(queryClient), shouldRevalidate: shouldPreloadSearchPage, lazy: {Component: loadSearchPage}, HydrateFallback: () => null},
     ], {initialEntries: [path]});
-    renderWithQueries(<PlatformSelectionProvider><RouterProvider router={router}/></PlatformSelectionProvider>, queryClient);
+    renderWithQueries(<CurrentUserProvider><PlatformSelectionProvider><RouterProvider router={router}/></PlatformSelectionProvider></CurrentUserProvider>, queryClient);
     return {router};
 }
 
 function asked(fetchMock: {mock: {calls: unknown[][]}}): unknown[] {
-    return fetchMock.mock.calls.map(([url]) => url).filter((url) => typeof url === 'string' && url !== '/api/platforms');
+    return fetchMock.mock.calls.map(([url]) => url).filter((url) => typeof url === 'string' && url !== '/api/platforms' && url !== '/api/auth/me');
 }
 
 describe('SearchPage', () => {

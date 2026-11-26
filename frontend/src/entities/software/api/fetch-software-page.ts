@@ -1,4 +1,4 @@
-import {getJson, mapResponse, type Page, parsePage, readNullableString, readObject, readString, readStringArray} from '@/shared/api';
+import {getJson, mapResponse, type Page, parsePage, readNullableString, readNumber, readObject, readString, readStringArray} from '@/shared/api';
 import {type Software, toReleaseDate, toSoftwareId, toSoftwareTitle} from '../model/software';
 import {parseScreenshots} from './screenshot-api';
 
@@ -18,8 +18,10 @@ export function parseSoftware(item: unknown): Software {
         releaseDate: releaseDate === null ? null : toReleaseDate(releaseDate),
         screenshots: parseScreenshots(dto['screenshots']),
         madeBy: dto['madeBy'] === undefined ? [] : readStringArray(dto['madeBy'], 'madeBy'),
+        ...(dto['votesAmount'] === undefined ? {} : {rating: {rating: readNumber(dto, 'rating'), votesAmount: readNumber(dto, 'votesAmount')}}),
     };
 }
+
 
 /** The most recently added software, newest first, of the platform when one is given: `GET /api/software/latest`. */
 export async function fetchLatestSoftware(platform: string | null, signal: AbortSignal): Promise<Page<Software>> {
