@@ -11,6 +11,11 @@ description: How people, groups and labels are written down in the archive. Load
 - Set the real name, notes and locations only when the source says them. What the source tells of them that the archive has no place for yet (photos, dates of life, other activities, contacts, links to their pages): tell the editor in your answer, with where it is.
 - A name of a group (a team, a studio, a company): it is a group or a label of a group, not a person.
 
+## Credits
+- Credit people, groups and labels on the software by default, including names listed on a release page. Credit them on a specific release only for changes the source explicitly attributes to them in that release, such as a crack, intro, adaptation or translation.
+- Credit each person, group or label once per entry with all their roles for that entry, using roles from `list_options`. Use the exact label the source gives when it credits a label.
+- Credit the creators of the source work on a port, conversion or remake as `original_author` on the derived software.
+
 ## A full name and its short forms
 Labels of one person written fully and shortly, e.g. «Иванов Георгий Иванович», «Иванов Г.И.» and «Ivanov G.»:
 - The person is made of the label with the full name, their real name written as above.
