@@ -77,8 +77,8 @@ export interface PlanAction {
     /** The kind of change: create, update, delete, merge, … */
     readonly kind: string;
     readonly entityType: string;
-    /** The entry the change changes, in the names of its arguments; null for one it adds. */
-    readonly state: JsonObject | null;
+    /** The current entry fields or gallery contents, when available. */
+    readonly state: JsonObject | readonly unknown[] | null;
     readonly status: PlanActionStatus;
     /** The id the change produced, once made. */
     readonly result: string | null;

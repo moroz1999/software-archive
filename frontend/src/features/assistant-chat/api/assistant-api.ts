@@ -28,13 +28,14 @@ function readMessage(raw: unknown): ChatMessage {
 
 function readAction(raw: unknown): PlanAction {
     const dto = readObject(raw, 'plan action');
+    const state = dto['state'];
     return {
         position: readNumber(dto, 'position'),
         tool: readString(dto, 'tool'),
         arguments: readObject(dto['arguments'], 'arguments'),
         kind: readString(dto, 'kind'),
         entityType: readString(dto, 'entityType'),
-        state: nullableObject(dto['state'], 'state'),
+        state: Array.isArray(state) ? state : nullableObject(state, 'state'),
         status: toPlanActionStatus(readString(dto, 'status')),
         result: readNullableString(dto, 'result'),
         error: readNullableString(dto, 'error'),

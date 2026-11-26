@@ -127,9 +127,14 @@ export function destructiveCount(plan: ChatPlan): number {
     return plan.actions.filter((action) => DESTRUCTIVE.includes(action.kind)).length;
 }
 
+function hasStateFields(state: PlanAction['state']): state is JsonObject {
+    return state !== null && !Array.isArray(state);
+}
+
 /** The entry a change changes: a link once it is known, else the title the change gives it. */
 export function actionTarget(action: PlanAction, refs: Refs): readonly Segment[] {
-    for (const id of [action.arguments['id'], action.state?.['id'], action.result]) {
+    const stateId = hasStateFields(action.state) ? action.state['id'] : undefined;
+    for (const id of [action.arguments['id'], stateId, action.result]) {
         const ref = typeof id === 'string' ? refs[id] : undefined;
         if (ref !== undefined) {
             return [{kind: 'link', text: ref.title, path: ref.path}];
@@ -147,10 +152,11 @@ export interface ActionRow {
 
 /** The fields a change sets, each beside what the entry holds; the id of the entry is its target, not a field. */
 export function actionRows(action: PlanAction, refs: Refs, words: ValueWords): readonly ActionRow[] {
+    const state = hasStateFields(action.state) ? action.state : null;
     const shown = (field: string, value: unknown) => valueSegments(field, value, refs, words);
     return Object.entries(action.arguments)
         .filter(([field, value]) => field !== 'id' && value !== null && value !== undefined)
-        .map(([field, value]) => ({field, before: before(action.state, field, value, shown), after: shown(field, value)}));
+        .map(([field, value]) => ({field, before: before(state, field, value, shown), after: shown(field, value)}));
 }
 
 function before(state: JsonObject | null, field: string, value: unknown, shown: (field: string, value: unknown) => readonly Segment[]): readonly Segment[] | null {

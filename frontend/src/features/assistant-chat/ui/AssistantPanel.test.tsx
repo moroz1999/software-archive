@@ -527,6 +527,42 @@ describe(AssistantPanel, () => {
         expect(change(3)).toHaveTextContent('Not made: change 2 failed.');
     });
 
+    it('opens a conversation with a failed download and a retry plan for empty and populated galleries', async () => {
+        const error = 'The download failed: timeout';
+        const failed = plan('failed', [action(1, {
+            tool: 'set_release_archive', kind: 'files', entityType: 'release',
+            arguments: {softwareId: ELITE, releaseId: RELEASE, url: 'https://example.com/elite.zip'},
+            status: 'failed', error,
+        })]);
+        const firstImage = 'https://example.com/elite.png';
+        const secondImage = 'https://example.com/elite-plus.png';
+        const retry = {
+            ...plan('proposed', [
+                action(1, {
+                    tool: 'add_screenshots', kind: 'files', entityType: 'software',
+                    arguments: {softwareId: ELITE, urls: [firstImage]}, state: [],
+                }),
+                action(2, {
+                    tool: 'add_screenshots', kind: 'files', entityType: 'software',
+                    arguments: {softwareId: ELITE_PLUS, urls: [secondImage]}, state: [{id: '00000000-0000-0000-00a4-000000000001'}],
+                }),
+            ]),
+            id: '00000000-0000-0000-00a2-000000000002',
+            title: 'Добавить скриншоты',
+        };
+        await openConversation(state({
+            messages: [QUESTION, PLAN_MESSAGE, message(3, 'assistant', 'plan', retry.title, {planId: retry.id})],
+            plans: [failed, retry],
+        }));
+        const panel = within(assistant());
+        const shown = within(await panel.findByRole('region', {name: retry.title}));
+
+        expect(panel.getByText(error)).toBeInTheDocument();
+        expect(shown.getByText(firstImage)).toBeInTheDocument();
+        expect(shown.getByText(secondImage)).toBeInTheDocument();
+        expect(shown.getByRole('button', {name: 'Make the plan'})).toBeEnabled();
+    });
+
     it('opens a conversation from the list, and starts a new one', async () => {
         await openConversation(state({messages: [QUESTION, ANSWER]}));
         const panel = within(assistant());
