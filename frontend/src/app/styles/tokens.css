@@ -32,7 +32,7 @@
     --padding-xl: var(--space-32);
 
     /* Font families. */
-    --font-family-base: system-ui, -apple-system, "Segoe UI", roboto, sans-serif;
+    --font-family-base: "Golos Text", system-ui, -apple-system, "Segoe UI", roboto, sans-serif;
     --font-family-mono: ui-monospace, sfmono-regular, menlo, consolas, monospace;
 
     /* Font size tiers. */

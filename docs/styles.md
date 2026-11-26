@@ -37,6 +37,7 @@ Three levels, top to bottom:
 
 ## Typography
 
+- The interface serves its web font locally and keeps the system fallback for the current page when the font arrives too late for the initial render.
 - Text is styled only through the typography components (`Text`, `Heading`, `Label`) with a variant: `display`, `headline`, `title`, `body`, `bodySm`, `mono`, `caption`, `label`, and a tone.
 - Custom typography (own font sizes, weights, line heights) in components is forbidden. A missing variant or tone is a question to the user.
 
