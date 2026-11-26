@@ -50,6 +50,11 @@ export interface SoftwareSource {
     readonly url: string;
 }
 
+export interface SoftwareProgram {
+    readonly id: SoftwareId;
+    readonly title: SoftwareTitle;
+}
+
 export interface Software {
     readonly id: SoftwareId;
     readonly title: SoftwareTitle;
@@ -76,6 +81,8 @@ export interface SoftwareDetails extends Software {
     readonly platform: SoftwarePlatform;
     readonly hardware: readonly Hardware[];
     readonly categories: readonly SoftwareCategory[];
+    readonly compilationItems?: readonly SoftwareProgram[];
+    readonly compilations?: readonly SoftwareProgram[];
     readonly credits?: readonly SoftwareCredit[];
     /** The pages of the archives it was imported from (docs/domain/imports.md). */
     readonly sources?: readonly SoftwareSource[];

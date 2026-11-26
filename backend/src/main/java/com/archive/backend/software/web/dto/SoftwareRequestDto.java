@@ -16,7 +16,31 @@ public record SoftwareRequestDto(
         @Nullable List<String> hardware,
         @Nullable List<UUID> categories,
         @Nullable List<CreditDto> credits,
-        @Nullable String preservation) {
+        @Nullable String preservation,
+        @Nullable List<@Nullable UUID> compilationItemIds) {
+
+    public SoftwareRequestDto(
+            @Nullable String title,
+            @Nullable String description,
+            @Nullable String instructions,
+            @Nullable String releaseDate,
+            @Nullable String platform,
+            @Nullable List<String> hardware,
+            @Nullable List<UUID> categories,
+            @Nullable List<CreditDto> credits,
+            @Nullable String preservation) {
+        this(
+                title,
+                description,
+                instructions,
+                releaseDate,
+                platform,
+                hardware,
+                categories,
+                credits,
+                preservation,
+                null);
+    }
 
     /** A person, a group or the exact label of either, with the roles they had. */
     public record CreditDto(

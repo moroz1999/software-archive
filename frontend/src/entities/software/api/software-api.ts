@@ -5,6 +5,7 @@ import {
     type SoftwareCredit,
     type SoftwareDetails,
     type SoftwareId,
+    type SoftwareProgram,
     type SoftwareReference,
     SOFTWARE_REFERENCE_TYPES,
     type SoftwareReferenceType,
@@ -35,6 +36,7 @@ function toBody(draft: SoftwareDraft): unknown {
         credits: draft.credits.map(({id, type, roles}) => ({id, type, roles})),
         preservation: draft.preservation,
         instructions: draft.instructions,
+        compilationItemIds: draft.compilationItemIds,
     };
 }
 
@@ -48,6 +50,20 @@ function parseSoftwareReferences(raw: unknown, name: string): readonly SoftwareR
             ...(reference['ownerId'] === undefined ? {} : {ownerId: readNullableString(reference, 'ownerId')}),
         };
     });
+}
+
+function parsePrograms(raw: unknown, name: string): readonly SoftwareProgram[] {
+    return readArray(raw, name).map((item) => {
+        const program = readObject(item, 'program');
+        return {id: toSoftwareId(readString(program, 'id')), title: toSoftwareTitle(readString(program, 'title'))};
+    });
+}
+
+export async function fetchCompilationOptions(query: string, signal: AbortSignal): Promise<readonly (SoftwareProgram & EntityAutocompleteOption)[]> {
+    const params = new URLSearchParams({query});
+    const json = await getJson(`/api/software/lookup?${params.toString()}`, signal);
+    return mapResponse(() => parsePrograms(readObject(json, 'program lookup')['items'], 'items')
+        .map((program) => ({...program, type: 'software'})));
 }
 
 /** The hardware of a release or software, or of a platform's reference book. */
@@ -84,6 +100,8 @@ export async function fetchSoftware(id: SoftwareId, signal: AbortSignal): Promis
                 };
             }),
             credits: parseSoftwareCredits(dto['credits']),
+            ...(dto['compilationItems'] === undefined ? {} : {compilationItems: parsePrograms(dto['compilationItems'], 'compilationItems')}),
+            ...(dto['compilations'] === undefined ? {} : {compilations: parsePrograms(dto['compilations'], 'compilations')}),
             sources: readArray(dto['sources'], 'sources').map((item) => {
                 const source = readObject(item, 'source');
                 return {archive: readString(source, 'archive'), url: readString(source, 'url')};

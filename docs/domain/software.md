@@ -16,6 +16,14 @@ Software (a production) is a release of a program: the work itself, as it is kno
 - Languages — of the software and of its alternative titles — are chosen from the archive's fixed list of languages, each known by its code.
 - It carries links to the outside world. A link has one kind from a fixed list: general, homepage, store, video. A link is an absolute web address (http or https).
 
+## Compilations
+
+A compilation is a software entry that collects other programs. Editors choose its programs from the archive. The programs appear as cards below the compilation's releases, each leading to its own page. Visitors can also follow links to the compilations that include a program.
+
+- A program may belong to several compilations. The same program appears once per compilation.
+- A compilation may include other compilations. A program cannot include itself, directly or through other compilations.
+- Removing a program from a compilation removes the membership. Deleting a program removes its memberships in both directions.
+
 ## Release dates
 The release date of software and of a release is a year, or a day of that year when the day is known: most often only the year is known, and a year is never turned into a made-up day. It may also be unknown.
 - It is written as the year, 1987, or as the day, 12.05.1987 (day.month.year), the same in every language.

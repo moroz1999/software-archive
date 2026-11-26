@@ -1,4 +1,13 @@
+import type {TFunction} from 'i18next';
+import type {BusinessMessages} from '@/shared/api';
 import type {TitleProblem} from '@/shared/lib/form-rules';
+
+export function compilationMessages(t: TFunction): BusinessMessages {
+    return {
+        'software.compilation-item-unknown': t('errors.compilationItemUnknown'),
+        'software.compilation-cycle': t('errors.compilationCycle'),
+    };
+}
 
 /** Translation keys of format errors of the software form. */
 export const TITLE_PROBLEM_KEYS: Readonly<Record<TitleProblem, string>> = {

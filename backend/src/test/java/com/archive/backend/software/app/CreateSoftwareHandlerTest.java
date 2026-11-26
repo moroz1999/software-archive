@@ -25,6 +25,7 @@ import com.archive.backend.software.domain.KnownReferences;
 import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.Software;
+import com.archive.backend.software.domain.SoftwareCompilationSets;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareInstructions;
@@ -41,7 +42,12 @@ class CreateSoftwareHandlerTest {
 
     private final InMemorySoftwareRepository repository = new InMemorySoftwareRepository();
     private final CreateSoftwareHandler handler = new CreateSoftwareHandler(
-            repository, hardwareSets(), categorySets(), KnownReferences.creditSets(reference -> true), event -> {});
+            repository,
+            hardwareSets(),
+            categorySets(),
+            KnownReferences.creditSets(reference -> true),
+            org.mockito.Mockito.mock(SoftwareCompilationSets.class),
+            event -> {});
 
     @Test
     void storesNewSoftwareUnderANewId() {

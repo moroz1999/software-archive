@@ -6,14 +6,20 @@ import com.archive.backend.software.app.DeleteSoftwareCommand;
 import com.archive.backend.software.app.DeleteSoftwareHandler;
 import com.archive.backend.software.app.GetSoftwareHandler;
 import com.archive.backend.software.app.GetSoftwareQuery;
+import com.archive.backend.software.app.ListCompilationProgramsHandler;
+import com.archive.backend.software.app.ListCompilationProgramsQuery;
 import com.archive.backend.software.app.ListLatestSoftwareHandler;
 import com.archive.backend.software.app.ListLatestSoftwareQuery;
 import com.archive.backend.software.app.ListSoftwareReleasesHandler;
 import com.archive.backend.software.app.ListSoftwareReleasesQuery;
+import com.archive.backend.software.app.LookupSoftwareTitlesHandler;
+import com.archive.backend.software.app.LookupSoftwareTitlesQuery;
 import com.archive.backend.software.app.UpdateSoftwareHandler;
 import com.archive.backend.software.domain.SoftwareId;
+import com.archive.backend.software.domain.SoftwareReferencePhrase;
 import com.archive.backend.software.web.dto.SoftwareCreatedDto;
 import com.archive.backend.software.web.dto.SoftwareDetailsDto;
+import com.archive.backend.software.web.dto.SoftwareLinkDto;
 import com.archive.backend.software.web.dto.SoftwareListItemDto;
 import com.archive.backend.software.web.dto.SoftwareReleaseDto;
 import com.archive.backend.software.web.dto.SoftwareRequestDto;
@@ -48,6 +54,8 @@ public class SoftwareController {
     private final ListLatestSoftwareHandler latestHandler;
     private final GetSoftwareHandler getHandler;
     private final ListSoftwareReleasesHandler releasesHandler;
+    private final ListCompilationProgramsHandler compilationProgramsHandler;
+    private final LookupSoftwareTitlesHandler lookupHandler;
     private final CreateSoftwareHandler createHandler;
     private final UpdateSoftwareHandler updateHandler;
     private final DeleteSoftwareHandler deleteHandler;
@@ -68,6 +76,12 @@ public class SoftwareController {
         return webMapper.toDetails(getHandler.handle(new GetSoftwareQuery(actor, new SoftwareId(id), language)));
     }
 
+    @GetMapping("/lookup")
+    public SoftwareLinkDto.Lookup lookup(@RequestParam(defaultValue = "") String query) {
+        return new SoftwareLinkDto.Lookup(webMapper.toLinkDtos(
+                lookupHandler.handle(new LookupSoftwareTitlesQuery(new SoftwareReferencePhrase(query)))));
+    }
+
     /**
      * The releases of the software, each with the hardware it shows.
      */
@@ -75,6 +89,13 @@ public class SoftwareController {
     public List<SoftwareReleaseDto> releases(Actor actor, @PathVariable UUID id, Language language) {
         return webMapper.toReleases(
                 id, releasesHandler.handle(new ListSoftwareReleasesQuery(actor, new SoftwareId(id), language)));
+    }
+
+    @GetMapping("/{id}/compilation-items")
+    public List<SoftwareListItemDto> compilationPrograms(@PathVariable UUID id) {
+        return compilationProgramsHandler.handle(new ListCompilationProgramsQuery(new SoftwareId(id))).stream()
+                .map(webMapper::toListItem)
+                .toList();
     }
 
     @PostMapping

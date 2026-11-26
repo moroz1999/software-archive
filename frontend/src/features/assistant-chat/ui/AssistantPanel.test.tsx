@@ -385,6 +385,28 @@ describe(AssistantPanel, () => {
         expect(edit.getByRole('definition', {name: 'Title'})).toHaveTextContent(/^Elite$/u);
     });
 
+    it('shows which program the assistant will add to the compilation as a link', async () => {
+        const compilation = {type: 'software', id: ELITE_PLUS, title: 'Arcade Collection', path: `/software/${ELITE_PLUS}`};
+        await openConversation(state({
+            messages: [QUESTION, PLAN_MESSAGE],
+            plans: [plan('proposed', [
+                action(1, {
+                    tool: 'add_compilation_items',
+                    kind: 'link',
+                    entityType: 'software',
+                    arguments: {id: compilation.id, compilationItemIds: [ELITE]},
+                }),
+            ])],
+            refs: {[compilation.id]: compilation, [ELITE]: ELITE_REF},
+        }));
+
+        const step = within(await within(assistant()).findByRole('listitem', {name: 'Change 1'}));
+        const contents = within(step.getByRole('definition', {name: 'Compilation programs'}));
+
+        expect(step.getByRole('link', {name: compilation.title})).toHaveAttribute('href', compilation.path);
+        expect(contents.getByRole('link', {name: 'Elite'})).toHaveAttribute('href', `/software/${ELITE}`);
+    });
+
     it('shows an id an earlier change makes by the number of that change', async () => {
         await openConversation(state({messages: [QUESTION, PLAN_MESSAGE], plans: [plan('proposed')]}));
         await within(assistant()).findByRole('region', {name: 'Исправить Elite и добавить Elite Plus'});

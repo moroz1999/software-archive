@@ -3,6 +3,7 @@ package com.archive.backend.software.app;
 import com.archive.backend.category.domain.CategorySets;
 import com.archive.backend.hardware.domain.HardwareSets;
 import com.archive.backend.software.domain.Software;
+import com.archive.backend.software.domain.SoftwareCompilationSets;
 import com.archive.backend.software.domain.SoftwareCreditSets;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareRepository;
@@ -21,6 +22,7 @@ public class CreateSoftwareHandler {
     private final HardwareSets hardwareSets;
     private final CategorySets categorySets;
     private final SoftwareCreditSets creditSets;
+    private final SoftwareCompilationSets compilationSets;
     private final ApplicationEventPublisher events;
 
     @Transactional
@@ -38,6 +40,10 @@ public class CreateSoftwareHandler {
                 addedBy);
         software.changePreservation(c.preservation());
         software.changeInstructions(c.instructions());
+        var programs = c.compilationItemIds();
+        if (programs != null) {
+            software.changeCompilationItems(compilationSets.of(id, programs));
+        }
         repository.save(software);
         software.pullEvents().forEach(events::publishEvent);
         return software.getId();

@@ -1,9 +1,11 @@
 import type {TFunction} from 'i18next';
+import {compilationMessages} from '@/entities/software';
 import type {BusinessMessages} from '@/shared/api';
 
 /** Texts for the business error codes adding software can receive; others fall back by status. */
 export function createSoftwareMessages(t: TFunction): BusinessMessages {
     return {
+        ...compilationMessages(t),
         '401': t('errors.business.signInRequired'),
         '403': t('errors.business.forbidden'),
         '409': t('errors.business.conflict'),

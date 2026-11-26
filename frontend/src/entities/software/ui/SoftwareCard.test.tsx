@@ -3,7 +3,7 @@ import {render, screen, within} from '@testing-library/react';
 import {MemoryRouter} from 'react-router';
 import {toScreenshotId} from '../model/screenshot';
 import {toReleaseDate, toSoftwareId, toSoftwareTitle} from '../model/software';
-import {SoftwareCard} from './SoftwareCard';
+import {SoftwareCardLayout} from './SoftwareCardLayout';
 
 const ALPHA = {
     id: toSoftwareId('00000000-0000-0000-0001-000000000001'),
@@ -11,9 +11,9 @@ const ALPHA = {
     releaseDate: toReleaseDate('1985-03-02'),
 };
 
-describe(SoftwareCard, () => {
+describe(SoftwareCardLayout, () => {
     it('is a card named by the title, with an image placeholder and the release year', () => {
-        render(<MemoryRouter><SoftwareCard software={ALPHA} href="/software/1/edit"/></MemoryRouter>);
+        render(<MemoryRouter><SoftwareCardLayout footer={null} software={ALPHA} href="/software/1/edit"/></MemoryRouter>);
 
         const card = screen.getByRole('article', {name: 'Fixture Software Alpha'});
 
@@ -27,7 +27,7 @@ describe(SoftwareCard, () => {
             {id: toScreenshotId('00000000-0000-0000-0055-000000000001'), url: '/api/screenshots/1'},
             {id: toScreenshotId('00000000-0000-0000-0055-000000000002'), url: '/api/screenshots/2'},
         ];
-        render(<MemoryRouter><SoftwareCard software={{...ALPHA, screenshots}} href="/software/1"/></MemoryRouter>);
+        render(<MemoryRouter><SoftwareCardLayout footer={null} software={{...ALPHA, screenshots}} href="/software/1"/></MemoryRouter>);
 
         const card = screen.getByRole('article', {name: 'Fixture Software Alpha'});
 
@@ -36,13 +36,13 @@ describe(SoftwareCard, () => {
     });
 
     it('shows the placeholder for no screenshots', () => {
-        render(<MemoryRouter><SoftwareCard software={{...ALPHA, screenshots: []}} href="/software/1"/></MemoryRouter>);
+        render(<MemoryRouter><SoftwareCardLayout footer={null} software={{...ALPHA, screenshots: []}} href="/software/1"/></MemoryRouter>);
 
         expect(screen.getByRole('img', {name: 'No screenshot yet'})).toBeInTheDocument();
     });
 
     it('is one link to the given page, named by the title, holding the picture and every line', () => {
-        render(<MemoryRouter><SoftwareCard software={{...ALPHA, madeBy: ['Ultimate']}} href="/software/1/edit"/></MemoryRouter>);
+        render(<MemoryRouter><SoftwareCardLayout footer={null} software={{...ALPHA, madeBy: ['Ultimate']}} href="/software/1/edit"/></MemoryRouter>);
 
         const link = screen.getByRole('link', {name: 'Fixture Software Alpha'});
 
@@ -54,21 +54,21 @@ describe(SoftwareCard, () => {
     });
 
     it('names who made the software, in the order given', () => {
-        render(<MemoryRouter><SoftwareCard software={{...ALPHA, madeBy: ['Ultimate', 'Zed']}} href="/software/1"/></MemoryRouter>);
+        render(<MemoryRouter><SoftwareCardLayout footer={null} software={{...ALPHA, madeBy: ['Ultimate', 'Zed']}} href="/software/1"/></MemoryRouter>);
 
         expect(screen.getByText('Ultimate, Zed')).toBeInTheDocument();
         expect(screen.getByText('1985')).toBeInTheDocument();
     });
 
     it('names who made the software even when the release date is unknown', () => {
-        render(<MemoryRouter><SoftwareCard software={{...ALPHA, releaseDate: null, madeBy: ['Ultimate']}} href="/software/1"/></MemoryRouter>);
+        render(<MemoryRouter><SoftwareCardLayout footer={null} software={{...ALPHA, releaseDate: null, madeBy: ['Ultimate']}} href="/software/1"/></MemoryRouter>);
 
         expect(screen.getByText('Ultimate')).toBeInTheDocument();
         expect(screen.queryByText('1985')).not.toBeInTheDocument();
     });
 
     it('shows no year when the release date is unknown', () => {
-        render(<MemoryRouter><SoftwareCard software={{...ALPHA, releaseDate: null}} href="/software/1/edit"/></MemoryRouter>);
+        render(<MemoryRouter><SoftwareCardLayout footer={null} software={{...ALPHA, releaseDate: null}} href="/software/1/edit"/></MemoryRouter>);
 
         expect(screen.queryByText('1985')).not.toBeInTheDocument();
     });

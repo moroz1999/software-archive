@@ -22,4 +22,4 @@ The rating of software is not the plain average of its votes, so a work with thr
 ## Where it is seen
 - The page of software shows the rating as stars, the number of votes behind it on pointing at them; a signed-in user gives their stars there, sees their own vote and withdraws it.
 - Under the releases, the votes of the software: who voted, the stars and the day, newest first.
-- Every card of software — in the catalog, the search, the latest software, the software of a person, a group or a label — shows the rating and is voted on as the page is, and the catalog can be ordered by rating ([search.md](search.md#software-catalog)).
+- Every card of software shows the rating and accepts votes as the page does, including the cards in a compilation. The catalog can be ordered by rating ([search.md](search.md#software-catalog)).

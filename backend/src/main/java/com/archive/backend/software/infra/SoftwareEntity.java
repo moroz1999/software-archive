@@ -66,6 +66,11 @@ public class SoftwareEntity {
     @Column(name = "category_id")
     private Set<UUID> categories = new HashSet<>();
 
+    @ElementCollection
+    @CollectionTable(name = "software_compilation_item", joinColumns = @JoinColumn(name = "compilation_id"))
+    @Column(name = "item_id", nullable = false)
+    private Set<UUID> compilationItems = new HashSet<>();
+
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "software_id", nullable = false)
     private List<SoftwareReleaseEntity> releases = new ArrayList<>();

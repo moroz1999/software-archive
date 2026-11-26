@@ -1,9 +1,11 @@
 import {createRequiredContext} from '@/shared/lib/context';
 import type {MemberRoleValue} from '@/shared/ui/member-role-editor';
+import type {SoftwareProgram} from './software';
 import type {PlatformChoice, SoftwareFormErrors, SoftwareFormValues} from './software-form';
 
 /** The texts of a refusal under the fields it names. */
-export type SoftwareFormRefusals = Readonly<Partial<Record<keyof SoftwareFormValues, string>>>;
+export type SoftwareFormField = keyof SoftwareFormValues | 'compilationItemIds';
+export type SoftwareFormRefusals = Readonly<Partial<Record<SoftwareFormField, string>>>;
 
 export interface SoftwareFormState {
     readonly values: SoftwareFormValues;
@@ -19,6 +21,7 @@ export interface SoftwareFormState {
     readonly changeCategories: (ids: readonly string[]) => void;
     /** Replaces everyone credited. */
     readonly changeCredits: (credits: readonly MemberRoleValue[]) => void;
+    readonly changeCompilationItems: (programs: readonly SoftwareProgram[]) => void;
     /** Checks the format rules and hands the draft on only when they pass. */
     readonly submit: () => void;
     /** The platforms to choose from. */

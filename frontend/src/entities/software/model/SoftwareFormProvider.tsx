@@ -1,7 +1,7 @@
 import {type ReactNode, useState} from 'react';
 import {type BusinessError, type BusinessMessages, splitRefusal, unedited} from '@/shared/api';
 import {type PlatformChoice, type SoftwareDraft, type SoftwareFormErrors, type SoftwareFormValues, toSoftwareFormValues, validateSoftwareForm} from './software-form';
-import {type SoftwareFormRefusals, SoftwareFormContext, type SoftwareFormState} from './software-form-context';
+import {type SoftwareFormField, type SoftwareFormRefusals, SoftwareFormContext, type SoftwareFormState} from './software-form-context';
 
 export interface SoftwareFormProviderProps {
     /** Called only with values that pass the format rules. */
@@ -17,12 +17,13 @@ export interface SoftwareFormProviderProps {
     readonly children: ReactNode;
 }
 
-const FIELDS = ['title', 'description', 'releaseDate', 'platform', 'hardware', 'categories', 'credits', 'preservation'] as const satisfies readonly (keyof SoftwareFormValues)[];
+const FIELDS = ['title', 'description', 'releaseDate', 'platform', 'hardware', 'categories', 'credits', 'preservation', 'compilationItemIds'] as const satisfies readonly SoftwareFormField[];
 
 /** The values of a software form being filled in, their format rules and why the last submit was refused. */
 export function SoftwareFormProvider({onSubmit, initial, platforms = [], busy = false, error, messages = {}, children}: SoftwareFormProviderProps) {
     const [values, setValues] = useState<SoftwareFormValues>(() => ({...toSoftwareFormValues(), ...initial}));
     const [errors, setErrors] = useState<SoftwareFormErrors>({});
+    const [compilationItemsChanged, setCompilationItemsChanged] = useState(false);
     // Fields edited since the refusal arrived: their refusal no longer applies. A new refusal starts afresh.
     const [edited, setEdited] = useState<{readonly error: BusinessError | undefined; readonly fields: ReadonlySet<string>}>({error, fields: new Set()});
     if (edited.error !== error) {
@@ -32,7 +33,7 @@ export function SoftwareFormProvider({onSubmit, initial, platforms = [], busy = 
     const refusal = splitRefusal(error, messages, FIELDS);
     const refusals: SoftwareFormRefusals = unedited(refusal.fields, edited.fields);
 
-    function markEdited(field: keyof SoftwareFormValues) {
+    function markEdited(field: SoftwareFormField) {
         setErrors((current) => (field in current ? {...current, [field]: undefined} : current));
         setEdited((current) => (current.fields.has(field) ? current : {...current, fields: new Set([...current.fields, field])}));
     }
@@ -57,11 +58,18 @@ export function SoftwareFormProvider({onSubmit, initial, platforms = [], busy = 
             setValues((current) => ({...current, credits}));
             markEdited('credits');
         },
+        changeCompilationItems: (compilationItems) => {
+            setValues((current) => ({...current, compilationItems}));
+            setCompilationItemsChanged(true);
+            markEdited('compilationItemIds');
+        },
         submit: () => {
             const result = validateSoftwareForm(values);
             if (result.ok) {
                 setErrors({});
-                onSubmit(result.draft);
+                onSubmit(compilationItemsChanged
+                    ? {...result.draft, compilationItemIds: values.compilationItems?.map((program) => program.id) ?? []}
+                    : result.draft);
             } else {
                 setErrors(result.errors);
             }

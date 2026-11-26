@@ -1,7 +1,7 @@
 import {useTranslation} from 'react-i18next';
 import {SOFTWARE_NEW_PATH} from '@/entities/software';
 import {SoftwareCatalog, SoftwareCatalogProvider} from '@/features/software/catalog';
-import {SoftwareCardVote} from '@/features/software/vote';
+import {SoftwareCard} from '@/features/software/vote';
 import {Button} from '@/shared/ui/button';
 import {PageLayout} from '@/shared/ui/page-layout';
 import {useAbility} from '@/entities/users';
@@ -12,7 +12,7 @@ export function SoftwarePage() {
     return (
         <PageLayout title={t('pages.software')} actions={addsEntries && <Button href={SOFTWARE_NEW_PATH}>{t('actions.addSoftware')}</Button>}>
             <SoftwareCatalogProvider>
-                <SoftwareCatalog cardFooter={(software) => <SoftwareCardVote software={software}/>}/>
+                <SoftwareCatalog Card={SoftwareCard}/>
             </SoftwareCatalogProvider>
         </PageLayout>
     );

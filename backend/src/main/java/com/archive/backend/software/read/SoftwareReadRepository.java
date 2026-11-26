@@ -17,6 +17,10 @@ public interface SoftwareReadRepository {
      */
     Page<SoftwareSummary> findLatest(@Nullable String platform, Pageable pageable);
 
+    List<SoftwareLink> findTitles(String phrase, int limit);
+
+    List<SoftwareSummary> findCompilationPrograms(UUID compilation);
+
     /**
      * Software with its platform, hardware and categories named in the language of the given code, or in Russian when
      * they have no name in that one.

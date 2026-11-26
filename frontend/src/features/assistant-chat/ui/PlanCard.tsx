@@ -79,7 +79,7 @@ const FIELDS = [
     'title', 'name', 'realName', 'notes', 'description', 'instructions', 'releaseDate', 'version', 'type', 'types', 'platform',
     'platforms', 'hardware', 'categoryIds', 'preservation', 'credits', 'roles', 'labels', 'locations', 'members', 'groups',
     'softwareId', 'releaseId', 'groupId', 'authorId', 'labelId', 'ownerId', 'ownerType', 'countryId', 'cityId', 'intoId',
-    'urls', 'url', 'fileName', 'screenshotId', 'gallery', 'sourceUrl', 'code', 'group', 'names',
+    'urls', 'url', 'fileName', 'screenshotId', 'gallery', 'sourceUrl', 'code', 'group', 'names', 'compilationItemIds',
 ];
 const FLAGS = ['display', 'primary'];
 

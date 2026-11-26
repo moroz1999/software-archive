@@ -20,6 +20,7 @@ The edit page shows the breadcrumbs of the software ([software-view.md](software
 - Hardware: once a platform is chosen, its hardware by group, picked with the same picker as a release's ([design-system/multi-select-filter.md](../design-system/multi-select-filter.md)); a skeleton while it loads.
 - Categories: under the hardware, the whole tree of categories ([domain/categories.md](../domain/categories.md)) to check any number in, none included ([design-system/tree-checklist.md](../design-system/tree-checklist.md)); a skeleton while it loads.
 - Credits: "Person or group" searches the current people, groups, their labels and the labels of nobody remotely by name; every one chosen has removable role chips, Developer and Publisher first among the roles. Choosing a label keeps that exact label rather than changing it to its owner's display name. Saving replaces the complete set of credits.
+- "Compilation programs" looks up programs by title and shows removable selections. A submitted selection replaces the contents. An edit without a selection change sends no contents, so it can be saved alongside another editor's changes to the compilation.
 - While hardware is chosen the platform is locked, with "Remove the hardware to change the platform." under it: hardware belongs to its platform ([domain/hardware.md](../domain/hardware.md#platform-switch)). Hardware of a release still locks it on the backend, shown under Platform.
 - Format rules are checked before sending; errors appear under their fields on submit and clear when the field is edited. Empty optional fields are sent as unknown (`null`).
 - While saving, the fields and the submit button are locked.
@@ -32,6 +33,7 @@ The edit page shows the breadcrumbs of the software ([software-view.md](software
 
 - The edit page preloads the software's details, then the hardware of its platform ([data-loading.md](../data-loading.md)): within 300 ms the form appears filled, otherwise a form skeleton first.
 - Hardware of another platform is refused under Hardware; a category deleted in the meantime is refused under its field, anyone credited deleted in the meantime under Credits.
+- A deleted program or a selection that would create a cycle is refused under "Compilation programs".
 - Unknown software, an id in the URL that cannot be one, and software deleted in the meantime — found out on saving or deleting — show the not found page ([error-handling.md](../error-handling.md)); a malformed id is never sent to the backend.
 - System errors go to the error dialog; its Retry repeats the same save or delete with the same values, and the form keeps what was typed.
 
@@ -44,6 +46,9 @@ The edit page shows the breadcrumbs of the software ([software-view.md](software
 | `PUT /api/software/{id}` (same body) | `204` | `404 software.not-found`; `422 software.platform-locked` (field `platform`) when the platform changes while a release has hardware; the errors of `POST` |
 | `DELETE /api/software/{id}` | `204` | `404 software.not-found` |
 | `GET /api/entity-lookup?types=…&query=…` | `200` `{items: [{id, ownerId, type, title}]}` ordered by the closest names first, empty for a blank query; a label of nobody is an `author-label` with `ownerId` `null` | `400 software.reference-type-invalid` for an unknown type |
+| `GET /api/software/lookup?query=…` | `200` with program ids and titles in `items`, empty for a blank query | |
+
+Software details carry `compilationItems` and `compilations`. A create or edit may send `compilationItemIds`, including an empty list to clear the contents. A missing program or a cycle returns `422` for that field. Edits that add links serialize the cycle check with the write so concurrent edits cannot close a cycle.
 
 `platform` is a platform code; `description`, `instructions` and `releaseDate` are `null` when unknown; `releaseDate` is a year (`1987`) or an ISO day (`1987-05-12`), anything else is `400 release-date.invalid`; `preservation` is `unknown`, `missing-in-action`, `donationware` or `in-sales` (missing means `unknown`), anything else is `400 software.preservation-invalid`; `hardware` is the software's whole base hardware, every code of its platform (missing means none); `categories`, `publishers`, `developers` and `credits` are whole sets (missing means none). Credit types are `author` and `author-label`. A category sent together with one under it is dropped, so the software keeps only the deepest category of each branch. Publisher types are `author`, `author-label`, `group` and `group-label`; developer types are `group` and `group-label`.
 

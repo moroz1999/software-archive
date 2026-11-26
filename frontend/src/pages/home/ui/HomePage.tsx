@@ -1,6 +1,6 @@
 import {useTranslation} from 'react-i18next';
 import {LatestSoftware, LatestSoftwareProvider} from '@/features/software/latest';
-import {SoftwareCardVote} from '@/features/software/vote';
+import {SoftwareCard} from '@/features/software/vote';
 import {PageLayout} from '@/shared/ui/page-layout';
 
 export function HomePage() {
@@ -8,7 +8,7 @@ export function HomePage() {
     return (
         <PageLayout title={t('pages.recentlyAdded')}>
             <LatestSoftwareProvider>
-                <LatestSoftware cardFooter={(software) => <SoftwareCardVote software={software}/>}/>
+                <LatestSoftware Card={SoftwareCard}/>
             </LatestSoftwareProvider>
         </PageLayout>
     );

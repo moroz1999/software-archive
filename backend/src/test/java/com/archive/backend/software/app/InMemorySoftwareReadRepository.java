@@ -5,6 +5,7 @@ import com.archive.backend.software.read.CreditedSoftware;
 import com.archive.backend.software.read.ReleaseDetails;
 import com.archive.backend.software.read.SoftwareCredit;
 import com.archive.backend.software.read.SoftwareDetails;
+import com.archive.backend.software.read.SoftwareLink;
 import com.archive.backend.software.read.SoftwareReadRepository;
 import com.archive.backend.software.read.SoftwareRelease;
 import com.archive.backend.software.read.SoftwareScreenshot;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -75,6 +77,23 @@ class InMemorySoftwareReadRepository implements SoftwareReadRepository {
     @Override
     public boolean exists(UUID id) {
         return items.stream().anyMatch(details -> details.id().equals(id));
+    }
+
+    @Override
+    public List<SoftwareLink> findTitles(String phrase, int limit) {
+        return items.stream()
+                .filter(details -> details.title().toLowerCase(Locale.ROOT).contains(phrase.toLowerCase(Locale.ROOT)))
+                .limit(limit)
+                .map(details -> new SoftwareLink(details.id(), details.title()))
+                .toList();
+    }
+
+    @Override
+    public List<SoftwareSummary> findCompilationPrograms(UUID compilation) {
+        return findById(compilation, "en").stream()
+                .flatMap(details -> details.compilationItems().stream())
+                .map(program -> new SoftwareSummary(program.id(), program.title(), null))
+                .toList();
     }
 
     @Override

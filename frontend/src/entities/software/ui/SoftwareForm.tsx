@@ -3,10 +3,12 @@ import {useTranslation} from 'react-i18next';
 import {Button} from '@/shared/ui/button';
 import {Form, FormActions, FormField, FormMessage, FormSection} from '@/shared/ui/form';
 import {Input} from '@/shared/ui/input';
+import {MultiEntityAutocomplete} from '@/shared/ui/multi-entity-autocomplete';
 import {Select} from '@/shared/ui/select';
 import {Skeleton} from '@/shared/ui/skeleton';
 import {Textarea} from '@/shared/ui/textarea';
 import {useSkeleton} from '@/shared/lib/loading';
+import {fetchCompilationOptions} from '../api/software-api';
 import {PLATFORM_REQUIRED_KEY, RELEASE_DATE_HINT_KEY, RELEASE_DATE_INVALID_KEY, TITLE_PROBLEM_KEYS} from '../config/messages';
 import {usePlatformHardware} from '../model/platform-hardware-context';
 import {PlatformHardwareProvider} from '../model/PlatformHardwareProvider';
@@ -29,7 +31,7 @@ export interface SoftwareFormProps {
 /** The fields of software inside a SoftwareFormProvider, which holds their values and checks them. */
 export function SoftwareForm({submitLabel, actions, categories, sources}: SoftwareFormProps) {
     const {t} = useTranslation();
-    const {values, errors, refusals, change, changeCredits, submit, platforms, busy, error} = useSoftwareForm();
+    const {values, errors, refusals, change, changeCredits, changeCompilationItems, submit, platforms, busy, error} = useSoftwareForm();
     // Hardware belongs to its platform: the platform stays while hardware is chosen (docs/domain/hardware.md).
     const platformLocked = values.hardware.length > 0;
 
@@ -89,6 +91,18 @@ export function SoftwareForm({submitLabel, actions, categories, sources}: Softwa
                     </PlatformHardwareProvider>
                 )}
                 {categories}
+                <FormField label={t('fields.compilationItems')} error={refusals.compilationItemIds}>
+                    {(control) => (
+                        <MultiEntityAutocomplete
+                            {...control}
+                            load={fetchCompilationOptions}
+                            queryKey="compilation-programs"
+                            value={(values.compilationItems ?? []).map((program) => ({...program, type: 'software'}))}
+                            onChange={changeCompilationItems}
+                            disabled={busy}
+                        />
+                    )}
+                </FormField>
             </FormSection>
             <FormSection title={t('formSections.credits')} columns={1}>
                 <CreditsEditor value={values.credits ?? []} onChange={changeCredits} disabled={busy} error={refusals.credits}/>

@@ -19,7 +19,9 @@ public record SoftwareDetailsDto(
         List<SoftwareSourceDto> sources,
         List<OriginDto> origins,
         AddedDto added,
-        boolean canChange) {
+        boolean canChange,
+        List<SoftwareLinkDto> compilationItems,
+        List<SoftwareLinkDto> compilations) {
 
     public record SoftwareCreditDto(UUID id, @Nullable UUID ownerId, String type, String title, List<String> roles) {}
 

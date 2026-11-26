@@ -13,12 +13,14 @@ interface Answer {
     readonly rating: SoftwareRating;
 }
 
+const UNRATED: CardRating = {rating: 0, votesAmount: 0};
+
 export interface SoftwareCardVoteProps {
     readonly software: Software;
 }
 
 /**
- * The rating on a card of software in a list, voted on there as on its page; nothing for a list that gives no rating.
+ * The rating on a card of software in a list, voted on there as on its page.
  * The answer to a vote stands on the card until the list brings another rating.
  */
 export function SoftwareCardVote({software}: SoftwareCardVoteProps) {
@@ -28,11 +30,8 @@ export function SoftwareCardVote({software}: SoftwareCardVoteProps) {
     const cast = useCastVote(software.id, (rating) => {
         setAnswer({to: software.rating, rating});
     });
-    if (software.rating === undefined) {
-        return null;
-    }
     const rating = answer !== null && answer.to === software.rating
         ? answer.rating
-        : {...software.rating, myVote: mine.data ?? null};
+        : {...(software.rating ?? UNRATED), myVote: mine.data ?? null};
     return <VoteStars rating={rating} {...cast}/>;
 }

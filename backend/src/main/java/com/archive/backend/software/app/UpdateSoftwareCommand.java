@@ -26,7 +26,35 @@ public record UpdateSoftwareCommand(
         Set<CategoryId> categories,
         List<SoftwareCreditDraft> credits,
         PreservationStatus preservation,
-        @Nullable SoftwareInstructions instructions) {
+        @Nullable SoftwareInstructions instructions,
+        @Nullable Set<SoftwareId> compilationItemIds) {
+
+    public UpdateSoftwareCommand(
+            Actor actor,
+            SoftwareId id,
+            SoftwareTitle title,
+            @Nullable SoftwareDescription description,
+            @Nullable ReleaseDate releaseDate,
+            PlatformCode platform,
+            Set<HardwareCode> hardware,
+            Set<CategoryId> categories,
+            List<SoftwareCreditDraft> credits,
+            PreservationStatus preservation,
+            @Nullable SoftwareInstructions instructions) {
+        this(
+                actor,
+                id,
+                title,
+                description,
+                releaseDate,
+                platform,
+                hardware,
+                categories,
+                credits,
+                preservation,
+                instructions,
+                null);
+    }
 
     public UpdateSoftwareCommand(
             Actor actor,

@@ -6,7 +6,7 @@ import {type GroupId, groupPath, toGroupId} from '@/entities/groups';
 import {type LabelDetails, LabelDetailsProvider, labelEditPath, type LabelId, type LabelOwner, labelPath, useLabelDetails} from '@/entities/labels';
 import {locationText, primaryFirst} from '@/entities/locations';
 import {CreditedReleaseList, CreditedSoftwareList} from '@/entities/software';
-import {SoftwareCardVote} from '@/features/software/vote';
+import {SoftwareCard} from '@/features/software/vote';
 import {AttachLabelDialog} from '@/features/label/attach';
 import {MakeAuthorDialog, MakeGroupDialog} from '@/features/label/make-owner';
 import {AttachLabelToGroupDialog, MergeLabelIntoAuthorDialog, MergeLabelIntoGroupDialog, MergeLabelIntoLabelDialog} from '@/features/label/hand-over';
@@ -108,7 +108,7 @@ function LoadedView() {
         >
             <Stack gap="xl">
                 <Details label={label}/>
-                <CreditedSoftwareList owner={{kind: 'labels', id: label.id}} cardFooter={(software) => <SoftwareCardVote software={software}/>}/>
+                <CreditedSoftwareList owner={{kind: 'labels', id: label.id}} Card={SoftwareCard}/>
                 <CreditedReleaseList owner={{kind: 'labels', id: label.id}}/>
                 <AdditionNote addition={label.added}/>
             </Stack>

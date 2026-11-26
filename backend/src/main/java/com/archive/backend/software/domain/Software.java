@@ -49,6 +49,8 @@ public final class Software {
     /** Who made it, published it and worked on it (docs/domain/software.md#credits). */
     private SoftwareCredits credits;
 
+    private SoftwareCompilationItems compilationItems;
+
     /** Whether the software can be had and how; unknown until it is known. */
     private PreservationStatus preservation;
 
@@ -79,7 +81,8 @@ public final class Software {
             AddedBy addedBy,
             Map<Gallery, Screenshots> galleries,
             PreservationStatus preservation,
-            @Nullable SoftwareInstructions instructions) {
+            @Nullable SoftwareInstructions instructions,
+            SoftwareCompilationItems compilationItems) {
         this.id = Objects.requireNonNull(id, "id");
         this.title = Objects.requireNonNull(title, "title");
         this.description = description;
@@ -95,6 +98,37 @@ public final class Software {
         }
         this.preservation = Objects.requireNonNull(preservation, "preservation");
         this.instructions = instructions;
+        compilationItems.requireOwner(id);
+        this.compilationItems = compilationItems;
+    }
+
+    public Software(
+            SoftwareId id,
+            SoftwareTitle title,
+            @Nullable SoftwareDescription description,
+            @Nullable ReleaseDate releaseDate,
+            HardwareSet hardware,
+            CategorySet categories,
+            SoftwareCredits credits,
+            List<Release> releases,
+            AddedBy addedBy,
+            Map<Gallery, Screenshots> galleries,
+            PreservationStatus preservation,
+            @Nullable SoftwareInstructions instructions) {
+        this(
+                id,
+                title,
+                description,
+                releaseDate,
+                hardware,
+                categories,
+                credits,
+                releases,
+                addedBy,
+                galleries,
+                preservation,
+                instructions,
+                new SoftwareCompilationItems(id, Set.of()));
     }
 
     public Software(
@@ -139,6 +173,11 @@ public final class Software {
 
     public PlatformCode getPlatform() {
         return hardware.platform();
+    }
+
+    public void changeCompilationItems(SoftwareCompilationItems items) {
+        items.requireOwner(id);
+        compilationItems = items;
     }
 
     /**

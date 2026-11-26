@@ -1,4 +1,4 @@
-import {type ReactNode, useId} from 'react';
+import {type ComponentType, type ReactNode, useId} from 'react';
 import {useTranslation} from 'react-i18next';
 import {CardScreenshots} from '@/shared/ui/card-screenshots';
 import {ImagePlaceholder} from '@/shared/ui/image-placeholder';
@@ -10,14 +10,19 @@ import {Heading, Text} from '@/shared/ui/typography';
 import {releaseYear} from '../lib/release-year';
 import type {Software} from '../model/software';
 
-export interface SoftwareCardProps {
+export interface SoftwareCardContentProps {
     readonly software: Software;
     /** Where the card leads. */
     readonly href: string;
     /** More under who made it and the year, such as the roles of the person whose page lists the card. */
     readonly children?: ReactNode;
-    /** Under the card, outside its link: what is done on the card itself, such as voting. */
-    readonly footer?: ReactNode;
+}
+
+export type SoftwareCardComponent = ComponentType<SoftwareCardContentProps>;
+
+export interface SoftwareCardLayoutProps extends SoftwareCardContentProps {
+    /** Under the card, outside its link. */
+    readonly footer: ReactNode;
 }
 
 /**
@@ -25,7 +30,7 @@ export interface SoftwareCardProps {
  * year — on one line when both fit, the year moving under the names when not; under it, outside the link, what is done on the
  * card, such as voting.
  */
-export function SoftwareCard({software, href, children, footer}: SoftwareCardProps) {
+export function SoftwareCardLayout({software, href, children, footer}: SoftwareCardLayoutProps) {
     const titleId = useId();
     const {t} = useTranslation();
     const madeBy = software.madeBy ?? [];
@@ -37,7 +42,7 @@ export function SoftwareCard({software, href, children, footer}: SoftwareCardPro
             padding="none"
             contentBleed
             href={href}
-            footer={footer === undefined ? undefined : (
+            footer={footer === undefined || footer === null ? undefined : (
                 <Inset padding="lg" side="inline"><Inset padding="lg" side="bottom">{footer}</Inset></Inset>
             )}
         >

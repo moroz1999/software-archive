@@ -15,6 +15,7 @@ This archive saves a cultural heritage from disappearing: software, and the work
 
 ### General
 - Keep it simple, don't invent unnecessary checks.
+- Never request approval to launch tests. Find a way to run them with the permissions already available. If a test runner still cannot run under those permissions, report the blocker.
 - Before each new task, read `AGENTS.md` and review the relevant rules if task scope differs from previous.
 - All documentation and code comments MUST be in English, even if the user communicates in Russian or another language.
 - After completing a task, re-read the task description and verify every point.
@@ -88,6 +89,8 @@ cd backend && ./mvnw spring-boot:run -Dspring-boot.run.profiles=fixtures
 # Backend tests: unit (*Test) / unit + integration (*IT, Testcontainers)
 cd backend && ./mvnw test
 cd backend && ./mvnw verify
+# Targeted integration tests using the existing Maven authorization. Run from backend/.
+./mvnw test-compile failsafe:integration-test failsafe:verify -Dit.test=ClassNameIT
 
 # Backend: format the Java sources (every build does it too)
 cd backend && ./mvnw spotless:apply

@@ -23,6 +23,7 @@ import com.archive.backend.software.domain.ScreenshotFormat;
 import com.archive.backend.software.domain.ScreenshotId;
 import com.archive.backend.software.domain.Screenshots;
 import com.archive.backend.software.domain.Software;
+import com.archive.backend.software.domain.SoftwareCompilationItems;
 import com.archive.backend.software.domain.SoftwareCreditDraft;
 import com.archive.backend.software.domain.SoftwareCredits;
 import com.archive.backend.software.domain.SoftwareDescription;
@@ -57,11 +58,12 @@ import org.mapstruct.Mapper;
 public interface SoftwareMapper {
 
     default Software toDomain(SoftwareEntity entity, CategorySet categories) {
+        SoftwareId id = new SoftwareId(entity.getId());
         PlatformCode platform = new PlatformCode(entity.getPlatformCode());
         String description = entity.getDescription();
         String instructions = entity.getInstructions();
         return new Software(
-                new SoftwareId(entity.getId()),
+                id,
                 new SoftwareTitle(entity.getTitle()),
                 description == null ? null : new SoftwareDescription(description),
                 toReleaseDate(entity.getReleaseYear(), entity.getReleaseDay()),
@@ -74,7 +76,12 @@ public interface SoftwareMapper {
                 AddedByRows.toAddedBy(entity.getAddedBy()),
                 toGalleries(entity.getScreenshots()),
                 PreservationStatus.fromCode(entity.getPreservation()),
-                instructions == null ? null : new SoftwareInstructions(instructions));
+                instructions == null ? null : new SoftwareInstructions(instructions),
+                SoftwareCompilationItems.restore(
+                        id,
+                        entity.getCompilationItems().stream()
+                                .map(SoftwareId::new)
+                                .collect(Collectors.toSet())));
     }
 
     default SoftwareEntity toEntity(Software software) {
@@ -94,6 +101,9 @@ public interface SoftwareMapper {
         entity.setCategories(
                 software.getCategories().ids().stream().map(CategoryId::value).collect(Collectors.toSet()));
         entity.setCredits(fromCredits(software.getCredits(), SoftwareCreditEntity::new));
+        entity.setCompilationItems(software.getCompilationItems().ids().stream()
+                .map(SoftwareId::value)
+                .collect(Collectors.toSet()));
         entity.setAddedBy(AddedByRows.fromAddedBy(software.getAddedBy()));
         entity.setReleases(software.getReleases().stream()
                 .map(SoftwareMapper::fromRelease)

@@ -14,6 +14,8 @@ import com.archive.backend.group.domain.GroupTypes;
 import com.archive.backend.hardware.domain.HardwareCatalog;
 import com.archive.backend.hardware.domain.HardwarePlacements;
 import com.archive.backend.hardware.domain.HardwareSets;
+import com.archive.backend.software.domain.SoftwareCompilationCatalog;
+import com.archive.backend.software.domain.SoftwareCompilationSets;
 import com.archive.backend.software.domain.SoftwareCreditSets;
 import com.archive.backend.software.domain.SoftwareReferenceCatalog;
 import com.archive.backend.user.domain.AccountConfirmation;
@@ -76,6 +78,11 @@ public class DomainServicesConfig {
     @Bean
     public SoftwareCreditSets softwareCreditSets(SoftwareReferenceCatalog catalog) {
         return new SoftwareCreditSets(catalog);
+    }
+
+    @Bean
+    public SoftwareCompilationSets softwareCompilationSets(SoftwareCompilationCatalog catalog) {
+        return new SoftwareCompilationSets(catalog);
     }
 
     @Bean

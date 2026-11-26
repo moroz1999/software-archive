@@ -6,6 +6,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.archive.backend.assistant.app.ListSkillsHandler;
+import com.archive.backend.assistant.app.LoadSkillHandler;
+import com.archive.backend.assistant.app.LoadSkillQuery;
+import com.archive.backend.assistant.domain.skill.SkillName;
+import com.archive.backend.assistant.infra.ClasspathSkillReadRepository;
 import com.archive.backend.assistant.read.Skill;
 import com.archive.backend.assistant.read.chat.ChatMessage;
 import com.archive.backend.assistant.read.model.ModelMessage;
@@ -50,6 +54,24 @@ class ConversationHistoryTest {
                 .contains("load_skill")
                 .contains("- import-software: Adding software from a page of another site.")
                 .contains("- find-person: Finding which person a name means.");
+    }
+
+    @Test
+    void givesCompilationInstructionsOnlyInTheSoftwareImportSkill() {
+        ClasspathSkillReadRepository skills = new ClasspathSkillReadRepository();
+        ConversationHistory history = new ConversationHistory(new ListSkillsHandler(skills));
+        LoadSkillHandler loadSkill = new LoadSkillHandler(skills);
+
+        assertThat(history.build(List.of()).get(0).text()).doesNotContainIgnoringCase("compilation");
+        assertThat(loadSkill
+                        .handle(new LoadSkillQuery(new SkillName("sort-out-duplicates")))
+                        .instructions())
+                .doesNotContainIgnoringCase("compilation");
+        assertThat(loadSkill
+                        .handle(new LoadSkillQuery(new SkillName("import-software")))
+                        .instructions())
+                .containsIgnoringCase("compilation")
+                .contains("add_compilation_items");
     }
 
     @Test

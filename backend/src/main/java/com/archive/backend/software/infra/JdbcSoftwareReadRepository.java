@@ -16,6 +16,7 @@ import com.archive.backend.software.read.SoftwareCategoryStep;
 import com.archive.backend.software.read.SoftwareCredit;
 import com.archive.backend.software.read.SoftwareDetails;
 import com.archive.backend.software.read.SoftwareHardware;
+import com.archive.backend.software.read.SoftwareLink;
 import com.archive.backend.software.read.SoftwarePlatform;
 import com.archive.backend.software.read.SoftwareReadRepository;
 import com.archive.backend.software.read.SoftwareRelease;
@@ -53,6 +54,11 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
      */
     private static final String HARDWARE_ORDER = " ORDER BY h.position, lower(h.name), h.code";
 
+    private static final String CARD_COLUMNS = """
+            s.id, s.title, %s AS release_date, %s AS screenshots, %s AS made_by, %s
+            """.formatted(
+                    ReleaseDateSql.of("s"), CardScreenshotsSql.of("s"), CardMadeBySql.of("s"), CardRatingSql.of("s"));
+
     /** The credits of software or of releases: their table and the column of what they credit. */
     private record Credited(String table, String of) {}
 
@@ -64,6 +70,20 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     @Override
     public Page<SoftwareSummary> findLatest(@Nullable String platform, Pageable pageable) {
         return page(platform, "s.created_at DESC, s.id", Pageable.ofSize(pageable.getPageSize()));
+    }
+
+    @Override
+    public List<SoftwareLink> findTitles(String phrase, int limit) {
+        return jdbc.sql("""
+                        SELECT id, title FROM software
+                        WHERE strpos(lower(title), lower(:phrase)) > 0
+                        ORDER BY strpos(lower(title), lower(:phrase)), lower(title), id
+                        LIMIT :limit
+                        """)
+                .param("phrase", phrase)
+                .param("limit", limit)
+                .query(JdbcSoftwareReadRepository::softwareLink)
+                .list();
     }
 
     private Page<SoftwareSummary> page(@Nullable String platform, String order, Pageable pageable) {
@@ -79,22 +99,36 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                 .single();
         params.put("limit", pageable.getPageSize());
         params.put("offset", pageable.getOffset());
-        List<SoftwareSummary> content = jdbc.sql("SELECT s.id, s.title, " + ReleaseDateSql.of("s")
-                        + " AS release_date, " + CardScreenshotsSql.of("s")
-                        + " AS screenshots, " + CardMadeBySql.of("s")
-                        + " AS made_by, " + CardRatingSql.of("s") + " FROM software s" + where + " ORDER BY " + order
-                        + " LIMIT :limit OFFSET :offset")
+        List<SoftwareSummary> content = jdbc.sql("SELECT " + CARD_COLUMNS + " FROM software s" + where + " ORDER BY "
+                        + order + " LIMIT :limit OFFSET :offset")
                 .params(params)
-                .query((rs, row) -> new SoftwareSummary(
-                        rs.getObject("id", UUID.class),
-                        rs.getString("title"),
-                        rs.getString("release_date"),
-                        screenshots(rs),
-                        Arrays.asList((String[]) rs.getArray("made_by").getArray()),
-                        rs.getDouble("rating"),
-                        rs.getInt("votes_amount")))
+                .query(JdbcSoftwareReadRepository::softwareSummary)
                 .list();
         return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public List<SoftwareSummary> findCompilationPrograms(UUID compilation) {
+        return jdbc.sql("""
+                        SELECT %s
+                        FROM software_compilation_item i JOIN software s ON s.id = i.item_id
+                        WHERE i.compilation_id = :compilation
+                        ORDER BY lower(s.title), s.id
+                        """.formatted(CARD_COLUMNS))
+                .param("compilation", compilation)
+                .query(JdbcSoftwareReadRepository::softwareSummary)
+                .list();
+    }
+
+    private static SoftwareSummary softwareSummary(ResultSet rs, int row) throws SQLException {
+        return new SoftwareSummary(
+                rs.getObject("id", UUID.class),
+                rs.getString("title"),
+                rs.getString("release_date"),
+                screenshots(rs),
+                Arrays.asList((String[]) rs.getArray("made_by").getArray()),
+                rs.getDouble("rating"),
+                rs.getInt("votes_amount"));
     }
 
     @Override
@@ -141,8 +175,26 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                         ExternalOrigins.of(jdbc, "SOFTWARE", id),
                         AdditionSql.of(rs),
                         rs.getObject("added_by", UUID.class),
-                        false))
+                        false,
+                        compilationLinks(id, "compilation_id", "item_id"),
+                        compilationLinks(id, "item_id", "compilation_id")))
                 .optional();
+    }
+
+    private List<SoftwareLink> compilationLinks(UUID id, String from, String to) {
+        return jdbc.sql("""
+                        SELECT s.id, s.title
+                        FROM software_compilation_item i JOIN software s ON s.id = i.%s
+                        WHERE i.%s = :id
+                        ORDER BY lower(s.title), s.id
+                        """.formatted(to, from))
+                .param("id", id)
+                .query(JdbcSoftwareReadRepository::softwareLink)
+                .list();
+    }
+
+    private static SoftwareLink softwareLink(ResultSet rs, int row) throws SQLException {
+        return new SoftwareLink(rs.getObject("id", UUID.class), rs.getString("title"));
     }
 
     @Override

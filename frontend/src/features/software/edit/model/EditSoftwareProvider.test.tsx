@@ -20,6 +20,8 @@ const SOFTWARE = {
     preservation: 'unknown' as const,
 };
 const PLATFORMS = json([{code: 'bk', name: 'BK'}, {code: 'vector', name: 'Vector'}]);
+const ORIGINAL_ITEM = {id: toSoftwareId('00000000-0000-0000-0001-000000000002'), title: toSoftwareTitle('Jetpac')};
+const NEW_ITEM = {id: toSoftwareId('00000000-0000-0000-0001-000000000003'), title: toSoftwareTitle('Galactic Bowling')};
 
 function answer(software: () => Response) {
     return stubFetchRoutes(new Map([
@@ -27,6 +29,7 @@ function answer(software: () => Response) {
         ['/api/hardware?platform=vector', json([{code: 'vector06c', name: 'Vector-06C', group: 'computers', groupName: 'Computers'}])],
         ['/api/hardware?platform=bk', json([])],
         [`/api/software/${SOFTWARE.id}`, software],
+        ['/api/software/lookup?query=Bowling', json({items: [NEW_ITEM]})],
     ]));
 }
 
@@ -55,6 +58,50 @@ describe(EditSoftwareProvider, () => {
         });
     });
 
+
+    it('replaces a compilation program with an existing program found by title', async () => {
+        const fetchMock = answer(noContent());
+        renderWithQueries(
+            <EditSoftwareProvider software={{...SOFTWARE, compilationItems: [ORIGINAL_ITEM]}} onSaved={vi.fn<() => void>()}>
+                <SoftwareForm submitLabel="Save"/>
+            </EditSoftwareProvider>,
+        );
+
+        await userEvent.click(screen.getByRole('button', {name: 'Remove Jetpac'}));
+        await userEvent.type(screen.getByRole('combobox', {name: 'Compilation programs'}), 'Bowling');
+        await userEvent.click(await screen.findByRole('option', {name: 'Galactic Bowling'}));
+        await userEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        await vi.waitFor(() => {
+            const request = fetchMock.mock.calls.find(([url]) => url === `/api/software/${SOFTWARE.id}`)?.[1];
+
+            expect(request?.method).toBe('PUT');
+            expect(JSON.parse(typeof request?.body === 'string' ? request.body : 'null'))
+                .toMatchObject({compilationItemIds: [NEW_ITEM.id]});
+        });
+    });
+
+    it.each([
+        ['software.compilation-item-unknown', 'A program is no longer in the archive. Choose another program.'],
+        ['software.compilation-cycle', 'This selection would create a cycle of compilations.'],
+    ])('shows a compilation refusal under the field and clears it when the selection changes (%s)', async (code, message) => {
+        answer(json({status: 422, code, errors: [{field: 'compilationItemIds', code}]}, 422));
+        renderWithQueries(
+            <EditSoftwareProvider software={{...SOFTWARE, compilationItems: [ORIGINAL_ITEM]}} onSaved={vi.fn<() => void>()}>
+                <SoftwareForm submitLabel="Save"/>
+            </EditSoftwareProvider>,
+        );
+
+        const field = screen.getByRole('combobox', {name: 'Compilation programs'});
+        await userEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        await vi.waitFor(() => {
+            expect(field).toHaveAccessibleDescription(message);
+        });
+        await userEvent.click(screen.getByRole('button', {name: 'Remove Jetpac'}));
+
+        expect(field).not.toHaveAccessibleDescription(message);
+    });
 
     it('shows a refusal of a field under that field, not in the error dialog', async () => {
         const reports: SystemErrorReport[] = [];

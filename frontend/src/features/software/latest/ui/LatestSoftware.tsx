@@ -1,5 +1,4 @@
-import type {ReactNode} from 'react';
-import {type Software, SoftwareCard, SoftwareCardSkeleton, softwarePath} from '@/entities/software';
+import {type SoftwareCardComponent, SoftwareCardSkeleton, softwarePath} from '@/entities/software';
 import {CardGrid} from '@/shared/ui/card-grid';
 import {LoadingState} from '@/shared/ui/loading-state';
 import {Text} from '@/shared/ui/typography';
@@ -10,11 +9,10 @@ const SKELETON_CARDS = [1, 2, 3, 4, 5, 6, 7, 8];
 
 /** The latest software as cards, newest first, inside a LatestSoftwareProvider. */
 export interface LatestSoftwareProps {
-    /** What each card holds under it, outside its link, such as voting. */
-    readonly cardFooter?: ((software: Software) => ReactNode) | undefined;
+    readonly Card: SoftwareCardComponent;
 }
 
-export function LatestSoftware({cardFooter}: LatestSoftwareProps = {}) {
+export function LatestSoftware({Card}: LatestSoftwareProps) {
     const {t} = useTranslation();
     const query = useLatestSoftware();
     const skeleton = useSkeleton(query);
@@ -40,7 +38,7 @@ export function LatestSoftware({cardFooter}: LatestSoftwareProps = {}) {
             <CardGrid>
                 {query.data.items.map((software) => (
                     <li key={software.id}>
-                        <SoftwareCard software={software} href={softwarePath(software.id)} footer={cardFooter?.(software)}/>
+                        <Card software={software} href={softwarePath(software.id)}/>
                     </li>
                 ))}
             </CardGrid>

@@ -30,6 +30,7 @@ import com.archive.backend.software.domain.KnownReferences;
 import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.Software;
+import com.archive.backend.software.domain.SoftwareCompilationSets;
 import com.archive.backend.software.domain.SoftwareCredits;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareInstructions;
@@ -45,7 +46,12 @@ class UpdateSoftwareHandlerTest {
 
     private final InMemorySoftwareRepository repository = new InMemorySoftwareRepository();
     private final UpdateSoftwareHandler handler = new UpdateSoftwareHandler(
-            repository, hardwareSets(), categorySets(), KnownReferences.creditSets(reference -> true), event -> {});
+            repository,
+            hardwareSets(),
+            categorySets(),
+            KnownReferences.creditSets(reference -> true),
+            org.mockito.Mockito.mock(SoftwareCompilationSets.class),
+            event -> {});
 
     @Test
     void storesTheEditedSoftware() {

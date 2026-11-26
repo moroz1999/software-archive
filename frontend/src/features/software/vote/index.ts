@@ -3,4 +3,4 @@ export {SoftwareRatingProvider, type SoftwareRatingProviderProps} from './model/
 export {SoftwareVotesProvider, type SoftwareVotesProviderProps} from './model/SoftwareVotesProvider';
 export {SoftwareRating} from './ui/SoftwareRating';
 export {SoftwareVotes, type SoftwareVotesProps} from './ui/SoftwareVotes';
-export {SoftwareCardVote, type SoftwareCardVoteProps} from './ui/SoftwareCardVote';
+export {SoftwareCard} from './ui/SoftwareCard';

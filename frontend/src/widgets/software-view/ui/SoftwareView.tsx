@@ -1,9 +1,10 @@
-import {Fragment, type ReactNode, useId} from 'react';
+import {Fragment, type ReactNode, type Ref, useId} from 'react';
 import {useTranslation} from 'react-i18next';
 import {authorPath, toAuthorId} from '@/entities/authors';
 import {labelPath, toLabelId} from '@/entities/labels';
 import {groupPath, toGroupId} from '@/entities/groups';
 import {
+    CompilationProgramsProvider,
     HardwareList,
     releaseDateText,
     releaseEditPath,
@@ -15,23 +16,29 @@ import {
     SoftwareDetailsProvider,
     softwareEditPath,
     type SoftwareId,
+    softwarePath,
+    type SoftwareProgram,
+    SoftwareCardSkeleton,
     SoftwareCreditList,
     SoftwareReleases,
     SoftwareReleasesProvider,
     type Gallery,
     SoftwareScreenshots,
     ScreenshotsProvider,
+    useCompilationPrograms,
     useSoftwareDetails,
 } from '@/entities/software';
 import {toCategoryId} from '@/entities/categories';
 import {catalogHrefOf, softwareBreadcrumbs} from '@/features/software/catalog';
 import {EditScreenshotsProvider, MoveScreenshotButtons, ScreenshotsChangeError} from '@/features/software/screenshots';
-import {SoftwareRating, SoftwareRatingProvider, SoftwareVotes, SoftwareVotesProvider} from '@/features/software/vote';
+import {SoftwareCard, SoftwareRating, SoftwareRatingProvider, SoftwareVotes, SoftwareVotesProvider} from '@/features/software/vote';
 import {useInViewport} from '@/shared/lib/screen';
 import {Button} from '@/shared/ui/button';
+import {CardGrid} from '@/shared/ui/card-grid';
 import {PopoverMenu, PopoverMenuItem} from '@/shared/ui/popover-menu';
 import {Chip} from '@/shared/ui/chip';
 import {Inline} from '@/shared/ui/inline';
+import {LoadingState} from '@/shared/ui/loading-state';
 import {AdditionNote} from '@/shared/ui/addition-note';
 import {PageLayout} from '@/shared/ui/page-layout';
 import {Skeleton} from '@/shared/ui/skeleton';
@@ -82,6 +89,7 @@ function LoadedView({id}: SoftwareViewProps) {
                 <SoftwareRatingProvider id={id}><SoftwareRating/></SoftwareRatingProvider>
                 {GALLERIES.map((gallery) => <Screenshots key={gallery} id={id} title={query.data.title} canChange={query.data.canChange} gallery={gallery}/>)}
                 <Releases id={id}/>
+                <CompilationPrograms id={id} programs={query.data.compilationItems ?? []}/>
                 <Votes id={id}/>
                 <AdditionNote addition={query.data.added}/>
             </Stack>
@@ -127,6 +135,7 @@ function Details({software}: {readonly software: SoftwareDetails}) {
                     <SoftwareCreditList credits={software.credits ?? []} creditHref={creditHref}/>
                 </Section>
             )}
+            <RelatedPrograms label={t('software.includedInCompilations')} programs={software.compilations}/>
             {(software.sources?.length ?? 0) > 0 && (
                 <Stack as="section" gap="xs" ariaLabel={t('software.source')}>
                     <Text variant="label" tone="muted">{t('software.source')}</Text>
@@ -146,6 +155,22 @@ function Details({software}: {readonly software: SoftwareDetails}) {
                     {instructions.map((line, index) => <Text key={index}>{line}</Text>)}
                 </Stack>
             )}
+        </Stack>
+    );
+}
+
+function RelatedPrograms({label, programs = []}: {readonly label: string; readonly programs: readonly SoftwareProgram[] | undefined}) {
+    if (programs.length === 0) {
+        return null;
+    }
+    return (
+        <Stack as="section" gap="xs" ariaLabel={label}>
+            <Text variant="label" tone="muted">{label}</Text>
+            <Stack as="ul" gap="xs">
+                {programs.map((program) => (
+                    <li key={program.id}><TextLink href={softwarePath(program.id)}>{program.title}</TextLink></li>
+                ))}
+            </Stack>
         </Stack>
     );
 }
@@ -233,6 +258,52 @@ function Releases({id}: SoftwareViewProps) {
                         <Button href={releaseEditPath(id, release.id)} color="secondary" ariaLabel={t('release.editNamed', {title: release.title})}>{t('actions.edit')}</Button>
                     )}/>
                 </SoftwareReleasesProvider>
+            </Stack>
+        </section>
+    );
+}
+
+type CompilationProgramsProps = SoftwareViewProps & {readonly programs: readonly SoftwareProgram[]};
+
+function CompilationPrograms({id, programs}: CompilationProgramsProps) {
+    const [ref, visible] = useInViewport();
+    if (programs.length === 0) {
+        return null;
+    }
+    return (
+        <CompilationProgramsProvider id={id} enabled={visible}>
+            <CompilationCards viewportRef={ref} programs={programs}/>
+        </CompilationProgramsProvider>
+    );
+}
+
+function CompilationCards({viewportRef, programs}: {readonly viewportRef: Ref<HTMLElement>; readonly programs: readonly SoftwareProgram[]}) {
+    const {t} = useTranslation();
+    const headingId = useId();
+    const query = useCompilationPrograms();
+    const pending = useSkeleton(query) || query.isPending;
+    if (query.isLoadingError || (!pending && query.data.length === 0)) {
+        return null;
+    }
+    return (
+        <section ref={viewportRef} aria-labelledby={headingId}>
+            <Stack gap="md">
+                <Heading level={2} variant="title" id={headingId}>{t('fields.compilationItems')}</Heading>
+                {pending ? (
+                    <CardGrid>
+                        {programs.map(({id}) => <li key={id}><SoftwareCardSkeleton/></li>)}
+                    </CardGrid>
+                ) : (
+                    <LoadingState loading={query.isRefetching}>
+                        <CardGrid>
+                            {query.data.map((program) => (
+                                <li key={program.id}>
+                                    <SoftwareCard software={program} href={softwarePath(program.id)}/>
+                                </li>
+                            ))}
+                        </CardGrid>
+                    </LoadingState>
+                )}
             </Stack>
         </section>
     );

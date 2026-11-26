@@ -32,6 +32,7 @@ import com.archive.backend.assistant.read.model.ModelRole;
 import com.archive.backend.assistant.read.model.ModelTool;
 import com.archive.backend.assistant.web.tool.ToolCalls;
 import com.archive.backend.assistant.web.tool.ToolContext;
+import com.archive.backend.assistant.web.tool.ToolJson;
 import com.archive.backend.remote.TestImages;
 import com.archive.backend.remote.TestSite;
 import com.archive.backend.shared.domain.Language;
@@ -370,6 +371,42 @@ class AssistantChatIT {
     }
 
     @Test
+    void addsProgramsToACompilationOnlyAfterApprovalAndWithoutDuplicates() {
+        UUID compilation = calls.write("create_software", """
+                {"title":"Arcade Collection","platform":"vector"}
+                """, AS_EDITOR).uuid();
+        UUID conversation = chat.create(EDITOR);
+        model.calls("propose_plan", """
+                {"title":"Заполнить сборник","actions":[
+                  {"tool":"add_compilation_items","arguments":{"id":"%1$s","compilationItemIds":["%2$s"]}},
+                  {"tool":"create_software","arguments":{"title":"Jetpac","platform":"vector"}},
+                  {"tool":"add_compilation_items","arguments":{
+                    "id":"%1$s","compilationItemIds":["%2$s",{"$ref":2}]}}
+                ]}
+                """.formatted(compilation, elite)).replies("Состав заполнен.");
+
+        send(EDITOR, conversation, "Добавь в Arcade Collection программы Elite и Jetpac.");
+
+        ConversationState proposed = chat.state(EDITOR, conversation, 0);
+        assertThat(proposed.plans())
+                .as("a plan that adds programs to a compilation")
+                .hasSize(1);
+        ChatPlan plan = proposed.plans().get(0);
+        assertThat(plan.status()).isEqualTo("proposed");
+        assertThat(proposed.refs()).containsKeys(compilation.toString(), elite.toString());
+        assertThat(plan.actions().get(2).dependsOn()).containsExactly(2);
+        assertThat(compilationItems(compilation)).isEmpty();
+
+        chat.approve(EDITOR, Language.RU, plan.id());
+
+        ChatPlan done = chat.state(EDITOR, conversation, 0).plans().get(0);
+        assertThat(done.status()).isEqualTo("done");
+        assertThat(compilationItems(compilation))
+                .containsExactlyInAnyOrder(
+                        elite.toString(), done.actions().get(1).result());
+    }
+
+    @Test
     void aPlanThatDoesNotHoldGoesBackToTheModelWithWhy() {
         UUID conversation = chat.create(EDITOR);
         model.calls("propose_plan", """
@@ -657,6 +694,11 @@ class AssistantChatIT {
     private int software(String title) {
         Integer count = jdbc.queryForObject("SELECT count(*) FROM software WHERE title = ?", Integer.class, title);
         return count == null ? 0 : count;
+    }
+
+    private List<Object> compilationItems(UUID id) {
+        Object result = calls.read("get_software", "{\"id\":\"%s\"}".formatted(id), AS_EDITOR);
+        return ToolJson.list(ToolJson.of(result), "$.software.compilationItems[*].id");
     }
 
     private static ModelMessage last(ModelRequest request) {

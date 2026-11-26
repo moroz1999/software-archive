@@ -68,6 +68,7 @@ export const resources = {
         fields: {
             title: 'Title', platform: 'Platform', description: 'Description', instructions: 'Instructions', releaseDate: 'Release date', releaseDateHint: 'A year, such as 1987, or a day, such as 12.05.1987.', version: 'Version',
             type: 'Type', preservation: 'Preservation status', hardware: 'Hardware', categories: 'Categories', credits: 'Credits', participant: 'Person or group',
+            compilationItems: 'Compilation programs',
             choosePlatform: 'Choose a platform', chooseType: 'Choose a type',
             platformLocked: 'Remove the hardware to change the platform.',
         },
@@ -121,6 +122,8 @@ export const resources = {
             categoryParentInside: 'A category cannot go under itself or its own subcategory.',
             groupMemberUnknown: 'One of the members is no longer in the archive: choose again.',
             softwareCreditUnknown: 'One of those credited is no longer in the archive: choose again.',
+            compilationItemUnknown: 'A program is no longer in the archive. Choose another program.',
+            compilationCycle: 'This selection would create a cycle of compilations.',
         },
         account: {
             menu: 'Account', login: 'User name or email', password: 'Password', remember: 'Remember me', signIn: 'Sign in',
@@ -193,6 +196,7 @@ export const resources = {
                     groupId: 'Group', authorId: 'Person', labelId: 'Label', ownerId: 'Owner', ownerType: 'Kind of owner', countryId: 'Country',
                     cityId: 'City', intoId: 'Into', urls: 'Pictures', url: 'File', fileName: 'File name', screenshotId: 'Picture',
                     gallery: 'Gallery', sourceUrl: 'Source page', code: 'Code', group: 'Hardware group', names: 'Names',
+                    compilationItemIds: 'Compilation programs',
                 },
                 flags: {display: 'display name', primary: 'primary'},
                 entities: {
@@ -336,6 +340,7 @@ export const resources = {
             deleteQuestion: 'Delete “{{title}}” with all its subcategories? Their software stays in the archive and only leaves them.',
         },
         software: {delete: 'Delete software', deleteQuestion: 'Delete “{{title}}” from the archive?', source: 'Program on other sites', software: 'Software', creditedAs: 'as {{name}}',
+            includedInCompilations: 'Included in compilations',
             preservation: {unknown: 'Unknown', 'missing-in-action': 'Missing in action', donationware: 'Donationware', 'in-sales': 'In sales'}},
         galleries: {
             maps: {
@@ -443,6 +448,7 @@ export const resources = {
         fields: {
             title: 'Название', platform: 'Платформа', description: 'Описание', instructions: 'Инструкция', releaseDate: 'Дата выпуска', releaseDateHint: 'Год, например 1987, или день, например 12.05.1987.', version: 'Версия',
             type: 'Тип', preservation: 'Статус сохранности', hardware: 'Оборудование', categories: 'Категории', credits: 'Авторы', participant: 'Человек или группа',
+            compilationItems: 'Программы сборника',
             choosePlatform: 'Выберите платформу', chooseType: 'Выберите тип',
             platformLocked: 'Удалите оборудование, чтобы изменить платформу.',
         },
@@ -497,6 +503,8 @@ export const resources = {
             categoryParentInside: 'Категорию нельзя поместить в неё саму или в её подкатегорию.',
             groupMemberUnknown: 'Одного из участников больше нет в архиве: выберите заново.',
             softwareCreditUnknown: 'Одного из авторов больше нет в архиве: выберите заново.',
+            compilationItemUnknown: 'Одной из программ больше нет в архиве. Выберите другую программу.',
+            compilationCycle: 'Этот состав замыкает сборники в цикл.',
         },
         account: {
             menu: 'Аккаунт', login: 'Имя пользователя или эл. почта', password: 'Пароль', remember: 'Запомнить меня', signIn: 'Войти',
@@ -573,6 +581,7 @@ export const resources = {
                     groupId: 'Группа', authorId: 'Человек', labelId: 'Метка', ownerId: 'Владелец', ownerType: 'Вид владельца', countryId: 'Страна',
                     cityId: 'Город', intoId: 'Куда', urls: 'Картинки', url: 'Файл', fileName: 'Имя файла', screenshotId: 'Картинка',
                     gallery: 'Галерея', sourceUrl: 'Страница источника', code: 'Код', group: 'Группа оборудования', names: 'Названия',
+                    compilationItemIds: 'Программы сборника',
                 },
                 flags: {display: 'отображаемое имя', primary: 'основное'},
                 entities: {
@@ -722,6 +731,7 @@ export const resources = {
             deleteQuestion: 'Удалить «{{title}}» со всеми подкатегориями? Их программы останутся в архиве и только покинут эти категории.',
         },
         software: {delete: 'Удалить программу', deleteQuestion: 'Удалить «{{title}}» из архива?', source: 'Программа на других сайтах', software: 'Софт', creditedAs: 'как {{name}}',
+            includedInCompilations: 'Входит в сборники',
             preservation: {unknown: 'Неизвестно', 'missing-in-action': 'Потеряна', donationware: 'За донат', 'in-sales': 'В продаже'}},
         galleries: {
             maps: {

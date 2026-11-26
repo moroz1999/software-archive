@@ -1,5 +1,5 @@
-import {getJson, mapResponse, type Page, parsePage, readNullableString, readNumber, readObject, readString, readStringArray} from '@/shared/api';
-import {type Software, toReleaseDate, toSoftwareId, toSoftwareTitle} from '../model/software';
+import {getJson, mapResponse, type Page, parsePage, readArray, readNullableString, readNumber, readObject, readString, readStringArray} from '@/shared/api';
+import {type Software, type SoftwareId, toReleaseDate, toSoftwareId, toSoftwareTitle} from '../model/software';
 import {parseScreenshots} from './screenshot-api';
 
 
@@ -27,4 +27,9 @@ export function parseSoftware(item: unknown): Software {
 export async function fetchLatestSoftware(platform: string | null, signal: AbortSignal): Promise<Page<Software>> {
     const json = await getJson(`/api/software/latest${platformParam(platform)}`, signal);
     return mapResponse(() => parsePage(json, parseSoftware));
+}
+
+export async function fetchCompilationPrograms(id: SoftwareId, signal: AbortSignal): Promise<readonly Software[]> {
+    const json = await getJson(`/api/software/${id}/compilation-items`, signal);
+    return mapResponse(() => readArray(json, 'compilation programs').map(parseSoftware));
 }

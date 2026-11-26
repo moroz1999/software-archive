@@ -32,10 +32,12 @@ import com.archive.backend.software.app.DeleteSoftwareCommand;
 import com.archive.backend.software.app.DeleteSoftwareHandler;
 import com.archive.backend.software.app.GetSoftwareHandler;
 import com.archive.backend.software.app.GetSoftwareQuery;
+import com.archive.backend.software.app.ListCompilationProgramsHandler;
 import com.archive.backend.software.app.ListLatestSoftwareHandler;
 import com.archive.backend.software.app.ListLatestSoftwareQuery;
 import com.archive.backend.software.app.ListSoftwareReleasesHandler;
 import com.archive.backend.software.app.ListSoftwareReleasesQuery;
+import com.archive.backend.software.app.LookupSoftwareTitlesHandler;
 import com.archive.backend.software.app.UpdateSoftwareCommand;
 import com.archive.backend.software.app.UpdateSoftwareHandler;
 import com.archive.backend.software.domain.PreservationStatus;
@@ -94,6 +96,12 @@ class SoftwareControllerTest {
 
     @MockitoBean
     private ListSoftwareReleasesHandler releasesHandler;
+
+    @MockitoBean
+    private ListCompilationProgramsHandler compilationProgramsHandler;
+
+    @MockitoBean
+    private LookupSoftwareTitlesHandler lookupHandler;
 
     @MockitoBean
     private CreateSoftwareHandler createHandler;

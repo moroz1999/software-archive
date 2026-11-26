@@ -2,6 +2,7 @@ export {createRelease, deleteRelease, fetchPlatformHardware, fetchReleaseFiles, 
 export {createSoftware, deleteSoftware, fetchSoftware, fetchSoftwareParticipants, fetchSoftwareReleases, updateSoftware} from './api/software-api';
 export {fetchLatestSoftware, parseSoftware} from './api/fetch-software-page';
 export {deleteScreenshot, reorderScreenshots, uploadScreenshots} from './api/screenshot-api';
+export {compilationMessages} from './config/messages';
 export {creditedReleasesQuery, creditedSoftwareQuery, platformHardwareQuery, querySoftwareWithHardware, releaseFilesQuery, screenshotsQuery, SOFTWARE_QUERY_KEY, softwareDetailsQuery, softwareReleaseQuery, softwareReleasesQuery} from './api/software-queries';
 export {
     RELEASE_EDIT_ROUTE,
@@ -55,6 +56,7 @@ export {
     type SoftwareId,
     type SoftwarePlatform,
     type SoftwarePlatformCode,
+    type SoftwareProgram,
     type SoftwareReference,
     type SoftwareReferenceType,
     type SoftwareTitle,
@@ -67,6 +69,8 @@ export {
 } from './model/software';
 export {type PlatformChoice, type SoftwareDraft, type SoftwareFormValues, toSoftwareFormValues} from './model/software-form';
 export {useSoftwareDetails} from './model/software-details-context';
+export {useCompilationPrograms} from './model/compilation-programs-context';
+export {CompilationProgramsProvider} from './model/CompilationProgramsProvider';
 export {type SoftwareFormState, useSoftwareForm} from './model/software-form-context';
 export {SoftwareDetailsProvider, type SoftwareDetailsProviderProps} from './model/SoftwareDetailsProvider';
 export {useSoftwareReleases} from './model/software-releases-context';
@@ -76,7 +80,7 @@ export {type CreditedOwner, type CreditedSoftware, type OwnCredit} from './model
 export {CreditedSoftwareList, type CreditedSoftwareListProps} from './ui/CreditedSoftwareList';
 export {CreditedReleaseList, type CreditedReleaseListProps} from './ui/CreditedReleaseList';
 export {type CreditedRelease} from './model/credited-release';
-export {SoftwareCard, type SoftwareCardProps} from './ui/SoftwareCard';
+export {SoftwareCardLayout, type SoftwareCardComponent, type SoftwareCardContentProps} from './ui/SoftwareCardLayout';
 export {type CreditHref, SoftwareCreditList, type SoftwareCreditListProps} from './ui/SoftwareCreditList';
 export {SoftwareCardSkeleton} from './ui/SoftwareCardSkeleton';
 export {HardwareList, type HardwareListProps} from './ui/HardwareList';

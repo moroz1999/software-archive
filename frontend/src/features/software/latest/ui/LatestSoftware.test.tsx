@@ -1,11 +1,10 @@
-import type {ReactNode} from 'react';
 import {Button} from '@/shared/ui/button';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
 import {PlatformSelectionProvider, PlatformSwitch} from '@/entities/platforms';
-import type {Software} from '@/entities/software';
+import {SoftwareCardLayout, type SoftwareCardComponent, type SoftwareCardContentProps} from '@/entities/software';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, pageResponse, stubFetch, stubFetchRoutes, renderWithQueries} from '@/shared/lib/test';
 import {LatestSoftwareProvider} from '../model/LatestSoftwareProvider';
@@ -14,9 +13,17 @@ import {LatestSoftware} from './LatestSoftware';
 const ELITE = {id: '00000000-0000-0000-0001-000000000001', title: 'Elite', releaseDate: '1984-09-20'};
 const MINER = {id: '00000000-0000-0000-0001-000000000002', title: 'Manic Miner', releaseDate: null};
 
-function renderLatest({withSwitch = false, cardFooter}: {readonly withSwitch?: boolean; readonly cardFooter?: (software: Software) => ReactNode} = {}) {
+function CardLayout(props: SoftwareCardContentProps) {
+    return <SoftwareCardLayout {...props} footer={null}/>;
+}
+
+function CardWithVotingButton(props: SoftwareCardContentProps) {
+    return <SoftwareCardLayout {...props} footer={<Button>{`Vote on ${props.software.title}`}</Button>}/>;
+}
+
+function renderLatest({withSwitch = false, Card = CardLayout}: {readonly withSwitch?: boolean; readonly Card?: SoftwareCardComponent} = {}) {
     renderWithQueries(
-        <MemoryRouter><PlatformSelectionProvider>{withSwitch && <PlatformSwitch/>}<LatestSoftwareProvider><LatestSoftware cardFooter={cardFooter}/></LatestSoftwareProvider></PlatformSelectionProvider></MemoryRouter>,
+        <MemoryRouter><PlatformSelectionProvider>{withSwitch && <PlatformSwitch/>}<LatestSoftwareProvider><LatestSoftware Card={Card}/></LatestSoftwareProvider></PlatformSelectionProvider></MemoryRouter>,
     );
 }
 
@@ -102,7 +109,7 @@ describe(LatestSoftware, () => {
 
     it('puts what it is given under each card, outside its link, with the software of the card', async () => {
         stubFetch(json(pageResponse([ELITE, MINER], {size: 12})));
-        renderLatest({cardFooter: (software) => <Button>{`Vote on ${software.title}`}</Button>});
+        renderLatest({Card: CardWithVotingButton});
 
         const vote = await screen.findByRole('button', {name: 'Vote on Elite'});
 

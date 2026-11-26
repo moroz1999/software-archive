@@ -67,6 +67,7 @@ interface Galleries {
     readonly maps?: () => Response;
     readonly covers?: () => Response;
     readonly adverts?: () => Response;
+    readonly compilationPrograms?: () => Response;
     readonly rating?: () => Response;
     readonly votes?: () => Response;
     readonly vote?: () => Response;
@@ -86,6 +87,7 @@ function stubFetch(details: () => Response, releases: () => Response = json([AY_
         [`/api/software/${ID}/covers`, galleries.covers ?? json([])],
         [`/api/software/${ID}/adverts`, galleries.adverts ?? json([])],
         [`/api/software/${ID}/releases`, releases],
+        [`/api/software/${ID}/compilation-items`, galleries.compilationPrograms ?? json([])],
         [`/api/software/${ID}/rating`, galleries.rating ?? json(RATED)],
         [`/api/software/${ID}/votes`, galleries.votes ?? json([])],
         [`/api/software/${ID}/vote`, galleries.vote ?? json(RATED)],
@@ -131,6 +133,39 @@ describe(SoftwareView, () => {
         expect(screen.getByText('20.09.1984')).toBeInTheDocument();
         expect(screen.getByText('Space trading')).toBeInTheDocument();
         expect(screen.getByText('and combat')).toBeInTheDocument();
+    });
+
+    it('shows the compilation as cards directly below releases and links to collections that include it', async () => {
+        const program = {id: '00000000-0000-0000-0001-000000000002', title: 'Jetpac'};
+        const compilation = {id: '00000000-0000-0000-0001-000000000003', title: 'Games of the Year'};
+        stubFetch(json({...ELITE, compilationItems: [program], compilations: [compilation]}), undefined, noContent(), undefined, {
+            compilationPrograms: json([{...program, releaseDate: '1983', screenshots: SHOTS, madeBy: ['Ultimate'], rating: 3.909, votesAmount: 1}]),
+        });
+        renderView(ID);
+
+        const contents = within(await screen.findByRole('region', {name: 'Compilation programs'}));
+        const card = await contents.findByRole('link', {name: program.title});
+        const stars = await contents.findByRole('img', {name: 'Rating 3.91 of 5'});
+        const collections = within(screen.getByRole('region', {name: 'Included in compilations'}));
+        const headings = screen.getAllByRole('heading', {level: 2});
+        const releases = screen.getByRole('heading', {level: 2, name: 'Releases'});
+        const compilationHeading = contents.getByRole('heading', {level: 2, name: 'Compilation programs'});
+
+        expect(headings.indexOf(compilationHeading)).toBe(headings.indexOf(releases) + 1);
+        expect(card).toHaveAttribute('href', `/software/${program.id}`);
+        expect(within(card).getByRole('img', {name: program.title})).toHaveAttribute('src', SHOTS[0]?.url);
+        expect(card).not.toContainElement(stars);
+        expect(collections.getByRole('link', {name: compilation.title})).toHaveAttribute('href', `/software/${compilation.id}`);
+    });
+
+    it('leaves out empty compilation sections', async () => {
+        stubFetch(json({...ELITE, compilationItems: [], compilations: []}));
+        renderView(ID);
+
+        await screen.findByRole('heading', {level: 1, name: 'Elite'});
+
+        expect(screen.queryByRole('region', {name: 'Compilation programs'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('region', {name: 'Included in compilations'})).not.toBeInTheDocument();
     });
 
     it('names the browser tab after the software and its platform', async () => {

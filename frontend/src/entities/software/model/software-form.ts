@@ -5,7 +5,9 @@ import {
     type PreservationStatus,
     type ReleaseDate,
     type SoftwareDetails,
+    type SoftwareId,
     type SoftwarePlatformCode,
+    type SoftwareProgram,
     type SoftwareTitle,
     toPreservationStatus,
     toSoftwarePlatformCode,
@@ -25,6 +27,7 @@ export interface SoftwareFormValues {
     /** The ids of the checked categories. */
     readonly categories: readonly string[];
     readonly credits?: readonly MemberRoleValue[];
+    readonly compilationItems?: readonly SoftwareProgram[];
     /** The code of the chosen preservation status; unknown when absent. */
     readonly preservation?: string;
     readonly instructions?: string;
@@ -45,6 +48,7 @@ export interface SoftwareDraft {
     readonly hardware: readonly string[];
     readonly categories: readonly string[];
     readonly credits: readonly MemberRoleValue[];
+    readonly compilationItemIds?: readonly SoftwareId[];
     readonly preservation: PreservationStatus;
     readonly instructions: string | null;
 }
@@ -105,6 +109,7 @@ export function toSoftwareFormValues(software?: SoftwareDetails): SoftwareFormVa
         hardware: software?.hardware.map((item) => item.code) ?? [],
         categories: software?.categories.map((category) => category.id) ?? [],
         credits: software?.credits ?? [],
+        ...(software?.compilationItems === undefined ? {} : {compilationItems: software.compilationItems}),
         preservation: software?.preservation ?? 'unknown',
         instructions: software?.instructions ?? '',
     };

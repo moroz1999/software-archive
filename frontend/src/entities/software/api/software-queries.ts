@@ -3,6 +3,7 @@ import type {ReleaseId} from '../model/release';
 import type {SoftwareId, SoftwarePlatformCode} from '../model/software';
 import type {CreditedOwner} from '../model/credited-software';
 import {fetchCreditedReleases, fetchCreditedSoftware} from './credited-software-api';
+import {fetchCompilationPrograms} from './fetch-software-page';
 import {fetchScreenshots} from './screenshot-api';
 import type {Gallery} from '../model/screenshot';
 import {fetchPlatformHardware, fetchReleaseFiles, fetchSoftwareRelease} from './release-api';
@@ -24,6 +25,13 @@ export function softwareReleasesQuery(id: SoftwareId) {
     return queryOptions({
         queryKey: [...SOFTWARE_QUERY_KEY, 'releases', id],
         queryFn: ({signal}) => fetchSoftwareReleases(id, signal),
+    });
+}
+
+export function compilationProgramsQuery(id: SoftwareId) {
+    return queryOptions({
+        queryKey: [...SOFTWARE_QUERY_KEY, 'compilation-items', id],
+        queryFn: ({signal}) => fetchCompilationPrograms(id, signal),
     });
 }
 

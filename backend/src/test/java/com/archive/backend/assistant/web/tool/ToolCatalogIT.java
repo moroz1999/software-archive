@@ -75,6 +75,7 @@ class ToolCatalogIT {
                         "delete_software",
                         "set_software_credit",
                         "remove_software_credit",
+                        "add_compilation_items",
                         "create_release",
                         "update_release",
                         "delete_release",

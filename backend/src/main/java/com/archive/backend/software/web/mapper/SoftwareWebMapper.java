@@ -18,6 +18,7 @@ import com.archive.backend.software.read.CreditedSoftware;
 import com.archive.backend.software.read.ReleaseArchiveDetails;
 import com.archive.backend.software.read.SoftwareCredit;
 import com.archive.backend.software.read.SoftwareDetails;
+import com.archive.backend.software.read.SoftwareLink;
 import com.archive.backend.software.read.SoftwareRelease;
 import com.archive.backend.software.read.SoftwareScreenshot;
 import com.archive.backend.software.read.SoftwareSummary;
@@ -27,6 +28,7 @@ import com.archive.backend.software.web.dto.ReleaseArchiveDto;
 import com.archive.backend.software.web.dto.ScreenshotDto;
 import com.archive.backend.software.web.dto.SoftwareCreatedDto;
 import com.archive.backend.software.web.dto.SoftwareDetailsDto;
+import com.archive.backend.software.web.dto.SoftwareLinkDto;
 import com.archive.backend.software.web.dto.SoftwareListItemDto;
 import com.archive.backend.software.web.dto.SoftwareReleaseDto;
 import com.archive.backend.software.web.dto.SoftwareRequestDto;
@@ -49,6 +51,8 @@ public interface SoftwareWebMapper {
     List<CreditedReleaseDto> toCreditedReleases(List<CreditedRelease> releases);
 
     SoftwareDetailsDto toDetails(SoftwareDetails details);
+
+    List<SoftwareLinkDto> toLinkDtos(List<SoftwareLink> linked);
 
     List<com.archive.backend.software.web.dto.SoftwareHardwareDto> toHardwareDtos(
             List<com.archive.backend.software.read.SoftwareHardware> hardware);
@@ -113,7 +117,8 @@ public interface SoftwareWebMapper {
                 toCategories(request.categories()),
                 CreditRequests.toCredits(request.credits()),
                 toPreservation(request.preservation()),
-                toInstructions(request.instructions()));
+                toInstructions(request.instructions()),
+                toCompilationItems(request.compilationItemIds()));
     }
 
     default UpdateSoftwareCommand toUpdate(Actor actor, UUID id, SoftwareRequestDto request) {
@@ -128,7 +133,8 @@ public interface SoftwareWebMapper {
                 toCategories(request.categories()),
                 CreditRequests.toCredits(request.credits()),
                 toPreservation(request.preservation()),
-                toInstructions(request.instructions()));
+                toInstructions(request.instructions()),
+                toCompilationItems(request.compilationItemIds()));
     }
 
     // Request scalars -> value objects.
@@ -166,6 +172,20 @@ public interface SoftwareWebMapper {
 
     private static Set<CategoryId> toCategories(@Nullable List<UUID> ids) {
         return ids == null ? Set.of() : ids.stream().map(CategoryId::new).collect(Collectors.toUnmodifiableSet());
+    }
+
+    private static @Nullable Set<SoftwareId> toCompilationItems(@Nullable List<@Nullable UUID> ids) {
+        return ids == null
+                ? null
+                : ids.stream().map(SoftwareWebMapper::toCompilationItem).collect(Collectors.toUnmodifiableSet());
+    }
+
+    private static SoftwareId toCompilationItem(@Nullable UUID id) {
+        if (id == null) {
+            throw new InvalidValueException(
+                    "software.compilation-item-id-required", "A compilation program needs an id.");
+        }
+        return new SoftwareId(id);
     }
 
     private static @Nullable PlatformCode toPlatformFilter(@Nullable String value) {

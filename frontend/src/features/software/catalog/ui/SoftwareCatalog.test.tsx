@@ -1,6 +1,5 @@
-import type {ReactNode} from 'react';
 import {Button} from '@/shared/ui/button';
-import type {Software} from '@/entities/software';
+import {SoftwareCardLayout, type SoftwareCardComponent, type SoftwareCardContentProps} from '@/entities/software';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen, waitFor, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -62,8 +61,16 @@ function routes(catalogs: Record<string, () => Response>): Map<string, () => Res
     ]);
 }
 
-function openCatalog(path = '/software', cardFooter?: (software: Software) => ReactNode) {
-    const element = <PlatformSelectionProvider><PlatformSwitch/><SoftwareCatalogProvider><SoftwareCatalog cardFooter={cardFooter}/></SoftwareCatalogProvider></PlatformSelectionProvider>;
+function CardLayout(props: SoftwareCardContentProps) {
+    return <SoftwareCardLayout {...props} footer={null}/>;
+}
+
+function CardWithVotingButton(props: SoftwareCardContentProps) {
+    return <SoftwareCardLayout {...props} footer={<Button>{`Vote on ${props.software.title}`}</Button>}/>;
+}
+
+function openCatalog(path = '/software', Card: SoftwareCardComponent = CardLayout) {
+    const element = <PlatformSelectionProvider><PlatformSwitch/><SoftwareCatalogProvider><SoftwareCatalog Card={Card}/></SoftwareCatalogProvider></PlatformSelectionProvider>;
     const router = createMemoryRouter([
         {path: '/software', element},
         {path: SOFTWARE_CATEGORY_ROUTE, element},
@@ -438,7 +445,7 @@ describe(SoftwareCatalog, () => {
 
     it('puts what it is given under each card, outside its link, with the software of the card', async () => {
         stubFetchRoutes(routes({[ALL]: catalog([{...ELITE, rating: 4.0769, votesAmount: 3}, EXOLON])}));
-        openCatalog('/software', (software) => <Button>{`Vote on ${software.title}`}</Button>);
+        openCatalog('/software', CardWithVotingButton);
 
         const [elite] = await screen.findAllByRole('article');
         const vote = within(elite ?? document.body).getByRole('button', {name: 'Vote on Elite'});

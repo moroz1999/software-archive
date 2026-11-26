@@ -1,8 +1,8 @@
-import {type ReactNode, useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import type {CategoryId, CategoryNode} from '@/entities/categories';
 import {toCityId, toCountryId} from '@/entities/locations';
-import {type Software, SoftwareCard, SoftwareCardSkeleton, softwarePath} from '@/entities/software';
+import {type SoftwareCardComponent, SoftwareCardSkeleton, softwarePath} from '@/entities/software';
 import {useSkeleton} from '@/shared/lib/loading';
 import {CardGrid} from '@/shared/ui/card-grid';
 import {FormField} from '@/shared/ui/form';
@@ -29,16 +29,15 @@ const KEYWORD_DELAY_MS = 300;
 
 /** The software catalog: the categories to go through beside the keyword, the filters, the cards and the pages; inside a SoftwareCatalogProvider. */
 export interface SoftwareCatalogProps {
-    /** What each card holds under it, outside its link, such as voting. */
-    readonly cardFooter?: ((software: Software) => ReactNode) | undefined;
+    readonly Card: SoftwareCardComponent;
 }
 
-export function SoftwareCatalog({cardFooter}: SoftwareCatalogProps = {}) {
+export function SoftwareCatalog({Card}: SoftwareCatalogProps) {
     return (
         <SidebarLayout aside={<Categories/>}>
             <Stack gap="lg">
                 <Filters/>
-                <Cards cardFooter={cardFooter}/>
+                <Cards Card={Card}/>
             </Stack>
         </SidebarLayout>
     );
@@ -217,7 +216,7 @@ function Categories() {
     );
 }
 
-function Cards({cardFooter}: SoftwareCatalogProps) {
+function Cards({Card}: SoftwareCatalogProps) {
     const {t} = useTranslation();
     const {filter, catalog, changing} = useSoftwareCatalog();
     const skeleton = useSkeleton(catalog);
@@ -245,7 +244,7 @@ function Cards({cardFooter}: SoftwareCatalogProps) {
                 <CardGrid>
                     {page.items.map((software) => (
                         <li key={software.id}>
-                            <SoftwareCard software={software} href={softwarePath(software.id)} footer={cardFooter?.(software)}/>
+                            <Card software={software} href={softwarePath(software.id)}/>
                         </li>
                     ))}
                 </CardGrid>

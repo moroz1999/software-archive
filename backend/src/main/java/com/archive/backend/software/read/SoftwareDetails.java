@@ -26,7 +26,45 @@ public record SoftwareDetails(
         List<ExternalOrigin> origins,
         Addition added,
         @Nullable UUID addedBy,
-        boolean canChange) {
+        boolean canChange,
+        List<SoftwareLink> compilationItems,
+        List<SoftwareLink> compilations) {
+
+    public SoftwareDetails(
+            UUID id,
+            String title,
+            @Nullable String description,
+            @Nullable String instructions,
+            @Nullable String releaseDate,
+            String preservation,
+            SoftwarePlatform platform,
+            List<SoftwareHardware> hardware,
+            List<SoftwareCategory> categories,
+            List<SoftwareCredit> credits,
+            List<SoftwareSource> sources,
+            List<ExternalOrigin> origins,
+            Addition added,
+            @Nullable UUID addedBy,
+            boolean canChange) {
+        this(
+                id,
+                title,
+                description,
+                instructions,
+                releaseDate,
+                preservation,
+                platform,
+                hardware,
+                categories,
+                credits,
+                sources,
+                origins,
+                added,
+                addedBy,
+                canChange,
+                List.of(),
+                List.of());
+    }
 
     /** As read, before the handler tells whether the actor may change it. */
     public SoftwareDetails(
@@ -86,6 +124,8 @@ public record SoftwareDetails(
                 origins,
                 added,
                 addedBy,
-                canChange);
+                canChange,
+                compilationItems,
+                compilations);
     }
 }

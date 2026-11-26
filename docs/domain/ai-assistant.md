@@ -24,6 +24,7 @@ What a source tells that would be of use to the archive but that the archive has
 - The description of a site is judged first: one that reads as the official description of the work (of its authors, publisher or the box) is taken exactly and in full; informal text of fans is retold as a calm formal description of the facts it clearly states, with nothing added. The assistant tells the editor which way it went and why.
 - The rights to what the archive takes from such sites are agreed with their owners, who gave their permission: texts, pictures and files of their pages are taken without any copyright caveats.
 - Maps, covers and adverts of the work go into the galleries of the software ([software.md](software.md#pictures)); how it is loaded, run and played goes into its instructions, never into its description.
+- When a source lists the programs in a compilation, the assistant plans to link confirmed matches in the archive and tells the editor about missing or ambiguous entries.
 
 ### Sources
 The software the assistant adds or edits from a page of another site always remembers that page as its source, shown in Sources like the page of an import ([imports.md](imports.md#origin)). A page that is already the source of other software is refused before anything is changed, so no software is left half-added: the assistant offers to complete that software instead.
@@ -40,7 +41,7 @@ A model copying a long id now and then swaps or mixes its digits, and then finds
 - The editor can stop the assistant at any moment, also in the middle of a plan; the change being made is finished, the rest is not made.
 
 ### What a plan can change
-- Software: adding, editing, deleting it with its releases; crediting somebody on it, or giving them other roles; taking a credit away.
+- Software: adding, editing, deleting it with its releases, changing its credits, and adding existing programs to a compilation.
 - Releases: adding one (without its archive), editing, deleting; crediting on it and taking a credit away.
 - People and groups: adding them with their labels, locations and (of a group) members; editing, deleting (their labels stay, as labels of nobody); taking a member into a group, giving a member other roles, taking one out.
 - Labels: adding a label of nobody; renaming and relocating one (whose it is stays); attaching a label of nobody to its person or group, taking a label away from its owner, making a label a label of a group; merging a label into the person, the group or the label it duplicates; making a new person or group of a label of nobody; deleting one.

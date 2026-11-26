@@ -35,6 +35,8 @@ class FixturesIT {
     private static final String FINLAND = "00000000-0000-0000-0002-000000000006";
     /** A fixture software with base hardware, a release of its own sound and a release without hardware. */
     private static final String ELITE = "00000000-0000-0000-0001-000000000001";
+
+    private static final String VECTOR_COLLECTION = "00000000-0000-0000-0001-000000000054";
     /** A fixture RK game released for every machine of the family, with music on the Apogey. */
     private static final String KHRYUKOSTYAG = "00000000-0000-0000-0001-000000000015";
     /** A fixture group with every kind of member and groups around it. */
@@ -250,6 +252,22 @@ class FixturesIT {
         mvc.perform(get("/api/software/{id}", ELITE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.categories[*].title").value(containsInAnyOrder("Strategy", "Shooters")));
+    }
+
+    @Test
+    void fixtureSoftwareShowsTheContentsOfACompilationInBothDirections() throws Exception {
+        mvc.perform(get("/api/software/{id}", VECTOR_COLLECTION))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.compilationItems[*].id").value(hasItem(ELITE)));
+        mvc.perform(get("/api/software/{id}", ELITE))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.compilations[*].id").value(hasItem(VECTOR_COLLECTION)));
+        mvc.perform(get("/api/software/{id}/compilation-items", VECTOR_COLLECTION))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.id == '%s')].screenshots[*].id".formatted(ELITE))
+                        .isNotEmpty())
+                .andExpect(jsonPath("$[?(@.id == '%s')].releaseDate".formatted(ELITE))
+                        .value(hasItem("1984-09-20")));
     }
 
     @Test
