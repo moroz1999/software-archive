@@ -30,7 +30,7 @@ public class GetSoftwareTool implements ReadTool<IdArguments> {
     @Override
     public String description() {
         return "Software as its page shows it: its title, description, release date, preservation status, platform, base"
-                + " hardware, categories, credits (person, group or label, with roles) and where it was imported from;"
+                + " hardware, categories, credits (person, group or label, with roles), links and where it was imported from;"
                 + " its own screenshots, maps, covers and adverts; and its releases with their hardware, screenshots, archive and credits.";
     }
 

@@ -20,7 +20,7 @@ const SOFTWARE = {
     hardware: [],
     categories: [],
     credits: [],
-    sources: [], preservation: 'unknown', instructions: null, compilationItems: [], compilations: [],
+    sources: [], links: [], preservation: 'unknown', instructions: null, compilationItems: [], compilations: [],
     origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
     canChange: true,
 };

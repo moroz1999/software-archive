@@ -36,6 +36,10 @@ public class UpdateSoftwareHandler {
         software.changeCredits(creditSets.of(c.credits()));
         software.changePreservation(c.preservation());
         software.changeInstructions(c.instructions());
+        var homepage = c.homepage();
+        if (homepage != null) {
+            software.addHomepage(homepage);
+        }
         var programs = c.compilationItemIds();
         if (programs != null) {
             software.changeCompilationItems(compilationSets.of(software.getId(), programs));

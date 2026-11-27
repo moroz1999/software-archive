@@ -37,7 +37,7 @@ const ELITE = {
         {id: STRATEGY, title: 'Strategy', branch: [{id: GAMES, title: 'Games'}, {id: STRATEGY, title: 'Strategy'}]},
     ],
     credits: [],
-    sources: [],
+    sources: [], links: [],
     preservation: 'unknown',
     instructions: null,
     compilationItems: [],
@@ -466,7 +466,7 @@ describe(SoftwareView, () => {
         expect(within(credits).getByRole('link', {name: 'J.D. — Jane Doe'})).toHaveAttribute('href', `/labels/${AUTHOR_LABEL}`);
     });
 
-    it('names authors and the program on other sites clearly in Russian', async () => {
+    it('names the authors and links in Russian', async () => {
         await i18n.changeLanguage('ru');
         stubFetch(json({
             ...ELITE,
@@ -476,7 +476,7 @@ describe(SoftwareView, () => {
         renderView(ID);
 
         await expect(screen.findByRole('list', {name: 'Авторы'})).resolves.toBeInTheDocument();
-        expect(screen.getByRole('region', {name: 'Программа на других сайтах'})).toBeInTheDocument();
+        expect(screen.getByRole('region', {name: 'Ссылки'})).toBeInTheDocument();
     });
 
     it('shows developers and publishers in separate fields with links to their pages', async () => {
@@ -542,23 +542,40 @@ describe(SoftwareView, () => {
         expect(screen.queryByRole('region', {name: 'Categories'})).not.toBeInTheDocument();
     });
 
-    it('leads to the page of the software in the archive it was imported from', async () => {
-        const url = 'https://vektor-06c.ru/programmnoe-obespechenie/arkadnye-igry/elite/';
-        stubFetch(json({...ELITE, sources: [{archive: 'vektor-06c.ru', url}]}));
+    it('shows the homepage and the imported page together, with each address shown once', async () => {
+        const importedPage = 'https://vektor-06c.ru/programmnoe-obespechenie/arkadnye-igry/elite/';
+        const homepage = 'https://example.org/elite/';
+        stubFetch(json({
+            ...ELITE,
+            links: [{type: 'homepage', url: homepage}, {type: 'general', url: importedPage}],
+            sources: [{archive: 'vektor-06c.ru', url: importedPage}],
+        }));
         renderView(ID);
 
-        const sources = await screen.findByRole('region', {name: 'Program on other sites'});
+        const links = await screen.findByRole('region', {name: 'Links'});
 
-        expect(within(sources).getByRole('link', {name: 'vektor-06c.ru'})).toHaveAttribute('href', url);
+        expect(within(links).getByRole('link', {name: 'vektor-06c.ru'})).toHaveAttribute('href', importedPage);
+        expect(within(links).getByRole('link', {name: 'example.org'})).toHaveAttribute('href', homepage);
+        expect(within(links).getAllByRole('link')).toHaveLength(2);
     });
 
-    it('shows no source for software typed in by hand', async () => {
+    it('shows a homepage for a program without an import', async () => {
+        const url = 'https://example.org/elite/';
+        stubFetch(json({...ELITE, links: [{type: 'homepage', url}]}));
+        renderView(ID);
+
+        const links = await screen.findByRole('region', {name: 'Links'});
+
+        expect(within(links).getByRole('link', {name: 'example.org'})).toHaveAttribute('href', url);
+    });
+
+    it('omits the links block for a program without links or sources', async () => {
         stubFetch(json(ELITE));
         renderView(ID);
 
         await screen.findByRole('heading', {level: 1, name: 'Elite'});
 
-        expect(screen.queryByRole('region', {name: 'Program on other sites'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('region', {name: 'Links'})).not.toBeInTheDocument();
     });
 
     it('tells the preservation status of the software once it is known', async () => {

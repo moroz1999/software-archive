@@ -6,6 +6,7 @@ import com.archive.backend.assistant.web.tool.ToolContext;
 import com.archive.backend.assistant.web.tool.WriteTool;
 import com.archive.backend.assistant.web.tool.Written;
 import com.archive.backend.software.app.UpdateSoftwareHandler;
+import com.archive.backend.software.domain.SoftwareUrl;
 import com.archive.backend.software.web.dto.SoftwareRequestDto;
 import com.archive.backend.software.web.mapper.SoftwareWebMapper;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,6 @@ public class UpdateSoftwareTool implements WriteTool<UpdateSoftwareArguments> {
     private final SoftwareForms forms;
     private final UpdateSoftwareHandler handler;
     private final SoftwareWebMapper mapper;
-    private final SourcePages sources;
 
     @Override
     public String name() {
@@ -73,7 +73,6 @@ public class UpdateSoftwareTool implements WriteTool<UpdateSoftwareArguments> {
     @Override
     public Written write(ToolContext context, UpdateSoftwareArguments a) {
         SoftwareState current = state(context, a);
-        sources.requireFree(a.sourceUrl(), a.id());
         SoftwareRequestDto request = new SoftwareRequestDto(
                 Changes.given(a.title(), current.title()),
                 Changes.text(a.description(), current.description()),
@@ -84,8 +83,7 @@ public class UpdateSoftwareTool implements WriteTool<UpdateSoftwareArguments> {
                 Changes.given(a.categoryIds(), current.categoryIds()),
                 Changes.given(SoftwareForms.credits(a.credits()), SoftwareForms.currentCredits(current.credits())),
                 Changes.given(a.preservation(), current.preservation()));
-        handler.handle(mapper.toUpdate(context.actor(), a.id(), request));
-        sources.record(a.sourceUrl(), a.id());
+        handler.handle(mapper.toUpdate(context.actor(), a.id(), request, SoftwareUrl.ofNullable(a.sourceUrl())));
         return Written.of(a.id());
     }
 }

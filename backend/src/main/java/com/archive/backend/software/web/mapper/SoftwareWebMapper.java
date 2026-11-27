@@ -13,6 +13,7 @@ import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareInstructions;
 import com.archive.backend.software.domain.SoftwareTitle;
+import com.archive.backend.software.domain.SoftwareUrl;
 import com.archive.backend.software.read.CreditedRelease;
 import com.archive.backend.software.read.CreditedSoftware;
 import com.archive.backend.software.read.ReleaseArchiveDetails;
@@ -107,6 +108,10 @@ public interface SoftwareWebMapper {
     }
 
     default CreateSoftwareCommand toCreate(Actor actor, SoftwareRequestDto request) {
+        return toCreate(actor, request, null);
+    }
+
+    default CreateSoftwareCommand toCreate(Actor actor, SoftwareRequestDto request, @Nullable SoftwareUrl homepage) {
         return new CreateSoftwareCommand(
                 actor,
                 toTitle(request.title()),
@@ -118,10 +123,16 @@ public interface SoftwareWebMapper {
                 CreditRequests.toCredits(request.credits()),
                 toPreservation(request.preservation()),
                 toInstructions(request.instructions()),
-                toCompilationItems(request.compilationItemIds()));
+                toCompilationItems(request.compilationItemIds()),
+                homepage);
     }
 
     default UpdateSoftwareCommand toUpdate(Actor actor, UUID id, SoftwareRequestDto request) {
+        return toUpdate(actor, id, request, null);
+    }
+
+    default UpdateSoftwareCommand toUpdate(
+            Actor actor, UUID id, SoftwareRequestDto request, @Nullable SoftwareUrl homepage) {
         return new UpdateSoftwareCommand(
                 actor,
                 new SoftwareId(id),
@@ -134,7 +145,8 @@ public interface SoftwareWebMapper {
                 CreditRequests.toCredits(request.credits()),
                 toPreservation(request.preservation()),
                 toInstructions(request.instructions()),
-                toCompilationItems(request.compilationItemIds()));
+                toCompilationItems(request.compilationItemIds()),
+                homepage);
     }
 
     // Request scalars -> value objects.

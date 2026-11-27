@@ -21,7 +21,7 @@ const SOFTWARE = {
     compilations: [],
     credits: [],
     instructions: null,
-    sources: [],
+    sources: [], links: [],
 };
 
 describe(DeleteSoftwareButton, () => {

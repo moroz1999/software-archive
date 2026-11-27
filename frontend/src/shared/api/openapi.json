@@ -15021,6 +15021,12 @@
           "instructions" : {
             "type" : [ "string", "null" ]
           },
+          "links" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SoftwareDetailsDto.ExternalLinkDto"
+            }
+          },
           "origins" : {
             "type" : "array",
             "items" : {
@@ -15047,7 +15053,7 @@
             "type" : "string"
           }
         },
-        "required" : [ "added", "canChange", "categories", "compilationItems", "compilations", "credits", "description", "hardware", "id", "instructions", "origins", "platform", "preservation", "releaseDate", "sources", "title" ]
+        "required" : [ "added", "canChange", "categories", "compilationItems", "compilations", "credits", "description", "hardware", "id", "instructions", "links", "origins", "platform", "preservation", "releaseDate", "sources", "title" ]
       },
       "SoftwareDetailsDto.AddedDto" : {
         "type" : "object",
@@ -15061,6 +15067,19 @@
           }
         },
         "required" : [ "at", "by" ]
+      },
+      "SoftwareDetailsDto.ExternalLinkDto" : {
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/SoftwareLinkType"
+          },
+          "url" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "type", "url" ]
       },
       "SoftwareDetailsDto.OriginDto" : {
         "type" : "object",
@@ -15146,6 +15165,10 @@
           }
         },
         "required" : [ "items" ]
+      },
+      "SoftwareLinkType" : {
+        "type" : "string",
+        "enum" : [ "general", "homepage", "store", "youtube" ]
       },
       "SoftwareListItemDto" : {
         "type" : "object",

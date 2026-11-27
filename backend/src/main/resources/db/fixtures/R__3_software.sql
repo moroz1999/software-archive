@@ -71,6 +71,16 @@ ON CONFLICT (id) DO UPDATE
         platform_code = EXCLUDED.platform_code,
         added_by      = EXCLUDED.added_by;
 
+INSERT INTO software_links (id, software_id, type, url)
+VALUES ('00000000-0000-0000-0059-000000000001', '00000000-0000-0000-0001-000000000001',
+        'homepage', 'https://example.org/elite/')
+ON CONFLICT (id) DO UPDATE SET url = EXCLUDED.url, type = EXCLUDED.type;
+
+INSERT INTO external_origin (origin, kind, external_id, entity_id, url)
+VALUES ('archive.example.net', 'SOFTWARE', '524', '00000000-0000-0000-0001-000000000001',
+        'https://archive.example.net/catalog/elite/')
+ON CONFLICT (origin, kind, external_id) DO UPDATE SET entity_id = EXCLUDED.entity_id, url = EXCLUDED.url;
+
 INSERT INTO software_compilation_item (compilation_id, item_id)
 VALUES ('00000000-0000-0000-0001-000000000054', '00000000-0000-0000-0001-000000000001'),
        ('00000000-0000-0000-0001-000000000054', '00000000-0000-0000-0001-000000000002')

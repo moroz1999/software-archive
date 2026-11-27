@@ -27,8 +27,8 @@ What a source tells that would be of use to the archive but that the archive has
 - A disk, tape or ROM image containing more than one program is imported as a compilation. The assistant plans to add a separate entry for every identified program the archive lacks and reuse confirmed matches. It assigns known release years, credits and screenshots to the programs they describe, then links the programs to the compilation's own entry in the same plan. It tells the editor what it could not identify.
 - When importing software, the assistant records the work's base hardware on the software. A release specifies only the hardware groups that differ for that version and inherits the rest ([hardware.md](hardware.md#hardware-of-software-and-releases)).
 
-### Sources
-The software the assistant adds or edits from its own page on another site remembers that page as its source, shown in Sources like the page of an import ([imports.md](imports.md#origin)). A compilation page is the source of the compilation, and a program has its own source when there is a page for it. A page that is already the source of other software is refused before anything is changed, so no software is left half-added: the assistant offers to complete that software instead.
+### Homepages
+When the assistant knows the homepage of a program or a compilation it adds or edits, it saves the address in the entry's Links section. Programs with a shared homepage can each link to it.
 
 ### Ids
 A model copying a long id now and then swaps or mixes its digits, and then finds nothing. So the assistant copies ids exactly, and an id not found is checked against the result it came from and looked up again, never taken for an entry gone.

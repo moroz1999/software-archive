@@ -21,6 +21,7 @@ const SOFTWARE = {
     credits: [],
     instructions: null,
     sources: [],
+    links: [],
 };
 const RELEASE = {
     id: '00000000-0000-0000-0007-000000000002',

@@ -22,6 +22,7 @@ const SOFTWARE = {
     credits: [],
     instructions: null,
     sources: [],
+    links: [],
 };
 const AY: Hardware = {code: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound'};
 const BEEPER: Hardware = {code: 'beeper', name: 'Beeper', group: 'sound', groupName: 'Sound'};

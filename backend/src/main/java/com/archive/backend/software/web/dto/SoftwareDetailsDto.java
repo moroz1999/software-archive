@@ -23,7 +23,11 @@ public record SoftwareDetailsDto(
         AddedDto added,
         boolean canChange,
         List<SoftwareLinkDto> compilationItems,
-        List<SoftwareLinkDto> compilations) {
+        List<SoftwareLinkDto> compilations,
+        List<ExternalLinkDto> links) {
+
+    public record ExternalLinkDto(
+            String url, @Schema(ref = "SoftwareLinkType") String type) {}
 
     public record SoftwareCreditDto(
             UUID id,

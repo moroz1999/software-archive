@@ -40,6 +40,10 @@ public class CreateSoftwareHandler {
                 addedBy);
         software.changePreservation(c.preservation());
         software.changeInstructions(c.instructions());
+        var homepage = c.homepage();
+        if (homepage != null) {
+            software.addHomepage(homepage);
+        }
         var programs = c.compilationItemIds();
         if (programs != null) {
             software.changeCompilationItems(compilationSets.of(id, programs));

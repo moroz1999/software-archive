@@ -33,7 +33,7 @@ final class SoftwareSchemas {
             "instructions": {"type": ["string", "null"], "description": "How it is loaded, run and played, apart from\
              the description; empty: none."},
             "sourceUrl": {"type": ["string", "null"], "pattern": "^[hH][tT][tT][pP][sS]?://",\
-             "description": "The page of another site it is taken from, recorded as its source."},
+             "description": "The program's homepage, if known, added to its links."},
             "releaseDate": %s,
             "hardware": {"type": ["array", "null"], "items": {"type": "string"},\
              "description": "The codes of its base hardware, of list_hardware; given, they replace it."},

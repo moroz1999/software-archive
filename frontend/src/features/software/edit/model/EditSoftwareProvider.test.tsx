@@ -22,7 +22,7 @@ const SOFTWARE = {
     compilations: [],
     credits: [],
     instructions: null,
-    sources: [],
+    sources: [], links: [],
 };
 const PLATFORMS = json([{code: 'bk', name: 'BK'}, {code: 'vector', name: 'Vector'}]);
 const ORIGINAL_ITEM = {id: '00000000-0000-0000-0001-000000000002', title: 'Jetpac'};

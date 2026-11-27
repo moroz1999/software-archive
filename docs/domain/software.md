@@ -14,7 +14,8 @@ Software (a production) is a release of a program: the work itself, as it is kno
 - It can be known under alternative titles; an alternative title can be tied to a language.
 - It lists the languages it is available in.
 - Languages — of the software and of its alternative titles — are chosen from the archive's fixed list of languages, each known by its code.
-- It carries links to the outside world. A link has one kind from a fixed list: general, homepage, store, video. A link is an absolute web address (http or https).
+- Its Links section shows homepages and other external links alongside the pages of the archives it was imported from. Several programs can share a link. Each distinct address appears once on a program's page.
+- A saved link is an absolute web address (HTTP or HTTPS) of one kind: general, homepage, store or video.
 
 ## Compilations
 

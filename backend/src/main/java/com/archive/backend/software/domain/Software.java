@@ -11,6 +11,7 @@ import com.archive.backend.user.domain.AddedBy;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -68,6 +69,9 @@ public final class Software {
 
     @Getter(lombok.AccessLevel.NONE)
     private final List<DomainEvent> events = new ArrayList<>();
+
+    @Getter(lombok.AccessLevel.NONE)
+    private final Set<SoftwareUrl> homepagesToAdd = new HashSet<>();
 
     public Software(
             SoftwareId id,
@@ -437,6 +441,14 @@ public final class Software {
 
     public void changeInstructions(@Nullable SoftwareInstructions instructions) {
         this.instructions = instructions;
+    }
+
+    public void addHomepage(SoftwareUrl url) {
+        homepagesToAdd.add(Objects.requireNonNull(url, "url"));
+    }
+
+    public Set<SoftwareUrl> homepagesToAdd() {
+        return Set.copyOf(homepagesToAdd);
     }
 
     /** The screenshots of the software itself, or of its release when one is named. */

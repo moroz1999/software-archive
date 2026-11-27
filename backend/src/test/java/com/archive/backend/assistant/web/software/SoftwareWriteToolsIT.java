@@ -5,6 +5,7 @@ import static com.archive.backend.assistant.web.tool.WriteToolsTestData.GAMES;
 import static com.archive.backend.assistant.web.tool.WriteToolsTestData.JANE;
 import static com.archive.backend.assistant.web.tool.WriteToolsTestData.JD;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.archive.backend.IntegrationTest;
@@ -17,6 +18,8 @@ import com.archive.backend.shared.domain.error.BusinessException;
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.user.TestActors;
 import com.jayway.jsonpath.DocumentContext;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -136,18 +139,26 @@ class SoftwareWriteToolsIT {
     }
 
     @Test
-    void recordsThePageTheSoftwareWasTakenFromAsItsSource() {
+    void showsTheHomepageAlongsideTheImportedPage() {
         UUID id = calls.write("create_software", """
                         {"title": "Elite", "platform": "vector", "sourceUrl": "%s"}
                         """.formatted(PAGE), MEMBER).uuid();
+        jdbc.update(
+                "INSERT INTO external_origin (origin, kind, external_id, entity_id, url) VALUES (?, 'SOFTWARE', ?, ?, ?)",
+                "vtrd.in",
+                "524",
+                id,
+                OTHER_PAGE);
 
         DocumentContext software = software(id);
-        assertThat(software.read("$.software.sources[0].archive", String.class)).isEqualTo("zxart.ee");
-        assertThat(software.read("$.software.sources[0].url", String.class)).isEqualTo(PAGE);
+        Map<String, Object> fields = software.read("$.software");
+        assertThat(fields).containsEntry("links", List.of(Map.of("type", "homepage", "url", PAGE)));
+        assertThat(ToolJson.list(software, "$.software.sources[*].url")).containsExactly(OTHER_PAGE);
+        assertThat(ToolJson.list(software, "$.software.origins[*].externalId")).containsExactly("524");
     }
 
     @Test
-    void addsAnotherSourcePageOnUpdateAndTheSameOneOnce() {
+    void addsAnotherHomepageOnUpdateAndKeepsEachAddressOnce() {
         UUID id = calls.write("create_software", """
                         {"title": "Elite", "platform": "vector", "sourceUrl": "%s"}
                         """.formatted(PAGE), MEMBER).uuid();
@@ -155,23 +166,50 @@ class SoftwareWriteToolsIT {
         calls.write("update_software", "{\"id\": \"%s\", \"sourceUrl\": \"%s\"}".formatted(id, PAGE), MEMBER);
         calls.write("update_software", "{\"id\": \"%s\", \"sourceUrl\": \"%s\"}".formatted(id, OTHER_PAGE), MEMBER);
 
-        assertThat(ToolJson.list(software(id), "$.software.sources[*].url"))
-                .containsExactlyInAnyOrder(PAGE, OTHER_PAGE);
+        DocumentContext software = software(id);
+        Map<String, Object> fields = software.read("$.software");
+        assertThat(fields).containsKey("links");
+        assertThat(ToolJson.list(software, "$.software.links[*].url")).containsExactlyInAnyOrder(PAGE, OTHER_PAGE);
     }
 
     @Test
-    void refusesThePageOfOtherSoftwareAddingNothing() {
+    void letsAProgramBeAddedWithAHomepageAlreadyUsedByAnotherProgram() {
+        String create = """
+                {"title": "%s", "platform": "vector", "sourceUrl": "%s"}
+                """;
+        calls.write("create_software", create.formatted("Elite", PAGE), MEMBER);
+
+        assertThatCode(() -> calls.write("create_software", create.formatted("Elite 2", PAGE), MEMBER))
+                .doesNotThrowAnyException();
+        assertThat(programsWithHomepage(PAGE)).containsExactlyInAnyOrder("Elite", "Elite 2");
+    }
+
+    @Test
+    void letsAProgramBeEditedToUseAHomepageAlreadyUsedByAnotherProgram() {
         calls.write("create_software", """
                 {"title": "Elite", "platform": "vector", "sourceUrl": "%s"}
                 """.formatted(PAGE), MEMBER);
+        UUID second = calls.write("create_software", """
+                {"title": "Elite 2", "platform": "vector"}
+                """, MEMBER).uuid();
 
-        assertThatThrownBy(() -> calls.write("create_software", """
-                        {"title": "Elite 2", "platform": "vector", "sourceUrl": "%s"}
-                        """.formatted(PAGE), MEMBER))
+        assertThatCode(() -> calls.write("update_software", """
+                        {"id": "%s", "sourceUrl": "%s"}
+                        """.formatted(second, PAGE), MEMBER))
+                .doesNotThrowAnyException();
+        assertThat(programsWithHomepage(PAGE)).containsExactlyInAnyOrder("Elite", "Elite 2");
+    }
+
+    @Test
+    void refusesAnInvalidHomepageBeforeEditingTheProgram() {
+        UUID id = calls.write("create_software", elite(), MEMBER).uuid();
+
+        assertThatThrownBy(() -> calls.write("update_software", """
+                        {"id": "%s", "title": "Elite Plus", "sourceUrl": "https:///"}
+                        """.formatted(id), MEMBER))
                 .isInstanceOfSatisfying(
-                        BusinessException.class, e -> assertThat(e.code()).isEqualTo("software.page-taken"));
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM software WHERE title = 'Elite 2'", Integer.class))
-                .isZero();
+                        BusinessException.class, e -> assertThat(e.code()).isEqualTo("software.page-invalid"));
+        assertThat(software(id).read("$.software.title", String.class)).isEqualTo("Elite");
     }
 
     @Test
@@ -247,6 +285,13 @@ class SoftwareWriteToolsIT {
 
     private DocumentContext software(UUID id) {
         return ToolJson.of(calls.read("get_software", "{\"id\": \"%s\"}".formatted(id), MEMBER));
+    }
+
+    private List<String> programsWithHomepage(String url) {
+        return jdbc.queryForList("""
+                SELECT s.title FROM software_links l JOIN software s ON s.id = l.software_id
+                WHERE l.type = 'homepage' AND l.url = ?
+                """, String.class, url);
     }
 
     private static String elite() {

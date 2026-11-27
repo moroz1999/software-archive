@@ -5,14 +5,12 @@ import com.archive.backend.importer.domain.ExternalOrigin;
 import com.archive.backend.importer.domain.ImportedEntry;
 import com.archive.backend.importer.domain.ImportedEntryId;
 import com.archive.backend.importer.domain.ImportedEntryRepository;
-import com.archive.backend.importer.read.ExternalOriginReadRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
-/** The entries imports added, kept in memory, and read as the read side reads them. */
-class InMemoryImportedEntryRepository implements ImportedEntryRepository, ExternalOriginReadRepository {
+/** The entries imports added, kept in memory. */
+class InMemoryImportedEntryRepository implements ImportedEntryRepository {
 
     final List<ImportedEntry> entries = new ArrayList<>();
 
@@ -21,12 +19,6 @@ class InMemoryImportedEntryRepository implements ImportedEntryRepository, Extern
         return entries.stream()
                 .filter(entry -> entry.getOrigin().equals(origin))
                 .findFirst();
-    }
-
-    @Override
-    public Optional<UUID> findEntity(String origin, String kind, String externalId) {
-        return findByOrigin(new ExternalOrigin(origin, ExternalKind.valueOf(kind), externalId))
-                .map(entry -> entry.getEntry().value());
     }
 
     @Override

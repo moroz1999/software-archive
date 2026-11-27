@@ -23,6 +23,7 @@ const SOFTWARE = {
     credits: [],
     instructions: null,
     sources: [],
+    links: [],
 };
 const RELEASE = '00000000-0000-0000-0007-000000000002';
 const HARDWARE: readonly Hardware[] = [{code: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound'}];

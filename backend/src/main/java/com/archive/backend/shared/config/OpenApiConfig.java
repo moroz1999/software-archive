@@ -22,6 +22,7 @@ import com.archive.backend.shared.domain.Language;
 import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.ReleaseType;
 import com.archive.backend.software.domain.SoftwareCreditDraft;
+import com.archive.backend.software.domain.SoftwareLinkType;
 import com.archive.backend.software.domain.SoftwareReferenceType;
 import com.archive.backend.software.domain.SoftwareSupplement;
 import com.archive.backend.user.domain.Ability;
@@ -79,6 +80,7 @@ class OpenApiConfig {
             entry("ReleaseType", codes(ReleaseType.values(), ReleaseType::code)),
             entry("PreservationStatus", codes(PreservationStatus.values(), PreservationStatus::code)),
             entry("SoftwareReferenceType", codes(SoftwareReferenceType.values(), SoftwareReferenceType::code)),
+            entry("SoftwareLinkType", codes(SoftwareLinkType.values(), SoftwareLinkType::code)),
             entry("CreditRole", SoftwareCreditDraft.ALLOWED_ROLES),
             entry("GroupMemberRole", GroupMemberDraft.ALLOWED_ROLES),
             entry("PersonReferenceType", codes(PersonReferenceType.values(), PersonReferenceType::code)),

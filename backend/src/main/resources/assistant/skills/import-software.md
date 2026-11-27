@@ -22,7 +22,7 @@ description: Adding software from a page of another site.
 - The release date is a year, or a day when the page gives the day. Never turn a year into a made-up day.
 - Add the page's screenshots of the work to the software, those of one version to that release (`add_screenshots`, by the pictures' own addresses). Look at a picture with `view_image` when unsure what it shows. A screenshot is a screen of the work only: logos and banners of the site are left out; photos of boxes, tapes, disks, manuals and scans are not screenshots either.
 - Maps of the work go into the gallery `maps`, covers of its box, tape or disk into `covers`, adverts of it into `adverts`: `add_screenshots` with that `gallery`, on the software, never on a release. Other pictures the archive has no place for: list them, with their addresses, in your answer for the editor.
-- Pass the address of the work's own page as `sourceUrl` of `create_software` or `update_software`. It is shown as the software's source. If the archive already records that page as a source, complete the software it belongs to.
+- If the work's homepage is known, pass it as `sourceUrl` of `create_software` or `update_software`. The address appears in the software's Links section. Several works can share a homepage.
 
 ## Compilations
 
@@ -30,5 +30,5 @@ Treat a disk, tape or ROM image that contains more than one program as a compila
 
 1. Read the full list of programs before proposing the plan. Follow links to the contents and to pages for individual programs. Use `find-software` for every named program to identify the work and find any existing archive entry.
 2. Give each identified program a separate software entry in the same plan. Use `create_software` for missing programs, reuse confirmed matches and fill in missing facts the source supplies. Give each program its own known release year, credits and screenshots. Resolve names with `find-author` and apply `author-rules`. Assign screenshots with `add_screenshots` and use `view_image` when the captions leave the subject unclear. Leave unknown dates and credits unset.
-3. Create a separate software entry for the compilation or reuse a confirmed match. Set the imported page as the compilation's `sourceUrl`. Give an individual program a `sourceUrl` only when it has a separate page of its own. Put screenshots of the compilation's menu on the compilation.
+3. Create a separate software entry for the compilation or reuse a confirmed match. Fill in the compilation's homepage and each program's homepage when known. Put screenshots of the compilation's menu on the compilation.
 4. Link all the programs to the compilation with `add_compilation_items`. Refer to existing entries by their ids and to entries created in the same plan by `{"$ref": N}`. Tell the editor which programs or screenshots could not be identified and whether any of the contents could not be read.

@@ -10,6 +10,7 @@ import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareInstructions;
 import com.archive.backend.software.domain.SoftwareTitle;
+import com.archive.backend.software.domain.SoftwareUrl;
 import com.archive.backend.user.domain.Actor;
 import java.util.List;
 import java.util.Set;
@@ -27,7 +28,37 @@ public record UpdateSoftwareCommand(
         List<SoftwareCreditDraft> credits,
         PreservationStatus preservation,
         @Nullable SoftwareInstructions instructions,
-        @Nullable Set<SoftwareId> compilationItemIds) {
+        @Nullable Set<SoftwareId> compilationItemIds,
+        @Nullable SoftwareUrl homepage) {
+
+    public UpdateSoftwareCommand(
+            Actor actor,
+            SoftwareId id,
+            SoftwareTitle title,
+            @Nullable SoftwareDescription description,
+            @Nullable ReleaseDate releaseDate,
+            PlatformCode platform,
+            Set<HardwareCode> hardware,
+            Set<CategoryId> categories,
+            List<SoftwareCreditDraft> credits,
+            PreservationStatus preservation,
+            @Nullable SoftwareInstructions instructions,
+            @Nullable Set<SoftwareId> compilationItemIds) {
+        this(
+                actor,
+                id,
+                title,
+                description,
+                releaseDate,
+                platform,
+                hardware,
+                categories,
+                credits,
+                preservation,
+                instructions,
+                compilationItemIds,
+                null);
+    }
 
     public UpdateSoftwareCommand(
             Actor actor,

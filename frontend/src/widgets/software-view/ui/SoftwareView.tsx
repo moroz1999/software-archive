@@ -107,14 +107,7 @@ function Details({software}: {readonly software: SoftwareDetails}) {
             )}
             <ProgramCredits credits={software.credits}/>
             <RelatedPrograms label={t('software.includedInCompilations')} programs={software.compilations}/>
-            {software.sources.length > 0 && (
-                <Stack as="section" gap="xs" ariaLabel={t('software.source')}>
-                    <Text variant="label" tone="muted">{t('software.source')}</Text>
-                    <Stack as="ul" gap="xs">
-                        {software.sources.map((source) => <li key={source.url}><TextLink href={source.url}>{source.archive}</TextLink></li>)}
-                    </Stack>
-                </Stack>
-            )}
+            <ProgramLinks sources={software.sources} links={software.links}/>
             {lines.length > 0 && (
                 <Stack gap="sm">
                     {lines.map((line, index) => <Text key={index}>{line}</Text>)}
@@ -128,6 +121,43 @@ function Details({software}: {readonly software: SoftwareDetails}) {
             )}
         </Stack>
     );
+}
+
+function ProgramLinks({sources, links}: Pick<SoftwareDetails, 'sources' | 'links'>) {
+    const {t} = useTranslation();
+    const addresses = new Map(sources.map(({url, archive}) => [url, archive]));
+    for (const {url} of links) {
+        if (addresses.has(url)) {
+            continue;
+        }
+        const hostname = webHostname(url);
+        if (hostname !== null) {
+            addresses.set(url, hostname);
+        }
+    }
+    if (addresses.size === 0) {
+        return null;
+    }
+    const label = t('software.links');
+    return (
+        <Stack as="section" gap="xs" ariaLabel={label}>
+            <Text variant="label" tone="muted">{label}</Text>
+            <Stack as="ul" gap="xs">
+                {Array.from(addresses, ([url, title]) => <li key={url}><TextLink href={url}>{title}</TextLink></li>)}
+            </Stack>
+        </Stack>
+    );
+}
+
+function webHostname(url: string): string | null {
+    try {
+        const address = new URL(url);
+        return address.protocol === 'http:' || address.protocol === 'https:'
+            ? address.hostname.replace(/^www\./u, '')
+            : null;
+    } catch {
+        return null;
+    }
 }
 
 function ProgramCredits({credits}: {readonly credits: readonly SoftwareCredit[]}) {

@@ -6,6 +6,7 @@ import com.archive.backend.assistant.web.tool.ToolContext;
 import com.archive.backend.assistant.web.tool.WriteTool;
 import com.archive.backend.assistant.web.tool.Written;
 import com.archive.backend.software.app.CreateSoftwareHandler;
+import com.archive.backend.software.domain.SoftwareUrl;
 import com.archive.backend.software.web.dto.SoftwareRequestDto;
 import com.archive.backend.software.web.mapper.SoftwareWebMapper;
 import java.util.UUID;
@@ -20,7 +21,6 @@ public class CreateSoftwareTool implements WriteTool<CreateSoftwareArguments> {
 
     private final CreateSoftwareHandler handler;
     private final SoftwareWebMapper mapper;
-    private final SourcePages sources;
 
     @Override
     public String name() {
@@ -71,7 +71,6 @@ public class CreateSoftwareTool implements WriteTool<CreateSoftwareArguments> {
 
     @Override
     public Written write(ToolContext context, CreateSoftwareArguments a) {
-        sources.requireFree(a.sourceUrl(), null);
         SoftwareRequestDto request = new SoftwareRequestDto(
                 a.title(),
                 Changes.text(a.description()),
@@ -82,8 +81,8 @@ public class CreateSoftwareTool implements WriteTool<CreateSoftwareArguments> {
                 a.categoryIds(),
                 SoftwareForms.credits(a.credits()),
                 a.preservation());
-        UUID id = handler.handle(mapper.toCreate(context.actor(), request)).value();
-        sources.record(a.sourceUrl(), id);
+        UUID id = handler.handle(mapper.toCreate(context.actor(), request, SoftwareUrl.ofNullable(a.sourceUrl())))
+                .value();
         return Written.of(id);
     }
 }

@@ -255,6 +255,16 @@ class FixturesIT {
     }
 
     @Test
+    void aFixtureSoftwareShowsItsHomepageAndItsImportedPage() throws Exception {
+        mvc.perform(get("/api/software/{id}", ELITE))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.links[0].url").value("https://example.org/elite/"))
+                .andExpect(jsonPath("$.links[0].type").value("homepage"))
+                .andExpect(jsonPath("$.sources[0].url").value("https://archive.example.net/catalog/elite/"))
+                .andExpect(jsonPath("$.origins[0].externalId").value("524"));
+    }
+
+    @Test
     void fixtureSoftwareShowsTheContentsOfACompilationInBothDirections() throws Exception {
         mvc.perform(get("/api/software/{id}", VECTOR_COLLECTION))
                 .andExpect(status().isOk())

@@ -190,7 +190,8 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                         rs.getObject("added_by", UUID.class),
                         false,
                         compilationLinks(id, "compilation_id", "item_id"),
-                        compilationLinks(id, "item_id", "compilation_id")))
+                        compilationLinks(id, "item_id", "compilation_id"),
+                        externalLinks(id)))
                 .optional();
     }
 
@@ -340,7 +341,18 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                 .list();
     }
 
-    /** The pages of the archives the software was imported from (docs/features/vektor-import.md). */
+    private List<SoftwareDetails.ExternalLink> externalLinks(UUID softwareId) {
+        return jdbc.sql("""
+                        SELECT url, type FROM software_links
+                        WHERE software_id = :id
+                        ORDER BY url, type
+                        """)
+                .param("id", softwareId)
+                .query((rs, row) -> new SoftwareDetails.ExternalLink(rs.getString("url"), rs.getString("type")))
+                .list();
+    }
+
+    /** The pages of the archives the software was imported from. */
     private List<SoftwareSource> sources(UUID softwareId) {
         return jdbc.sql("""
                         SELECT origin, url FROM external_origin

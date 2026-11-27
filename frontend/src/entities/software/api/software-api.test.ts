@@ -38,7 +38,7 @@ type SoftwareDetailsDto = components['schemas']['SoftwareDetailsDto'];
 /** Software as the archive answers it: nothing beside what the test gives. */
 function details(fields: Partial<SoftwareDetailsDto> = {}): SoftwareDetailsDto {
     return {
-        id: ID, title: 'Elite', description: null, releaseDate: null, platform: VECTOR, hardware: [], categories: [], credits: [], sources: [],
+        id: ID, title: 'Elite', description: null, releaseDate: null, platform: VECTOR, hardware: [], categories: [], credits: [], sources: [], links: [],
         compilationItems: [], compilations: [], preservation: 'missing-in-action', instructions: null, origins: [],
         added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true, ...fields,
     };
@@ -69,6 +69,7 @@ describe(fetchSoftware, () => {
                 {id: DEVELOPER, type: GROUP, title: 'Nebula Studio', ownerId: DEVELOPER, roles: ['developer']},
             ],
             sources: [{archive: 'vektor-06c.ru', url: 'https://vektor-06c.ru/programmnoe-obespechenie/arkadnye-igry/joe-blade-/'}],
+            links: [],
             compilationItems: [],
             compilations: [],
             preservation: 'missing-in-action',

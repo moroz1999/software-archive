@@ -8,8 +8,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * One software with everything shown about it; its base hardware by group, then by name; its categories in the order
- * of the tree; everyone credited on it; the pages of the archives it was imported from, and its ids there; the code
- * of its preservation status.
+ * of the tree; everyone credited on it; its links and import origins; the code of its preservation status.
  */
 public record SoftwareDetails(
         UUID id,
@@ -28,7 +27,10 @@ public record SoftwareDetails(
         @Nullable UUID addedBy,
         boolean canChange,
         List<SoftwareLink> compilationItems,
-        List<SoftwareLink> compilations) {
+        List<SoftwareLink> compilations,
+        List<ExternalLink> links) {
+
+    public record ExternalLink(String url, String type) {}
 
     public SoftwareDetails(
             UUID id,
@@ -62,6 +64,7 @@ public record SoftwareDetails(
                 added,
                 addedBy,
                 canChange,
+                List.of(),
                 List.of(),
                 List.of());
     }
@@ -126,6 +129,7 @@ public record SoftwareDetails(
                 addedBy,
                 canChange,
                 compilationItems,
-                compilations);
+                compilations,
+                links);
     }
 }
