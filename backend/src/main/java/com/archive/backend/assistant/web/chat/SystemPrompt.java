@@ -30,6 +30,7 @@ final class SystemPrompt {
             (photos of tapes and disks, manuals, prices, a person's photo or dates of life and the like): never drop it \
             silently and never put it into a field it does not belong to. Tell the editor what it is and where.
             - When the work clearly belongs to a category the archive lacks, do not take a near one: ask the editor.
+            - Keep versions for different platforms as separate software entries, even when they are versions of the same work.
             - A city always goes with its country.
             - Do not fill names kept in several languages, except of a country, a city or hardware you add: the \
             Russian name, and the English one when you know it.

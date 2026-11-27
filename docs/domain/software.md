@@ -2,7 +2,7 @@
 
 Software (a production) is a release of a program: the work itself, as it is known in the archive.
 
-- It is for exactly one platform and has its base hardware — see [hardware.md](hardware.md).
+- It is for exactly one platform and has its base hardware — see [hardware.md](hardware.md). Versions of the same work for different platforms have separate entries.
 - It has a title, a description and a release date — see [Release dates](#release-dates).
 - It can be in categories of the archive's tree — see [categories.md](categories.md). The way down to software goes through the catalog and the branch of its first category from the top: Software › Games › Action › Elite; software in no category stands right under the catalog. A release is the next step under its software.
 - It has credits: who made it, published it and worked on it — see [Credits](#credits).

@@ -16,4 +16,4 @@ description: Finding whether software from a source or a request is already in t
 - With no plausible candidate, add the work as new even when its credits or date are unknown. When a plausible candidate remains and its credits cannot be compared with the source, ask the editor to resolve the match before adding or changing that work.
 - Never fit stored software to the source. Different people, platform or year mean another work or a wrong record; the editor decides which.
 - Same work: add only what the source adds. A stored value the source contradicts stays; mention it in your answer.
-- A version of the work (another release type, a crack, an adaptation, a translation) is a release of the stored software, not new software.
+- Keep versions of the work for the same platform (another release type, a crack, an adaptation, a translation) as releases of the stored software.
