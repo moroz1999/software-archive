@@ -7,7 +7,6 @@ export function makeOwnerMessages(t: TFunction): BusinessMessages {
         '401': t('errors.business.signInRequired'),
         '403': t('errors.business.forbidden'),
         'label.owned': t('label.errors.owned'),
-        'label.display-one': t('label.makeErrors.displayName'),
         'author.nameless': t('label.makeErrors.onlyName'),
         'group.type-unknown': t('label.makeErrors.typeUnknown'),
     };

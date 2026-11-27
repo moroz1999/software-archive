@@ -50,7 +50,6 @@ describe(MakeAuthorDialog, () => {
     });
 
     it.each([
-        [422, 'label.display-one', 'This label is the display name of its owner: choose another display name for them first.'],
         [422, 'author.nameless', 'This label is the only name of its owner: it cannot be taken away from them.'],
         [403, 'access.denied', 'Only whoever added this, or an administrator, may change it.'],
     ])('shows the refusal %i %s inside the dialog, not in the error dialog', async (status, code, text) => {

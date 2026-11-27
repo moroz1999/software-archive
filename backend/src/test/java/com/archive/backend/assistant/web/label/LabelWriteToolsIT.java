@@ -160,6 +160,9 @@ class LabelWriteToolsIT {
 
     @Test
     void refusesAnIdOfNothingAndLeavesWhoMayChangeWhatToTheArchive() {
+        jdbc.update("UPDATE person SET real_name = NULL WHERE id = ?", JANE);
+        jdbc.update("UPDATE label SET person_id = NULL WHERE id = ?", JANE_ALT);
+
         assertThatThrownBy(() -> calls.state("update_label", "{\"id\": \"%s\"}".formatted(JANE), ADMIN))
                 .isInstanceOf(NotFoundException.class);
         assertThatThrownBy(() -> calls.write("attach_label", """
@@ -167,7 +170,9 @@ class LabelWriteToolsIT {
                         """.formatted(GHOST, JANE), MEMBER))
                 .isInstanceOf(BusinessException.class);
         assertThatThrownBy(() -> calls.write("delete_label", "{\"id\": \"%s\"}".formatted(JD), ADMIN))
-                .isInstanceOf(BusinessException.class);
+                .isInstanceOfSatisfying(
+                        BusinessException.class,
+                        error -> assertThat(error.code()).isEqualTo("author.nameless"));
     }
 
     private UUID label(String name) {

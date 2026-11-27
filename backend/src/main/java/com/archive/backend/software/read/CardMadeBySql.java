@@ -13,7 +13,7 @@ public final class CardMadeBySql {
     /** The main name of the person of the query around it. */
     private static final String PERSON_MAIN_NAME = """
             COALESCE((SELECT m.name FROM label m WHERE m.person_id = p.id
-                      ORDER BY m.is_display_name DESC NULLS LAST, lower(m.name), m.id LIMIT 1), p.real_name)""";
+                      ORDER BY (m.is_display_name IS TRUE) DESC, lower(m.name), m.id LIMIT 1), p.real_name)""";
 
     /** The names of the credits of the software of the alias in the query around it that meet the condition. */
     private static String names(String software, String condition) {

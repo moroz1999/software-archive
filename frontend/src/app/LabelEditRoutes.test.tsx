@@ -250,16 +250,16 @@ describe('label editing routes', () => {
         expect(bodyOf(fetchMock, 'PUT')).toBeUndefined();
     });
 
-    it('shows a refusal about the owner under whose the label is', async () => {
-        await openForm(ADMIN, GHOST, {
-            [`PUT ${LABEL_URL}`]: json({status: 422, code: 'label.display-one', errors: [{field: 'owner', code: 'label.display-one'}]}, 422),
+    it('shows a refusal under whose the label is when detaching would leave a person without a name', async () => {
+        await openForm(ADMIN, {...GHOST, owner: {...GHOST.owner, name: GHOST.name, note: null}}, {
+            [`PUT ${LABEL_URL}`]: json({status: 422, code: 'author.nameless', errors: [{field: 'owner', code: 'author.nameless'}]}, 422),
         });
 
-        await userEvent.click(screen.getByRole('button', {name: 'Remove Jane Doe'}));
+        await userEvent.click(screen.getByRole('button', {name: 'Remove Ghost'}));
         await userEvent.click(screen.getByRole('button', {name: 'Save'}));
         const owner = screen.getByRole('group', {name: 'Whose label'});
 
-        await expect(within(owner).findByText('This label is the display name of its owner: choose another display name for them first.')).resolves.toBeInTheDocument();
+        await expect(within(owner).findByText('This label is the only name of its owner: it cannot be taken away from them.')).resolves.toBeInTheDocument();
     });
 
     it('shows a refusal of the whole form at its top', async () => {

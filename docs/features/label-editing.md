@@ -35,7 +35,7 @@ The edit page shows Authors › the label, leading to its page, › "Editing". A
 ## Loading and errors
 
 - The page preloads the label's details and the countries ([data-loading.md](../data-loading.md)). Within 300 ms the form appears filled, otherwise a form skeleton first.
-- An owner not in the archive, the label being the display name of a person with other labels, or the only name of a person without a real name, are refused under Whose label; a place that is not in the archive under Locations; a missing sign-in and no right to change the label at the top of the form. The same refusals of deleting show inside its dialog.
+- Whose label shows a refusal when the chosen owner is missing or when detaching would leave a person without any name. Locations shows a refusal when a place is missing. A missing sign-in or permission shows at the top of the form. Refusals of deleting show inside its dialog.
 - An unknown label, an id in the URL that cannot be one, and a label deleted in the meantime show the not found page ([error-handling.md](../error-handling.md)).
 - System errors go to the error dialog; the form keeps what was typed.
 
@@ -61,7 +61,7 @@ The edit page shows Authors › the label, leading to its page, › "Editing". A
 |---|---|---|
 | `POST /api/labels` `{name, locations: [{country, city, primary}]}` | `201`, `Location: /api/labels/{id}`, `{id}` | `400 title.required` / `400 title.too-long`, `400 location.empty`, `400` for malformed JSON or ids; `422 location.unknown`, `422 location.primary-one` (field `locations`); `401` |
 | `GET /api/labels/{id}` | as on the page ([label-view.md](label-view.md#rest)), with `locations: [{countryId, country, cityId, city, primary}]` as for authors, `origins: [{origin, externalId, url}]` (`url` `null` without a source page), `canEdit` for whoever added the label and administrators, `canChangeOwner` for administrators | as on the page |
-| `PUT /api/labels/{id}` `{name, owner: {type, id, display} \| null, locations: [{country, city, primary}]}` | `204` | `404 label.not-found`; `400 title.required` / `400 title.too-long`, `400 location.empty`, `400` for malformed JSON, ids or another `type`; `422 label.owner-unknown`, `422 label.display-one`, `422 author.nameless` (field `owner`); `422 location.unknown`, `422 location.primary-one` (field `locations`); `401`, `403` |
-| `DELETE /api/labels/{id}` | `204` | `404 label.not-found`; `422 label.display-one`, `422 author.nameless`; `401`, `403` |
+| `PUT /api/labels/{id}` `{name, owner: {type, id, display} \| null, locations: [{country, city, primary}]}` | `204` | `404 label.not-found`; `400 title.required` / `400 title.too-long`, `400 location.empty`, `400` for malformed JSON, ids or another `type`; `422 label.owner-unknown`, `422 author.nameless` (field `owner`); `422 location.unknown`, `422 location.primary-one` (field `locations`); `401`, `403` |
+| `DELETE /api/labels/{id}` | `204` | `404 label.not-found`; `422 author.nameless`; `401`, `403` |
 
 `owner` is whose the label is after saving: the same owner as now changes nothing, and its `display` is ignored; another owner, or `null` for a label that has one, is a change only administrators make (`403` for anybody else). `locations` is the whole list, exactly one `primary` when not empty.

@@ -155,10 +155,44 @@ class LabelIT {
     }
 
     @Test
-    void attachesTheLabelAsTheDisplayNameWhenToldTo() throws Exception {
+    void attachesANewDisplayNameAndKeepsTheOldLabelWithItsCredits() throws Exception {
+        jdbc.update(
+                "INSERT INTO software_contribution (software_id, label_id, role_codes) VALUES (?, ?, ARRAY['code'])",
+                ELITE,
+                JD);
+
         attach(GHOST, "author", JANE, true).andExpect(status().isNoContent());
 
-        mvc.perform(get("/api/authors/{id}", JANE)).andExpect(jsonPath("$.name").value("Ghost"));
+        mvc.perform(get("/api/authors/{id}", JANE))
+                .andExpect(jsonPath("$.name").value("Ghost"))
+                .andExpect(jsonPath("$.labels[*].name").value(contains("Ghost", "JD")))
+                .andExpect(jsonPath("$.labels[*].display").value(contains(true, false)));
+        mvc.perform(get("/api/labels/{id}/software", JD))
+                .andExpect(jsonPath("$[*].title").value(contains("Elite")));
+    }
+
+    @Test
+    void attachesTheFirstLabelWithoutMakingItTheDisplayName() throws Exception {
+        jdbc.update("UPDATE label SET person_id = NULL, is_display_name = false WHERE id = ?", JD);
+
+        attach(GHOST, "author", JANE, false).andExpect(status().isNoContent());
+
+        mvc.perform(get("/api/authors/{id}", JANE))
+                .andExpect(jsonPath("$.name").value("Ghost"))
+                .andExpect(jsonPath("$.labels[*].name").value(contains("Ghost")))
+                .andExpect(jsonPath("$.labels[*].display").value(contains(false)));
+    }
+
+    @Test
+    void showsTheFirstLabelByNameWithoutMarkingItAsTheDisplayName() throws Exception {
+        jdbc.update("UPDATE person SET real_name = NULL WHERE id = ?", JANE);
+        jdbc.update("UPDATE label SET is_display_name = false WHERE id = ?", JD);
+        jdbc.update("INSERT INTO label (id, name, person_id, is_display_name) VALUES (?, 'Jay', ?, false)", JAY, JANE);
+
+        mvc.perform(get("/api/authors/{id}", JANE))
+                .andExpect(jsonPath("$.realName").value(nullValue()))
+                .andExpect(jsonPath("$.name").value("Jay"))
+                .andExpect(jsonPath("$.labels[*].display").value(contains(false, false)));
     }
 
     @Test
@@ -380,14 +414,16 @@ class LabelIT {
     }
 
     @Test
-    void keepsTheDisplayNameOfAPersonWithOtherLabels() throws Exception {
+    void makesAnAuthorFromADisplayLabelWhenTheOwnerHasOtherLabels() throws Exception {
         jdbc.update("INSERT INTO label (id, name, person_id, is_display_name) VALUES (?, 'Jay', ?, false)", JAY, JANE);
 
-        makeAuthor(JD, ADMIN)
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.code").value("label.display-one"));
+        String id = idOf(makeAuthor(JD, ADMIN).andExpect(status().isCreated()));
+
+        mvc.perform(get("/api/authors/{id}", id))
+                .andExpect(jsonPath("$.realName").value("JD"));
         mvc.perform(get("/api/authors/{id}", JANE))
-                .andExpect(jsonPath("$.labels[*].name").value(contains("Jay", "JD")));
+                .andExpect(jsonPath("$.labels[*].name").value(contains("Jay")))
+                .andExpect(jsonPath("$.labels[*].display").value(contains(false)));
     }
 
     @Test
@@ -647,15 +683,15 @@ class LabelIT {
     }
 
     @Test
-    void refusesTakingTheDisplayNameFromAPersonWithOtherLabels() throws Exception {
+    void detachesTheDisplayNameWithoutMarkingAnotherLabel() throws Exception {
         jdbc.update("INSERT INTO label (id, name, person_id, is_display_name) VALUES (?, 'Jay', ?, false)", JAY, JANE);
 
         edit(JD, ADMIN, "{\"name\": \"JD\", \"owner\": null, \"locations\": []}")
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.code").value("label.display-one"))
-                .andExpect(jsonPath("$.errors[0].field").value("owner"));
-        mvc.perform(get("/api/labels/{id}", JD))
-                .andExpect(jsonPath("$.owner.id").value(JANE.toString()));
+                .andExpect(status().isNoContent());
+        mvc.perform(get("/api/labels/{id}", JD)).andExpect(jsonPath("$.owner").value(nullValue()));
+        mvc.perform(get("/api/authors/{id}", JANE))
+                .andExpect(jsonPath("$.labels[*].name").value(contains("Jay")))
+                .andExpect(jsonPath("$.labels[*].display").value(contains(false)));
     }
 
     @Test
@@ -739,13 +775,15 @@ class LabelIT {
     }
 
     @Test
-    void keepsTheDisplayNameOfAPersonWithOtherLabelsFromDeleting() throws Exception {
+    void deletesTheDisplayLabelWhenTheAuthorHasAnotherLabel() throws Exception {
         jdbc.update("INSERT INTO label (id, name, person_id, is_display_name) VALUES (?, 'Jay', ?, false)", JAY, JANE);
 
-        remove(JD, ADMIN)
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.code").value("label.display-one"));
-        mvc.perform(get("/api/labels/{id}", JD)).andExpect(status().isOk());
+        remove(JD, ADMIN).andExpect(status().isNoContent());
+
+        mvc.perform(get("/api/labels/{id}", JD)).andExpect(status().isNotFound());
+        mvc.perform(get("/api/authors/{id}", JANE))
+                .andExpect(jsonPath("$.labels[*].name").value(contains("Jay")))
+                .andExpect(jsonPath("$.labels[*].display").value(contains(false)));
     }
 
     @Test

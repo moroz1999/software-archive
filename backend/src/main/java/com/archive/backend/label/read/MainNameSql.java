@@ -14,7 +14,7 @@ public final class MainNameSql {
                 SELECT DISTINCT ON (l.person_id) l.person_id, l.id, l.name
                 FROM label l
                 WHERE l.person_id IS NOT NULL
-                ORDER BY l.person_id, l.is_display_name DESC NULLS LAST, lower(l.name), l.id
+                ORDER BY l.person_id, (l.is_display_name IS TRUE) DESC, lower(l.name), l.id
             ), named_person AS (
                 SELECT p.id AS person_id, COALESCE(m.name, p.real_name) AS main_name, m.id AS main_label_id,
                        p.real_name, p.notes

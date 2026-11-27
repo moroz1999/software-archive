@@ -20,17 +20,13 @@ public final class LabelRows {
     private LabelRows() {}
 
     /**
-     * Records from before the rule may have no label or several marked: the display name is then the first marked,
-     * or the label shown as the main name, the first by name (docs/domain/authors.md).
+     * If several labels are marked, take the first by name, as on the author page.
      */
     public static OwnLabels toLabels(List<LabelEntity> rows) {
         LabelId display = rows.stream()
                 .filter(label -> Boolean.TRUE.equals(label.getDisplay()))
-                .findFirst()
-                .or(() -> rows.stream()
-                        .min(Comparator.comparing(
-                                        (LabelEntity label) -> label.getName().toLowerCase(Locale.ROOT))
-                                .thenComparing(LabelEntity::getId)))
+                .min(Comparator.comparing((LabelEntity label) -> label.getName().toLowerCase(Locale.ROOT))
+                        .thenComparing(LabelEntity::getId))
                 .map(label -> new LabelId(label.getId()))
                 .orElse(null);
         return OwnLabels.restore(rows.stream().map(LabelRows::toLabel).toList(), display);

@@ -38,7 +38,7 @@ describe(AuthorCreator, () => {
         expect(post?.[1]?.body).toBe(JSON.stringify({
             realName: null,
             notes: null,
-            labels: [{id: null, name: 'Zed', display: true}],
+            labels: [{id: null, name: 'Zed', display: false}],
             locations: [{country: FINLAND, city: null, primary: true}],
         }));
     });

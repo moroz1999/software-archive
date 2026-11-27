@@ -143,8 +143,7 @@ public final class Author {
     }
 
     /**
-     * Gives up a label that turned out to be somebody else's; only its works change their owner. The person keeps
-     * their display name while other labels stay, and some name at all.
+     * Gives up a label that turned out to be somebody else's. The person needs a real name or another label.
      */
     public void release(LabelId label) {
         labels = requireNamed(realName, labels.release(label));

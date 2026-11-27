@@ -80,20 +80,22 @@ describe(LabelsEditor, () => {
         expect(value()).toStrictEqual([ZED]);
     });
 
-    it('passes the display name to the first label left when its label is taken away', async () => {
+    it('leaves the other labels unmarked when the display label is taken away', async () => {
         render(<Harness initial={[ZED, AXE]}/>);
 
         await userEvent.click(screen.getByRole('button', {name: 'Remove label 1'}));
 
-        expect(value()).toStrictEqual([{...AXE, display: true}]);
+        expect(value()).toStrictEqual([AXE]);
+        expect(checked('Display name')).toStrictEqual([false]);
     });
 
-    it('makes the first label added the display name', async () => {
+    it('adds the first label without making it the display name', async () => {
         render(<Harness initial={[]}/>);
 
         await userEvent.click(screen.getByRole('button', {name: 'Add label'}));
 
-        expect(value()).toStrictEqual([{id: null, name: '', display: true}]);
+        expect(value()).toStrictEqual([{id: null, name: '', display: false}]);
+        expect(checked('Display name')).toStrictEqual([false]);
     });
 
     it('chooses one display name', async () => {
@@ -103,6 +105,15 @@ describe(LabelsEditor, () => {
 
         expect(value()).toStrictEqual([{...ZED, display: false}, {...AXE, display: true}]);
         expect(checked('Display name')).toStrictEqual([false, true]);
+    });
+
+    it('lets the editor clear the display name and keep all labels', async () => {
+        render(<Harness initial={[ZED, AXE]}/>);
+
+        await userEvent.click(screen.getByRole('radio', {name: 'No display name'}));
+
+        expect(value()).toStrictEqual([{...ZED, display: false}, AXE]);
+        expect(checked('Display name')).toStrictEqual([false, false]);
     });
 
     it('says what is wrong with a label under it, and why the labels were refused under them all', () => {

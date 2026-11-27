@@ -8,6 +8,5 @@ export function attachLabelMessages(t: TFunction): BusinessMessages {
         '403': t('errors.business.forbidden'),
         'label.owned': t('label.errors.owned'),
         'label.owner-unknown': t('label.errors.ownerUnknown'),
-        'label.display-one': t('label.errors.displayOne'),
     };
 }

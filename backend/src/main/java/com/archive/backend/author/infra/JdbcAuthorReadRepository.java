@@ -145,12 +145,9 @@ public class JdbcAuthorReadRepository implements AuthorReadRepository {
                 .optional();
     }
 
-    /**
-     * The label shown as the main name is the display name, also of a record from before the rule with none marked.
-     */
     private List<AuthorLabel> labels(UUID personId) {
         return jdbc.sql("WITH " + MainNameSql.PEOPLE + """
-                        SELECT l.id, l.name, l.id = n.main_label_id AS display
+                        SELECT l.id, l.name, l.is_display_name IS TRUE AND l.id = n.main_label_id AS display
                         FROM label l
                         JOIN named_person n ON n.person_id = l.person_id
                         WHERE l.person_id = :id

@@ -227,7 +227,7 @@ class JpaAuthorRepositoryIT {
     }
 
     @Test
-    void marksTheMainLabelAndAPrimaryLocationOfARecordFromBeforeTheRule() {
+    void loadsUnmarkedLabelsAndStillChoosesAPrimaryLocation() {
         jdbc.update("INSERT INTO person (id) VALUES (?)", ID.value());
         jdbc.update(
                 "INSERT INTO label (id, name, person_id) VALUES (?, 'Zed', ?), (?, 'axe', ?)",
@@ -242,7 +242,10 @@ class JpaAuthorRepositoryIT {
 
         Author author = repository.findById(ID).orElseThrow();
 
-        assertThat(author.getLabels().display()).isEqualTo(new LabelId(id(62)));
+        assertThat(author.getLabels().all())
+                .extracting(OwnLabel::name)
+                .containsExactlyInAnyOrder(new LabelName("Zed"), new LabelName("axe"));
+        assertThat(author.getLabels().display()).isNull();
         assertThat(author.getLocations().all()).containsExactly(new Location(Place.restore(NORWAY, null), true));
     }
 

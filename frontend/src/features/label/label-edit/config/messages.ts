@@ -5,7 +5,6 @@ import type {BusinessMessages} from '@/shared/api';
 export function editLabelMessages(t: TFunction): BusinessMessages {
     return {
         'label.owner-unknown': t('label.errors.ownerUnknown'),
-        'label.display-one': t('label.makeErrors.displayName'),
         'author.nameless': t('label.makeErrors.onlyName'),
         'location.unknown': t('errors.locationUnknown'),
         'location.primary-one': t('errors.locationPrimaryOne'),

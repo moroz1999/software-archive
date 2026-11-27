@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The labels of an owner, exactly one of them its display name (docs/domain/authors.md). An owner keeps only labels
+ * The labels of an owner, with an optional display name (docs/domain/authors.md). An owner keeps only labels
  * of its own: a new label gets a new id here, and an id of somebody else's label is refused. A label the owner drops
  * is not deleted: it stays in the archive as a label of nobody.
  */
@@ -38,9 +38,7 @@ public final class OwnLabels {
      * Labels read back from storage: they were checked when stored.
      */
     public static OwnLabels restore(List<OwnLabel> labels, @Nullable LabelId display) {
-        boolean marked =
-                display != null && labels.stream().anyMatch(label -> label.id().equals(display));
-        if (marked == labels.isEmpty()) {
+        if (display != null && labels.stream().noneMatch(label -> label.id().equals(display))) {
             throw new IllegalArgumentException(
                     "The display name " + display + " is not one of the labels " + labels + ".");
         }
@@ -55,7 +53,7 @@ public final class OwnLabels {
         Map<LabelId, OwnLabel> own = all.stream().collect(Collectors.toMap(OwnLabel::id, Function.identity()));
         List<OwnLabel> labels =
                 drafts.stream().map(draft -> renamed(draft, own, adder)).toList();
-        if (!drafts.isEmpty() && drafts.stream().filter(LabelDraft::display).count() != 1) {
+        if (drafts.stream().filter(LabelDraft::display).count() > 1) {
             throw new LabelDisplayNameException();
         }
         LabelId marked = null;
@@ -83,25 +81,18 @@ public final class OwnLabels {
      * The labels with a label of nobody given to the owner, its display name when the person attaching it says so.
      */
     public OwnLabels adopt(OwnLabel label, boolean display) {
-        if (!display && isEmpty()) {
-            throw new LabelDisplayNameException();
-        }
         List<OwnLabel> labels = new ArrayList<>(all);
         labels.add(label);
         return new OwnLabels(labels, display ? label.id() : this.display);
     }
 
     /**
-     * The labels without one taken away from the owner. The display name goes only with the last label: while others
-     * stay, the owner is known by it until another one is marked.
+     * The labels without the one taken away, with the display name cleared if it was that label.
      */
     public OwnLabels release(LabelId label) {
         List<OwnLabel> labels =
                 all.stream().filter(own -> !own.id().equals(label)).toList();
-        if (label.equals(display) && !labels.isEmpty()) {
-            throw new LabelDisplayNameException();
-        }
-        return new OwnLabels(labels, labels.isEmpty() ? null : display);
+        return new OwnLabels(labels, label.equals(display) ? null : display);
     }
 
     public List<OwnLabel> all() {
@@ -109,7 +100,7 @@ public final class OwnLabels {
     }
 
     /**
-     * The display name; nothing only while there are no labels.
+     * The label explicitly chosen as the display name, if any.
      */
     public @Nullable LabelId display() {
         return display;

@@ -99,7 +99,6 @@ describe(AttachLabelDialog, () => {
     it.each([
         [409, 'label.owned', 'Someone has said whose label this is in the meantime. Reload the page.'],
         [422, 'label.owner-unknown', 'That person or group is no longer in the archive.'],
-        [422, 'label.display-one', 'They have no labels yet: this one can only be their display name.'],
         [403, 'access.denied', 'Only whoever added this, or an administrator, may change it.'],
     ])('shows the refusal %i %s inside the dialog, not in the error dialog', async (status, code, text) => {
         const reports: SystemErrorReport[] = [];

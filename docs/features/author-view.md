@@ -20,7 +20,7 @@ The page of one person at `/authors/{id}` ([domain/authors.md](../domain/authors
 
 ## REST
 
-`GET /api/authors/{id}` — `{id, name, realName, notes, labels: [{id, name, display}], locations: [{countryId, country, cityId, city, primary}], groups: [{id, name, as}], origins: [{origin, externalId, url}]}`; `origins` are where imports took the person from, `url` `null` without a page there; `display` marks the label chosen as the display name, `countryId` of a city given alone is its country's; `groups[].name` is the group's main name, `as` is `null` for a membership under the main name; `added: {by, at}` is who added the person (their user name, `null` once the account is gone) and when; `404 author.not-found`, `400` for a malformed id.
+`GET /api/authors/{id}` — `{id, name, realName, notes, labels: [{id, name, display}], locations: [{countryId, country, cityId, city, primary}], groups: [{id, name, as}], origins: [{origin, externalId, url}]}`; `origins` are where imports took the person from, `url` `null` without a page there; `display` marks the label chosen as the display name, if any, and `name` is the main name; `countryId` of a city given alone is its country's; `groups[].name` is the group's main name, `as` is `null` for a membership under the main name; `added: {by, at}` is who added the person (their user name, `null` once the account is gone) and when; `404 author.not-found`, `400` for a malformed id.
 
 `GET /api/authors/{id}/software` — `[{id, title, releaseDate, screenshots, madeBy, rating, votesAmount, credits: [{as, roles}]}]`, the card fields of the software list; `as` is `null` for a credit by the person or under the main name; an unknown person gets `[]`.
 
