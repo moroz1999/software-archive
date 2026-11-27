@@ -2,12 +2,12 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import i18n from 'i18next';
-import {type LabelOwner, toLabelId} from '@/entities/labels';
+import {type LabelOwner} from '@/entities/labels';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
 import {MakeGroupDialog} from './MakeGroupDialog';
 
-const ID = toLabelId('00000000-0000-0000-0004-000000000001');
+const ID = '00000000-0000-0000-0004-000000000001';
 const GHOST = {id: ID, name: 'Ghost', owner: null};
 const CREW = '00000000-0000-0000-0005-000000000001';
 const MADE = '00000000-0000-0000-0005-000000000002';

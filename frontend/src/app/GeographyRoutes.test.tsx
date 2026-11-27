@@ -2,7 +2,7 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import {render, screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {createQueryClient} from '@/shared/api';
-import {json, noContent} from '@/shared/lib/test';
+import {json, noContent, stubGlobalFetch} from '@/shared/lib/test';
 import {App} from './App';
 import {type AppRouter, createAppRouter} from './router';
 
@@ -51,7 +51,7 @@ function stubApi(user: typeof MEMBER, routes: Routes = {}) {
         const answer = answers.get(`${init?.method ?? 'GET'} ${url}`);
         return answer === undefined ? Promise.reject(new TypeError(`Unexpected fetch: ${url}`)) : Promise.resolve(answer());
     });
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobalFetch(fetchMock);
     return fetchMock;
 }
 
@@ -136,7 +136,7 @@ describe('geography routes', () => {
 
         await backAtTheTree();
 
-        expect(bodyOf(fetchMock, 'POST', '/api/countries')).toStrictEqual({names: {ru: 'Норвегия', en: 'Norway'}, latitude: 60.5, longitude: 8.5});
+        expect(bodyOf(fetchMock, 'POST', '/api/countries')).toStrictEqual({names: {ru: 'Норвегия', en: 'Norway'}, latitude: 60.5, longitude: 8.5, countryId: null});
     });
 
     it('asks for the Russian name and for both coordinates on the globe before sending', async () => {
@@ -172,7 +172,7 @@ describe('geography routes', () => {
 
         await backAtTheTree();
 
-        expect(bodyOf(fetchMock, 'PUT', `/api/countries/${FINLAND}`)).toStrictEqual({names: {ru: 'Суоми', en: 'Finland'}, latitude: null, longitude: null});
+        expect(bodyOf(fetchMock, 'PUT', `/api/countries/${FINLAND}`)).toStrictEqual({names: {ru: 'Суоми', en: 'Finland'}, latitude: null, longitude: null, countryId: null});
     });
 
     it('says inside the confirmation why a country with cities or places stays', async () => {

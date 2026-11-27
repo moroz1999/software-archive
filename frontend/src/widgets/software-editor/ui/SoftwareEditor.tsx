@@ -1,4 +1,4 @@
-import {SoftwareDetailsProvider, SoftwareForm, type SoftwareId, SoftwareFormSkeleton, softwarePath, useSoftwareDetails} from '@/entities/software';
+import {SoftwareDetailsProvider, SoftwareForm, SoftwareFormSkeleton, softwarePath, useSoftwareDetails} from '@/entities/software';
 import {DeleteSoftwareButton} from '@/features/software/delete';
 import {EditSoftwareProvider} from '@/features/software/edit';
 import {softwareBreadcrumbs} from '@/features/software/catalog';
@@ -11,9 +11,9 @@ import {Stack} from '@/shared/ui/stack';
 import {SoftwareCategoriesField} from './SoftwareCategoriesField';
 
 export interface SoftwareEditorProps {
-    readonly id: SoftwareId;
+    readonly id: string;
     /** Called with the software once it is saved. */
-    readonly onSaved: (id: SoftwareId) => void;
+    readonly onSaved: (id: string) => void;
     /** Called once the software is deleted. */
     readonly onDeleted: () => void;
 }

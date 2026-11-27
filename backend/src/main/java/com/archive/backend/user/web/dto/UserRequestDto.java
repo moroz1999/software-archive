@@ -1,5 +1,7 @@
 package com.archive.backend.user.web.dto;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
 
@@ -9,4 +11,6 @@ import org.jspecify.annotations.Nullable;
 public record UserRequestDto(
         @Nullable String name,
         @Nullable String email,
-        @Nullable List<String> groups) {}
+
+        @ArraySchema(schema = @Schema(ref = "UserGroup")) @Nullable
+        List<String> groups) {}

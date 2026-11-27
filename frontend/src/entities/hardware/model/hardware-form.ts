@@ -1,4 +1,4 @@
-import {SUPPORTED_UI_LANGUAGES, type UiLanguage} from '@/shared/lib/i18n';
+import {perUiLanguage, SUPPORTED_UI_LANGUAGES, type UiLanguage} from '@/shared/lib/i18n';
 import {type HardwareDetails, type HardwareKind, type HardwareNames, isHardwareCode} from './hardware';
 
 /** The longest name of hardware or of a group of it (docs/domain.md#common-rules). */
@@ -75,6 +75,6 @@ export function validateHardwareForm(kind: HardwareKind, values: HardwareFormVal
 
 /** The form values of an existing group or item, or of an empty form. */
 export function toHardwareFormValues(details?: HardwareDetails): HardwareFormValues {
-    const names = Object.fromEntries(SUPPORTED_UI_LANGUAGES.map((language) => [language, details?.names[language] ?? ''])) as Record<UiLanguage, string>;
+    const names = perUiLanguage((language) => details?.names[language] ?? '');
     return {code: details?.code ?? '', names, group: details?.group ?? '', platforms: details?.platforms ?? []};
 }

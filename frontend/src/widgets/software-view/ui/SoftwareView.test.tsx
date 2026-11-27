@@ -3,9 +3,8 @@ import {screen, waitFor, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
 import i18n from 'i18next';
-import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
+import {type components, subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {breadcrumbSteps, json, noContent, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
-import {toSoftwareId} from '@/entities/software';
 import {CurrentUserProvider} from '@/entities/users';
 import {SoftwareView} from './SoftwareView';
 
@@ -40,9 +39,12 @@ const ELITE = {
     credits: [],
     sources: [],
     preservation: 'unknown',
+    instructions: null,
+    compilationItems: [],
+    compilations: [],
     origins: [], added: {by: 'Zork', at: '2026-03-04T05:06:07Z'},
     canChange: true,
-};
+} satisfies components['schemas']['SoftwareDetailsDto'];
 const AY_MOD = {
     id: '00000000-0000-0000-0007-000000000001',
     title: 'Elite AY',
@@ -51,9 +53,12 @@ const AY_MOD = {
     releaseDate: null,
     description: null,
     hardware: [VECTOR06C, {code: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound'}],
+    screenshots: [],
+    archive: null,
+    credits: [],
     added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
     canChange: true,
-};
+} satisfies components['schemas']['SoftwareReleaseDto'];
 
 const MEMBER = {id: '00000000-0000-0000-0009-000000000001', name: 'Zed', email: 'zed@example.com', groups: ['member'], abilities: ['add-entries']};
 
@@ -101,7 +106,7 @@ function detailLabels(text: string) {
 }
 
 function renderView(id: string) {
-    renderWithQueries(<CurrentUserProvider><MemoryRouter><SoftwareView id={toSoftwareId(id)}/></MemoryRouter></CurrentUserProvider>);
+    renderWithQueries(<CurrentUserProvider><MemoryRouter><SoftwareView id={id}/></MemoryRouter></CurrentUserProvider>);
 }
 
 describe(SoftwareView, () => {

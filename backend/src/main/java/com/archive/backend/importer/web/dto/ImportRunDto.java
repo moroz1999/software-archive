@@ -1,5 +1,6 @@
 package com.archive.backend.importer.web.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -10,7 +11,7 @@ public record ImportRunDto(
         UUID id,
         String archive,
         @Nullable String section,
-        String state,
+        @Schema(ref = "ImportRunState") String state,
         Instant startedAt,
         @Nullable Instant endedAt,
         int added,

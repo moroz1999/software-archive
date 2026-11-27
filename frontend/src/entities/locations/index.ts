@@ -21,17 +21,7 @@ export {PlaceForm, type PlaceFormProps} from './ui/PlaceForm';
 export {PlaceFormSkeleton} from './ui/PlaceFormSkeleton';
 export {COUNTRY_REQUIRED_KEY} from './config/messages';
 export {locationText, primaryFirst} from './lib/location';
-export {
-    type City,
-    type CityId,
-    type Country,
-    type CountryId,
-    type Location,
-    parseCityId,
-    parseCountryId,
-    toCityId,
-    toCountryId,
-} from './model/geo';
+export {type City, type Country, type Location, parseCityId, parseCountryId} from './model/geo';
 export {PlaceFilters, type PlaceFiltersProps} from './ui/PlaceFilters';
 export {type LocationDraft, locationProblem, type StoredLocation, toLocationDraft, toLocationValue} from '@/shared/lib/form-rules';
 export {type LocationValue} from './model/location-value';

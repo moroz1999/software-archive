@@ -1,47 +1,44 @@
-import {deleteResource, getJson, mapResponse, postForm, putJson, readArray, readObject, readString} from '@/shared/api';
-import type {ReleaseId} from '../model/release';
-import {type Gallery, type Screenshot, type ScreenshotId, toScreenshotId} from '../model/screenshot';
-import type {SoftwareId} from '../model/software';
-
-/** The pictures of a gallery of the software itself, or the screenshots of its release when one is given. */
-function screenshotsPath(softwareId: SoftwareId, releaseId: ReleaseId | null, gallery: Gallery): string {
-    return releaseId === null
-        ? `/api/software/${softwareId}/${gallery}`
-        : `/api/software/${softwareId}/releases/${releaseId}/screenshots`;
-}
-
-/** The screenshots in an answer; missing means none. */
-export function parseScreenshots(raw: unknown): readonly Screenshot[] {
-    if (raw === undefined) {
-        return [];
-    }
-    return readArray(raw, 'screenshots').map((item) => {
-        const dto = readObject(item, 'screenshot');
-        return {id: toScreenshotId(readString(dto, 'id')), url: readString(dto, 'url')};
-    });
-}
+import {api, apiError, multipartForm} from '@/shared/api';
+import {type Gallery, type Screenshot} from '../model/screenshot';
 
 /** The screenshots of the software itself, or of its release when one is given. */
-export async function fetchScreenshots(softwareId: SoftwareId, releaseId: ReleaseId | null, signal: AbortSignal, gallery: Gallery = 'screenshots'): Promise<readonly Screenshot[]> {
-    const json = await getJson(screenshotsPath(softwareId, releaseId, gallery), signal);
-    return mapResponse(() => parseScreenshots(json));
+export async function fetchScreenshots(softwareId: string, releaseId: string | null, signal: AbortSignal, gallery: Gallery = 'screenshots'): Promise<readonly Screenshot[]> {
+    const {data, error, response} = releaseId === null
+        ? await api.GET('/api/software/{softwareId}/{gallery}', {params: {path: {softwareId, gallery}}, signal})
+        : await api.GET('/api/software/{softwareId}/releases/{releaseId}/screenshots', {params: {path: {softwareId, releaseId}}, signal});
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
+    return data;
 }
 
 /** Uploads the files as screenshots after those there are and returns the new ones. */
-export async function uploadScreenshots(softwareId: SoftwareId, releaseId: ReleaseId | null, files: readonly File[], gallery: Gallery = 'screenshots'): Promise<readonly Screenshot[]> {
-    const form = new FormData();
-    files.forEach((file) => {
-        form.append('files', file);
-    });
-    const json = await postForm(screenshotsPath(softwareId, releaseId, gallery), form);
-    return mapResponse(() => parseScreenshots(json));
+export async function uploadScreenshots(softwareId: string, releaseId: string | null, files: readonly File[], gallery: Gallery = 'screenshots'): Promise<readonly Screenshot[]> {
+    const {data, error, response} = releaseId === null
+        ? await api.POST('/api/software/{softwareId}/{gallery}', {params: {path: {softwareId, gallery}}, body: {files}, bodySerializer: multipartForm})
+        : await api.POST('/api/software/{softwareId}/releases/{releaseId}/screenshots', {params: {path: {softwareId, releaseId}}, body: {files}, bodySerializer: multipartForm});
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
+    return data;
 }
 
-export async function deleteScreenshot(softwareId: SoftwareId, releaseId: ReleaseId | null, id: ScreenshotId, gallery: Gallery = 'screenshots'): Promise<void> {
-    await deleteResource(`${screenshotsPath(softwareId, releaseId, gallery)}/${id}`);
+export async function deleteScreenshot(softwareId: string, releaseId: string | null, screenshotId: string, gallery: Gallery = 'screenshots'): Promise<void> {
+    const {error, response} = releaseId === null
+        ? await api.DELETE('/api/software/{softwareId}/{gallery}/{screenshotId}', {params: {path: {softwareId, gallery, screenshotId}}})
+        : await api.DELETE('/api/software/{softwareId}/releases/{releaseId}/screenshots/{screenshotId}', {params: {path: {softwareId, releaseId, screenshotId}}});
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
 }
 
 /** Puts every screenshot in the order given. */
-export async function reorderScreenshots(softwareId: SoftwareId, releaseId: ReleaseId | null, order: readonly ScreenshotId[], gallery: Gallery = 'screenshots'): Promise<void> {
-    await putJson(`${screenshotsPath(softwareId, releaseId, gallery)}/order`, {order});
+export async function reorderScreenshots(softwareId: string, releaseId: string | null, order: readonly string[], gallery: Gallery = 'screenshots'): Promise<void> {
+    const body = {order};
+    const {error, response} = releaseId === null
+        ? await api.PUT('/api/software/{softwareId}/{gallery}/order', {params: {path: {softwareId, gallery}}, body})
+        : await api.PUT('/api/software/{softwareId}/releases/{releaseId}/screenshots/order', {params: {path: {softwareId, releaseId}}, body});
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
 }

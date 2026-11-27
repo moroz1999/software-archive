@@ -1,16 +1,6 @@
 import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
-import {
-    type CityId,
-    CountriesProvider,
-    type CountryId,
-    GEOGRAPHY_PATH,
-    PlaceDetailsProvider,
-    PlaceForm,
-    PlaceFormSkeleton,
-    type PlaceKind,
-    usePlaceDetails,
-} from '@/entities/locations';
+import {CountriesProvider, GEOGRAPHY_PATH, PlaceDetailsProvider, PlaceForm, PlaceFormSkeleton, type PlaceKind, usePlaceDetails} from '@/entities/locations';
 import {DeletePlaceButton} from '@/features/geography/delete';
 import {EditPlaceProvider} from '@/features/geography/edit';
 import {MergePlaceButton} from '@/features/geography/merge';
@@ -21,7 +11,7 @@ import {PageLayout} from '@/shared/ui/page-layout';
 
 export interface PlaceEditorProps {
     readonly kind: PlaceKind;
-    readonly id: CountryId | CityId;
+    readonly id: string;
     /** Called once the country or the city is saved. */
     readonly onSaved: () => void;
     /** Called once it is deleted, or merged into another one. */

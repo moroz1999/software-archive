@@ -1,5 +1,7 @@
 package com.archive.backend.software.web.dto;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -16,7 +18,7 @@ public record SoftwareRequestDto(
         @Nullable List<String> hardware,
         @Nullable List<UUID> categories,
         @Nullable List<CreditDto> credits,
-        @Nullable String preservation,
+        @Schema(ref = "PreservationStatus") @Nullable String preservation,
         @Nullable List<@Nullable UUID> compilationItemIds) {
 
     public SoftwareRequestDto(
@@ -45,6 +47,8 @@ public record SoftwareRequestDto(
     /** A person, a group or the exact label of either, with the roles they had. */
     public record CreditDto(
             @Nullable UUID id,
-            @Nullable String type,
-            @Nullable List<String> roles) {}
+            @Schema(ref = "SoftwareReferenceType") @Nullable String type,
+
+            @ArraySchema(schema = @Schema(ref = "CreditRole")) @Nullable
+            List<String> roles) {}
 }

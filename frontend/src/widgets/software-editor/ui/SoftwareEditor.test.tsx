@@ -3,7 +3,6 @@ import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
 import {breadcrumbSteps, json, noContent, renderWithQueries, stubFetchAround, stubFetchRoutes} from '@/shared/lib/test';
-import {type SoftwareId, toSoftwareId} from '@/entities/software';
 import {SoftwareEditor} from './SoftwareEditor';
 
 const ID = '00000000-0000-0000-0001-000000000001';
@@ -12,7 +11,7 @@ const ELITE = {id: ID, title: 'Elite', description: 'Space trading', releaseDate
         id: '00000000-0000-0000-0006-000000000002',
         title: 'Action',
         branch: [{id: '00000000-0000-0000-0006-000000000001', title: 'Games'}, {id: '00000000-0000-0000-0006-000000000002', title: 'Action'}],
-    }], credits: [], sources: [], preservation: 'unknown', origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true};
+    }], credits: [], sources: [], preservation: 'unknown', instructions: null, compilationItems: [], compilations: [], origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true};
 const GAMES = '00000000-0000-0000-0006-000000000001';
 const ACTION = '00000000-0000-0000-0006-000000000002';
 const TREE = [{id: GAMES, title: 'Games', children: [{id: ACTION, title: 'Action', children: []}]}];
@@ -35,7 +34,7 @@ describe(SoftwareEditor, () => {
 
     it('shows a skeleton, then the form with the software and a delete button', async () => {
         stubFetchAround(AROUND, json(ELITE));
-        renderWithQueries(<MemoryRouter><SoftwareEditor id={toSoftwareId(ID)} onSaved={vi.fn<(id: SoftwareId) => void>()} onDeleted={vi.fn<() => void>()}/></MemoryRouter>);
+        renderWithQueries(<MemoryRouter><SoftwareEditor id={ID} onSaved={vi.fn<(id: string) => void>()} onDeleted={vi.fn<() => void>()}/></MemoryRouter>);
 
         expect(screen.getByTestId('software-editor-skeleton')).toBeInTheDocument();
         await expect(screen.findByRole('textbox', {name: 'Title'})).resolves.toHaveValue('Elite');
@@ -44,7 +43,7 @@ describe(SoftwareEditor, () => {
 
     it('shows where imports took the software from, as text, with its ids there', async () => {
         stubFetchAround(AROUND, json({...ELITE, origins: [{origin: 'vektor-06c.ru', externalId: '7', url: 'https://vektor-06c.ru/elite/'}]}));
-        renderWithQueries(<MemoryRouter><SoftwareEditor id={toSoftwareId(ID)} onSaved={vi.fn<(id: SoftwareId) => void>()} onDeleted={vi.fn<() => void>()}/></MemoryRouter>);
+        renderWithQueries(<MemoryRouter><SoftwareEditor id={ID} onSaved={vi.fn<(id: string) => void>()} onDeleted={vi.fn<() => void>()}/></MemoryRouter>);
 
         await screen.findByRole('textbox', {name: 'Title'});
 
@@ -53,7 +52,7 @@ describe(SoftwareEditor, () => {
 
     it('leads back from the editing to the software and on through the catalog', async () => {
         stubFetchAround(AROUND, json(ELITE));
-        renderWithQueries(<MemoryRouter><SoftwareEditor id={toSoftwareId(ID)} onSaved={vi.fn<(id: SoftwareId) => void>()} onDeleted={vi.fn<() => void>()}/></MemoryRouter>);
+        renderWithQueries(<MemoryRouter><SoftwareEditor id={ID} onSaved={vi.fn<(id: string) => void>()} onDeleted={vi.fn<() => void>()}/></MemoryRouter>);
 
         await screen.findByRole('textbox', {name: 'Title'});
 
@@ -68,7 +67,7 @@ describe(SoftwareEditor, () => {
 
     it('offers deleting next to the page title and leads back to the software from the form', async () => {
         stubFetchAround(AROUND, json(ELITE));
-        renderWithQueries(<MemoryRouter><SoftwareEditor id={toSoftwareId(ID)} onSaved={vi.fn<(id: SoftwareId) => void>()} onDeleted={vi.fn<() => void>()}/></MemoryRouter>);
+        renderWithQueries(<MemoryRouter><SoftwareEditor id={ID} onSaved={vi.fn<(id: string) => void>()} onDeleted={vi.fn<() => void>()}/></MemoryRouter>);
 
         const heading = await screen.findByRole('heading', {level: 1, name: 'Edit software'});
         await screen.findByRole('textbox', {name: 'Title'});
@@ -81,7 +80,7 @@ describe(SoftwareEditor, () => {
 
     it('offers the screenshots of the software to change below the form', async () => {
         stubFetchAround(AROUND, json(ELITE));
-        renderWithQueries(<MemoryRouter><SoftwareEditor id={toSoftwareId(ID)} onSaved={vi.fn<(id: SoftwareId) => void>()} onDeleted={vi.fn<() => void>()}/></MemoryRouter>);
+        renderWithQueries(<MemoryRouter><SoftwareEditor id={ID} onSaved={vi.fn<(id: string) => void>()} onDeleted={vi.fn<() => void>()}/></MemoryRouter>);
 
         const screenshots = await screen.findByRole('list', {name: 'Screenshots'});
 
@@ -91,7 +90,7 @@ describe(SoftwareEditor, () => {
 
     it('offers the maps, the covers and the adverts of the software to change after its screenshots', async () => {
         stubFetchAround(AROUND, json(ELITE));
-        renderWithQueries(<MemoryRouter><SoftwareEditor id={toSoftwareId(ID)} onSaved={vi.fn<(id: SoftwareId) => void>()} onDeleted={vi.fn<() => void>()}/></MemoryRouter>);
+        renderWithQueries(<MemoryRouter><SoftwareEditor id={ID} onSaved={vi.fn<(id: string) => void>()} onDeleted={vi.fn<() => void>()}/></MemoryRouter>);
 
         const maps = await screen.findByRole('list', {name: 'Maps'});
 
@@ -103,21 +102,21 @@ describe(SoftwareEditor, () => {
 
     it('reports the software saved', async () => {
         stubFetchAround(AROUND, json(ELITE), noContent());
-        const onSaved = vi.fn<(id: SoftwareId) => void>();
-        renderWithQueries(<MemoryRouter><SoftwareEditor id={toSoftwareId(ID)} onSaved={onSaved} onDeleted={vi.fn<() => void>()}/></MemoryRouter>);
+        const onSaved = vi.fn<(id: string) => void>();
+        renderWithQueries(<MemoryRouter><SoftwareEditor id={ID} onSaved={onSaved} onDeleted={vi.fn<() => void>()}/></MemoryRouter>);
 
         await screen.findByRole('textbox', {name: 'Title'});
         await userEvent.click(screen.getByRole('button', {name: 'Save'}));
 
         await vi.waitFor(() => {
-            expect(onSaved).toHaveBeenCalledExactlyOnceWith(toSoftwareId(ID));
+            expect(onSaved).toHaveBeenCalledExactlyOnceWith(ID);
         });
     });
 
     it('reports the software deleted', async () => {
         stubFetchAround(AROUND, json(ELITE), noContent());
         const onDeleted = vi.fn<() => void>();
-        renderWithQueries(<MemoryRouter><SoftwareEditor id={toSoftwareId(ID)} onSaved={vi.fn<(id: SoftwareId) => void>()} onDeleted={onDeleted}/></MemoryRouter>);
+        renderWithQueries(<MemoryRouter><SoftwareEditor id={ID} onSaved={vi.fn<(id: string) => void>()} onDeleted={onDeleted}/></MemoryRouter>);
 
         await screen.findByRole('textbox', {name: 'Title'});
         await userEvent.click(screen.getByRole('button', {name: 'Delete'}));
@@ -130,7 +129,7 @@ describe(SoftwareEditor, () => {
 
     it('shows the categories of the software checked and saves the categories chosen', async () => {
         const fetchMock = stubFetchRoutes(new Map([...AROUND, [`/api/software/${ID}`, json(ELITE)]]));
-        renderWithQueries(<MemoryRouter><SoftwareEditor id={toSoftwareId(ID)} onSaved={vi.fn<(id: SoftwareId) => void>()} onDeleted={vi.fn<() => void>()}/></MemoryRouter>);
+        renderWithQueries(<MemoryRouter><SoftwareEditor id={ID} onSaved={vi.fn<(id: string) => void>()} onDeleted={vi.fn<() => void>()}/></MemoryRouter>);
 
         await expect(screen.findByRole('checkbox', {name: 'Action'})).resolves.toBeChecked();
 

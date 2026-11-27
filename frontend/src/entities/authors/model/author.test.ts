@@ -1,18 +1,8 @@
 import {describe, expect, it} from 'vitest';
 import {NotFoundError} from '@/shared/api';
-import {parseAuthorId, requireAuthorId, toAuthorId} from './author';
+import {parseAuthorId, requireAuthorId} from './author';
 
 const ID = '00000000-0000-0000-0003-000000000001';
-
-describe(toAuthorId, () => {
-    it('accepts a uuid', () => {
-        expect(toAuthorId(ID)).toBe(ID);
-    });
-
-    it('refuses anything else', () => {
-        expect(() => toAuthorId('42')).toThrow(TypeError);
-    });
-});
 
 describe(parseAuthorId, () => {
     it('reads an id from outside, null when it cannot be one', () => {

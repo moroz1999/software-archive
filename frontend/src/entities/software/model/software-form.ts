@@ -1,18 +1,11 @@
 import {type TitleProblem, titleProblem} from '@/shared/lib/form-rules';
+import {type components, preservationStatusValues} from '@/shared/api';
 import type {MemberRoleValue} from '@/shared/ui/member-role-editor';
 import {parseReleaseDateText, releaseDateField} from '../lib/release-date';
-import {
-    type PreservationStatus,
-    type ReleaseDate,
-    type SoftwareDetails,
-    type SoftwareId,
-    type SoftwarePlatformCode,
-    type SoftwareProgram,
-    type SoftwareTitle,
-    toPreservationStatus,
-    toSoftwarePlatformCode,
-    toSoftwareTitle,
-} from './software';
+import {type PreservationStatus, type SoftwareDetails, type SoftwareProgram, type SoftwareReference} from './software';
+
+/** A credit in the form: the person, group or label found, with the roles chosen for it. */
+export type CreditValue = MemberRoleValue<SoftwareReference, components['schemas']['CreditRole']>;
 
 /** What the software form holds while it is being filled: raw text of every field, the chosen hardware and categories. */
 export interface SoftwareFormValues {
@@ -26,7 +19,7 @@ export interface SoftwareFormValues {
     readonly hardware: readonly string[];
     /** The ids of the checked categories. */
     readonly categories: readonly string[];
-    readonly credits?: readonly MemberRoleValue[];
+    readonly credits?: readonly CreditValue[];
     readonly compilationItems?: readonly SoftwareProgram[];
     /** The code of the chosen preservation status; unknown when absent. */
     readonly preservation?: string;
@@ -41,14 +34,14 @@ export interface PlatformChoice {
 
 /** Software to be created or saved, as the form produced it. */
 export interface SoftwareDraft {
-    readonly title: SoftwareTitle;
+    readonly title: string;
     readonly description: string | null;
-    readonly releaseDate: ReleaseDate | null;
-    readonly platform: SoftwarePlatformCode;
+    readonly releaseDate: string | null;
+    readonly platform: string;
     readonly hardware: readonly string[];
     readonly categories: readonly string[];
-    readonly credits: readonly MemberRoleValue[];
-    readonly compilationItemIds?: readonly SoftwareId[];
+    readonly credits: readonly CreditValue[];
+    readonly compilationItemIds?: readonly string[];
     readonly preservation: PreservationStatus;
     readonly instructions: string | null;
 }
@@ -86,14 +79,14 @@ export function validateSoftwareForm(values: SoftwareFormValues): SoftwareFormRe
     return {
         ok: true,
         draft: {
-            title: toSoftwareTitle(values.title),
+            title: values.title,
             description: description === '' ? null : values.description,
             releaseDate,
-            platform: toSoftwarePlatformCode(values.platform),
+            platform: values.platform,
             hardware: values.hardware,
             categories: values.categories,
             credits: values.credits ?? [],
-            preservation: toPreservationStatus(values.preservation ?? 'unknown'),
+            preservation: preservationStatusValues.find((known) => known === values.preservation) ?? 'unknown',
             instructions: textOrNull(values.instructions),
         },
     };

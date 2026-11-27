@@ -1,14 +1,11 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {SystemError} from '@/shared/api';
 import {json, noContent, stubFetch} from '@/shared/lib/test';
-import {toReleaseId} from '../model/release';
-import {toReleaseDate, toSoftwareId, toSoftwarePlatformCode} from '../model/software';
 import {createRelease, deleteRelease, fetchPlatformHardware, fetchSoftwareRelease, updateRelease} from './release-api';
 
-const SOFTWARE = toSoftwareId('00000000-0000-0000-0001-000000000001');
-const RELEASE = toReleaseId('00000000-0000-0000-0007-000000000002');
+const SOFTWARE = '00000000-0000-0000-0001-000000000001';
+const RELEASE = '00000000-0000-0000-0007-000000000002';
 const AY = {code: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound'};
-const DRAFT = {title: null, version: '1.1', type: 'mod' as const, releaseDate: toReleaseDate('1990-03-01'), description: null, hardware: ['ay8910'], credits: []};
+const DRAFT = {title: null, version: '1.1', type: 'mod' as const, releaseDate: '1990-03-01', description: null, hardware: ['ay8910'], credits: []};
 const CREDIT = {id: '00000000-0000-0000-0004-000000000001', ownerId: '00000000-0000-0000-0005-000000000001', type: 'group-label', title: 'CRW — Crew', roles: ['release']};
 const RELEASE_PATH = `/api/software/${SOFTWARE}/releases/${RELEASE}`;
 const ARCHIVE = {fileName: 'elite-ay.zip', size: 1536, url: `${RELEASE_PATH}/archive`};
@@ -35,12 +32,6 @@ describe(fetchSoftwareRelease, () => {
         stubFetch(json({status: 404, code: 'release.not-found'}, 404));
 
         await expect(fetchSoftwareRelease(SOFTWARE, RELEASE, new AbortController().signal)).rejects.toMatchObject({name: 'NotFoundError'});
-    });
-
-    it('fails with a system error on an unknown type', async () => {
-        stubFetch(json({id: RELEASE, title: null, version: null, type: 'beta', releaseDate: null, description: null, hardware: []}));
-
-        await expect(fetchSoftwareRelease(SOFTWARE, RELEASE, new AbortController().signal)).rejects.toBeInstanceOf(SystemError);
     });
 });
 
@@ -94,7 +85,7 @@ describe(fetchPlatformHardware, () => {
     it('reads the hardware of a platform', async () => {
         const fetchMock = stubFetch(json([AY]));
 
-        await expect(fetchPlatformHardware(toSoftwarePlatformCode('vector'), new AbortController().signal)).resolves.toStrictEqual([AY]);
+        await expect(fetchPlatformHardware('vector', new AbortController().signal)).resolves.toStrictEqual([AY]);
         expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/hardware?platform=vector');
     });
 });

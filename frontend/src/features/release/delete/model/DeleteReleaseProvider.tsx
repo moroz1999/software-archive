@@ -1,13 +1,13 @@
 import type {ReactNode} from 'react';
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useTranslation} from 'react-i18next';
-import {deleteRelease, type ReleaseDetails, SOFTWARE_QUERY_KEY, type Software} from '@/entities/software';
+import {deleteRelease, type ReleaseDetails, SOFTWARE_QUERY_KEY, type SoftwareDetails} from '@/entities/software';
 import {businessErrorMessage, businessErrorOf} from '@/shared/api';
 import {deleteReleaseMessages} from '../config/messages';
 import {DeleteReleaseContext, type DeleteReleaseState} from './delete-release-context';
 
 export interface DeleteReleaseProviderProps {
-    readonly software: Software;
+    readonly software: SoftwareDetails;
     readonly release: ReleaseDetails;
     readonly onDeleted: () => void;
     readonly children: ReactNode;

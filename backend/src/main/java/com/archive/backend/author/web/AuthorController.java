@@ -65,6 +65,7 @@ public class AuthorController {
         return webMapper.toDetails(getHandler.handle(new GetAuthorQuery(actor, new AuthorId(id), language)));
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public ResponseEntity<AuthorCreatedDto> create(Actor actor, @RequestBody AuthorRequestDto request) {
         AuthorId id = createHandler.handle(webMapper.toCreate(actor, request));

@@ -1,5 +1,6 @@
 package com.archive.backend.software.web.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -9,7 +10,7 @@ public record SoftwareReleaseDto(
         UUID id,
         String title,
         @Nullable String version,
-        String type,
+        @Schema(ref = "ReleaseType") String type,
         @Nullable String releaseDate,
         @Nullable String description,
         List<SoftwareHardwareDto> hardware,

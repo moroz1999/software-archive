@@ -1,8 +1,6 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {SystemError} from '@/shared/api';
 import {json, pageResponse, stubFetch} from '@/shared/lib/test';
 import {parseGroupCatalogFilter} from '../model/catalog-filter';
-import {toPlatformCode} from '@/entities/platforms';
 import {fetchGroupCatalogPage} from './catalog-api';
 
 const GROUP = '00000000-0000-0000-0005-000000000001';
@@ -24,7 +22,7 @@ describe(fetchGroupCatalogPage, () => {
         const page = await fetchGroupCatalogPage(parseGroupCatalogFilter(new URLSearchParams()), null, new AbortController().signal);
 
         expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/groups?page=0');
-        expect(page.items).toStrictEqual([
+        expect(page.content).toStrictEqual([
             {kind: 'label', labelId: LABEL, name: 'CRW', note: 'Crew Ltd'},
             {kind: 'group', groupId: GROUP, name: 'Crew Ltd', note: null},
         ]);
@@ -41,14 +39,8 @@ describe(fetchGroupCatalogPage, () => {
     it('asks only for the entries of the chosen platform', async () => {
         const fetchMock = stubFetch(json(pageResponse([])));
 
-        await fetchGroupCatalogPage(parseGroupCatalogFilter(new URLSearchParams('letter=A')), toPlatformCode('bk'), new AbortController().signal);
+        await fetchGroupCatalogPage(parseGroupCatalogFilter(new URLSearchParams('letter=A')), 'bk', new AbortController().signal);
 
         expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/groups?page=0&letter=A&platform=bk');
-    });
-
-    it('fails with a system error on a malformed answer', async () => {
-        stubFetch(json(pageResponse([{groupId: 'nope', labelId: null, name: 'Crew', note: null}])));
-
-        await expect(fetchGroupCatalogPage(parseGroupCatalogFilter(new URLSearchParams()), null, new AbortController().signal)).rejects.toBeInstanceOf(SystemError);
     });
 });

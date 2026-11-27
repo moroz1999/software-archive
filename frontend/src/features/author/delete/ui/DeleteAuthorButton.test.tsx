@@ -1,12 +1,11 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {toAuthorId} from '@/entities/authors';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, noContent, renderWithQueries, stubFetch} from '@/shared/lib/test';
 import {DeleteAuthorButton} from './DeleteAuthorButton';
 
-const AUTHOR = {id: toAuthorId('00000000-0000-0000-0003-000000000001'), name: 'Zed'};
+const AUTHOR = {id: '00000000-0000-0000-0003-000000000001', name: 'Zed'};
 
 describe(DeleteAuthorButton, () => {
     afterEach(() => {

@@ -3,7 +3,6 @@ import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
 import {breadcrumbSteps, json, noContent, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
-import {toAuthorId} from '@/entities/authors';
 import {AuthorEditor} from './AuthorEditor';
 
 const ID = '00000000-0000-0000-0003-000000000001';
@@ -29,7 +28,7 @@ const AROUND = new Map([
 ]);
 
 function renderEditor(onSaved = vi.fn<() => void>(), onDeleted = vi.fn<() => void>()) {
-    renderWithQueries(<MemoryRouter><AuthorEditor id={toAuthorId(ID)} onSaved={onSaved} onDeleted={onDeleted}/></MemoryRouter>);
+    renderWithQueries(<MemoryRouter><AuthorEditor id={ID} onSaved={onSaved} onDeleted={onDeleted}/></MemoryRouter>);
 }
 
 describe(AuthorEditor, () => {

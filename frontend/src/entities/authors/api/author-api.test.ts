@@ -1,10 +1,8 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {SystemError} from '@/shared/api';
 import {json, noContent, stubFetch} from '@/shared/lib/test';
-import {toAuthorId} from '../model/author';
 import {createAuthor, deleteAuthor, fetchAuthor, updateAuthor} from './author-api';
 
-const ID = toAuthorId('00000000-0000-0000-0003-000000000001');
+const ID = '00000000-0000-0000-0003-000000000001';
 const ZED = {
     id: ID,
     name: 'Zed',
@@ -36,12 +34,6 @@ describe(fetchAuthor, () => {
         stubFetch(json({status: 404, code: 'author.not-found'}, 404));
 
         await expect(fetchAuthor(ID, new AbortController().signal)).rejects.toMatchObject({name: 'NotFoundError'});
-    });
-
-    it('fails with a system error on a malformed answer', async () => {
-        stubFetch(json({...ZED, labels: null}));
-
-        await expect(fetchAuthor(ID, new AbortController().signal)).rejects.toBeInstanceOf(SystemError);
     });
 });
 

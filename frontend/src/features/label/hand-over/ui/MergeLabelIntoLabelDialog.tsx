@@ -1,5 +1,5 @@
 import {useTranslation} from 'react-i18next';
-import {fetchLabelsByName, type LabelId, mergeLabelIntoLabel, toLabelId} from '@/entities/labels';
+import {fetchLabelsByName, mergeLabelIntoLabel} from '@/entities/labels';
 import {mergeIntoLabelMessages} from '../config/messages';
 import type {HandedLabel} from '../model/hand-over-context';
 import {HandOverLabelProvider} from '../model/HandOverLabelProvider';
@@ -10,7 +10,7 @@ export interface MergeLabelIntoLabelDialogProps {
     readonly open: boolean;
     /** Asked to close: by Cancel or Escape. */
     readonly onClose: () => void;
-    readonly onMerged: (label: LabelId) => void;
+    readonly onMerged: (label: string) => void;
 }
 
 /** Merges a label found out to be a duplicate of another label into it: that label takes what it had, and it goes. */
@@ -22,7 +22,7 @@ export function MergeLabelIntoLabelDialog({label, open, onClose, onMerged}: Merg
             send={mergeLabelIntoLabel}
             messages={mergeIntoLabelMessages(t)}
             onHandedOver={(into) => {
-                onMerged(toLabelId(into));
+                onMerged(into);
             }}
         >
             <ChoiceWindow

@@ -1,9 +1,9 @@
-import type {LabelId, LabelOwnerOption} from '@/entities/labels';
+import type {LabelOwnerOption} from '@/entities/labels';
 import {createRequiredContext} from '@/shared/lib/context';
 
 /** The label to attach, under its name. */
 export interface AttachedLabel {
-    readonly id: LabelId;
+    readonly id: string;
     readonly name: string;
 }
 

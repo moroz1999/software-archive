@@ -1,5 +1,4 @@
 import {useTranslation} from 'react-i18next';
-import {type AuthorId, toAuthorId} from '@/entities/authors';
 import {fetchLabelAuthors, mergeLabelIntoAuthor} from '@/entities/labels';
 import {mergeIntoAuthorMessages} from '../config/messages';
 import type {HandedLabel} from '../model/hand-over-context';
@@ -11,7 +10,7 @@ export interface MergeLabelIntoAuthorDialogProps {
     readonly open: boolean;
     /** Asked to close: by Cancel or Escape. */
     readonly onClose: () => void;
-    readonly onMerged: (author: AuthorId) => void;
+    readonly onMerged: (author: string) => void;
 }
 
 /** Merges a label found out to be a duplicate of a person into them: the person takes what the label had, and the label goes. */
@@ -23,7 +22,7 @@ export function MergeLabelIntoAuthorDialog({label, open, onClose, onMerged}: Mer
             send={mergeLabelIntoAuthor}
             messages={mergeIntoAuthorMessages(t)}
             onHandedOver={(author) => {
-                onMerged(toAuthorId(author));
+                onMerged(author);
             }}
         >
             <ChoiceWindow

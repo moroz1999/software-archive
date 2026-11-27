@@ -1,6 +1,6 @@
 import {type ReactNode, type SyntheticEvent, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import type {UserEntry, UserGroup} from '@/entities/users';
+import type {UserEntry} from '@/entities/users';
 import {dayText} from '@/shared/lib/i18n';
 import {useSkeleton} from '@/shared/lib/loading';
 import {Badge} from '@/shared/ui/badge';
@@ -20,12 +20,6 @@ import styles from './UserList.module.css';
 
 const SKELETON_ROWS = [1, 2, 3, 4, 5, 6];
 
-const GROUP_KEYS: Readonly<Record<UserGroup, 'users.groups.admin' | 'users.groups.moderator' | 'users.groups.member' | 'users.groups.ai-assistant'>> = {
-    admin: 'users.groups.admin',
-    moderator: 'users.groups.moderator',
-    member: 'users.groups.member',
-    'ai-assistant': 'users.groups.ai-assistant',
-};
 
 export interface UserListProps {
     /** What can be done with a user, at the end of their row. */
@@ -88,7 +82,7 @@ function Users({actions}: {readonly actions: UserListProps['actions']}) {
         // The error dialog shows why it failed (docs/error-handling.md).
         return null;
     }
-    if (users.data.items.length === 0) {
+    if (users.data.content.length === 0) {
         return <Text tone="muted">{t('empty.users')}</Text>;
     }
     return (
@@ -105,7 +99,7 @@ function Users({actions}: {readonly actions: UserListProps['actions']}) {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {users.data.items.map((user) => (
+                        {users.data.content.map((user) => (
                             <TableRow key={user.id}>
                                 <TableCell>
                                     <Inline gap="sm" align="center" wrap>
@@ -118,7 +112,7 @@ function Users({actions}: {readonly actions: UserListProps['actions']}) {
                                 <TableCell>{dayText(user.registeredAt, i18n.language)}</TableCell>
                                 <TableCell>
                                     <Inline gap="xs" wrap>
-                                        {user.groups.flatMap((group) => [' ', <Badge key={group}>{t(GROUP_KEYS[group])}</Badge>])}
+                                        {user.groups.flatMap((group) => [' ', <Badge key={group}>{t(`users.groups.${group}`)}</Badge>])}
                                     </Inline>
                                 </TableCell>
                                 {actions !== undefined && <TableCell align="end">{actions(user)}</TableCell>}
@@ -127,8 +121,8 @@ function Users({actions}: {readonly actions: UserListProps['actions']}) {
                     </TableBody>
                 </Table>
                 <Pagination
-                    page={users.data.number}
-                    totalPages={users.data.totalPages}
+                    page={users.data.page.number}
+                    totalPages={users.data.page.totalPages}
                     hrefOf={(page) => userListHref({...filter, page})}
                     disabled={changing}
                 />

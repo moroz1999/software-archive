@@ -1,13 +1,13 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {GroupForm, toGroupId} from '@/entities/groups';
+import {GroupForm} from '@/entities/groups';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, noContent, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
 import {EditGroupProvider} from './EditGroupProvider';
 
 const GROUP = {
-    id: toGroupId('00000000-0000-0000-0005-000000000001'),
+    id: '00000000-0000-0000-0005-000000000001',
     name: 'Crew Ltd',
     notes: 'Since 1990',
     types: ['demogroup'],

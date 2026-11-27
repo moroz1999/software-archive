@@ -1,5 +1,4 @@
 import {type ReactNode, useMemo, useState} from 'react';
-import type {PlatformCode} from './platform';
 import {PlatformSelectionContext} from './platform-selection-context';
 import {readSelectedPlatform, storeSelectedPlatform} from './stored-platform';
 
@@ -12,7 +11,7 @@ export function PlatformSelectionProvider({children}: {readonly children: ReactN
 
     const state = useMemo(() => ({
         platform,
-        select: (next: PlatformCode | null) => {
+        select: (next: string | null) => {
             storeSelectedPlatform(next);
             setPlatform(next);
         },

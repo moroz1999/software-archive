@@ -5,14 +5,14 @@ import {screen, waitFor, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {createMemoryRouter, RouterProvider} from 'react-router';
 import {PlatformSelectionProvider, PlatformSwitch} from '@/entities/platforms';
-import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
+import {type components, subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, pageResponse, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {SOFTWARE_CATEGORY_ROUTE} from '../config/paths';
 import {SoftwareCatalogProvider} from '../model/SoftwareCatalogProvider';
 import {SoftwareCatalog} from './SoftwareCatalog';
 
-const ELITE = {id: '00000000-0000-0000-00fd-000000000001', title: 'Elite', releaseDate: '1987-05-01'};
-const EXOLON = {id: '00000000-0000-0000-00fd-000000000002', title: 'Exolon', releaseDate: '1987-09-01'};
+const ELITE = {id: '00000000-0000-0000-00fd-000000000001', title: 'Elite', releaseDate: '1987-05-01', screenshots: [], madeBy: [], rating: 0, votesAmount: 0} satisfies components['schemas']['SoftwareListItemDto'];
+const EXOLON = {id: '00000000-0000-0000-00fd-000000000002', title: 'Exolon', releaseDate: '1987-09-01', screenshots: [], madeBy: [], rating: 0, votesAmount: 0} satisfies components['schemas']['SoftwareListItemDto'];
 
 const GAMES = '00000000-0000-0000-00fd-0000000000c1';
 const ACTION = '00000000-0000-0000-00fd-0000000000c2';

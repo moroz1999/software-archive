@@ -9,16 +9,7 @@ export {
     hardwareEditPath,
     hardwareGroupEditPath,
 } from './config/paths';
-export {
-    type HardwareCode,
-    type HardwareDetails,
-    type HardwareGroupCode,
-    type HardwareGroupItem,
-    type HardwareKind,
-    type HardwareNames,
-    hardwareName,
-    requireHardwareCode,
-} from './model/hardware';
+export {type HardwareDetails, type HardwareGroupItem, type HardwareKind, type HardwareNames, hardwareName, requireHardwareCode} from './model/hardware';
 export {useHardwareDetails, useHardwareGroups} from './model/hardware-context';
 export {type HardwareDraft, toHardwareFormValues} from './model/hardware-form';
 export type {HardwarePlatformChoice} from './model/hardware-form-context';

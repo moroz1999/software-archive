@@ -1,6 +1,15 @@
 import {AuthenticationRequiredError, BusinessError, type BusinessStatus, type FieldError, NotFoundError, SystemError} from './errors';
 import {contentLanguage} from './content-language';
-import {isObject, type JsonObject} from './parse';
+
+type JsonObject = Readonly<Record<string, unknown>>;
+
+/** The origin the API is called on: the page's own; Vite proxies `/api` in development (docs/local-dev.md). */
+export const API_ORIGIN = globalThis.location.origin;
+
+/** A problem body is read as it comes: its `code` and `errors` are extensions the OpenAPI document does not describe. */
+function isObject(value: unknown): value is JsonObject {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
 
 const BUSINESS_STATUSES: readonly number[] = [403, 409, 422] satisfies BusinessStatus[];
 
@@ -21,19 +30,13 @@ function readFieldErrors(problem: JsonObject): FieldError[] {
     });
 }
 
-async function readBody(response: Response): Promise<unknown> {
-    try {
-        return await response.json();
-    } catch {
-        return null;
-    }
-}
-
-/** The error of a failed answer (docs/error-handling.md). */
-export async function toError(response: Response): Promise<Error> {
+/**
+ * The error of a failed answer, with the problem body `openapi-fetch` read from it: NotFoundError, BusinessError (AuthenticationRequiredError for a
+ * `401`) or SystemError (docs/error-handling.md).
+ */
+export function apiError(response: Response, problem: unknown): Error {
     const {status} = response;
     if (status === 401 || status === 404 || isBusinessStatus(status)) {
-        const problem = await readBody(response);
         if (isObject(problem) && typeof problem['code'] === 'string') {
             if (status === 401) {
                 return new AuthenticationRequiredError(problem['code']);
@@ -49,34 +52,19 @@ export async function toError(response: Response): Promise<Error> {
     return new SystemError('server', `HTTP ${String(status)}`);
 }
 
-function withContentLanguage(headers: HeadersInit | undefined): HeadersInit {
-    if (headers instanceof Headers || Array.isArray(headers)) {
-        const all = new Headers(headers);
-        all.set('Accept-Language', contentLanguage());
-        return all;
-    }
-    return {...headers, 'Accept-Language': contentLanguage()};
-}
-
 /**
  * Fetches, asking for the archive content in the content language; a fetch that cannot reach the server fails as a
  * network error, an aborted one with its AbortError.
  */
-export async function fetchOrFail(path: string, init: RequestInit): Promise<Response> {
+export async function fetchOrFail(request: Request): Promise<Response> {
+    const headers = new Headers(request.headers);
+    headers.set('Accept-Language', contentLanguage());
     try {
-        return await fetch(path, {...init, headers: withContentLanguage(init.headers)});
+        return await fetch(new Request(request, {headers}));
     } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') {
             throw error;
         }
         throw new SystemError('network', 'Network failure', {cause: error});
-    }
-}
-
-export async function readJson(response: Response): Promise<unknown> {
-    try {
-        return await response.json();
-    } catch (error) {
-        throw new SystemError('response', 'Unreadable response body', {cause: error});
     }
 }

@@ -1,18 +1,21 @@
 import {describe, expect, it} from 'vitest';
 import {render, screen, within} from '@testing-library/react';
 import {MemoryRouter} from 'react-router';
-import {toScreenshotId} from '../model/screenshot';
-import {toReleaseDate, toSoftwareId, toSoftwareTitle} from '../model/software';
+import type {Software} from '../model/software';
 import {SoftwareCardLayout} from './SoftwareCardLayout';
 
 const ALPHA = {
-    id: toSoftwareId('00000000-0000-0000-0001-000000000001'),
-    title: toSoftwareTitle('Fixture Software Alpha'),
-    releaseDate: toReleaseDate('1985-03-02'),
-};
+    id: '00000000-0000-0000-0001-000000000001',
+    title: 'Fixture Software Alpha',
+    releaseDate: '1985-03-02',
+    screenshots: [],
+    madeBy: [],
+    rating: 0,
+    votesAmount: 0,
+} satisfies Software;
 
 describe(SoftwareCardLayout, () => {
-    it('is a card named by the title, with an image placeholder and the release year', () => {
+    it('is a card named by the title, with an image placeholder for no screenshots and the release year', () => {
         render(<MemoryRouter><SoftwareCardLayout footer={null} software={ALPHA} href="/software/1/edit"/></MemoryRouter>);
 
         const card = screen.getByRole('article', {name: 'Fixture Software Alpha'});
@@ -24,8 +27,8 @@ describe(SoftwareCardLayout, () => {
 
     it('shows its screenshots in place of the placeholder, the first at once', () => {
         const screenshots = [
-            {id: toScreenshotId('00000000-0000-0000-0055-000000000001'), url: '/api/screenshots/1'},
-            {id: toScreenshotId('00000000-0000-0000-0055-000000000002'), url: '/api/screenshots/2'},
+            {id: '00000000-0000-0000-0055-000000000001', url: '/api/screenshots/1'},
+            {id: '00000000-0000-0000-0055-000000000002', url: '/api/screenshots/2'},
         ];
         render(<MemoryRouter><SoftwareCardLayout footer={null} software={{...ALPHA, screenshots}} href="/software/1"/></MemoryRouter>);
 
@@ -33,12 +36,6 @@ describe(SoftwareCardLayout, () => {
 
         expect(within(card).getByRole('img', {name: 'Fixture Software Alpha'})).toHaveAttribute('src', '/api/screenshots/1');
         expect(within(card).queryByRole('img', {name: 'No screenshot yet'})).not.toBeInTheDocument();
-    });
-
-    it('shows the placeholder for no screenshots', () => {
-        render(<MemoryRouter><SoftwareCardLayout footer={null} software={{...ALPHA, screenshots: []}} href="/software/1"/></MemoryRouter>);
-
-        expect(screen.getByRole('img', {name: 'No screenshot yet'})).toBeInTheDocument();
     });
 
     it('is one link to the given page, named by the title, holding the picture and every line', () => {

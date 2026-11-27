@@ -1,13 +1,13 @@
 import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
-import {CATEGORIES_PATH, CategoryForm, type CategoryId, CategoryTreeProvider} from '@/entities/categories';
+import {CATEGORIES_PATH, CategoryForm, CategoryTreeProvider} from '@/entities/categories';
 import {CreateCategoryProvider} from '@/features/category/create';
 import {Button} from '@/shared/ui/button';
 import {PageLayout} from '@/shared/ui/page-layout';
 
 export interface CategoryCreatorProps {
     /** Called with the new category's id once it is added. */
-    readonly onCreated: (id: CategoryId) => void;
+    readonly onCreated: (id: string) => void;
     /** Navigation shared by the management pages. */
     readonly navigation?: ReactNode;
 }

@@ -1,5 +1,7 @@
 package com.archive.backend.group.web.dto;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -33,6 +35,8 @@ public record GroupRequestDto(
 
     public record MemberDto(
             @Nullable UUID id,
-            @Nullable String type,
-            @Nullable List<String> roles) {}
+            @Schema(ref = "PersonReferenceType") @Nullable String type,
+
+            @ArraySchema(schema = @Schema(ref = "GroupMemberRole")) @Nullable
+            List<String> roles) {}
 }

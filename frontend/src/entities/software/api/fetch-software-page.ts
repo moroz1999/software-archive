@@ -1,35 +1,19 @@
-import {getJson, mapResponse, type Page, parsePage, readArray, readNullableString, readNumber, readObject, readString, readStringArray} from '@/shared/api';
-import {type Software, type SoftwareId, toReleaseDate, toSoftwareId, toSoftwareTitle} from '../model/software';
-import {parseScreenshots} from './screenshot-api';
-
-
-/** The platform part of a list address; nothing for every platform. */
-function platformParam(platform: string | null): string {
-    return platform === null ? '' : `?platform=${encodeURIComponent(platform)}`;
-}
-
-/** A card of a list of software, as the API gives it. */
-export function parseSoftware(item: unknown): Software {
-    const dto = readObject(item, 'software');
-    const releaseDate = readNullableString(dto, 'releaseDate');
-    return {
-        id: toSoftwareId(readString(dto, 'id')),
-        title: toSoftwareTitle(readString(dto, 'title')),
-        releaseDate: releaseDate === null ? null : toReleaseDate(releaseDate),
-        screenshots: parseScreenshots(dto['screenshots']),
-        madeBy: dto['madeBy'] === undefined ? [] : readStringArray(dto['madeBy'], 'madeBy'),
-        ...(dto['votesAmount'] === undefined ? {} : {rating: {rating: readNumber(dto, 'rating'), votesAmount: readNumber(dto, 'votesAmount')}}),
-    };
-}
-
+import {api, apiError, type components} from '@/shared/api';
+import {type Software} from '../model/software';
 
 /** The most recently added software, newest first, of the platform when one is given: `GET /api/software/latest`. */
-export async function fetchLatestSoftware(platform: string | null, signal: AbortSignal): Promise<Page<Software>> {
-    const json = await getJson(`/api/software/latest${platformParam(platform)}`, signal);
-    return mapResponse(() => parsePage(json, parseSoftware));
+export async function fetchLatestSoftware(platform: string | null, signal: AbortSignal): Promise<components['schemas']['PagedModelSoftwareListItemDto']> {
+    const {data, error, response} = await api.GET('/api/software/latest', {params: {query: platform === null ? {} : {platform}}, signal});
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
+    return data;
 }
 
-export async function fetchCompilationPrograms(id: SoftwareId, signal: AbortSignal): Promise<readonly Software[]> {
-    const json = await getJson(`/api/software/${id}/compilation-items`, signal);
-    return mapResponse(() => readArray(json, 'compilation programs').map(parseSoftware));
+export async function fetchCompilationPrograms(id: string, signal: AbortSignal): Promise<readonly Software[]> {
+    const {data, error, response} = await api.GET('/api/software/{id}/compilation-items', {params: {path: {id}}, signal});
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
+    return data;
 }

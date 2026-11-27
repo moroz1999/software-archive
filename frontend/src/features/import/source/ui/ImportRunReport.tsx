@@ -1,17 +1,18 @@
 import {type ReactNode, useId} from 'react';
+import {softwareSupplementValues} from '@/shared/api';
 import type {TFunction} from 'i18next';
 import {Trans, useTranslation} from 'react-i18next';
-import {authorPath, toAuthorId} from '@/entities/authors';
-import {groupPath, toGroupId} from '@/entities/groups';
-import {labelPath, toLabelId} from '@/entities/labels';
-import {fileSizeText, type SoftwareId, softwarePath} from '@/entities/software';
+import {authorPath} from '@/entities/authors';
+import {groupPath} from '@/entities/groups';
+import {labelPath} from '@/entities/labels';
+import {fileSizeText, softwarePath} from '@/entities/software';
 import {Chip} from '@/shared/ui/chip';
 import {Inline} from '@/shared/ui/inline';
 import {Skeleton} from '@/shared/ui/skeleton';
 import {Stack} from '@/shared/ui/stack';
 import {Heading, Text, TextLink} from '@/shared/ui/typography';
 import {logTimeText, runTimeText} from '../lib/run-time';
-import {type ImportLogEntry, type ImportRun, type ImportRunAuthor, type ImportRunProgress, importSourceOf, SOFTWARE_SUPPLEMENTS} from '../model/import-run';
+import {type ImportLogLine, type ImportRun, type ImportRunAuthor, type ImportRunProgress, importSourceOf} from '../model/import-run';
 import {useSourceImport} from '../model/source-import-context';
 import styles from './ImportRunReport.module.css';
 
@@ -60,7 +61,7 @@ function Report({run}: {readonly run: ImportRun}) {
                                 {line.at !== null && (
                                     <Text as="span" variant="caption" tone="muted"><time dateTime={line.at}>{logTimeText(line.at)}</time></Text>
                                 )}
-                                <Text as="span"><LogEntryText entry={line.entry}/></Text>
+                                <Text as="span"><LogEntryText line={line}/></Text>
                             </Inline>
                         </Stack>
                     ))}
@@ -83,35 +84,35 @@ function Progress({progress}: {readonly progress: ImportRunProgress}) {
 }
 
 /** What a line of the log tells, leading to what it names: software, a page of the source, an author. */
-function LogEntryText({entry}: {readonly entry: ImportLogEntry}) {
+function LogEntryText({line}: {readonly line: ImportLogLine}) {
     const {t} = useTranslation();
-    switch (entry.kind) {
+    switch (line.kind) {
         case 'list':
             return (
                 <Trans
-                    i18nKey={entry.page.pages === null ? 'imports.lines.listUncounted' : 'imports.lines.list'}
-                    values={{number: entry.page.number, pages: entry.page.pages, programs: entry.page.programs}}
-                    components={{page: <LinkTo href={entry.page.url}/>}}
+                    i18nKey={line.entry.pages === null ? 'imports.lines.listUncounted' : 'imports.lines.list'}
+                    values={{number: line.entry.number, pages: line.entry.pages, programs: line.entry.programs}}
+                    components={{page: <LinkTo href={line.entry.url}/>}}
                 />
             );
         case 'download':
             return (
                 <Trans
-                    i18nKey={`imports.lines.${entry.download.file}`}
-                    values={{title: entry.download.title, name: entry.download.name, size: fileSizeText(entry.download.size)}}
+                    i18nKey={`imports.lines.${line.entry.file}`}
+                    values={{title: line.entry.title, name: line.entry.name, size: fileSizeText(line.entry.size)}}
                     components={{program: <span/>}}
                 />
             );
         case 'added':
-            return <SoftwareLine program={entry.program} i18nKey="imports.lines.added"/>;
+            return <SoftwareLine program={line.entry} i18nKey="imports.lines.added"/>;
         case 'known':
-            return entry.program.supplements.length === 0
-                ? <SoftwareLine program={entry.program} i18nKey="imports.lines.unchanged"/>
+            return line.entry.supplements.length === 0
+                ? <SoftwareLine program={line.entry} i18nKey="imports.lines.unchanged"/>
                 : (
                     <SoftwareLine
-                        program={entry.program}
+                        program={line.entry}
                         i18nKey="imports.lines.supplemented"
-                        supplements={SOFTWARE_SUPPLEMENTS.filter((code) => entry.program.supplements.includes(code))
+                        supplements={softwareSupplementValues.filter((code) => line.entry.supplements.includes(code))
                             .map((code) => t(`imports.supplements.${code}`))
                             .join(', ')}
                     />
@@ -119,34 +120,34 @@ function LogEntryText({entry}: {readonly entry: ImportLogEntry}) {
         case 'skipped':
             return (
                 <Trans
-                    i18nKey={`imports.lines.skipped.${entry.program.reason}`}
-                    values={{title: entry.program.title, detail: entry.program.detail}}
-                    components={{program: <LinkTo href={entry.program.url}/>}}
+                    i18nKey={`imports.lines.skipped.${line.entry.reason}`}
+                    values={{title: line.entry.title, detail: line.entry.detail}}
+                    components={{program: <LinkTo href={line.entry.url}/>}}
                 />
             );
         case 'failed':
             return (
                 <Trans
                     i18nKey="imports.lines.failed"
-                    values={{url: entry.program.url, reason: entry.program.reason}}
-                    components={{page: <LinkTo href={entry.program.url}/>}}
+                    values={{url: line.entry.url, reason: line.entry.reason}}
+                    components={{page: <LinkTo href={line.entry.url}/>}}
                 />
             );
         case 'author':
             return (
                 <Trans
-                    i18nKey={`imports.lines.${entry.author.created ? 'created' : 'found'}.${entry.author.kind}`}
-                    values={{name: entry.author.exists ? entry.author.name : t('imports.deleted', {title: entry.author.name})}}
-                    components={{author: entry.author.exists ? <LinkTo href={authorHref(entry.author)}/> : <span/>}}
+                    i18nKey={`imports.lines.${line.entry.created ? 'created' : 'found'}.${line.entry.kind}`}
+                    values={{name: line.entry.exists ? line.entry.name : t('imports.deleted', {title: line.entry.name})}}
+                    components={{author: line.entry.exists ? <LinkTo href={authorHref(line.entry)}/> : <span/>}}
                 />
             );
         case 'place':
-            return t(`imports.lines.place.${entry.place.kind}`, {name: entry.place.name});
+            return t(`imports.lines.place.${line.entry.kind}`, {name: line.entry.name});
     }
 }
 
 interface SoftwareLineProps {
-    readonly program: {readonly softwareId: SoftwareId; readonly title: string; readonly exists: boolean};
+    readonly program: {readonly softwareId: string; readonly title: string; readonly exists: boolean};
     readonly i18nKey: 'imports.lines.added' | 'imports.lines.unchanged' | 'imports.lines.supplemented';
     readonly supplements?: string;
 }
@@ -171,11 +172,11 @@ function LinkTo({href, children}: {readonly href: string; readonly children?: Re
 function authorHref(author: ImportRunAuthor): string {
     switch (author.kind) {
         case 'author':
-            return authorPath(toAuthorId(author.id));
+            return authorPath(author.id);
         case 'group':
-            return groupPath(toGroupId(author.id));
+            return groupPath(author.id);
         case 'label':
-            return labelPath(toLabelId(author.id));
+            return labelPath(author.id);
     }
 }
 

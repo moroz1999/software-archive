@@ -10,20 +10,20 @@ describe(fetchUserPage, () => {
         vi.unstubAllGlobals();
     });
 
-    it('reads a page of users, without groups this interface does not know', async () => {
+    it('reads a page of users', async () => {
         const fetchMock = stubFetch(json(pageResponse([
-            {id: ZED, name: 'Zed', email: 'zed@example.com', confirmed: true, registeredAt: '2026-01-01T10:00:00Z', groups: ['admin', 'member', 'owner']},
+            {id: ZED, name: 'Zed', email: 'zed@example.com', confirmed: true, registeredAt: '2026-01-01T10:00:00Z', groups: ['admin', 'member']},
             {id: AXE, name: 'Axe', email: 'axe@example.com', confirmed: false, registeredAt: '2026-02-01T10:00:00Z', groups: []},
         ], {size: 50, totalElements: 2})));
 
         const page = await fetchUserPage({query: null, page: 0}, new AbortController().signal);
 
         expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/users?page=0&size=50');
-        expect(page.items).toStrictEqual([
+        expect(page.content).toStrictEqual([
             {id: ZED, name: 'Zed', email: 'zed@example.com', confirmed: true, registeredAt: '2026-01-01T10:00:00Z', groups: ['admin', 'member']},
             {id: AXE, name: 'Axe', email: 'axe@example.com', confirmed: false, registeredAt: '2026-02-01T10:00:00Z', groups: []},
         ]);
-        expect(page.totalElements).toBe(2);
+        expect(page.page.totalElements).toBe(2);
     });
 
     it('asks for the users of the search on the page asked', async () => {
@@ -32,12 +32,5 @@ describe(fetchUserPage, () => {
         await fetchUserPage({query: 'zed', page: 2}, new AbortController().signal);
 
         expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/users?page=2&size=50&query=zed');
-    });
-
-    it('fails as a broken response for a body it cannot read', async () => {
-        stubFetch(json(pageResponse([{id: 'zed', name: 'Zed'}])));
-
-        await expect(fetchUserPage({query: null, page: 0}, new AbortController().signal))
-            .rejects.toThrow(expect.objectContaining({name: 'SystemError', kind: 'response'}));
     });
 });

@@ -3,6 +3,9 @@ package com.archive.backend.search.web;
 import com.archive.backend.search.app.FullSearchHandler;
 import com.archive.backend.search.web.dto.FullSearchDto;
 import com.archive.backend.search.web.mapper.FullSearchWebMapper;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
@@ -23,7 +26,10 @@ public class FullSearchController {
     public FullSearchDto search(
             @RequestParam(name = "q", required = false) @Nullable String keyword,
             @RequestParam(required = false) @Nullable String platform,
-            @RequestParam(required = false) @Nullable List<String> types,
+            @RequestParam(required = false)
+                    @Parameter(array = @ArraySchema(schema = @Schema(ref = "FoundKind")))
+                    @Nullable
+                    List<String> types,
             Pageable pageable) {
         return webMapper.toResult(handler.handle(webMapper.toQuery(keyword, platform, types, pageable)));
     }

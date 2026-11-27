@@ -1,13 +1,8 @@
-import {deleteResource, getJson, mapResponse, postJson, putJson, readAddition, readArray, readBoolean, readNullableString, readObject, readOrigins, readString, readStringArray} from '@/shared/api';
-import {type GroupDetails, type GroupId, type GroupLabel, type GroupLocation, type GroupMember, type RelatedGroup, toGroupId} from '../model/group';
-import type {GroupDraft} from '../model/group-form';
-import type {EntityAutocompleteOption} from '@/shared/ui/multi-entity-autocomplete';
+import {api, apiError, type components} from '@/shared/api';
+import {type GroupDetails} from '../model/group';
+import type {GroupDraft, GroupPerson} from '../model/group-form';
 
-function groupPath(id: GroupId): string {
-    return `/api/groups/${id}`;
-}
-
-function toBody(draft: GroupDraft): unknown {
+function toBody(draft: GroupDraft): components['schemas']['GroupRequestDto'] {
     return {
         name: draft.name,
         notes: draft.notes,
@@ -18,89 +13,54 @@ function toBody(draft: GroupDraft): unknown {
     };
 }
 
-function parseLabel(item: unknown): GroupLabel {
-    const dto = readObject(item, 'label');
-    return {id: readString(dto, 'id'), name: readString(dto, 'name')};
-}
-
-function parseLocation(item: unknown): GroupLocation {
-    const dto = readObject(item, 'location');
-    return {
-        countryId: readNullableString(dto, 'countryId'),
-        country: readNullableString(dto, 'country'),
-        cityId: readNullableString(dto, 'cityId'),
-        city: readNullableString(dto, 'city'),
-        primary: readBoolean(dto, 'primary'),
-    };
-}
-
-function parseMember(item: unknown): GroupMember {
-    const dto = readObject(item, 'member');
-    return {
-        id: readNullableString(dto, 'id'),
-        type: readString(dto, 'type') === 'author-label' ? 'author-label' : 'author',
-        title: readString(dto, 'title'),
-        name: readString(dto, 'name'),
-        personId: readNullableString(dto, 'personId'),
-        personName: readNullableString(dto, 'personName'),
-        roles: readStringArray(dto['roles'], 'member roles'),
-    };
-}
-
-function parseRelated(item: unknown): RelatedGroup {
-    const dto = readObject(item, 'group');
-    return {id: toGroupId(readString(dto, 'id')), name: readString(dto, 'name')};
-}
-
 /** One group with its details: `GET /api/groups/{id}`. */
-export async function fetchGroup(id: GroupId, signal: AbortSignal): Promise<GroupDetails> {
-    const json = await getJson(groupPath(id), signal);
-    return mapResponse(() => {
-        const dto = readObject(json, 'group');
-        return {
-            id: toGroupId(readString(dto, 'id')),
-            name: readString(dto, 'name'),
-            notes: readNullableString(dto, 'notes'),
-            types: readStringArray(dto['types'], 'types'),
-            labels: readArray(dto['labels'], 'labels').map(parseLabel),
-            locations: readArray(dto['locations'], 'locations').map(parseLocation),
-            members: readArray(dto['members'], 'members').map(parseMember),
-            memberGroups: readArray(dto['memberGroups'], 'memberGroups').map(parseRelated),
-            groups: readArray(dto['groups'], 'groups').map(parseRelated),
-            origins: readOrigins(dto['origins']),
-            added: readAddition(dto['added']),
-            canChange: readBoolean(dto, 'canChange'),
-        };
-    });
+export async function fetchGroup(id: string, signal: AbortSignal): Promise<GroupDetails> {
+    const {data, error, response} = await api.GET('/api/groups/{id}', {params: {path: {id}}, signal});
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
+    return data;
 }
 
 /** Adds a group to the archive and returns its id. */
-export async function createGroup(draft: GroupDraft): Promise<GroupId> {
-    const json = await postJson('/api/groups', toBody(draft));
-    return mapResponse(() => toGroupId(readString(readObject(json, 'created group'), 'id')));
+export async function createGroup(draft: GroupDraft): Promise<string> {
+    const {data, error, response} = await api.POST('/api/groups', {body: toBody(draft)});
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
+    return data.id;
 }
 
-export async function updateGroup(id: GroupId, draft: GroupDraft): Promise<void> {
-    await putJson(groupPath(id), toBody(draft));
+export async function updateGroup(id: string, draft: GroupDraft): Promise<void> {
+    const {error, response} = await api.PUT('/api/groups/{id}', {params: {path: {id}}, body: toBody(draft)});
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
 }
 
 /** Deletes the group with its memberships; its labels stay in the archive as labels of nobody. */
-export async function deleteGroup(id: GroupId): Promise<void> {
-    await deleteResource(groupPath(id));
+export async function deleteGroup(id: string): Promise<void> {
+    const {error, response} = await api.DELETE('/api/groups/{id}', {params: {path: {id}}});
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
 }
 
 /** The codes of the reference book of group types: `GET /api/group-types`. */
 export async function fetchGroupTypes(signal: AbortSignal): Promise<readonly string[]> {
-    const json = await getJson('/api/group-types', signal);
-    return mapResponse(() => readStringArray(json, 'group types'));
+    const {data, error, response} = await api.GET('/api/group-types', {signal});
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
+    return data;
 }
 
 /** Finds people and their aliases for the group roster. */
-export async function fetchGroupPeople(query: string, signal: AbortSignal): Promise<readonly EntityAutocompleteOption[]> {
-    const params = new URLSearchParams({types: 'author,author-label', query});
-    const json = await getJson(`/api/entity-lookup?${params.toString()}`, signal);
-    return mapResponse(() => readArray(readObject(json, 'person lookup')['items'], 'items').map((item) => {
-        const option = readObject(item, 'person');
-        return {id: readString(option, 'id'), type: readString(option, 'type'), title: readString(option, 'title')};
-    }));
+export async function fetchGroupPeople(query: string, signal: AbortSignal): Promise<readonly GroupPerson[]> {
+    const {data, error, response} = await api.GET('/api/entity-lookup', {params: {query: {types: 'author,author-label', query}}, signal});
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
+    // The lookup answers only the asked kinds; the check tells the compiler so.
+    return data.items.flatMap(({id, type, title}) => type === 'author' || type === 'author-label' ? [{id, type, title}] : []);
 }

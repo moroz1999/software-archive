@@ -1,5 +1,6 @@
 package com.archive.backend.label.web.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -19,8 +20,12 @@ public record LabelDetailsDto(
         boolean canChangeOwner,
         boolean canHandOver) {
 
+    /** Whose the label is: a person ({@code author}) or a group. */
     public record OwnerDto(
-            String type, UUID id, String name, @Nullable String note) {}
+            @Schema(allowableValues = {"author", "group"}) String type,
+            UUID id,
+            String name,
+            @Nullable String note) {}
 
     public record MemberOfDto(UUID id, String name) {}
 

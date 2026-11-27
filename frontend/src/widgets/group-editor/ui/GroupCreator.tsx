@@ -1,5 +1,5 @@
 import {useTranslation} from 'react-i18next';
-import {GroupForm, type GroupId, GROUPS_PATH} from '@/entities/groups';
+import {GroupForm, GROUPS_PATH} from '@/entities/groups';
 import {CreateGroupProvider} from '@/features/group/create';
 import {Button} from '@/shared/ui/button';
 import {PageLayout} from '@/shared/ui/page-layout';
@@ -7,7 +7,7 @@ import {GroupLabels, GroupLocations} from './GroupFields';
 
 export interface GroupCreatorProps {
     /** Called with the new group's id once it is added. */
-    readonly onCreated: (id: GroupId) => void;
+    readonly onCreated: (id: string) => void;
 }
 
 /** The page of adding a group: its name, types, labels, locations and notes; Cancel returns to the catalog. */

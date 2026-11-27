@@ -1,20 +1,12 @@
-import {deleteResource, getJson, mapResponse, postForm, postNoContent, putForm, readArray, readBoolean, readNullableString, readNumber, readObject, readString} from '@/shared/api';
-import {type ReleaseDetails, type ReleaseId, toReleaseId, toReleaseType} from '../model/release';
-import type {ReleaseArchive} from '../model/release-archive';
-import {type ReleaseFile, toReleaseFileId} from '../model/release-file';
+import {api, apiError, type components, multipartForm} from '@/shared/api';
+import {type ReleaseDetails} from '../model/release';
+import {type ReleaseFile} from '../model/release-file';
 import type {ReleaseDraft} from '../model/release-form';
-import {type Hardware, type SoftwareId, type SoftwarePlatformCode, toReleaseDate} from '../model/software';
-import {parseHardwareList, parseSoftwareCredits} from './software-api';
+import {type Hardware} from '../model/software';
 
-function releasesPath(softwareId: SoftwareId): string {
-    return `/api/software/${softwareId}/releases`;
-}
+type ReleaseRequestDto = components['schemas']['ReleaseRequestDto'];
 
-function releasePath(softwareId: SoftwareId, releaseId: ReleaseId): string {
-    return `${releasesPath(softwareId)}/${releaseId}`;
-}
-
-function toBody(draft: ReleaseDraft): unknown {
+function toBody(draft: ReleaseDraft): ReleaseRequestDto {
     return {
         title: draft.title,
         version: draft.version,
@@ -26,89 +18,73 @@ function toBody(draft: ReleaseDraft): unknown {
     };
 }
 
-function toForm(draft: ReleaseDraft): FormData {
-    const form = new FormData();
-    form.append('release', new Blob([JSON.stringify(toBody(draft))], {type: 'application/json'}));
-    if (draft.archive !== undefined) {
-        form.append('archive', draft.archive);
-    }
-    if (draft.removeArchive === true) {
-        form.append('removeArchive', 'true');
-    }
-    return form;
-}
-
-/** An archive in a release answer; missing means the release has no downloadable file. */
-export function parseReleaseArchive(raw: unknown): ReleaseArchive | null {
-    if (raw === undefined || raw === null) {
-        return null;
-    }
-    const dto = readObject(raw, 'release archive');
-    return {fileName: readString(dto, 'fileName'), size: readNumber(dto, 'size'), url: readString(dto, 'url')};
+/** The release and, when one is chosen, its new archive, as the parts of a multipart form. */
+function toForm(draft: ReleaseDraft): {readonly release: ReleaseRequestDto; readonly archive?: Blob} {
+    return {release: toBody(draft), ...(draft.archive === undefined ? {} : {archive: draft.archive})};
 }
 
 /** A release as it states itself: `GET /api/software/{id}/releases/{releaseId}`. */
-export async function fetchSoftwareRelease(softwareId: SoftwareId, releaseId: ReleaseId, signal: AbortSignal): Promise<ReleaseDetails> {
-    const json = await getJson(releasePath(softwareId, releaseId), signal);
-    return mapResponse(() => {
-        const dto = readObject(json, 'release');
-        const releaseDate = readNullableString(dto, 'releaseDate');
-        return {
-            id: toReleaseId(readString(dto, 'id')),
-            title: readNullableString(dto, 'title'),
-            version: readNullableString(dto, 'version'),
-            type: toReleaseType(readString(dto, 'type')),
-            releaseDate: releaseDate === null ? null : toReleaseDate(releaseDate),
-            description: readNullableString(dto, 'description'),
-            hardware: parseHardwareList(dto['hardware']),
-            archive: parseReleaseArchive(dto['archive']),
-            credits: dto['credits'] === undefined ? [] : parseSoftwareCredits(dto['credits']),
-        };
-    });
-}
-
-function parseReleaseFile(raw: unknown): ReleaseFile {
-    const dto = readObject(raw, 'release file');
-    return {
-        id: toReleaseFileId(readString(dto, 'id')),
-        name: readString(dto, 'name'),
-        directory: readBoolean(dto, 'directory'),
-        executable: readBoolean(dto, 'executable'),
-        unreadable: readBoolean(dto, 'unreadable'),
-        children: readArray(dto['children'], 'release file children').map(parseReleaseFile),
-    };
+export async function fetchSoftwareRelease(softwareId: string, releaseId: string, signal: AbortSignal): Promise<ReleaseDetails> {
+    const {data, error, response} = await api.GET('/api/software/{softwareId}/releases/{releaseId}', {params: {path: {softwareId, releaseId}}, signal});
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
+    return data;
 }
 
 /** The parsed tree rooted at a release's downloadable file; null while the file waits for parsing. */
-export async function fetchReleaseFiles(softwareId: SoftwareId, releaseId: ReleaseId, signal: AbortSignal): Promise<ReleaseFile | null> {
-    const json = await getJson(`${releasePath(softwareId, releaseId)}/files`, signal);
-    return mapResponse(() => {
-        const root = readObject(json, 'release files')['root'];
-        return root === null ? null : parseReleaseFile(root);
-    });
+export async function fetchReleaseFiles(softwareId: string, releaseId: string, signal: AbortSignal): Promise<ReleaseFile | null> {
+    const {data, error, response} = await api.GET('/api/software/{softwareId}/releases/{releaseId}/files', {params: {path: {softwareId, releaseId}}, signal});
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
+    return data.root;
 }
 
 /** Builds the tree of a release file again; only whoever may change the release may ask. */
-export async function reparseReleaseFiles(softwareId: SoftwareId, releaseId: ReleaseId): Promise<void> {
-    await postNoContent(`${releasePath(softwareId, releaseId)}/files/reparse`);
+export async function reparseReleaseFiles(softwareId: string, releaseId: string): Promise<void> {
+    const {error, response} = await api.POST('/api/software/{softwareId}/releases/{releaseId}/files/reparse', {params: {path: {softwareId, releaseId}}});
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
 }
 
 /** Adds a release to its software and returns its id. */
-export async function createRelease(softwareId: SoftwareId, draft: ReleaseDraft): Promise<ReleaseId> {
-    const json = await postForm(releasesPath(softwareId), toForm(draft));
-    return mapResponse(() => toReleaseId(readString(readObject(json, 'created release'), 'id')));
+export async function createRelease(softwareId: string, draft: ReleaseDraft): Promise<string> {
+    const {data, error, response} = await api.POST('/api/software/{softwareId}/releases', {
+        params: {path: {softwareId}},
+        body: toForm(draft),
+        bodySerializer: multipartForm,
+    });
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
+    return data.id;
 }
 
-export async function updateRelease(softwareId: SoftwareId, releaseId: ReleaseId, draft: ReleaseDraft): Promise<void> {
-    await putForm(releasePath(softwareId, releaseId), toForm(draft));
+export async function updateRelease(softwareId: string, releaseId: string, draft: ReleaseDraft): Promise<void> {
+    const {error, response} = await api.PUT('/api/software/{softwareId}/releases/{releaseId}', {
+        params: {path: {softwareId, releaseId}, query: {removeArchive: draft.removeArchive ?? null}},
+        body: toForm(draft),
+        bodySerializer: multipartForm,
+    });
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
 }
 
-export async function deleteRelease(softwareId: SoftwareId, releaseId: ReleaseId): Promise<void> {
-    await deleteResource(releasePath(softwareId, releaseId));
+export async function deleteRelease(softwareId: string, releaseId: string): Promise<void> {
+    const {error, response} = await api.DELETE('/api/software/{softwareId}/releases/{releaseId}', {params: {path: {softwareId, releaseId}}});
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
 }
 
 /** The hardware of a platform, to choose from: `GET /api/hardware?platform={code}`. */
-export async function fetchPlatformHardware(platform: SoftwarePlatformCode, signal: AbortSignal): Promise<readonly Hardware[]> {
-    const json = await getJson(`/api/hardware?${new URLSearchParams({platform}).toString()}`, signal);
-    return mapResponse(() => parseHardwareList(json));
+export async function fetchPlatformHardware(platform: string, signal: AbortSignal): Promise<readonly Hardware[]> {
+    const {data, error, response} = await api.GET('/api/hardware', {params: {query: {platform}}, signal});
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
+    return data;
 }

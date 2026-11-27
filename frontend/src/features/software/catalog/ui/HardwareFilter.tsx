@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {type PlatformCode, toPlatformCode, usePlatformSelection} from '@/entities/platforms';
+import {usePlatformSelection} from '@/entities/platforms';
 import {Button} from '@/shared/ui/button';
 import {Checkbox} from '@/shared/ui/checkbox';
 import {Dialog} from '@/shared/ui/dialog';
@@ -25,7 +25,7 @@ interface ChoiceGroup {
 
 /** What is checked in the window before it is applied. */
 interface Draft {
-    readonly platforms: readonly PlatformCode[];
+    readonly platforms: readonly string[];
     readonly hardware: readonly string[];
 }
 
@@ -39,12 +39,12 @@ function checkedIn(draft: Draft, of: keyof Draft, value: string): boolean {
 
 function toggledIn(draft: Draft, of: keyof Draft, value: string, checked: boolean): Draft {
     return of === 'platforms'
-        ? {...draft, platforms: toggled(draft.platforms, toPlatformCode(value), checked)}
+        ? {...draft, platforms: toggled(draft.platforms, value, checked)}
         : {...draft, hardware: toggled(draft.hardware, value, checked)};
 }
 
 /** The platforms offered, the chosen ones kept even when they leave nothing. */
-function withChosen(counts: readonly FacetCount<PlatformCode>[], chosen: readonly PlatformCode[]): readonly FacetCount<PlatformCode>[] {
+function withChosen(counts: readonly FacetCount[], chosen: readonly string[]): readonly FacetCount[] {
     const missing = chosen.filter((code) => !counts.some((count) => count.value === code));
     return [...missing.map((value) => ({value, count: 0})), ...counts];
 }

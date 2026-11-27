@@ -1,6 +1,7 @@
 import {pageParam, parsePageParam} from '@/shared/lib/page-param';
 import {SEARCH_PATH} from '../config/paths';
-import {FOUND_KINDS, type FoundKind} from './found';
+import {foundKindValues} from '@/shared/api';
+import type {FoundKind} from './found';
 
 /** What the full search shows: its keyword, the kinds chosen (none for every kind) and the page, counted from 0. */
 export interface FullSearchFilter {
@@ -18,8 +19,8 @@ export function keywordOf(text: string | null): string | null {
 /** The kinds chosen, in their order; none when every kind or none of them is. */
 export function chosenKinds(kinds: Iterable<string>): readonly FoundKind[] {
     const chosen = new Set(kinds);
-    const known = FOUND_KINDS.filter((kind) => chosen.has(kind));
-    return known.length === FOUND_KINDS.length ? [] : known;
+    const known = foundKindValues.filter((kind) => chosen.has(kind));
+    return known.length === foundKindValues.length ? [] : known;
 }
 
 /** The filter in the address of the full search; anything that cannot be one is left out. */

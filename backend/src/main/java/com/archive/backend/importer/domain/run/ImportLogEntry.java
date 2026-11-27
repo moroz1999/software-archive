@@ -2,6 +2,7 @@ package com.archive.backend.importer.domain.run;
 
 import com.archive.backend.importer.domain.ExternalPage;
 import com.archive.backend.importer.domain.source.SourceProgram;
+import com.archive.backend.shared.domain.EnumCodes;
 import com.archive.backend.shared.domain.ddd.ValueObject;
 import com.archive.backend.software.domain.ReleaseArchiveUpload;
 import com.archive.backend.software.domain.ScreenshotImage;
@@ -28,7 +29,12 @@ public sealed interface ImportLogEntry {
     /** What a file of a program downloaded from the source is. */
     enum DownloadedFile {
         ARCHIVE,
-        SCREENSHOT
+        SCREENSHOT;
+
+        /** The code it is known by outside the backend: {@code ARCHIVE} as {@code archive}. */
+        public String code() {
+            return EnumCodes.kebab(this);
+        }
     }
 
     /** A file of a program downloaded from the source: its name there and its size in bytes. */

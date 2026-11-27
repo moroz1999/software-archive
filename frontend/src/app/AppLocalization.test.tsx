@@ -3,7 +3,7 @@ import {render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {type QueryClient} from '@tanstack/react-query';
 import {createQueryClient} from '@/shared/api';
-import {json, noContent, pageResponse, stubFetchRoutes} from '@/shared/lib/test';
+import {json, noContent, pageResponse, stubFetchRoutes, stubGlobalFetch, urlOf} from '@/shared/lib/test';
 import {App} from './App';
 import {type AppRouter, createAppRouter} from './router';
 
@@ -92,8 +92,8 @@ describe('UI localization', () => {
             origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
             canChange: false,
         });
-        vi.stubGlobal('fetch', vi.fn<typeof fetch>((input, init) => {
-            const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+        stubGlobalFetch(vi.fn<typeof fetch>((input, init) => {
+            const url = urlOf(input);
             const russian = new Headers(init?.headers).get('Accept-Language') === 'ru';
             const routes = new Map([
                 ['/api/platforms', json([])],
@@ -153,7 +153,7 @@ describe('UI localization', () => {
                 hardware: [],
                 categories: [],
                 credits: [],
-                sources: [], preservation: 'unknown',
+                sources: [], preservation: 'unknown', instructions: null, compilationItems: [], compilations: [],
                 origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
                 canChange: true,
             })],

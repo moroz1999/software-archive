@@ -1,5 +1,4 @@
 import {queryOptions, skipToken} from '@tanstack/react-query';
-import type {CityId, CountryId} from '../model/geo';
 import type {PlaceKind} from '../model/geography';
 import {fetchCitiesOfNoCountry, fetchGeoDuplicates, fetchGeography, fetchPlace} from './geography-api';
 import {fetchCities, fetchCountries} from './geo-api';
@@ -15,7 +14,7 @@ export function countriesQuery() {
 }
 
 /** The cities of the chosen country; nothing is asked while no country is chosen. */
-export function citiesQuery(country: CountryId | null) {
+export function citiesQuery(country: string | null) {
     return queryOptions({
         queryKey: [...GEO_QUERY_KEY, 'cities', country],
         queryFn: country === null ? skipToken : ({signal}) => fetchCities(country, signal),
@@ -31,7 +30,7 @@ export function geographyQuery() {
 }
 
 /** One country or city, the block of its form. */
-export function placeDetailsQuery(kind: PlaceKind, id: CountryId | CityId) {
+export function placeDetailsQuery(kind: PlaceKind, id: string) {
     return queryOptions({
         queryKey: [...GEO_QUERY_KEY, kind, id],
         queryFn: ({signal}) => fetchPlace(kind, id, signal),

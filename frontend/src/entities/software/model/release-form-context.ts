@@ -1,4 +1,4 @@
-import type {MemberRoleValue} from '@/shared/ui/member-role-editor';
+import type {CreditValue} from './software-form';
 import {createRequiredContext} from '@/shared/lib/context';
 import type {Hardware} from './software';
 import type {ReleaseFormErrors, ReleaseFormValues} from './release-form';
@@ -21,7 +21,7 @@ export interface ReleaseFormState {
     /** Replaces the chosen hardware. */
     readonly changeHardware: (codes: readonly string[]) => void;
     /** Replaces whoever is credited on the release. */
-    readonly changeCredits: (credits: readonly MemberRoleValue[]) => void;
+    readonly changeCredits: (credits: readonly CreditValue[]) => void;
     /** The current or newly chosen archive shown by the form. */
     readonly archive: Pick<ReleaseArchive, 'fileName' | 'size'> | null;
     readonly changeArchive: (file: File) => void;

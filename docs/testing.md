@@ -22,6 +22,7 @@ JUnit 5 with `spring-boot-starter-test`.
   - Each test JVM has one throwaway PostgreSQL and one Typesense (Testcontainers), started once and shared by all its contexts. The profile `fixtures` uses a database and a Typesense of its own, so the fixture data set never reaches the other tests.
   - A test either rolls back (`@Transactional`) or commits; after a class that commits, its database is reset to what the migrations make of it (`ResetDatabaseAfterCommittingTests`), so no class depends on what another left behind.
   - Test classes run in 4 parallel JVMs (`-Dit.forks=N` changes that; `-Dit.forks=1` runs them one by one, which also shows a test that depends on another).
+  - `OpenApiContractIT` checks that the OpenAPI document the frontend is typed from is the current one ([backend.md](backend.md#the-rest-contract-openapi)).
   - Test settings are in `src/test/resources/config/application.properties`: the search worker is off its schedule there, so a test drives it; Typesense fails a call at once instead of retrying.
 
 | Layer | Test |
@@ -36,6 +37,8 @@ JUnit 5 with `spring-boot-starter-test`.
 Vitest + React Testing Library. Tests sit next to the code: `{Component}.test.tsx`.
 Tests run inside the `frontend` container, which owns `node_modules`: `docker compose exec frontend npm test`.
 - Network is stubbed with the helpers from `shared/lib/test` (`stubFetch` answers in order, `stubFetchRoutes` by URL for blocks loading in parallel; `json`, `pageResponse`); test data is declared in the test itself — domain data never goes to `shared`.
+- The mocks of these helpers see each call as the path with its query and how it was sent (method, headers, the text of a JSON body, the form of a multipart one), though the API client sends a `Request`. A Request of Node cannot read the Blobs of jsdom, so `vitest.setup.ts` makes every Request keep the form it was made with (`keepSentForms`), and a test reads that.
+- An answer a test gives is the whole DTO of the contract (`satisfies components['schemas'][…]` where it is declared): the client checks no shape, so a missing field would break the test, not the code. A test of a malformed answer checks only a value the model refuses (an id that is no id, a type nobody knows).
 - Components that load or change data are rendered with `renderWithQueries(ui)` (`shared/lib/test`): every test gets a fresh query client, so no cache leaks between tests. Page tests create the client themselves and pass it to the route loader and to `renderWithQueries`.
 - System error paths are tested by subscribing with `subscribeSystemErrors` or by rendering `App`, which mounts the error dialog.
 Query elements the way a user finds them (role, label, text), not by CSS class or test id when an accessible query exists.

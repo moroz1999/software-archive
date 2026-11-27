@@ -16,12 +16,14 @@
     "lint:fsd": "steiger ./src",
     "lint:css": "stylelint \"src/**/*.css\" --allow-empty-input --max-warnings 0",
     "css:types": "tcm --pattern 'src/**/*.module.css' --namedExports=false",
-    "typecheck": "npm run css:types && tsc -b",
+    "api:types": "node scripts/api-types.mjs",
+    "typecheck": "npm run css:types && npm run api:types && tsc -b",
     "check": "npm run typecheck && npm run lint && npm run lint:css && npm run lint:fsd && npm test"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.107.1",
     "i18next": "^26.7.2",
+    "openapi-fetch": "^0.15.2",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-i18next": "^17.1.13",
@@ -47,6 +49,7 @@
     "eslint-plugin-testing-library": "^7.16.2",
     "globals": "^16.0.0",
     "jsdom": "^29.1.1",
+    "openapi-typescript": "^7.13.0",
     "steiger": "^0.6.0",
     "stylelint": "^17.16.0",
     "stylelint-config-css-modules": "^4.6.0",

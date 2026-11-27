@@ -1,5 +1,9 @@
 package com.archive.backend.importer.infra;
 
+import com.archive.backend.importer.domain.ExternalKind;
+import com.archive.backend.importer.domain.run.AddedPlace;
+import com.archive.backend.importer.domain.run.ImportLogEntry;
+import com.archive.backend.importer.domain.run.SkipReason;
 import com.archive.backend.importer.read.ImportRunAddedEntry;
 import com.archive.backend.importer.read.ImportRunAuthorEntry;
 import com.archive.backend.importer.read.ImportRunDownloadedEntry;
@@ -13,6 +17,7 @@ import com.archive.backend.importer.read.ImportRunProgressEntry;
 import com.archive.backend.importer.read.ImportRunReadRepository;
 import com.archive.backend.importer.read.ImportRunReport;
 import com.archive.backend.importer.read.ImportRunSkippedEntry;
+import com.archive.backend.software.domain.SoftwareSupplement;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -118,7 +123,7 @@ public class JdbcImportRunReadRepository implements ImportRunReadRepository {
                 new ImportRunDownloadedEntry(
                         text(e, "externalId"),
                         text(e, "title"),
-                        code(text(e, "file")),
+                        ImportLogEntry.DownloadedFile.valueOf(text(e, "file")).code(),
                         text(e, "name"),
                         e.get("size").asLong());
             case "ADDED" ->
@@ -126,7 +131,9 @@ public class JdbcImportRunReadRepository implements ImportRunReadRepository {
                         text(e, "externalId"), UUID.fromString(text(e, "softwareId")), text(e, "title"), present);
             case "KNOWN" -> {
                 List<String> supplements = new ArrayList<>();
-                e.get("supplements").forEach(code -> supplements.add(code(code.asText())));
+                e.get("supplements")
+                        .forEach(code -> supplements.add(
+                                SoftwareSupplement.valueOf(code.asText()).code()));
                 yield new ImportRunKnownEntry(
                         text(e, "externalId"),
                         UUID.fromString(text(e, "softwareId")),
@@ -139,17 +146,18 @@ public class JdbcImportRunReadRepository implements ImportRunReadRepository {
                         text(e, "externalId"),
                         text(e, "url"),
                         text(e, "title"),
-                        code(text(e, "reason")),
+                        SkipReason.valueOf(text(e, "reason")).code(),
                         text(e, "detail"));
             case "FAILED" -> new ImportRunFailedEntry(text(e, "externalId"), text(e, "url"), text(e, "reason"));
             case "AUTHOR" ->
                 new ImportRunAuthorEntry(
-                        code(text(e, "kind")),
+                        ExternalKind.valueOf(text(e, "kind")).code(),
                         UUID.fromString(text(e, "entityId")),
                         text(e, "name"),
                         e.get("created").asBoolean(),
                         present);
-            case "PLACE" -> new ImportRunPlaceEntry(code(text(e, "kind")), text(e, "name"));
+            case "PLACE" ->
+                new ImportRunPlaceEntry(AddedPlace.Kind.valueOf(text(e, "kind")).code(), text(e, "name"));
             default -> throw new IllegalStateException("Unknown kind of a log line: " + kind);
         };
     }
@@ -158,7 +166,7 @@ public class JdbcImportRunReadRepository implements ImportRunReadRepository {
         return entry.get(field).asText();
     }
 
-    /** RELEASE_DATE → release-date: codes go to the frontend in lower case, words joined by hyphens. */
+    /** LIST → list: the kind of a log line goes to the frontend in lower case. */
     private static String code(String name) {
         return name.toLowerCase(Locale.ROOT).replace('_', '-');
     }

@@ -1,4 +1,3 @@
-import type {HardwareCode, HardwareGroupCode} from '../model/hardware';
 
 /** Where the hardware reference book is kept in the app. */
 export const HARDWARE_PATH = '/management/hardware';
@@ -8,10 +7,10 @@ export const HARDWARE_GROUP_NEW_PATH = '/management/hardware/groups/new';
 export const HARDWARE_EDIT_ROUTE = '/management/hardware/:code/edit';
 export const HARDWARE_GROUP_EDIT_ROUTE = '/management/hardware/groups/:code/edit';
 
-export function hardwareEditPath(code: HardwareCode): string {
+export function hardwareEditPath(code: string): string {
     return `/management/hardware/${code}/edit`;
 }
 
-export function hardwareGroupEditPath(code: HardwareGroupCode): string {
+export function hardwareGroupEditPath(code: string): string {
     return `/management/hardware/groups/${code}/edit`;
 }

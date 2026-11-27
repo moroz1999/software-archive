@@ -1,5 +1,6 @@
 import {describe, expect, it} from 'vitest';
-import {RELEASE_TYPES, type ReleaseType} from '../model/release';
+import {releaseTypeValues} from '@/shared/api';
+import type {ReleaseType} from '../model/release';
 import {releaseTypeText} from './release-type';
 
 describe(releaseTypeText, () => {
@@ -22,6 +23,6 @@ describe(releaseTypeText, () => {
     });
 
     it('names every type', () => {
-        expect(RELEASE_TYPES).toHaveLength(13);
+        expect(releaseTypeValues).toHaveLength(13);
     });
 });

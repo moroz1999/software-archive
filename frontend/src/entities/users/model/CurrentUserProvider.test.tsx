@@ -1,7 +1,7 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import {useQuery} from '@tanstack/react-query';
-import {endSession, getJson, startSession, subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
+import {api, endSession, startSession} from '@/shared/api';
 import {json, noContent, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {CurrentUserProvider} from './CurrentUserProvider';
 import {useAbility, useCurrentUser} from './current-user-context';
@@ -26,7 +26,7 @@ function Abilities() {
 
 /** Shows what the page read, as everything a page shows depends on who reads it. */
 function Shown() {
-    const query = useQuery({queryKey: ['x'], queryFn: ({signal}) => getJson('/api/x', signal)});
+    const query = useQuery({queryKey: ['platforms'], queryFn: async ({signal}) => (await api.GET('/api/platforms', {signal})).data ?? null});
     return <p>{query.isSuccess ? 'Shown' : 'Loading'}</p>;
 }
 
@@ -55,28 +55,14 @@ describe(CurrentUserProvider, () => {
     });
 
     it('turns the user into a public visitor once the session ends', async () => {
-        const routes = new Map([['/api/auth/me', json(ZED)], ['/api/x', REQUIRED], ['/api/auth/refresh', EXPIRED]]);
+        const routes = new Map([['/api/auth/me', json(ZED)], ['/api/platforms', REQUIRED], ['/api/auth/refresh', EXPIRED]]);
         stubFetchRoutes(routes);
         renderWithQueries(<CurrentUserProvider><Who/></CurrentUserProvider>);
         await screen.findByText('Zed');
 
-        await getJson('/api/x').catch(() => undefined);
+        await api.GET('/api/platforms');
 
         await expect(screen.findByText('Visitor')).resolves.toBeInTheDocument();
-    });
-
-    it('hands an answer it cannot read to the error dialog and tells a public visitor', async () => {
-        const reports: SystemErrorReport[] = [];
-        const unsubscribe = subscribeSystemErrors((report) => {
-            reports.push(report);
-        });
-        stubFetchRoutes(new Map([['/api/auth/me', json({id: 'zed', name: 'Zed'})]]));
-        renderWithQueries(<CurrentUserProvider><Who/></CurrentUserProvider>);
-
-        await expect(screen.findByText('Visitor')).resolves.toBeInTheDocument();
-        expect(reports).toHaveLength(1);
-
-        unsubscribe();
     });
 
     it('tells what the signed-in user may do', async () => {
@@ -96,25 +82,25 @@ describe(CurrentUserProvider, () => {
     });
 
     it('reads again what the page shows once someone signs in', async () => {
-        const routes = new Map([['/api/auth/me', noContent()], ['/api/x', json({})], ['/api/auth/login', json({accessToken: 'access-jwt'})]]);
+        const routes = new Map([['/api/auth/me', noContent()], ['/api/platforms', json([])], ['/api/auth/login', json({accessToken: 'access-jwt'})]]);
         const fetchMock = stubFetchRoutes(routes);
         renderWithQueries(<CurrentUserProvider><Who/><Shown/></CurrentUserProvider>);
         await screen.findByText('Visitor');
         await screen.findByText('Shown');
 
-        expect(calls(fetchMock, '/api/x')).toBe(1);
+        expect(calls(fetchMock, '/api/platforms')).toBe(1);
 
         routes.set('/api/auth/me', json(ZED));
-        await startSession('/api/auth/login', {});
+        await startSession((client) => client.POST('/api/auth/login', {body: {login: 'Zed', password: 'secret', remember: false}}));
         await screen.findByText('Zed');
 
         await vi.waitFor(() => {
-            expect(calls(fetchMock, '/api/x')).toBe(2);
+            expect(calls(fetchMock, '/api/platforms')).toBe(2);
         });
     });
 
     it('reads again what the page shows once the user signs out', async () => {
-        const fetchMock = stubFetchRoutes(new Map([['/api/auth/me', json(ZED)], ['/api/x', json({})], ['/api/auth/logout', noContent()]]));
+        const fetchMock = stubFetchRoutes(new Map([['/api/auth/me', json(ZED)], ['/api/platforms', json([])], ['/api/auth/logout', noContent()]]));
         renderWithQueries(<CurrentUserProvider><Who/><Shown/></CurrentUserProvider>);
         await screen.findByText('Zed');
         await screen.findByText('Shown');
@@ -122,16 +108,16 @@ describe(CurrentUserProvider, () => {
         await screen.findByText('Visitor');
 
         await vi.waitFor(() => {
-            expect(calls(fetchMock, '/api/x')).toBe(2);
+            expect(calls(fetchMock, '/api/platforms')).toBe(2);
         });
     });
 
     it('reads what the page shows once, after it is known who signed in', async () => {
-        const fetchMock = stubFetchRoutes(new Map([['/api/auth/me', json(ZED)], ['/api/x', json({})]]));
+        const fetchMock = stubFetchRoutes(new Map([['/api/auth/me', json(ZED)], ['/api/platforms', json([])]]));
         renderWithQueries(<CurrentUserProvider><Who/><Shown/></CurrentUserProvider>);
         await screen.findByText('Zed');
         await screen.findByText('Shown');
 
-        expect(fetchMock.mock.calls.map(([input]) => input)).toStrictEqual(['/api/auth/me', '/api/x']);
+        expect(fetchMock.mock.calls.map(([input]) => input)).toStrictEqual(['/api/auth/me', '/api/platforms']);
     });
 });

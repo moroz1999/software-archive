@@ -1,13 +1,12 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import {json, renderWithQueries, stubFetch} from '@/shared/lib/test';
-import {toSoftwareId} from '../model/software';
 import {SoftwareReleasesProvider} from '../model/SoftwareReleasesProvider';
 import {SoftwareReleases} from './SoftwareReleases';
 
 vi.unmock('@/shared/lib/loading/skeleton-timing');
 
-const ID = toSoftwareId('00000000-0000-0000-0001-000000000001');
+const ID = '00000000-0000-0000-0001-000000000001';
 
 describe(SoftwareReleases, () => {
     afterEach(() => {

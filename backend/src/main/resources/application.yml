@@ -29,6 +29,13 @@ spring:
     # a database seeded with them must still start without it.
     ignore-migration-patterns: "*:future,repeatable:missing"
 
+springdoc:
+  # The OpenAPI document the frontend is typed from: JSON answers, keys in a stable order for a readable diff.
+  default-produces-media-type: application/json
+  writer-with-order-by-keys: true
+  # A Pageable is its query parameters (page, size, sort), not one object.
+  default-flat-param-object: true
+
 screenshots:
   # Business data like the database: kept outside the build, backed up with it.
   storage-path: ../upload/images

@@ -1,7 +1,6 @@
 import {type ReactNode, useState} from 'react';
 import {type BusinessError, type BusinessMessages, splitRefusal, unedited} from '@/shared/api';
 import type {UiLanguage} from '@/shared/lib/i18n';
-import type {CategoryId} from './category';
 import {type CategoryDraft, type CategoryFormErrors, type CategoryFormValues, toCategoryFormValues, validateCategoryForm} from './category-form';
 import {CategoryFormContext, type CategoryFormState} from './category-form-context';
 
@@ -10,7 +9,7 @@ export interface CategoryFormProviderProps {
     readonly onSubmit: (draft: CategoryDraft) => void;
     readonly initial?: CategoryFormValues;
     /** The category being edited, none for a new one. */
-    readonly editing?: CategoryId;
+    readonly editing?: string;
     readonly busy?: boolean;
     /** Why the last submit was refused (docs/error-handling.md). */
     readonly error?: BusinessError | undefined;

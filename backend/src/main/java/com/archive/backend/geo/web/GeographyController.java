@@ -111,6 +111,7 @@ public class GeographyController {
         return webMapper.toDetails(getCountryHandler.handle(new GetCountryQuery(new CountryId(id))));
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/api/countries")
     public ResponseEntity<PlaceCreatedDto> createCountry(Actor actor, @RequestBody PlaceRequestDto request) {
         UUID id = createCountryHandler
@@ -136,6 +137,7 @@ public class GeographyController {
         return webMapper.toDetails(getCityHandler.handle(new GetCityQuery(new CityId(id))));
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/api/cities")
     public ResponseEntity<PlaceCreatedDto> createCity(Actor actor, @RequestBody PlaceRequestDto request) {
         UUID id =
@@ -157,6 +159,7 @@ public class GeographyController {
     }
 
     /** Turns a city of no known country into a country of its names and coordinates; the city goes. */
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/api/cities/{id}/to-country")
     public ResponseEntity<PlaceCreatedDto> turnCityIntoCountry(Actor actor, @PathVariable UUID id) {
         UUID country = turnCityIntoCountryHandler

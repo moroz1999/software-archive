@@ -1,19 +1,17 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {toLabelId} from '@/entities/labels';
-import {toGroupId, type GroupId} from '@/entities/groups';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, noContent, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
 import {AttachLabelToGroupDialog} from './AttachLabelToGroupDialog';
 
-const LABEL = {id: toLabelId('00000000-0000-0000-0004-000000000001'), name: 'Ghost'};
+const LABEL = {id: '00000000-0000-0000-0004-000000000001', name: 'Ghost'};
 const GHOSTS = '00000000-0000-0000-0005-000000000001';
 const LOOKUP = new Map([
     ['/api/entity-lookup?types=group&query=ghosts', json({items: [{id: GHOSTS, type: 'group', title: 'Ghosts'}]})],
 ]);
 
-function openDialog(onAttached = vi.fn<(group: GroupId) => void>(), onClose = vi.fn<() => void>()) {
+function openDialog(onAttached = vi.fn<(group: string) => void>(), onClose = vi.fn<() => void>()) {
     renderWithQueries(<AttachLabelToGroupDialog open label={LABEL} onClose={onClose} onAttached={onAttached}/>);
 }
 
@@ -40,13 +38,13 @@ describe(AttachLabelToGroupDialog, () => {
 
     it('makes the label a label of the group found among groups only and hands over the group', async () => {
         const fetchMock = stubFetchAround(LOOKUP, noContent());
-        const onAttached = vi.fn<(group: GroupId) => void>();
+        const onAttached = vi.fn<(group: string) => void>();
         openDialog(onAttached);
 
         await chooseGhostsAndAttach();
 
         await vi.waitFor(() => {
-            expect(onAttached).toHaveBeenCalledExactlyOnceWith(toGroupId(GHOSTS));
+            expect(onAttached).toHaveBeenCalledExactlyOnceWith(GHOSTS);
         });
 
         expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/labels/${LABEL.id}/attach-to-group`);
@@ -92,7 +90,7 @@ describe(AttachLabelToGroupDialog, () => {
 
     it('asks to be closed by Cancel', async () => {
         const onClose = vi.fn<() => void>();
-        openDialog(vi.fn<(group: GroupId) => void>(), onClose);
+        openDialog(vi.fn<(group: string) => void>(), onClose);
 
         await userEvent.click(screen.getByRole('button', {name: 'Cancel'}));
 

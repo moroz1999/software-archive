@@ -1,9 +1,8 @@
-import type {LabelId} from '@/entities/labels';
 import {createRequiredContext} from '@/shared/lib/context';
 
 /** The label to delete, under its name. */
 export interface DeletedLabel {
-    readonly id: LabelId;
+    readonly id: string;
     readonly name: string;
 }
 

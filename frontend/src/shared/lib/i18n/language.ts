@@ -2,6 +2,11 @@ export type UiLanguage = 'en' | 'ru';
 
 export const SUPPORTED_UI_LANGUAGES: readonly UiLanguage[] = ['en', 'ru'];
 
+/** A value for every UI language, such as the texts of a form in each of them. */
+export function perUiLanguage<T>(value: (language: UiLanguage) => T): Record<UiLanguage, T> {
+    return {en: value('en'), ru: value('ru')};
+}
+
 const STORAGE_KEY = 'archive.language';
 
 /** A supported UI language from a language tag such as `ru-RU`. */

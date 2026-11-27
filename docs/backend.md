@@ -58,6 +58,17 @@ Cross-domain configuration lives in `shared/config`.
 
 Use cases and the domain signal failures by throwing business exceptions; one `@RestControllerAdvice` in `shared/web` turns exceptions into REST statuses and `ProblemDetail` bodies. Controllers never catch exceptions — see [error-handling.md](error-handling.md).
 
+### The REST contract (OpenAPI)
+
+The backend serves its OpenAPI document at `/v3/api-docs` (springdoc); the frontend is typed from it ([frontend.md](frontend.md#data-loading)). The document must say exactly what the code sends, so:
+
+- Every component of a DTO record is required — Jackson always writes it. A component marked `@Nullable` may be `null`; no other one ever is (`ContractModelConverter`).
+- A nested record is named after its enclosing DTO (`SoftwareDetailsDto.AddedDto`), so records of one simple name stay apart.
+- A field whose value is one of a fixed set of the domain refers to that set by name: `@Schema(ref = "ReleaseType")`, a list `@ArraySchema(schema = @Schema(ref = "CreditRole"))`, a query parameter `@Parameter(schema = …)`. The set is registered once in `OpenApiConfig.VALUE_SETS`, taken from the code that holds it — the `code()` of a domain enum (`EnumCodes`) or a list of the domain (`SoftwareCreditDraft.ALLOWED_ROLES`) — in the order the domain gives; the frontend takes it from there and never lists it again. Only the discriminator of a variant keeps a literal `@Schema(allowableValues = …)`. A field of several shapes is a sealed interface of records, one per shape, with `@Schema(oneOf, discriminatorProperty, discriminatorMapping)`; never `Object` or `List<?>`. A `@JsonRawValue` string carries its JSON shape in `@Schema`.
+- A method answering other than `200` says so: `@ResponseStatus` (`201` for `ResponseEntity.created`, `204`, `202`), `@ApiResponse` for a file or for answers of several statuses. The error answers come from the `@ResponseStatus` of the `ApiExceptionHandler` methods.
+- `Actor` and `Language` are resolved from the request and are no parameters of the contract; a `Pageable` is its query parameters.
+- `OpenApiContractIT` fails while the document kept in the frontend differs from the served one; `make api-types` writes it and generates the frontend types.
+
 ## Shared building blocks
 
 - `shared/domain` — the shared kernel: concepts of the archive used by several domains, such as `Title`, the abstract value object of every title, and `Language`, a language of the site: of its interface, of the letters to users and of the names kept in several languages.

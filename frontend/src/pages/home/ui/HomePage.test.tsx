@@ -2,12 +2,12 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import {createMemoryRouter, RouterProvider} from 'react-router';
 import {PlatformSelectionProvider} from '@/entities/platforms';
-import {createQueryClient} from '@/shared/api';
+import {type components, createQueryClient} from '@/shared/api';
 import {CurrentUserProvider} from '@/entities/users';
 import {json, noContent, pageResponse, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {loadHomePage, preloadHomePage} from '../index';
 
-const ELITE = {id: '00000000-0000-0000-0001-000000000001', title: 'Elite', releaseDate: '1984-09-20'};
+const ELITE = {id: '00000000-0000-0000-0001-000000000001', title: 'Elite', releaseDate: '1984-09-20', screenshots: [], madeBy: [], rating: 0, votesAmount: 0} satisfies components['schemas']['SoftwareListItemDto'];
 
 describe('HomePage', () => {
     afterEach(() => {

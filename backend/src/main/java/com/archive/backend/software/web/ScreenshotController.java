@@ -13,6 +13,9 @@ import com.archive.backend.software.web.dto.ScreenshotDto;
 import com.archive.backend.software.web.dto.ScreenshotOrderDto;
 import com.archive.backend.software.web.mapper.ScreenshotWebMapper;
 import com.archive.backend.user.domain.Actor;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
@@ -151,6 +154,10 @@ public class ScreenshotController {
 
     /** The picture as it was uploaded. */
     @GetMapping("/api/screenshots/{id}")
+    @ApiResponse(
+            responseCode = "200",
+            description = "The picture as it was uploaded",
+            content = @Content(mediaType = "image/*", schema = @Schema(type = "string", format = "binary")))
     public ResponseEntity<Resource> picture(@PathVariable UUID id) {
         ScreenshotFile file = fileHandler.handle(new GetScreenshotFileQuery(new ScreenshotId(id)));
         return ResponseEntity.ok()

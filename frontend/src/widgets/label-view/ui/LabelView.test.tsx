@@ -5,7 +5,6 @@ import {createMemoryRouter, RouterProvider, useParams} from 'react-router';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {CurrentUserProvider} from '@/entities/users';
 import {breadcrumbSteps, json, noContent, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
-import {toLabelId} from '@/entities/labels';
 import {LabelView} from './LabelView';
 
 const ID = '00000000-0000-0000-0004-000000000001';
@@ -27,7 +26,7 @@ const RELEASE = '00000000-0000-0000-0007-000000000031';
 /** The label under test, and the page of any other label it leads to. */
 function LabelRoute() {
     const {id} = useParams();
-    return id === ID ? <LabelView id={toLabelId(ID)}/> : <p>Other label page</p>;
+    return id === ID ? <LabelView id={ID}/> : <p>Other label page</p>;
 }
 
 function openLabel() {

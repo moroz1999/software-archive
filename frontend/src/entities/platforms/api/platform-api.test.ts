@@ -1,5 +1,4 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {SystemError} from '@/shared/api';
 import {json, stubFetch} from '@/shared/lib/test';
 import {fetchPlatforms} from './platform-api';
 
@@ -16,11 +15,5 @@ describe(fetchPlatforms, () => {
             {code: 'bk', name: 'BK'},
         ]);
         expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/platforms');
-    });
-
-    it('fails with a system error on a malformed answer', async () => {
-        stubFetch(json([{code: 'Not a code', name: 'Agat'}]));
-
-        await expect(fetchPlatforms(new AbortController().signal)).rejects.toBeInstanceOf(SystemError);
     });
 });

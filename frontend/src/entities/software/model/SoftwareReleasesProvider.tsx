@@ -1,11 +1,10 @@
 import type {ReactNode} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {softwareReleasesQuery} from '../api/software-queries';
-import type {SoftwareId} from './software';
 import {SoftwareReleasesContext} from './software-releases-context';
 
 export interface SoftwareReleasesProviderProps {
-    readonly id: SoftwareId;
+    readonly id: string;
     /** The block has come into view: only then are the releases asked for (docs/data-loading.md). */
     readonly enabled: boolean;
     readonly children: ReactNode;

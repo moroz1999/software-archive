@@ -1,8 +1,6 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {SystemError} from '@/shared/api';
 import {json, pageResponse, stubFetch} from '@/shared/lib/test';
 import {parseCatalogFilter} from '../model/catalog-filter';
-import {toPlatformCode} from '@/entities/platforms';
 import {fetchAuthorCatalogPage} from './catalog-api';
 
 const PERSON = '00000000-0000-0000-0003-000000000001';
@@ -24,7 +22,7 @@ describe(fetchAuthorCatalogPage, () => {
         const page = await fetchAuthorCatalogPage(parseCatalogFilter(new URLSearchParams()), null, new AbortController().signal);
 
         expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/authors?page=0');
-        expect(page.items).toStrictEqual([
+        expect(page.content).toStrictEqual([
             {kind: 'label', labelId: LABEL, name: 'Axe', note: 'John Doe'},
             {kind: 'person', personId: PERSON, name: 'John Doe', note: 'Zed'},
         ]);
@@ -41,14 +39,8 @@ describe(fetchAuthorCatalogPage, () => {
     it('asks only for the entries of the chosen platform', async () => {
         const fetchMock = stubFetch(json(pageResponse([])));
 
-        await fetchAuthorCatalogPage(parseCatalogFilter(new URLSearchParams('letter=A')), toPlatformCode('bk'), new AbortController().signal);
+        await fetchAuthorCatalogPage(parseCatalogFilter(new URLSearchParams('letter=A')), 'bk', new AbortController().signal);
 
         expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/authors?page=0&letter=A&platform=bk');
-    });
-
-    it('fails with a system error on a malformed answer', async () => {
-        stubFetch(json(pageResponse([{personId: 'nope', labelId: null, name: 'Axe', note: null}])));
-
-        await expect(fetchAuthorCatalogPage(parseCatalogFilter(new URLSearchParams()), null, new AbortController().signal)).rejects.toBeInstanceOf(SystemError);
     });
 });

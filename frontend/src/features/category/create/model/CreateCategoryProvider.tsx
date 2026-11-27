@@ -1,12 +1,12 @@
 import type {ReactNode} from 'react';
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useTranslation} from 'react-i18next';
-import {CATEGORY_QUERY_KEY, type CategoryId, CategoryFormProvider, createCategory} from '@/entities/categories';
+import {CATEGORY_QUERY_KEY, CategoryFormProvider, createCategory} from '@/entities/categories';
 import {businessErrorOf} from '@/shared/api';
 import {createCategoryMessages} from '../config/messages';
 
 export interface CreateCategoryProviderProps {
-    readonly onCreated: (id: CategoryId) => void;
+    readonly onCreated: (id: string) => void;
     readonly children: ReactNode;
 }
 

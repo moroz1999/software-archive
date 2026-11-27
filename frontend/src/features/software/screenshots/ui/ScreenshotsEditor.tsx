@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {galleryKey, SCREENSHOT_TYPES, type ScreenshotId} from '@/entities/software';
+import {galleryKey, SCREENSHOT_TYPES} from '@/entities/software';
 import {useSkeleton} from '@/shared/lib/loading';
 import {Button} from '@/shared/ui/button';
 import {ConfirmDialog} from '@/shared/ui/confirm-dialog';
@@ -40,7 +40,7 @@ function ScreenshotList() {
     const {t} = useTranslation();
     const {gallery, query, remove, busy, deleteError, deleted} = useEditScreenshots();
     // Which deletion is being asked about is the dialog's own UI state, not business state.
-    const [asking, setAsking] = useState<{readonly id: ScreenshotId; readonly n: number} | null>(null);
+    const [asking, setAsking] = useState<{readonly id: string; readonly n: number} | null>(null);
     const screenshots = query.data ?? [];
 
     if (screenshots.length === 0) {

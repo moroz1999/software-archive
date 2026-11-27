@@ -1,4 +1,5 @@
 import type {ReactNode} from 'react';
+import {groupMemberRoleValues} from '@/shared/api';
 import {useTranslation} from 'react-i18next';
 import {Button} from '@/shared/ui/button';
 import {Form, FormActions, FormField, FormMessage, FormSection} from '@/shared/ui/form';
@@ -47,7 +48,7 @@ export function GroupForm({submitLabel, labels, locations, sources, actions}: Gr
                     value={values.members ?? []}
                     onChange={changeMembers}
                     search={fetchGroupPeople}
-                    roles={GROUP_MEMBER_ROLES.map((code) => ({code, title: t(`roles.group.${code}`)}))}
+                    roles={groupMemberRoleValues.map((code) => ({code, title: t(`roles.group.${code}`)}))}
                     disabled={busy}
                     error={refusals.members}
                 />
@@ -60,7 +61,3 @@ export function GroupForm({submitLabel, labels, locations, sources, actions}: Gr
         </Form>
     );
 }
-
-const GROUP_MEMBER_ROLES = [
-    'coder', 'cracker', 'graphician', 'hardware', 'musician', 'organizer', 'support', 'tester', 'gamedesigner', 'unknown',
-] as const;

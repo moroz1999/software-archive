@@ -1,5 +1,7 @@
 package com.archive.backend.software.web.dto;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -16,5 +18,9 @@ public record CreditedSoftwareDto(
         int votesAmount) {
 
     /** {@code as} names the label of the credit when it is not the main name of the person or the group. */
-    public record OwnCreditDto(@Nullable String as, List<String> roles) {}
+    public record OwnCreditDto(
+            @Nullable String as,
+
+            @ArraySchema(schema = @Schema(ref = "CreditRole"))
+            List<String> roles) {}
 }

@@ -1,19 +1,19 @@
 import {FormField} from '@/shared/ui/form';
 import {Inline} from '@/shared/ui/inline';
 import {Select} from '@/shared/ui/select';
-import {type City, type CityId, type Country, type CountryId, toCityId, toCountryId} from '../model/geo';
+import {type City, type Country} from '../model/geo';
 import styles from './PlaceFilters.module.css';
 
 export interface PlaceFiltersProps {
-    readonly country: CountryId | null;
-    readonly city: CityId | null;
+    readonly country: string | null;
+    readonly city: string | null;
     /** Undefined while they load or when they failed: the filter is locked. */
     readonly countries: readonly Country[] | undefined;
     /** The cities of the chosen country; undefined while none is chosen or while they load. */
     readonly cities: readonly City[] | undefined;
     readonly disabled: boolean;
     /** Another country forgets the city. */
-    readonly onChange: (country: CountryId | null, city: CityId | null) => void;
+    readonly onChange: (country: string | null, city: string | null) => void;
 }
 
 /** Country and City to narrow a list by place: City offers the cities of the chosen country. */
@@ -29,7 +29,7 @@ export function PlaceFilters({country, city, countries, cities, disabled, onChan
                         id={control.id}
                         value={country ?? ''}
                         onChange={(value) => {
-                            onChange(value === '' ? null : toCountryId(value), null);
+                            onChange(value === '' ? null : value, null);
                         }}
                         options={countryOptions}
                         placeholder={t('filters.anyCountry')}
@@ -43,7 +43,7 @@ export function PlaceFilters({country, city, countries, cities, disabled, onChan
                         id={control.id}
                         value={city ?? ''}
                         onChange={(value) => {
-                            onChange(country, value === '' ? null : toCityId(value));
+                            onChange(country, value === '' ? null : value);
                         }}
                         options={cityOptions}
                         placeholder={t('filters.anyCity')}

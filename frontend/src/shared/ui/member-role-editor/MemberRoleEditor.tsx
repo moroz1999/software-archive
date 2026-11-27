@@ -10,28 +10,29 @@ import {MultiEntityAutocomplete, type EntityAutocompleteOption} from '../multi-e
 import {Text} from '../typography';
 import styles from './MemberRoleEditor.module.css';
 
-export interface MemberRoleValue extends EntityAutocompleteOption {
-    readonly roles: readonly string[];
-}
+/** A found person or alias with the roles chosen for it. */
+export type MemberRoleValue<Option extends EntityAutocompleteOption = EntityAutocompleteOption, Role extends string = string> = Option & {
+    readonly roles: readonly Role[];
+};
 
-export interface MemberRoleOption {
-    readonly code: string;
+export interface MemberRoleOption<Role extends string = string> {
+    readonly code: Role;
     readonly title: string;
 }
 
-export interface MemberRoleEditorProps {
+export interface MemberRoleEditorProps<Option extends EntityAutocompleteOption, Role extends string> {
     readonly label: string;
-    readonly value: readonly MemberRoleValue[];
-    readonly roles: readonly MemberRoleOption[];
-    readonly search: (query: string, signal: AbortSignal) => Promise<readonly EntityAutocompleteOption[]>;
-    readonly onChange: (value: readonly MemberRoleValue[]) => void;
+    readonly value: readonly MemberRoleValue<Option, Role>[];
+    readonly roles: readonly MemberRoleOption<Role>[];
+    readonly search: (query: string, signal: AbortSignal) => Promise<readonly Option[]>;
+    readonly onChange: (value: readonly MemberRoleValue<Option, Role>[]) => void;
     readonly disabled?: boolean;
     readonly error?: string | undefined;
 }
 
 /** People or their aliases as a grid of cards, each with the roles chosen for it; new ones are found under the grid. */
-export function MemberRoleEditor({label, value, roles, search, onChange, disabled = false, error}: MemberRoleEditorProps) {
-    function add(options: readonly EntityAutocompleteOption[]) {
+export function MemberRoleEditor<Option extends EntityAutocompleteOption, Role extends string>({label, value, roles, search, onChange, disabled = false, error}: MemberRoleEditorProps<Option, Role>) {
+    function add(options: readonly Option[]) {
         const option = options[0];
         // A member already on a card is not added twice.
         if (option === undefined || value.some((member) => member.type === option.type && member.id === option.id)) {
@@ -40,7 +41,7 @@ export function MemberRoleEditor({label, value, roles, search, onChange, disable
         onChange([...value, {...option, roles: []}]);
     }
 
-    function replace(index: number, member: MemberRoleValue) {
+    function replace(index: number, member: MemberRoleValue<Option, Role>) {
         onChange(value.map((current, currentIndex) => currentIndex === index ? member : current));
     }
 
@@ -76,11 +77,11 @@ export function MemberRoleEditor({label, value, roles, search, onChange, disable
     );
 }
 
-function MemberCard({member, roles, disabled, onChange, onRemove}: {
-    readonly member: MemberRoleValue;
-    readonly roles: readonly MemberRoleOption[];
+function MemberCard<Option extends EntityAutocompleteOption, Role extends string>({member, roles, disabled, onChange, onRemove}: {
+    readonly member: MemberRoleValue<Option, Role>;
+    readonly roles: readonly MemberRoleOption<Role>[];
     readonly disabled: boolean;
-    readonly onChange: (value: MemberRoleValue) => void;
+    readonly onChange: (value: MemberRoleValue<Option, Role>) => void;
     readonly onRemove: () => void;
 }) {
     const {t} = useTranslation();
@@ -122,12 +123,12 @@ function MemberCard({member, roles, disabled, onChange, onRemove}: {
 }
 
 /** A search field over the roles left to choose; it stays open after a pick, so roles are added one after another. */
-function RolePicker({id, label, roles, disabled, onPick}: {
+function RolePicker<Role extends string>({id, label, roles, disabled, onPick}: {
     readonly id: string;
     readonly label: string;
-    readonly roles: readonly MemberRoleOption[];
+    readonly roles: readonly MemberRoleOption<Role>[];
     readonly disabled: boolean;
-    readonly onPick: (code: string) => void;
+    readonly onPick: (code: Role) => void;
 }) {
     const {t} = useTranslation();
     const [query, setQuery] = useState('');
@@ -138,7 +139,7 @@ function RolePicker({id, label, roles, disabled, onPick}: {
     const needle = query.trim().toLocaleLowerCase();
     const options = roles.filter((role) => role.title.toLocaleLowerCase().includes(needle));
 
-    function pick(role: MemberRoleOption) {
+    function pick(role: MemberRoleOption<Role>) {
         onPick(role.code);
         setQuery('');
         setActive(-1);

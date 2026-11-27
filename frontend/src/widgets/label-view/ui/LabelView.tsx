@@ -1,9 +1,9 @@
 import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router';
-import {type AuthorId, authorPath, AUTHORS_PATH, toAuthorId} from '@/entities/authors';
-import {type GroupId, groupPath, toGroupId} from '@/entities/groups';
-import {type LabelDetails, LabelDetailsProvider, labelEditPath, type LabelId, type LabelOwner, labelPath, useLabelDetails} from '@/entities/labels';
+import {authorPath, AUTHORS_PATH} from '@/entities/authors';
+import {groupPath} from '@/entities/groups';
+import {type LabelDetails, LabelDetailsProvider, labelEditPath, type LabelOwner, labelPath, useLabelDetails} from '@/entities/labels';
 import {locationText, primaryFirst} from '@/entities/locations';
 import {CreditedReleaseList, CreditedSoftwareList} from '@/entities/software';
 import {SoftwareCard} from '@/features/software/vote';
@@ -21,7 +21,7 @@ import {Text, TextLink} from '@/shared/ui/typography';
 import styles from './LabelView.module.css';
 
 export interface LabelViewProps {
-    readonly id: LabelId;
+    readonly id: string;
 }
 
 /**
@@ -38,7 +38,7 @@ export function LabelView({id}: LabelViewProps) {
 }
 
 function ownerPath(owner: LabelOwner): string {
-    return owner.type === 'author' ? authorPath(toAuthorId(owner.id)) : groupPath(toGroupId(owner.id));
+    return owner.type === 'author' ? authorPath(owner.id) : groupPath(owner.id);
 }
 
 function LoadedView() {
@@ -69,13 +69,13 @@ function LoadedView() {
     const openOwner = (owner: LabelOwner) => {
         void navigate(ownerPath(owner));
     };
-    const openGroup = (group: GroupId) => {
+    const openGroup = (group: string) => {
         void navigate(groupPath(group));
     };
-    const openAuthor = (author: AuthorId) => {
+    const openAuthor = (author: string) => {
         void navigate(authorPath(author));
     };
-    const openLabel = (other: LabelId) => {
+    const openLabel = (other: string) => {
         void navigate(labelPath(other));
     };
     const close = () => {
@@ -159,7 +159,7 @@ function Details({label}: {readonly label: LabelDetails}) {
                     <Text variant="label" tone="muted">{t('group.memberOf')}</Text>
                     <Stack as="ul" gap="xs" ariaLabel={t('group.memberOf')}>
                         {label.groups.map((group) => (
-                            <li key={group.id}><Text><TextLink href={groupPath(toGroupId(group.id))}>{group.name}</TextLink></Text></li>
+                            <li key={group.id}><Text><TextLink href={groupPath(group.id)}>{group.name}</TextLink></Text></li>
                         ))}
                     </Stack>
                 </Stack>

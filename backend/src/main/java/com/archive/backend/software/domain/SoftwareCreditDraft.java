@@ -4,7 +4,6 @@ import com.archive.backend.shared.domain.error.InvalidValueException;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -15,7 +14,8 @@ public record SoftwareCreditDraft(SoftwareReference participant, List<String> ro
 
     private static final String UNKNOWN = "unknown";
 
-    public static final Set<String> ALLOWED_ROLES = Set.of(
+    /** The roles of a credit, in the order a form offers them: developing and publishing first. */
+    public static final List<String> ALLOWED_ROLES = List.of(
             "unknown",
             "developer",
             "publisher",

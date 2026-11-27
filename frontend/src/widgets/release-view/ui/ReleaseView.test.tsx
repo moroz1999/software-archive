@@ -4,7 +4,6 @@ import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {breadcrumbSteps, json, noContent, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
-import {toReleaseId, toSoftwareId} from '@/entities/software';
 import {ReleaseView} from './ReleaseView';
 
 const ID = '00000000-0000-0000-0001-000000000001';
@@ -18,7 +17,7 @@ const ELITE = {
     hardware: [],
     categories: [],
     credits: [],
-    sources: [], preservation: 'unknown',
+    sources: [], preservation: 'unknown', instructions: null, compilationItems: [], compilations: [],
     origins: [], added: {by: 'Admin', at: '2026-01-01T00:00:00Z'},
     canChange: false,
 };
@@ -32,6 +31,7 @@ const AY_MOD = {
     hardware: [],
     screenshots: [],
     archive: null,
+    credits: [],
     added: {by: 'Zork', at: '2026-03-04T05:06:07Z'},
     canChange: false,
 };
@@ -49,7 +49,7 @@ function renderView(release: object) {
         [`/api/software/${ID}/releases`, json([release])],
         [`/api/software/${ID}/releases/${RELEASE}/screenshots`, json([])],
     ]));
-    renderWithQueries(<MemoryRouter><ReleaseView softwareId={toSoftwareId(ID)} releaseId={toReleaseId(RELEASE)}/></MemoryRouter>);
+    renderWithQueries(<MemoryRouter><ReleaseView softwareId={ID} releaseId={RELEASE}/></MemoryRouter>);
 }
 
 describe(ReleaseView, () => {
@@ -69,7 +69,7 @@ describe(ReleaseView, () => {
                 return noContent()();
             }],
         ]));
-        renderWithQueries(<MemoryRouter><ReleaseView softwareId={toSoftwareId(ID)} releaseId={toReleaseId(RELEASE)}/></MemoryRouter>);
+        renderWithQueries(<MemoryRouter><ReleaseView softwareId={ID} releaseId={RELEASE}/></MemoryRouter>);
 
         const screenshots = await screen.findByRole('region', {name: 'Screenshots'});
 
@@ -93,7 +93,7 @@ describe(ReleaseView, () => {
             [`/api/software/${ID}/releases`, json([AY_MOD])],
             [`/api/software/${ID}/releases/${RELEASE}/screenshots`, json([FIRST_SHOT, SECOND_SHOT])],
         ]));
-        renderWithQueries(<MemoryRouter><ReleaseView softwareId={toSoftwareId(ID)} releaseId={toReleaseId(RELEASE)}/></MemoryRouter>);
+        renderWithQueries(<MemoryRouter><ReleaseView softwareId={ID} releaseId={RELEASE}/></MemoryRouter>);
 
         const screenshots = await screen.findByRole('region', {name: 'Screenshots'});
         await within(screenshots).findAllByRole('button', {name: /^Screenshot \d of 2$/u});
@@ -178,7 +178,7 @@ describe(ReleaseView, () => {
             }})],
             [`/api/software/${ID}/releases/${RELEASE}/screenshots`, json([])],
         ]));
-        renderWithQueries(<MemoryRouter><ReleaseView softwareId={toSoftwareId(ID)} releaseId={toReleaseId(RELEASE)}/></MemoryRouter>);
+        renderWithQueries(<MemoryRouter><ReleaseView softwareId={ID} releaseId={RELEASE}/></MemoryRouter>);
 
         const tree = await screen.findByRole('list', {name: 'File structure'});
 
@@ -209,7 +209,7 @@ describe(ReleaseView, () => {
             }})],
             [`/api/software/${ID}/releases/${RELEASE}/screenshots`, json([])],
         ]));
-        renderWithQueries(<MemoryRouter><ReleaseView softwareId={toSoftwareId(ID)} releaseId={toReleaseId(RELEASE)}/></MemoryRouter>);
+        renderWithQueries(<MemoryRouter><ReleaseView softwareId={ID} releaseId={RELEASE}/></MemoryRouter>);
 
         await expect(screen.findByText('The file could not be read')).resolves.toBeInTheDocument();
         expect(screen.getByText('File structure')).toBeInTheDocument();
@@ -226,7 +226,7 @@ describe(ReleaseView, () => {
             [`/api/software/${ID}/releases/${RELEASE}/files`, json({root: null})],
             [`/api/software/${ID}/releases/${RELEASE}/screenshots`, json([])],
         ]));
-        renderWithQueries(<MemoryRouter><ReleaseView softwareId={toSoftwareId(ID)} releaseId={toReleaseId(RELEASE)}/></MemoryRouter>);
+        renderWithQueries(<MemoryRouter><ReleaseView softwareId={ID} releaseId={RELEASE}/></MemoryRouter>);
 
         await expect(screen.findByText('Waiting for the structure to be parsed')).resolves.toBeInTheDocument();
         expect(screen.getByText('File structure')).toBeInTheDocument();
@@ -252,7 +252,7 @@ describe(ReleaseView, () => {
             }],
             [`/api/software/${ID}/releases/${RELEASE}/screenshots`, json([])],
         ]));
-        renderWithQueries(<MemoryRouter><ReleaseView softwareId={toSoftwareId(ID)} releaseId={toReleaseId(RELEASE)}/></MemoryRouter>);
+        renderWithQueries(<MemoryRouter><ReleaseView softwareId={ID} releaseId={RELEASE}/></MemoryRouter>);
 
         await userEvent.click(await screen.findByRole('button', {name: 'Parse again'}));
 
@@ -277,7 +277,7 @@ describe(ReleaseView, () => {
         ]));
 
         try {
-            renderWithQueries(<MemoryRouter><ReleaseView softwareId={toSoftwareId(ID)} releaseId={toReleaseId(RELEASE)}/></MemoryRouter>);
+            renderWithQueries(<MemoryRouter><ReleaseView softwareId={ID} releaseId={RELEASE}/></MemoryRouter>);
 
             await vi.waitFor(() => {
                 expect(reports).toHaveLength(1);

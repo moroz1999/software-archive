@@ -1,5 +1,6 @@
 package com.archive.backend.assistant.domain.chat;
 
+import com.archive.backend.shared.domain.EnumCodes;
 import com.archive.backend.shared.domain.ddd.ValueObject;
 
 @ValueObject
@@ -12,6 +13,11 @@ public enum RunStatus {
     WAITING_APPROVAL,
     FAILED,
     STOPPED;
+
+    /** The code it is known by outside the backend: {@code WAITING_APPROVAL} as {@code waitingApproval}. */
+    public String code() {
+        return EnumCodes.camel(this);
+    }
 
     public boolean active() {
         return this == QUEUED || this == RUNNING;

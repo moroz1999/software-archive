@@ -1,7 +1,6 @@
 import {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import type {CategoryId, CategoryNode} from '@/entities/categories';
-import {toCityId, toCountryId} from '@/entities/locations';
+import type {CategoryNode} from '@/entities/categories';
 import {type SoftwareCardComponent, SoftwareCardSkeleton, softwarePath} from '@/entities/software';
 import {useSkeleton} from '@/shared/lib/loading';
 import {CardGrid} from '@/shared/ui/card-grid';
@@ -16,7 +15,6 @@ import {Stack} from '@/shared/ui/stack';
 import {Text, TextLink} from '@/shared/ui/typography';
 import {Tree, type TreeItem} from '@/shared/ui/tree';
 import {branchTo} from '../lib/category-branch';
-import type {FacetCount} from '../model/catalog';
 import {catalogHref} from '../model/catalog-filter';
 import {useSoftwareCatalog} from '../model/software-catalog-context';
 import {HardwareFilter} from './HardwareFilter';
@@ -84,8 +82,14 @@ function KeywordFilter() {
     );
 }
 
+/** A value of a filter, a year or a code, with its count. */
+interface Counted<T> {
+    readonly value: T;
+    readonly count: number;
+}
+
 /** The values of a filter with their counts, the chosen one kept even when it leaves nothing. */
-function withChosen<T>(counts: readonly FacetCount<T>[], chosen: T | null): readonly FacetCount<T>[] {
+function withChosen<T>(counts: readonly Counted<T>[], chosen: T | null): readonly Counted<T>[] {
     return chosen === null || counts.some((count) => count.value === chosen) ? counts : [{value: chosen, count: 0}, ...counts];
 }
 
@@ -128,7 +132,7 @@ function Filters() {
                         id={control.id}
                         value={filter.country ?? ''}
                         onChange={(value) => {
-                            show({...filter, country: value === '' ? null : toCountryId(value), city: null, page: 0});
+                            show({...filter, country: value === '' ? null : value, city: null, page: 0});
                         }}
                         options={countryOptions}
                         placeholder={t('filters.anyCountry')}
@@ -142,7 +146,7 @@ function Filters() {
                         id={control.id}
                         value={filter.city ?? ''}
                         onChange={(value) => {
-                            show({...filter, city: value === '' ? null : toCityId(value), page: 0});
+                            show({...filter, city: value === '' ? null : value, page: 0});
                         }}
                         options={cityOptions}
                         placeholder={t('filters.anyCity')}
@@ -171,7 +175,7 @@ function Filters() {
     );
 }
 
-function toItem(node: CategoryNode, hrefOf: (node: CategoryNode | null) => string, current: CategoryId | null, changing: boolean): TreeItem {
+function toItem(node: CategoryNode, hrefOf: (node: CategoryNode | null) => string, current: string | null, changing: boolean): TreeItem {
     return {
         id: node.id,
         name: node.title,
@@ -234,15 +238,15 @@ function Cards({Card}: SoftwareCatalogProps) {
         // The error dialog shows why it failed (docs/error-handling.md).
         return null;
     }
-    const {page} = catalog.data;
-    if (page.items.length === 0) {
+    const {content, page} = catalog.data;
+    if (content.length === 0) {
         return <Text tone="muted">{t('empty.nothingFound')}</Text>;
     }
     return (
         <LoadingState loading={changing}>
             <Stack gap="lg">
                 <CardGrid>
-                    {page.items.map((software) => (
+                    {content.map((software) => (
                         <li key={software.id}>
                             <Card software={software} href={softwarePath(software.id)}/>
                         </li>

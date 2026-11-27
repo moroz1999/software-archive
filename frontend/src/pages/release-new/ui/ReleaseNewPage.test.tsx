@@ -7,7 +7,7 @@ import {json, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {loadReleaseNewPage, preloadReleaseNewPage} from '../index';
 
 const ID = '00000000-0000-0000-0001-000000000001';
-const ELITE = {id: ID, title: 'Elite', description: null, releaseDate: null, platform: {code: 'vector', name: 'Vector'}, hardware: [], categories: [], credits: [], sources: [], preservation: 'unknown', origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true};
+const ELITE = {id: ID, title: 'Elite', description: null, releaseDate: null, platform: {code: 'vector', name: 'Vector'}, hardware: [], categories: [], credits: [], sources: [], preservation: 'unknown', instructions: null, compilationItems: [], compilations: [], origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true};
 const AY = {code: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound'};
 
 function renderRoute() {
@@ -65,7 +65,11 @@ describe('ReleaseNewPage', () => {
         const body = request?.[1]?.body;
 
         expect(body).toBeInstanceOf(FormData);
-        expect(body instanceof FormData ? body.get('archive') : null).toBe(archive);
+
+        const sent = body instanceof FormData ? body.get('archive') : null;
+
+        expect(sent).toBeInstanceOf(File);
+        expect(sent instanceof File ? [sent.name, await sent.text()] : null).toStrictEqual([archive.name, await archive.text()]);
     });
 
     it('refuses an archive larger than 100 MB before adding the release', async () => {

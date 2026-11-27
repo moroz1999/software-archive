@@ -5,7 +5,6 @@ import {Panel} from '@/shared/ui/panel';
 import {Stack} from '@/shared/ui/stack';
 import {Text, TextLink} from '@/shared/ui/typography';
 import {cityEditPath, countryEditPath} from '../config/paths';
-import {toCityId, toCountryId} from '../model/geo';
 import type {GeoDuplicate} from '../model/geography';
 import {useGeoDuplicates} from '../model/geography-context';
 import {GeographyTreeSkeleton} from './GeographyTreeSkeleton';
@@ -42,13 +41,13 @@ function Groups() {
     return (
         <Stack gap="md" as="ul">
             {countries.map((group) => (
-                <Group key={group.map((country) => country.id).join()} duplicates={group} href={(id) => countryEditPath(toCountryId(id))}/>
+                <Group key={group.map((country) => country.id).join()} duplicates={group} href={(id) => countryEditPath(id)}/>
             ))}
             {cities.map((group) => (
                 <Group
                     key={group.cities.map((city) => city.id).join()}
                     duplicates={group.cities}
-                    href={(id) => cityEditPath(toCityId(id))}
+                    href={(id) => cityEditPath(id)}
                     city
                 />
             ))}

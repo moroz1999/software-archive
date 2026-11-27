@@ -1,6 +1,5 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen, within} from '@testing-library/react';
-import {toSoftwareId} from '@/entities/software';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {SoftwareVotesProvider} from '../model/SoftwareVotesProvider';
@@ -10,7 +9,7 @@ const ID = '00000000-0000-0000-0001-000000000001';
 const VOTES = `/api/software/${ID}/votes`;
 
 function renderVotes() {
-    renderWithQueries(<SoftwareVotesProvider id={toSoftwareId(ID)} enabled><SoftwareVotes/></SoftwareVotesProvider>);
+    renderWithQueries(<SoftwareVotesProvider id={ID} enabled><SoftwareVotes/></SoftwareVotesProvider>);
 }
 
 describe(SoftwareVotes, () => {

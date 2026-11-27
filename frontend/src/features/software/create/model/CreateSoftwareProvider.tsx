@@ -2,12 +2,12 @@ import type {ReactNode} from 'react';
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {useTranslation} from 'react-i18next';
 import {platformsQuery, usePlatformSelection} from '@/entities/platforms';
-import {createSoftware, SOFTWARE_QUERY_KEY, SoftwareFormProvider, type SoftwareId, toSoftwareFormValues} from '@/entities/software';
+import {createSoftware, SOFTWARE_QUERY_KEY, SoftwareFormProvider, toSoftwareFormValues} from '@/entities/software';
 import {businessErrorOf} from '@/shared/api';
 import {createSoftwareMessages} from '../config/messages';
 
 export interface CreateSoftwareProviderProps {
-    readonly onCreated: (id: SoftwareId) => void;
+    readonly onCreated: (id: string) => void;
     readonly children: ReactNode;
 }
 

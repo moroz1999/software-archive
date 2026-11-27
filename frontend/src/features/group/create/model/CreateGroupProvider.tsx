@@ -1,12 +1,12 @@
 import type {ReactNode} from 'react';
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useTranslation} from 'react-i18next';
-import {createGroup, GROUP_QUERY_KEY, GroupFormProvider, type GroupId} from '@/entities/groups';
+import {createGroup, GROUP_QUERY_KEY, GroupFormProvider} from '@/entities/groups';
 import {businessErrorOf} from '@/shared/api';
 import {createGroupMessages} from '../config/messages';
 
 export interface CreateGroupProviderProps {
-    readonly onCreated: (id: GroupId) => void;
+    readonly onCreated: (id: string) => void;
     readonly children: ReactNode;
 }
 

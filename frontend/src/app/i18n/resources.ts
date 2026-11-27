@@ -147,7 +147,7 @@ export const resources = {
         users: {
             search: 'Find a user', searchPlaceholder: 'User name or email', find: 'Find', unconfirmed: 'Awaiting confirmation',
             columns: {name: 'User name', email: 'Email', registered: 'Registered', groups: 'Groups'},
-            groups: {admin: 'Administrator', moderator: 'Moderator', member: 'Member', 'ai-assistant': 'AI assistant'},
+            groups: {admin: 'Administrator', moderator: 'Moderator', member: 'Member', 'ai-assistant': 'AI assistant', 'public-visitor': 'Visitor'},
             editOf: 'Edit user {{name}}',
             memberNote: 'Every confirmed user is a member.', unconfirmedNote: 'An account gets its groups once it is confirmed.',
             errors: {
@@ -526,7 +526,7 @@ export const resources = {
         users: {
             search: 'Найти пользователя', searchPlaceholder: 'Имя пользователя или email', find: 'Найти', unconfirmed: 'Ждёт подтверждения',
             columns: {name: 'Имя пользователя', email: 'Email', registered: 'Зарегистрирован', groups: 'Группы'},
-            groups: {admin: 'Администратор', moderator: 'Модератор', member: 'Участник', 'ai-assistant': 'ИИ-помощник'},
+            groups: {admin: 'Администратор', moderator: 'Модератор', member: 'Участник', 'ai-assistant': 'ИИ-помощник', 'public-visitor': 'Посетитель'},
             editOf: 'Редактировать пользователя {{name}}',
             memberNote: 'Каждый подтверждённый пользователь — участник.', unconfirmedNote: 'Группы выдаются аккаунту после подтверждения.',
             errors: {

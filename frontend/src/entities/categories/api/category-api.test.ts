@@ -1,11 +1,9 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {SystemError} from '@/shared/api';
 import {json, noContent, stubFetch} from '@/shared/lib/test';
-import {toCategoryId} from '../model/category';
 import {createCategory, deleteCategory, fetchCategory, fetchCategoryTree, updateCategory} from './category-api';
 
-const GAMES = toCategoryId('00000000-0000-0000-0006-000000000001');
-const ACTION = toCategoryId('00000000-0000-0000-0006-000000000002');
+const GAMES = '00000000-0000-0000-0006-000000000001';
+const ACTION = '00000000-0000-0000-0006-000000000002';
 const TREE = [
     {id: GAMES, title: 'Games', children: [{id: ACTION, title: 'Action', children: []}]},
     {id: '00000000-0000-0000-0006-000000000003', title: 'Demoscene', children: []},
@@ -21,12 +19,6 @@ describe(fetchCategoryTree, () => {
 
         await expect(fetchCategoryTree(new AbortController().signal)).resolves.toStrictEqual(TREE);
         expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/categories');
-    });
-
-    it('fails with a system error on a malformed answer', async () => {
-        stubFetch(json([{id: GAMES, title: 'Games', children: null}]));
-
-        await expect(fetchCategoryTree(new AbortController().signal)).rejects.toBeInstanceOf(SystemError);
     });
 });
 
@@ -49,10 +41,10 @@ describe(fetchCategory, () => {
         await expect(fetchCategory(GAMES, new AbortController().signal)).resolves.toStrictEqual({id: GAMES, titles: {ru: 'Игры'}, parentId: null});
     });
 
-    it('fails with a system error on a category without a Russian title', async () => {
+    it('refuses a category without a Russian title', async () => {
         stubFetch(json({id: GAMES, titles: {en: 'Games'}, parentId: null}));
 
-        await expect(fetchCategory(GAMES, new AbortController().signal)).rejects.toBeInstanceOf(SystemError);
+        await expect(fetchCategory(GAMES, new AbortController().signal)).rejects.toThrow('A category has a Russian title.');
     });
 
     it('takes no title in a language the site does not speak', async () => {

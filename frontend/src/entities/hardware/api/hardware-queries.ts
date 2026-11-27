@@ -1,5 +1,5 @@
 import {queryOptions} from '@tanstack/react-query';
-import type {HardwareCode, HardwareGroupCode, HardwareKind} from '../model/hardware';
+import type {HardwareKind} from '../model/hardware';
 import {fetchHardwareDetails, fetchHardwareGroups} from './hardware-api';
 
 /** The common prefix of every query of the reference book as the management keeps it: a change makes them all stale. */
@@ -14,7 +14,7 @@ export function hardwareGroupsQuery() {
 }
 
 /** One group or item of hardware, the block of its form. */
-export function hardwareDetailsQuery(kind: HardwareKind, code: HardwareCode | HardwareGroupCode) {
+export function hardwareDetailsQuery(kind: HardwareKind, code: string) {
     return queryOptions({
         queryKey: [...HARDWARE_REFERENCE_QUERY_KEY, kind, code],
         queryFn: ({signal}) => fetchHardwareDetails(kind, code, signal),

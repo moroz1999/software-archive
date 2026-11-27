@@ -1,5 +1,4 @@
 import {useTranslation} from 'react-i18next';
-import type {ReleaseId, SoftwareId} from '@/entities/software';
 import {Button} from '@/shared/ui/button';
 import {Inline} from '@/shared/ui/inline';
 import {Stack} from '@/shared/ui/stack';
@@ -8,8 +7,8 @@ import {useReparseReleaseFiles} from '../model/reparse-release-files-context';
 import {ReparseReleaseFilesProvider} from '../model/ReparseReleaseFilesProvider';
 
 export interface ReparseReleaseFilesButtonProps {
-    readonly softwareId: SoftwareId;
-    readonly releaseId: ReleaseId;
+    readonly softwareId: string;
+    readonly releaseId: string;
 }
 
 /** Parses the file of a release again, for whoever may change the release. */

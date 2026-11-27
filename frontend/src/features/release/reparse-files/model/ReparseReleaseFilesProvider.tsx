@@ -1,14 +1,14 @@
 import type {ReactNode} from 'react';
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useTranslation} from 'react-i18next';
-import {type ReleaseId, releaseFilesQuery, reparseReleaseFiles, type SoftwareId} from '@/entities/software';
+import {releaseFilesQuery, reparseReleaseFiles} from '@/entities/software';
 import {businessErrorMessage, businessErrorOf} from '@/shared/api';
 import {reparseReleaseFilesMessages} from '../config/messages';
 import {ReparseReleaseFilesContext, type ReparseReleaseFilesState} from './reparse-release-files-context';
 
 export interface ReparseReleaseFilesProviderProps {
-    readonly softwareId: SoftwareId;
-    readonly releaseId: ReleaseId;
+    readonly softwareId: string;
+    readonly releaseId: string;
     readonly children: ReactNode;
 }
 

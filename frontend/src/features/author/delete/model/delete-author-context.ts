@@ -1,9 +1,8 @@
-import type {AuthorId} from '@/entities/authors';
 import {createRequiredContext} from '@/shared/lib/context';
 
 /** The author to delete, under the name they are shown by. */
 export interface DeletedAuthor {
-    readonly id: AuthorId;
+    readonly id: string;
     readonly name: string;
 }
 

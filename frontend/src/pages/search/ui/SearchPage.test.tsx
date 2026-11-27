@@ -3,12 +3,12 @@ import {screen, waitFor, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {createMemoryRouter, RouterProvider} from 'react-router';
 import {PlatformSelectionProvider} from '@/entities/platforms';
-import {createQueryClient, subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
+import {type components, createQueryClient, subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {CurrentUserProvider} from '@/entities/users';
 import {json, noContent, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {loadSearchPage, preloadSearchPage, shouldPreloadSearchPage} from '../index';
 
-const ELITE = {id: '00000000-0000-0000-00fd-000000000001', title: 'Elite', releaseDate: '1987-05-01'};
+const ELITE = {id: '00000000-0000-0000-00fd-000000000001', title: 'Elite', releaseDate: '1987-05-01', screenshots: [], madeBy: [], rating: 0, votesAmount: 0} satisfies components['schemas']['SoftwareListItemDto'];
 const ZED = {id: '00000000-0000-0000-00fd-000000000011', name: 'Zed', realName: 'John Doe', kind: 'person'};
 const PHANTOM = {id: '00000000-0000-0000-00fd-000000000031', name: 'Phantom', realName: null, kind: 'label'};
 const SQUAD = {id: '00000000-0000-0000-00fd-000000000021', name: 'ZS'};
@@ -127,7 +127,7 @@ describe('SearchPage', () => {
     it('leaves a kind out by its box, from the first page', async () => {
         const fetchMock = stubFetchRoutes(routes([
             ['/api/search?q=z&page=1', found(1)],
-            ['/api/search?q=z&types=group%2Csoftware&page=0', found(0, [{type: 'group', total: 1, items: [SQUAD]}])],
+            ['/api/search?q=z&types=group&types=software&page=0', found(0, [{type: 'group', total: 1, items: [SQUAD]}])],
         ]));
         const {router} = renderRoute('/search?q=z&page=2');
         await screen.findByRole('region', {name: 'Authors (52)'});
@@ -141,7 +141,7 @@ describe('SearchPage', () => {
             expect(screen.queryByRole('region', {name: 'Authors (52)'})).not.toBeInTheDocument();
         });
 
-        expect(asked(fetchMock)).toContain('/api/search?q=z&types=group%2Csoftware&page=0');
+        expect(asked(fetchMock)).toContain('/api/search?q=z&types=group&types=software&page=0');
     });
 
     it('keeps the last kind chosen', async () => {

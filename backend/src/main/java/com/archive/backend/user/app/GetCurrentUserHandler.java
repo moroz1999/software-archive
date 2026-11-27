@@ -1,5 +1,6 @@
 package com.archive.backend.user.app;
 
+import com.archive.backend.user.domain.Ability;
 import com.archive.backend.user.domain.Actor;
 import com.archive.backend.user.domain.SignInRequiredException;
 import com.archive.backend.user.domain.UserId;
@@ -35,18 +36,18 @@ public class GetCurrentUserHandler {
     }
 
     /**
-     * What the actor may do beyond reading, by the codes the frontend knows (docs/features/accounts.md).
+     * What the actor may do beyond reading, by the codes of its abilities (docs/features/accounts.md).
      */
     private static List<String> abilities(Actor actor) {
         List<String> abilities = new ArrayList<>();
         if (actor.mayAddEntries()) {
-            abilities.add("add-entries");
+            abilities.add(Ability.ADD_ENTRIES.code());
         }
         if (actor.mayKeepCategories()) {
-            abilities.add("keep-categories");
+            abilities.add(Ability.KEEP_CATEGORIES.code());
         }
         if (actor.mayUseAssistant()) {
-            abilities.add("use-assistant");
+            abilities.add(Ability.USE_ASSISTANT.code());
         }
         return List.copyOf(abilities);
     }

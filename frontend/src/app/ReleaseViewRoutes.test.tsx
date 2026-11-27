@@ -20,7 +20,7 @@ const SOFTWARE = {
     hardware: [],
     categories: [],
     credits: [],
-    sources: [], preservation: 'unknown',
+    sources: [], preservation: 'unknown', instructions: null, compilationItems: [], compilations: [],
     origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
     canChange: true,
 };
@@ -38,6 +38,7 @@ const RELEASE = {
     ],
     screenshots: [{id: SCREENSHOT_ID, url: `/api/screenshots/${SCREENSHOT_ID}`}],
     archive: {fileName: 'elite-ay.zip', size: 1536, url: ARCHIVE_URL},
+    credits: [],
     added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
     canChange: true,
 };

@@ -1,11 +1,10 @@
 import type {ReactNode} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {labelDetailsQuery} from '../api/label-queries';
-import type {LabelId} from './label-id';
 import {LabelDetailsContext} from './label-details-context';
 
 export interface LabelDetailsProviderProps {
-    readonly id: LabelId;
+    readonly id: string;
     readonly children: ReactNode;
 }
 

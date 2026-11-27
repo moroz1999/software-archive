@@ -1,12 +1,11 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {toCategoryId} from '@/entities/categories';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, noContent, renderWithQueries, stubFetch} from '@/shared/lib/test';
 import {DeleteCategoryButton} from './DeleteCategoryButton';
 
-const CATEGORY = {id: toCategoryId('00000000-0000-0000-0006-000000000002'), titles: {ru: 'Action'}};
+const CATEGORY = {id: '00000000-0000-0000-0006-000000000002', titles: {ru: 'Action'}};
 
 describe(DeleteCategoryButton, () => {
     afterEach(() => {

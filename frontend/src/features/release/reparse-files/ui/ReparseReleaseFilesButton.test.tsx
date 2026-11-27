@@ -1,12 +1,11 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {toReleaseId, toSoftwareId} from '@/entities/software';
 import {json, noContent, renderWithQueries, stubFetch} from '@/shared/lib/test';
 import {ReparseReleaseFilesButton} from './ReparseReleaseFilesButton';
 
-const SOFTWARE = toSoftwareId('00000000-0000-0000-0001-000000000001');
-const RELEASE = toReleaseId('00000000-0000-0000-0007-000000000002');
+const SOFTWARE = '00000000-0000-0000-0001-000000000001';
+const RELEASE = '00000000-0000-0000-0007-000000000002';
 
 describe(ReparseReleaseFilesButton, () => {
     afterEach(() => {

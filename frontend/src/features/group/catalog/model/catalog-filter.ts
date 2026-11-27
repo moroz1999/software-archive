@@ -1,13 +1,13 @@
 import {GROUPS_PATH} from '@/entities/groups';
-import {type CityId, type CountryId, parseCityId, parseCountryId} from '@/entities/locations';
-import {type LabelLetter, parseLabelLetter} from '@/entities/labels';
+import {parseCityId, parseCountryId} from '@/entities/locations';
+import {parseLabelLetter} from '@/entities/labels';
 import {pageParam, parsePageParam} from '@/shared/lib/page-param';
 
 /** What the group catalog shows: its filters and its page, counted from 0. */
 export interface GroupCatalogFilter {
-    readonly letter: LabelLetter | null;
-    readonly country: CountryId | null;
-    readonly city: CityId | null;
+    readonly letter: string | null;
+    readonly country: string | null;
+    readonly city: string | null;
     readonly page: number;
 }
 

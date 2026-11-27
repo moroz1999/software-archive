@@ -1,9 +1,7 @@
+import type {components} from '@/shared/api';
+
 /** The one downloadable file of a release. */
-export interface ReleaseArchive {
-    readonly fileName: string;
-    readonly size: number;
-    readonly url: string;
-}
+export type ReleaseArchive = components['schemas']['ReleaseArchiveDto'];
 
 export const RELEASE_ARCHIVE_MAX_BYTES = 100 * 1024 * 1024;
 

@@ -1,4 +1,3 @@
-import type {UserId} from '../model/user';
 
 /** Where a visitor registers. */
 export const REGISTER_PATH = '/register';
@@ -14,6 +13,6 @@ export const MANAGEMENT_USERS_PATH = '/management/users';
 export const MANAGEMENT_USER_EDIT_ROUTE = `${MANAGEMENT_USERS_PATH}/:id/edit`;
 
 /** The page an administrator edits a user on. */
-export function managementUserEditPath(id: UserId): string {
+export function managementUserEditPath(id: string): string {
     return `${MANAGEMENT_USERS_PATH}/${id}/edit`;
 }

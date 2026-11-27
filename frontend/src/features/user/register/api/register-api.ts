@@ -1,4 +1,4 @@
-import {postNoContent} from '@/shared/api';
+import {api, apiError} from '@/shared/api';
 import type {UiLanguage} from '@/shared/lib/i18n';
 
 export interface Registration {
@@ -11,7 +11,10 @@ export interface Registration {
 
 /** Registers an account: `POST /api/auth/register`; the archive mails the confirmation link. */
 export async function register(registration: Registration): Promise<void> {
-    await postNoContent('/api/auth/register', {
-        name: registration.name, email: registration.email, password: registration.password, language: registration.language,
+    const {error, response} = await api.POST('/api/auth/register', {
+        body: {name: registration.name, email: registration.email, password: registration.password, language: registration.language},
     });
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
 }

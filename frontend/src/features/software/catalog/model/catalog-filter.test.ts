@@ -1,8 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {toCategoryId} from '@/entities/categories';
 import {NotFoundError} from '@/shared/api';
-import {toCityId, toCountryId} from '@/entities/locations';
-import {toPlatformCode} from '@/entities/platforms';
 import {catalogHref, parseCatalogFilter} from './catalog-filter';
 
 const GAMES = '00000000-0000-0000-00fd-0000000000c1';
@@ -77,14 +74,14 @@ describe(catalogHref, () => {
 
     it('writes what is set, the page counted from 1', () => {
         expect(catalogHref({
-            keyword: 'tetris', year: 1989, category: toCategoryId(GAMES), country: toCountryId(FINLAND), ...NONE, page: 1,
+            keyword: 'tetris', year: 1989, category: GAMES, country: FINLAND, ...NONE, page: 1,
         })).toBe(`/software/category/${GAMES}?q=tetris&year=1989&country=${FINLAND}&page=2`);
     });
 
     it('writes the city, the platforms and the hardware after the country', () => {
         expect(catalogHref({
-            keyword: null, year: null, category: null, country: toCountryId(FINLAND), city: toCityId(HELSINKI),
-            platforms: [toPlatformCode('bk'), toPlatformCode('vector')], hardware: ['ay8910', 'z80'], order: 'title', page: 0,
+            keyword: null, year: null, category: null, country: FINLAND, city: HELSINKI,
+            platforms: ['bk', 'vector'], hardware: ['ay8910', 'z80'], order: 'title', page: 0,
         })).toBe(`/software?country=${FINLAND}&city=${HELSINKI}&platforms=bk%2Cvector&hardware=ay8910%2Cz80`);
     });
 
@@ -95,13 +92,13 @@ describe(catalogHref, () => {
     });
 
     it('puts the category alone in the path', () => {
-        expect(catalogHref({keyword: null, year: null, category: toCategoryId(GAMES), country: null, ...NONE, page: 0})).toBe(`/software/category/${GAMES}`);
+        expect(catalogHref({keyword: null, year: null, category: GAMES, country: null, ...NONE, page: 0})).toBe(`/software/category/${GAMES}`);
     });
 
     it('is read back as the same filter', () => {
         const filter = {
-            keyword: 'Элита 2', year: 1987, category: toCategoryId(GAMES), country: toCountryId(FINLAND), city: toCityId(HELSINKI),
-            platforms: [toPlatformCode('bk')], hardware: ['ay8910'], order: 'rating', page: 4,
+            keyword: 'Элита 2', year: 1987, category: GAMES, country: FINLAND, city: HELSINKI,
+            platforms: ['bk'], hardware: ['ay8910'], order: 'rating', page: 4,
         } as const;
 
         expect(readBack(catalogHref(filter))).toStrictEqual(filter);

@@ -1,5 +1,4 @@
 import {type SoftwareDetails, softwarePath} from '@/entities/software';
-import {toCategoryId} from '@/entities/categories';
 import type {Crumb} from '@/shared/ui/breadcrumbs';
 import {catalogHrefOf} from './catalog-filter';
 
@@ -11,7 +10,7 @@ export function softwareBreadcrumbs(software: Pick<SoftwareDetails, 'id' | 'titl
     const branch = software.categories.at(0)?.branch ?? [];
     return [
         {label: catalog, href: catalogHrefOf({})},
-        ...branch.map((step) => ({label: step.title, href: catalogHrefOf({category: toCategoryId(step.id)})})),
+        ...branch.map((step) => ({label: step.title, href: catalogHrefOf({category: step.id})})),
         {label: software.title, href: softwarePath(software.id)},
     ];
 }

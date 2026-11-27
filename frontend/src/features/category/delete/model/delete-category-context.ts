@@ -1,9 +1,9 @@
-import type {CategoryId, CategoryTitles} from '@/entities/categories';
+import type {CategoryTitles} from '@/entities/categories';
 import {createRequiredContext} from '@/shared/lib/context';
 
 /** The category to delete, under its titles. */
 export interface DeletedCategory {
-    readonly id: CategoryId;
+    readonly id: string;
     readonly titles: CategoryTitles;
 }
 

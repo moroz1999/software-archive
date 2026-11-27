@@ -1,12 +1,11 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {toGroupId} from '@/entities/groups';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, noContent, renderWithQueries, stubFetch} from '@/shared/lib/test';
 import {DeleteGroupButton} from './DeleteGroupButton';
 
-const GROUP = {id: toGroupId('00000000-0000-0000-0005-000000000001'), name: 'Crew'};
+const GROUP = {id: '00000000-0000-0000-0005-000000000001', name: 'Crew'};
 
 describe(DeleteGroupButton, () => {
     afterEach(() => {

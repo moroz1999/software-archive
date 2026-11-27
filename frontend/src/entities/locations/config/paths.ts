@@ -1,4 +1,3 @@
-import type {CityId, CountryId} from '../model/geo';
 
 /** Where the countries and the cities are kept in the app. */
 export const GEOGRAPHY_PATH = '/management/geography';
@@ -8,10 +7,10 @@ export const CITY_NEW_PATH = '/management/geography/cities/new';
 export const COUNTRY_EDIT_ROUTE = '/management/geography/countries/:id/edit';
 export const CITY_EDIT_ROUTE = '/management/geography/cities/:id/edit';
 
-export function countryEditPath(id: CountryId): string {
+export function countryEditPath(id: string): string {
     return `/management/geography/countries/${id}/edit`;
 }
 
-export function cityEditPath(id: CityId): string {
+export function cityEditPath(id: string): string {
     return `/management/geography/cities/${id}/edit`;
 }

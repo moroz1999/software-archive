@@ -1,7 +1,6 @@
 import type {ReactNode} from 'react';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {act, renderHook} from '@testing-library/react';
-import {toPlatformCode} from './platform';
 import {usePlatformSelection} from './platform-selection-context';
 import {PlatformSelectionProvider} from './PlatformSelectionProvider';
 
@@ -31,7 +30,7 @@ describe(PlatformSelectionProvider, () => {
         const {result} = renderSelection();
 
         act(() => {
-            result.current.select(toPlatformCode('bk'));
+            result.current.select('bk');
         });
 
         expect(result.current.platform).toBe('bk');
@@ -45,7 +44,7 @@ describe(PlatformSelectionProvider, () => {
         const {result} = renderSelection();
 
         act(() => {
-            result.current.select(toPlatformCode('agat'));
+            result.current.select('agat');
         });
 
         expect(result.current.platform).toBe('agat');

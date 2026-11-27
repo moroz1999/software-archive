@@ -65,6 +65,7 @@ public class GroupController {
         return webMapper.toDetails(getHandler.handle(new GetGroupQuery(actor, new GroupId(id), language)));
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public ResponseEntity<GroupCreatedDto> create(Actor actor, @RequestBody GroupRequestDto request) {
         GroupId id = createHandler.handle(webMapper.toCreate(actor, request));

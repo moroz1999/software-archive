@@ -1,12 +1,12 @@
 import type {ReactNode} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {hardwareDetailsQuery} from '../api/hardware-queries';
-import type {HardwareCode, HardwareGroupCode, HardwareKind} from './hardware';
+import type {HardwareKind} from './hardware';
 import {HardwareDetailsContext} from './hardware-context';
 
 export interface HardwareDetailsProviderProps {
     readonly kind: HardwareKind;
-    readonly code: HardwareCode | HardwareGroupCode;
+    readonly code: string;
     readonly children: ReactNode;
 }
 

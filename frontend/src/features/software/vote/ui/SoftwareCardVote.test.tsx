@@ -1,16 +1,16 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {type Software, toSoftwareId, toSoftwareTitle} from '@/entities/software';
+import {type Software} from '@/entities/software';
 import {CurrentUserProvider} from '@/entities/users';
 import {json, noContent, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {SoftwareCardVote} from './SoftwareCardVote';
 
 const ELITE_ID = '00000000-0000-0000-0001-000000000001';
 const EXOLON_ID = '00000000-0000-0000-0001-000000000002';
-const ELITE: Software = {id: toSoftwareId(ELITE_ID), title: toSoftwareTitle('Elite'), releaseDate: null, rating: {rating: 4.0769, votesAmount: 3}};
-const EXOLON: Software = {id: toSoftwareId(EXOLON_ID), title: toSoftwareTitle('Exolon'), releaseDate: null, rating: {rating: 0, votesAmount: 0}};
-const MY_VOTES = `/api/my-votes?software=${ELITE_ID},${EXOLON_ID}`;
+const ELITE: Software = {id: ELITE_ID, title: 'Elite', releaseDate: null, screenshots: [], madeBy: [], rating: 4.0769, votesAmount: 3};
+const EXOLON: Software = {id: EXOLON_ID, title: 'Exolon', releaseDate: null, screenshots: [], madeBy: [], rating: 0, votesAmount: 0};
+const MY_VOTES = `/api/my-votes?software=${ELITE_ID}&software=${EXOLON_ID}`;
 const MEMBER = {id: '00000000-0000-0000-0009-000000000003', name: 'Zed', email: 'zed@example.com', groups: ['member'], abilities: ['add-entries']};
 
 function renderCards(...software: Software[]) {

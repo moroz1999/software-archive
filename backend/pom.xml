@@ -100,6 +100,12 @@
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
+		<!-- The OpenAPI document of the REST API at /v3/api-docs: the frontend is typed from it -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
+			<version>2.8.6</version>
+		</dependency>
 		<dependency>
 			<groupId>org.typesense</groupId>
 			<artifactId>typesense-java</artifactId>

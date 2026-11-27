@@ -1,5 +1,7 @@
 package com.archive.backend.group.web.dto;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -30,11 +32,13 @@ public record GroupDetailsDto(
 
     public record MemberDto(
             @Nullable UUID id,
-            String type,
+            @Schema(ref = "PersonReferenceType") String type,
             String title,
             String name,
             @Nullable UUID personId,
             @Nullable String personName,
+
+            @ArraySchema(schema = @Schema(ref = "GroupMemberRole"))
             List<String> roles) {}
 
     public record RelatedGroupDto(UUID id, String name) {}

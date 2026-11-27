@@ -5,13 +5,13 @@ import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
 import {PlatformSelectionProvider, PlatformSwitch} from '@/entities/platforms';
 import {SoftwareCardLayout, type SoftwareCardComponent, type SoftwareCardContentProps} from '@/entities/software';
-import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
+import {type components, subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, pageResponse, stubFetch, stubFetchRoutes, renderWithQueries} from '@/shared/lib/test';
 import {LatestSoftwareProvider} from '../model/LatestSoftwareProvider';
 import {LatestSoftware} from './LatestSoftware';
 
-const ELITE = {id: '00000000-0000-0000-0001-000000000001', title: 'Elite', releaseDate: '1984-09-20'};
-const MINER = {id: '00000000-0000-0000-0001-000000000002', title: 'Manic Miner', releaseDate: null};
+const ELITE = {id: '00000000-0000-0000-0001-000000000001', title: 'Elite', releaseDate: '1984-09-20', screenshots: [], madeBy: [], rating: 0, votesAmount: 0} satisfies components['schemas']['SoftwareListItemDto'];
+const MINER = {id: '00000000-0000-0000-0001-000000000002', title: 'Manic Miner', releaseDate: null, screenshots: [], madeBy: [], rating: 0, votesAmount: 0} satisfies components['schemas']['SoftwareListItemDto'];
 
 function CardLayout(props: SoftwareCardContentProps) {
     return <SoftwareCardLayout {...props} footer={null}/>;

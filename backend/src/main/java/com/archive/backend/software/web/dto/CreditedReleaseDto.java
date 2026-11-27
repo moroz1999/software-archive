@@ -1,5 +1,6 @@
 package com.archive.backend.software.web.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -11,7 +12,7 @@ public record CreditedReleaseDto(
         String softwareTitle,
         String title,
         @Nullable String version,
-        String type,
+        @Schema(ref = "ReleaseType") String type,
         @Nullable String releaseDate,
         List<ScreenshotDto> screenshots,
         List<CreditedSoftwareDto.OwnCreditDto> credits) {}

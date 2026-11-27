@@ -10,7 +10,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
-import java.util.Locale;
 import org.jspecify.annotations.Nullable;
 
 /** How the chat is kept in rows: enums by their names, the changes of a plan as one JSON array. */
@@ -88,20 +87,5 @@ final class ChatRows {
     static @Nullable Instant nullableInstant(ResultSet rs, String column) throws SQLException {
         Timestamp at = rs.getTimestamp(column);
         return at == null ? null : at.toInstant();
-    }
-
-    /** The name of an enum as the read side tells it: {@code TOOL_CALL} as {@code toolCall}. */
-    static String camel(String name) {
-        StringBuilder out = new StringBuilder();
-        boolean upper = false;
-        for (char letter : name.toLowerCase(Locale.ROOT).toCharArray()) {
-            if (letter == '_') {
-                upper = true;
-            } else {
-                out.append(upper ? Character.toUpperCase(letter) : letter);
-                upper = false;
-            }
-        }
-        return out.toString();
     }
 }

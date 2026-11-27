@@ -6,6 +6,8 @@ import com.archive.backend.search.web.dto.SoftwareCatalogDto;
 import com.archive.backend.search.web.dto.SoftwareCatalogParams;
 import com.archive.backend.search.web.mapper.SoftwareCatalogWebMapper;
 import com.archive.backend.shared.domain.Language;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +36,7 @@ public class SoftwareCatalogController {
             @RequestParam(required = false) @Nullable UUID city,
             @RequestParam(required = false) @Nullable List<String> platforms,
             @RequestParam(required = false) @Nullable List<String> hardware,
-            @RequestParam(required = false) @Nullable String order,
+            @RequestParam(required = false) @Parameter(schema = @Schema(ref = "CatalogOrder")) @Nullable String order,
             Language language,
             @PageableDefault(size = ListSoftwareCatalogQuery.PAGE_SIZE) Pageable pageable) {
         return webMapper.toCatalog(handler.handle(webMapper.toQuery(

@@ -1,14 +1,14 @@
 export {LABEL_NAME_PROBLEM_KEYS} from './config/messages';
-export {LABEL_LETTERS, type LabelLetter, parseLabelLetter} from './model/letter';
+export {LABEL_LETTERS, parseLabelLetter} from './model/letter';
 export {LabelEntriesSkeleton} from './ui/LabelEntriesSkeleton';
 export {LabelEntry, type LabelEntryProps} from './ui/LabelEntry';
 export {LetterFilter, type LetterFilterProps} from './ui/LetterFilter';
 export {type LabelValue} from './model/label-value';
 export {LabelsEditor, type LabelsEditorProps} from './ui/LabelsEditor';
-export {type LabelId, requireLabelId, toLabelId} from './model/label-id';
+export {requireLabelId} from './model/label-id';
 export {attachLabel, attachLabelToGroup, createLabel, deleteLabel, fetchLabelAuthors, fetchLabelGroups, fetchLabelOwners, fetchLabelsByName, makeAuthorOfLabel, makeGroupOfLabel, mergeLabelIntoAuthor, mergeLabelIntoGroup, mergeLabelIntoLabel, updateLabel} from './api/label-api';
 export {LABEL_QUERY_KEY, labelDetailsQuery} from './api/label-queries';
 export {LABEL_EDIT_ROUTE, LABEL_NEW_PATH, LABEL_ROUTE, labelEditPath, labelPath} from './config/paths';
-export {type LabelDetails, type LabelDraft, type LabelGroup, type LabelLocation, type LabelOrigin, type LabelOwner, type LabelOwnerOption, type NamedLabelOwner, type NewLabelDraft} from './model/label';
+export {type LabelDetails, type LabelDraft, type LabelGroup, type LabelLocation, type LabelOwner, type LabelOwnerOption, type NamedLabelOwner, type NewLabelDraft} from './model/label';
 export {useLabelDetails} from './model/label-details-context';
 export {LabelDetailsProvider, type LabelDetailsProviderProps} from './model/LabelDetailsProvider';

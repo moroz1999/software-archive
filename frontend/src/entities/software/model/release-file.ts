@@ -1,21 +1,5 @@
-import type {Brand} from '@/shared/lib/brand';
-import {isUuid} from '@/shared/lib/uuid';
+import type {components} from '@/shared/api';
 
-export type ReleaseFileId = Brand<string, 'ReleaseFileId'>;
+/** A file of a release archive, a directory with its files inside. */
+export type ReleaseFile = components['schemas']['ReleaseFileDto'];
 
-export interface ReleaseFile {
-    readonly id: ReleaseFileId;
-    readonly name: string;
-    readonly directory: boolean;
-    readonly executable: boolean;
-    /** The file could not be parsed whole, so its contents are not known. */
-    readonly unreadable: boolean;
-    readonly children: readonly ReleaseFile[];
-}
-
-export function toReleaseFileId(raw: string): ReleaseFileId {
-    if (!isUuid(raw)) {
-        throw new TypeError(`Invalid release file id: ${raw}`);
-    }
-    return raw as ReleaseFileId;
-}

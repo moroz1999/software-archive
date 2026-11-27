@@ -1,27 +1,32 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {SoftwareForm, useSoftwareForm, toReleaseDate, toSoftwareId, toSoftwarePlatformCode, toSoftwareTitle} from '@/entities/software';
+import {SoftwareForm, useSoftwareForm} from '@/entities/software';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, noContent, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {EditSoftwareProvider} from './EditSoftwareProvider';
 
 const SOFTWARE = {
-    id: toSoftwareId('00000000-0000-0000-0001-000000000001'),
-    title: toSoftwareTitle('Elite'),
+    id: '00000000-0000-0000-0001-000000000001',
+    title: 'Elite',
     description: 'Space trading',
-    releaseDate: toReleaseDate('1985-09-20'),
-    platform: {code: toSoftwarePlatformCode('vector'), name: 'Vector'},
+    releaseDate: '1985-09-20',
+    platform: {code: 'vector', name: 'Vector'},
     hardware: [],
     categories: [],
     origins: [],
     added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
     canChange: true,
     preservation: 'unknown' as const,
+    compilationItems: [],
+    compilations: [],
+    credits: [],
+    instructions: null,
+    sources: [],
 };
 const PLATFORMS = json([{code: 'bk', name: 'BK'}, {code: 'vector', name: 'Vector'}]);
-const ORIGINAL_ITEM = {id: toSoftwareId('00000000-0000-0000-0001-000000000002'), title: toSoftwareTitle('Jetpac')};
-const NEW_ITEM = {id: toSoftwareId('00000000-0000-0000-0001-000000000003'), title: toSoftwareTitle('Galactic Bowling')};
+const ORIGINAL_ITEM = {id: '00000000-0000-0000-0001-000000000002', title: 'Jetpac'};
+const NEW_ITEM = {id: '00000000-0000-0000-0001-000000000003', title: 'Galactic Bowling'};
 
 function answer(software: () => Response) {
     return stubFetchRoutes(new Map([
@@ -54,7 +59,7 @@ describe(EditSoftwareProvider, () => {
 
         expect(fetchMock.mock.calls.find(([url]) => url === `/api/software/${SOFTWARE.id}`)?.[1]).toMatchObject({
             method: 'PUT',
-            body: '{"title":"Elite Plus","description":"Space trading","releaseDate":"1985-09-20","platform":"vector","hardware":[],"categories":[],"credits":[],"preservation":"unknown","instructions":null}',
+            body: '{"title":"Elite Plus","description":"Space trading","releaseDate":"1985-09-20","platform":"vector","hardware":[],"categories":[],"credits":[],"preservation":"unknown","instructions":null,"compilationItemIds":null}',
         });
     });
 

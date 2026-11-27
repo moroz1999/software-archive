@@ -2,7 +2,6 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
-import {toCategoryId} from '@/entities/categories';
 import {json, noContent, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
 import {CategoryEditor} from './CategoryEditor';
 
@@ -14,7 +13,7 @@ const TREE = [{id: GAMES, title: 'Games', children: [{id: ACTION, title: 'Action
 const AROUND = new Map([['/api/categories', json(TREE)]]);
 
 function renderEditor(onSaved = vi.fn<() => void>(), onDeleted = vi.fn<() => void>()) {
-    renderWithQueries(<MemoryRouter><CategoryEditor id={toCategoryId(ACTION)} onSaved={onSaved} onDeleted={onDeleted}/></MemoryRouter>);
+    renderWithQueries(<MemoryRouter><CategoryEditor id={ACTION} onSaved={onSaved} onDeleted={onDeleted}/></MemoryRouter>);
 }
 
 describe(CategoryEditor, () => {

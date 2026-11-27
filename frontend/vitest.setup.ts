@@ -5,7 +5,7 @@ import {cleanup, configure} from '@testing-library/react';
 import i18n from 'i18next';
 import {initReactI18next} from 'react-i18next';
 import {resources} from './src/app/i18n/resources';
-import {resetSessionForTests} from './src/shared/api/session';
+import {keepSentForms} from './src/shared/lib/test/fetch';
 
 void i18n.use(initReactI18next).init({
     resources,
@@ -20,9 +20,16 @@ void i18n.use(initReactI18next).init({
 // under a full run. Waiting for what a page shows has to cover it, or a page that is in time fails as late.
 configure({asyncUtilTimeout: 3000});
 
+// The API client is made for the page's origin; the Stylelint plugin tests run in node, with no page and no session.
+// Every Request keeps its multipart form for the test to read; the API client takes Request as it is made.
+if (typeof document !== 'undefined') {
+    keepSentForms();
+}
+const session = typeof document === 'undefined' ? null : await import('./src/shared/api/session');
+
 afterEach(() => {
     cleanup();
-    resetSessionForTests();
+    session?.resetSessionForTests();
     void i18n.changeLanguage('en');
 });
 

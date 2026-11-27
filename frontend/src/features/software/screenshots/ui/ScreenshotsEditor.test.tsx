@@ -1,14 +1,14 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {type Gallery, toReleaseId, toSoftwareId} from '@/entities/software';
+import {type Gallery} from '@/entities/software';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, noContent, renderWithQueries, stubFetch} from '@/shared/lib/test';
 import {EditScreenshotsProvider} from '../model/EditScreenshotsProvider';
 import {ScreenshotsEditor} from './ScreenshotsEditor';
 
-const ID = toSoftwareId('00000000-0000-0000-0001-000000000001');
-const AY_MOD = toReleaseId('00000000-0000-0000-0007-000000000002');
+const ID = '00000000-0000-0000-0001-000000000001';
+const AY_MOD = '00000000-0000-0000-0007-000000000002';
 const OF_SOFTWARE = `/api/software/${ID}/screenshots`;
 
 function shot(n: number) {

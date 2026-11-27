@@ -1,7 +1,7 @@
 import {type LocationDraft, locationProblem, type LocationValue, toLocationDraft, toLocationValue} from '@/shared/lib/form-rules';
 import {type TitleProblem, titleProblem} from '@/shared/lib/form-rules';
 import type {MemberRoleValue} from '@/shared/ui/member-role-editor';
-import type {GroupDetails} from './group';
+import type {GroupDetails, GroupMemberRole, PersonReferenceType} from './group';
 
 /** A label in the form: a new one has no id yet; `display` stays unset, a group has no display name. */
 export interface GroupFormLabel {
@@ -19,6 +19,16 @@ export interface GroupDraftLabel {
 /** A location in the form (docs/domain/geo.md). */
 export type GroupFormLocation = LocationValue;
 
+/** A person or one of their labels found for the roster of a group. */
+export interface GroupPerson {
+    readonly id: string;
+    readonly type: PersonReferenceType;
+    readonly title: string;
+}
+
+/** A member in the form: the person or label with the roles chosen for it. */
+export type GroupFormMember = MemberRoleValue<GroupPerson, GroupMemberRole>;
+
 /** What the group form holds while it is being filled. */
 export interface GroupFormValues {
     readonly name: string;
@@ -27,7 +37,7 @@ export interface GroupFormValues {
     readonly types: readonly string[];
     readonly labels: readonly GroupFormLabel[];
     readonly locations: readonly GroupFormLocation[];
-    readonly members?: readonly MemberRoleValue[];
+    readonly members?: readonly GroupFormMember[];
 }
 
 /** A group to be created or saved, as the form produced it. */
@@ -37,7 +47,7 @@ export interface GroupDraft {
     readonly types: readonly string[];
     readonly labels: readonly GroupDraftLabel[];
     readonly locations: readonly LocationDraft[];
-    readonly members?: readonly MemberRoleValue[];
+    readonly members?: readonly GroupFormMember[];
 }
 
 export interface GroupFormErrors {

@@ -1,15 +1,13 @@
 import type {ReactNode} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {screenshotsQuery} from '../api/software-queries';
-import type {ReleaseId} from './release';
 import type {Gallery} from './screenshot';
-import type {SoftwareId} from './software';
 import {ScreenshotsContext} from './screenshots-context';
 
 export interface ScreenshotsProviderProps {
-    readonly softwareId: SoftwareId;
+    readonly softwareId: string;
     /** The release whose screenshots these are; none for the software's own. */
-    readonly releaseId?: ReleaseId | null;
+    readonly releaseId?: string | null;
     /** The gallery of the software these pictures are of; screenshots by default. */
     readonly gallery?: Gallery;
     /** The block has come into view: only then are the screenshots asked for (docs/data-loading.md). */

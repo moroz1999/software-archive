@@ -1,11 +1,12 @@
-import {type CategoryId, requireCategoryId} from '@/entities/categories';
-import {type CityId, type CountryId, parseCityId, parseCountryId} from '@/entities/locations';
-import {parsePlatformCode, type PlatformCode} from '@/entities/platforms';
+import {requireCategoryId} from '@/entities/categories';
+import {parseCityId, parseCountryId} from '@/entities/locations';
+import {parsePlatformCode} from '@/entities/platforms';
 import {SOFTWARE_LIST_PATH} from '@/entities/software';
+import type {components} from '@/shared/api';
 import {pageParam, parsePageParam} from '@/shared/lib/page-param';
 
 /** The order of the cards: by title, or the best rated first (docs/domain/search.md#software-catalog). */
-export type CatalogOrder = 'title' | 'rating';
+export type CatalogOrder = components['schemas']['CatalogOrder'];
 
 /**
  * What the catalog shows: its keyword, its filters, the order of its cards and its page, counted from 0. A city is chosen within its country;
@@ -14,10 +15,10 @@ export type CatalogOrder = 'title' | 'rating';
 export interface SoftwareCatalogFilter {
     readonly keyword: string | null;
     readonly year: number | null;
-    readonly category: CategoryId | null;
-    readonly country: CountryId | null;
-    readonly city: CityId | null;
-    readonly platforms: readonly PlatformCode[];
+    readonly category: string | null;
+    readonly country: string | null;
+    readonly city: string | null;
+    readonly platforms: readonly string[];
     /** The codes of the hardware chosen. */
     readonly hardware: readonly string[];
     readonly order: CatalogOrder;

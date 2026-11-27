@@ -16,7 +16,6 @@ import com.archive.backend.search.web.dto.FullSearchDto;
 import com.archive.backend.search.web.dto.PageMetadataDto;
 import com.archive.backend.search.web.dto.SoftwareCatalogItemDto;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
@@ -50,14 +49,18 @@ public interface FullSearchWebMapper {
     }
 
     private FoundSetDto toSet(FoundSet set) {
-        List<?> items = switch (set) {
+        return switch (set) {
             case FoundSet.Authors authors ->
-                authors.items().stream().map(this::toAuthor).toList();
+                new FoundSetDto.Authors(
+                        set.total(),
+                        authors.items().stream().map(this::toAuthor).toList());
             case FoundSet.Groups groups ->
-                groups.items().stream().map(this::toGroup).toList();
+                new FoundSetDto.Groups(
+                        set.total(), groups.items().stream().map(this::toGroup).toList());
             case FoundSet.Software software ->
-                software.items().stream().map(this::toSoftware).toList();
+                new FoundSetDto.Software(
+                        set.total(),
+                        software.items().stream().map(this::toSoftware).toList());
         };
-        return new FoundSetDto(set.kind().name().toLowerCase(Locale.ROOT), set.total(), items);
     }
 }

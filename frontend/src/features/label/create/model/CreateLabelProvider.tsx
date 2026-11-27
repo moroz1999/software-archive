@@ -2,7 +2,7 @@ import {type ReactNode, useState} from 'react';
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useTranslation} from 'react-i18next';
 import {AUTHOR_QUERY_KEY} from '@/entities/authors';
-import {createLabel, type LabelId} from '@/entities/labels';
+import {createLabel} from '@/entities/labels';
 import {businessErrorOf, splitRefusal, unedited} from '@/shared/api';
 import {createLabelMessages} from '../config/messages';
 import {CreateLabelContext, type CreateLabelState} from './create-label-context';
@@ -12,7 +12,7 @@ import {EMPTY_NEW_LABEL, type NewLabelFormErrors, type NewLabelFormValues, valid
 const REFUSED_FIELDS = ['locations'] as const;
 
 export interface CreateLabelProviderProps {
-    readonly onCreated: (id: LabelId) => void;
+    readonly onCreated: (id: string) => void;
     readonly children: ReactNode;
 }
 

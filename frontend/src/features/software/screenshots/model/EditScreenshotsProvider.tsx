@@ -1,28 +1,15 @@
 import {type ReactNode, useState} from 'react';
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {useTranslation} from 'react-i18next';
-import {
-    deleteScreenshot,
-    type Gallery,
-    movedScreenshot,
-    type ReleaseId,
-    reorderScreenshots,
-    type ScreenshotFileProblem,
-    screenshotFileProblem,
-    type ScreenshotId,
-    screenshotsQuery,
-    SOFTWARE_QUERY_KEY,
-    type SoftwareId,
-    uploadScreenshots,
-} from '@/entities/software';
+import {deleteScreenshot, type Gallery, movedScreenshot, reorderScreenshots, type ScreenshotFileProblem, screenshotFileProblem, screenshotsQuery, SOFTWARE_QUERY_KEY, uploadScreenshots} from '@/entities/software';
 import {type BusinessError, businessErrorMessage, businessErrorOf} from '@/shared/api';
 import {screenshotsMessages} from '../config/messages';
 import {EditScreenshotsContext, type EditScreenshotsState} from './edit-screenshots-context';
 
 export interface EditScreenshotsProviderProps {
-    readonly softwareId: SoftwareId;
+    readonly softwareId: string;
     /** The release whose screenshots these are; none for the software's own. */
-    readonly releaseId?: ReleaseId | null;
+    readonly releaseId?: string | null;
     /** The gallery of the software these pictures are of; screenshots by default. */
     readonly gallery?: Gallery;
     /** The block has come into view: only then are the screenshots asked for (docs/data-loading.md). */
@@ -49,7 +36,7 @@ export function EditScreenshotsProvider({softwareId, releaseId = null, gallery =
         onSuccess: refresh,
     });
     const reorder = useMutation({
-        mutationFn: (order: readonly ScreenshotId[]) => reorderScreenshots(softwareId, releaseId, order, gallery),
+        mutationFn: (order: readonly string[]) => reorderScreenshots(softwareId, releaseId, order, gallery),
         onSuccess: refresh,
         onError: async (error) => {
             // Changed meanwhile: shown as they are now, to be moved again.
@@ -59,7 +46,7 @@ export function EditScreenshotsProvider({softwareId, releaseId = null, gallery =
         },
     });
     const remove = useMutation({
-        mutationFn: (id: ScreenshotId) => deleteScreenshot(softwareId, releaseId, id, gallery),
+        mutationFn: (id: string) => deleteScreenshot(softwareId, releaseId, id, gallery),
         onSuccess: refresh,
     });
 

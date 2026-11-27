@@ -20,6 +20,9 @@ import com.archive.backend.software.web.dto.ReleaseFilesDto;
 import com.archive.backend.software.web.dto.ReleaseRequestDto;
 import com.archive.backend.software.web.mapper.ReleaseWebMapper;
 import com.archive.backend.user.domain.Actor;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
@@ -85,6 +88,7 @@ public class SoftwareReleaseController {
                 new ReparseReleaseFileOnRequestCommand(actor, new SoftwareId(softwareId), new ReleaseId(releaseId)));
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ReleaseCreatedDto> create(
             Actor actor, @PathVariable UUID softwareId, @RequestBody ReleaseRequestDto request) {
@@ -93,6 +97,7 @@ public class SoftwareReleaseController {
                 .body(webMapper.toCreated(id));
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ReleaseCreatedDto> createWithArchive(
             Actor actor,
@@ -127,6 +132,13 @@ public class SoftwareReleaseController {
     }
 
     @GetMapping("/{releaseId}/archive")
+    @ApiResponse(
+            responseCode = "200",
+            description = "The release file as it was uploaded",
+            content =
+                    @Content(
+                            mediaType = "application/octet-stream",
+                            schema = @Schema(type = "string", format = "binary")))
     public ResponseEntity<Resource> archive(@PathVariable UUID softwareId, @PathVariable UUID releaseId) {
         ReleaseArchiveFile file = archiveFileHandler.handle(
                 new GetReleaseArchiveFileQuery(new SoftwareId(softwareId), new ReleaseId(releaseId)));

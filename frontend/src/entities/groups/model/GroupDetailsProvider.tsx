@@ -1,11 +1,10 @@
 import type {ReactNode} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {groupDetailsQuery} from '../api/group-queries';
-import type {GroupId} from './group';
 import {GroupDetailsContext} from './group-details-context';
 
 export interface GroupDetailsProviderProps {
-    readonly id: GroupId;
+    readonly id: string;
     readonly children: ReactNode;
 }
 

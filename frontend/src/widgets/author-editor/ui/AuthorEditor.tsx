@@ -1,5 +1,5 @@
 import {useTranslation} from 'react-i18next';
-import {AuthorDetailsProvider, AuthorForm, AuthorFormSkeleton, type AuthorId, authorPath, AUTHORS_PATH, useAuthorDetails} from '@/entities/authors';
+import {AuthorDetailsProvider, AuthorForm, AuthorFormSkeleton, authorPath, AUTHORS_PATH, useAuthorDetails} from '@/entities/authors';
 import {DeleteAuthorButton} from '@/features/author/delete';
 import {EditAuthorProvider} from '@/features/author/edit';
 import {useSkeleton} from '@/shared/lib/loading';
@@ -9,7 +9,7 @@ import {PageLayout} from '@/shared/ui/page-layout';
 import {AuthorLabels, AuthorLocations} from './AuthorFields';
 
 export interface AuthorEditorProps {
-    readonly id: AuthorId;
+    readonly id: string;
     /** Called once the author is saved. */
     readonly onSaved: () => void;
     /** Called once the author is deleted. */

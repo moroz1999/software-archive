@@ -12,7 +12,7 @@ import {fetchCompilationOptions} from '../api/software-api';
 import {PLATFORM_REQUIRED_KEY, RELEASE_DATE_HINT_KEY, RELEASE_DATE_INVALID_KEY, TITLE_PROBLEM_KEYS} from '../config/messages';
 import {usePlatformHardware} from '../model/platform-hardware-context';
 import {PlatformHardwareProvider} from '../model/PlatformHardwareProvider';
-import {PRESERVATION_STATUSES, toSoftwarePlatformCode} from '../model/software';
+import {preservationStatusValues} from '@/shared/api';
 import {useSoftwareForm} from '../model/software-form-context';
 import {CreditsEditor} from './CreditsEditor';
 import {HardwarePicker} from './HardwarePicker';
@@ -72,7 +72,7 @@ export function SoftwareForm({submitLabel, actions, categories, sources}: Softwa
                             {...control}
                             value={values.preservation ?? 'unknown'}
                             onChange={change('preservation')}
-                            options={PRESERVATION_STATUSES.map((status) => ({value: status, label: t(`software.preservation.${status}`)}))}
+                            options={preservationStatusValues.map((status) => ({value: status, label: t(`software.preservation.${status}`)}))}
                             disabled={busy}
                         />
                     )}
@@ -86,7 +86,7 @@ export function SoftwareForm({submitLabel, actions, categories, sources}: Softwa
             </FormSection>
             <FormSection title={t('formSections.classification')} columns={1}>
                 {values.platform !== '' && (
-                    <PlatformHardwareProvider platform={toSoftwarePlatformCode(values.platform)}>
+                    <PlatformHardwareProvider platform={values.platform}>
                         <SoftwareHardware/>
                     </PlatformHardwareProvider>
                 )}

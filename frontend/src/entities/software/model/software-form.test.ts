@@ -1,5 +1,4 @@
 import {describe, expect, it} from 'vitest';
-import {toReleaseDate, toSoftwareId, toSoftwarePlatformCode, toSoftwareTitle} from './software';
 import {toSoftwareFormValues, validateSoftwareForm} from './software-form';
 
 describe(validateSoftwareForm, () => {
@@ -90,28 +89,29 @@ describe(toSoftwareFormValues, () => {
     it('holds the values of existing software, unknown ones empty', () => {
         expect(toSoftwareFormValues({
             origins: [],
+            compilationItems: [], compilations: [], credits: [], sources: [], instructions: 'Press Space to start',
             added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true,
-            id: toSoftwareId('00000000-0000-0000-0001-000000000001'),
-            title: toSoftwareTitle('Elite'),
+            id: '00000000-0000-0000-0001-000000000001',
+            title: 'Elite',
             description: null,
-            releaseDate: toReleaseDate('1985-09-20'),
-            platform: {code: toSoftwarePlatformCode('bk'), name: 'BK'},
+            releaseDate: '1985-09-20',
+            platform: {code: 'bk', name: 'BK'},
             hardware: [],
             categories: [],
             preservation: 'in-sales',
-            instructions: 'Press Space to start',
-        })).toStrictEqual({title: 'Elite', description: '', releaseDate: '20.09.1985', platform: 'bk', hardware: [], categories: [], credits: [], preservation: 'in-sales', instructions: 'Press Space to start'});
+        })).toStrictEqual({title: 'Elite', description: '', releaseDate: '20.09.1985', platform: 'bk', hardware: [], categories: [], credits: [], compilationItems: [], preservation: 'in-sales', instructions: 'Press Space to start'});
     });
 
     it('holds the codes of the hardware of the software', () => {
         expect(toSoftwareFormValues({
             origins: [],
+            compilationItems: [], compilations: [], credits: [], sources: [], instructions: null,
             added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true, preservation: 'unknown',
-            id: toSoftwareId('00000000-0000-0000-0001-000000000001'),
-            title: toSoftwareTitle('Elite'),
+            id: '00000000-0000-0000-0001-000000000001',
+            title: 'Elite',
             description: null,
             releaseDate: null,
-            platform: {code: toSoftwarePlatformCode('vector'), name: 'Vector'},
+            platform: {code: 'vector', name: 'Vector'},
             hardware: [{code: 'vector06c', name: 'Vector-06C', group: 'computers', groupName: 'Computers'}, {code: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound'}],
             categories: [],
         }).hardware).toStrictEqual(['vector06c', 'ay8910']);
@@ -120,12 +120,13 @@ describe(toSoftwareFormValues, () => {
     it('holds the ids of the categories of the software', () => {
         expect(toSoftwareFormValues({
             origins: [],
+            compilationItems: [], compilations: [], credits: [], sources: [], instructions: null,
             added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true, preservation: 'unknown',
-            id: toSoftwareId('00000000-0000-0000-0001-000000000001'),
-            title: toSoftwareTitle('Elite'),
+            id: '00000000-0000-0000-0001-000000000001',
+            title: 'Elite',
             description: null,
             releaseDate: null,
-            platform: {code: toSoftwarePlatformCode('vector'), name: 'Vector'},
+            platform: {code: 'vector', name: 'Vector'},
             hardware: [],
             categories: [
                 {id: '00000000-0000-0000-0006-000000000001', title: 'Games', branch: [{id: '00000000-0000-0000-0006-000000000001', title: 'Games'}]},

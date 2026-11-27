@@ -1,8 +1,8 @@
-import type {Software} from '@/entities/software';
+import type {SoftwareDetails} from '@/entities/software';
 import {createRequiredContext} from '@/shared/lib/context';
 
 export interface DeleteSoftwareState {
-    readonly software: Software;
+    readonly software: SoftwareDetails;
     readonly remove: () => void;
     readonly deleting: boolean;
     readonly deleted: boolean;

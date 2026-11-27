@@ -1,5 +1,7 @@
 package com.archive.backend.software.web.dto;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -11,7 +13,7 @@ public record SoftwareDetailsDto(
         @Nullable String description,
         @Nullable String instructions,
         @Nullable String releaseDate,
-        String preservation,
+        @Schema(ref = "PreservationStatus") String preservation,
         SoftwarePlatformDto platform,
         List<SoftwareHardwareDto> hardware,
         List<SoftwareCategoryDto> categories,
@@ -23,7 +25,14 @@ public record SoftwareDetailsDto(
         List<SoftwareLinkDto> compilationItems,
         List<SoftwareLinkDto> compilations) {
 
-    public record SoftwareCreditDto(UUID id, @Nullable UUID ownerId, String type, String title, List<String> roles) {}
+    public record SoftwareCreditDto(
+            UUID id,
+            @Nullable UUID ownerId,
+            @Schema(ref = "SoftwareReferenceType") String type,
+            String title,
+
+            @ArraySchema(schema = @Schema(ref = "CreditRole"))
+            List<String> roles) {}
 
     /** Who added the entry, {@code null} once their account was deleted, and when. */
     public record AddedDto(@Nullable String by, Instant at) {}

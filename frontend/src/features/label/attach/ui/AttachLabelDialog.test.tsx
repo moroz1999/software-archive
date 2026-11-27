@@ -1,12 +1,11 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {toLabelId} from '@/entities/labels';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, noContent, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
 import {AttachLabelDialog, type LabelOwner} from './AttachLabelDialog';
 
-const LABEL = {id: toLabelId('00000000-0000-0000-0004-000000000001'), name: 'Ghost'};
+const LABEL = {id: '00000000-0000-0000-0004-000000000001', name: 'Ghost'};
 const JANE = '00000000-0000-0000-0003-000000000001';
 const CREW = '00000000-0000-0000-0005-000000000001';
 const LOOKUP = new Map([

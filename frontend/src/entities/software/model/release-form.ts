@@ -1,8 +1,8 @@
+import {releaseTypeValues} from '@/shared/api';
 import {type TitleProblem, titleProblem} from '@/shared/lib/form-rules';
-import type {MemberRoleValue} from '@/shared/ui/member-role-editor';
-import {type ReleaseDetails, type ReleaseType, toReleaseType} from './release';
+import {type ReleaseDetails, type ReleaseType} from './release';
+import type {CreditValue} from './software-form';
 import {parseReleaseDateText, releaseDateField} from '../lib/release-date';
-import type {ReleaseDate} from './software';
 
 /** The longest version of a release (docs/domain/software.md). */
 export const RELEASE_VERSION_MAX_LENGTH = 50;
@@ -18,7 +18,7 @@ export interface ReleaseFormValues {
     readonly description: string;
     readonly hardware: readonly string[];
     /** Whoever is credited on the release, with their roles. */
-    readonly credits: readonly MemberRoleValue[];
+    readonly credits: readonly CreditValue[];
 }
 
 /** A release to be added or saved, as the form produced it; a release without a title is called by its software's. */
@@ -26,10 +26,10 @@ export interface ReleaseDraft {
     readonly title: string | null;
     readonly version: string | null;
     readonly type: ReleaseType;
-    readonly releaseDate: ReleaseDate | null;
+    readonly releaseDate: string | null;
     readonly description: string | null;
     readonly hardware: readonly string[];
-    readonly credits: readonly MemberRoleValue[];
+    readonly credits: readonly CreditValue[];
     /** A replacement chosen in the form; absent keeps the current archive. */
     readonly archive?: File;
     /** Set only when the current archive is to be removed on save. */
@@ -52,16 +52,16 @@ export type ReleaseFormResult =
 export function validateReleaseForm(values: ReleaseFormValues): ReleaseFormResult {
     const title = values.title.trim() === '' ? null : titleProblem(values.title);
     const versionTooLong = values.version.length > RELEASE_VERSION_MAX_LENGTH;
-    const typeMissing = values.type === '';
+    const type = releaseTypeValues.find((known) => known === values.type);
     const releaseDate = values.releaseDate === '' ? null : parseReleaseDateText(values.releaseDate);
     const releaseDateInvalid = values.releaseDate !== '' && releaseDate === null;
-    if (title === 'too-long' || versionTooLong || typeMissing || releaseDateInvalid) {
+    if (title === 'too-long' || versionTooLong || type === undefined || releaseDateInvalid) {
         return {
             ok: false,
             errors: {
                 ...(title === 'too-long' ? {title} : {}),
                 ...(versionTooLong ? {version: 'too-long'} : {}),
-                ...(typeMissing ? {type: 'required'} : {}),
+                ...(type === undefined ? {type: 'required'} : {}),
                 ...(releaseDateInvalid ? {releaseDate: 'invalid'} : {}),
             },
         };
@@ -71,7 +71,7 @@ export function validateReleaseForm(values: ReleaseFormValues): ReleaseFormResul
         draft: {
             title: orNull(values.title),
             version: orNull(values.version),
-            type: toReleaseType(values.type),
+            type,
             releaseDate,
             description: orNull(values.description),
             hardware: values.hardware,

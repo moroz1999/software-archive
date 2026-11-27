@@ -1,5 +1,6 @@
 package com.archive.backend.importer.web.mapper;
 
+import com.archive.backend.importer.domain.run.ImportRunState;
 import com.archive.backend.importer.read.ImportRunAddedEntry;
 import com.archive.backend.importer.read.ImportRunAuthorEntry;
 import com.archive.backend.importer.read.ImportRunDownloadedEntry;
@@ -22,7 +23,8 @@ import com.archive.backend.importer.web.dto.ImportRunLogLineDto;
 import com.archive.backend.importer.web.dto.ImportRunPlaceDto;
 import com.archive.backend.importer.web.dto.ImportRunProgressDto;
 import com.archive.backend.importer.web.dto.ImportRunSkippedDto;
-import java.util.Locale;
+import java.time.Instant;
+import org.jspecify.annotations.Nullable;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -53,22 +55,22 @@ public interface ImportWebMapper {
 
     /** A line of the log with what it tells in the shape of its kind. */
     default ImportRunLogLineDto toDto(ImportRunLogLine line) {
-        Object entry = switch (line.entry()) {
-            case ImportRunListReadEntry e -> toDto(e);
-            case ImportRunDownloadedEntry e -> toDto(e);
-            case ImportRunAddedEntry e -> toDto(e);
-            case ImportRunKnownEntry e -> toDto(e);
-            case ImportRunSkippedEntry e -> toDto(e);
-            case ImportRunFailedEntry e -> toDto(e);
-            case ImportRunAuthorEntry e -> toDto(e);
-            case ImportRunPlaceEntry e -> toDto(e);
+        long seq = line.seq();
+        @Nullable Instant at = line.at();
+        return switch (line.entry()) {
+            case ImportRunListReadEntry e -> new ImportRunLogLineDto.ListRead(seq, at, toDto(e));
+            case ImportRunDownloadedEntry e -> new ImportRunLogLineDto.Downloaded(seq, at, toDto(e));
+            case ImportRunAddedEntry e -> new ImportRunLogLineDto.Added(seq, at, toDto(e));
+            case ImportRunKnownEntry e -> new ImportRunLogLineDto.Known(seq, at, toDto(e));
+            case ImportRunSkippedEntry e -> new ImportRunLogLineDto.Skipped(seq, at, toDto(e));
+            case ImportRunFailedEntry e -> new ImportRunLogLineDto.Failed(seq, at, toDto(e));
+            case ImportRunAuthorEntry e -> new ImportRunLogLineDto.Author(seq, at, toDto(e));
+            case ImportRunPlaceEntry e -> new ImportRunLogLineDto.Place(seq, at, toDto(e));
         };
-        return new ImportRunLogLineDto(line.seq(), line.at(), line.kind(), entry);
     }
 
-    /** RUNNING → running: codes go to the frontend in lower case. */
     @Named("state")
     default String toState(String state) {
-        return state.toLowerCase(Locale.ROOT);
+        return ImportRunState.valueOf(state).code();
     }
 }

@@ -5,7 +5,6 @@ import {MemoryRouter} from 'react-router';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {CurrentUserProvider} from '@/entities/users';
 import {breadcrumbSteps, json, noContent, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
-import {toAuthorId} from '@/entities/authors';
 import {AuthorView} from './AuthorView';
 
 const ID = '00000000-0000-0000-0003-000000000001';
@@ -38,7 +37,7 @@ const ELITE = '00000000-0000-0000-0001-000000000001';
 const TETRIS = '00000000-0000-0000-0001-000000000002';
 
 function renderView() {
-    renderWithQueries(<CurrentUserProvider><MemoryRouter><AuthorView id={toAuthorId(ID)}/></MemoryRouter></CurrentUserProvider>);
+    renderWithQueries(<CurrentUserProvider><MemoryRouter><AuthorView id={ID}/></MemoryRouter></CurrentUserProvider>);
 }
 
 function itemsOf(name: string): string[] {

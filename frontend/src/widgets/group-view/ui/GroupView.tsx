@@ -1,9 +1,9 @@
 import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
-import {authorPath, toAuthorId} from '@/entities/authors';
-import {labelPath, toLabelId} from '@/entities/labels';
+import {authorPath} from '@/entities/authors';
+import {labelPath} from '@/entities/labels';
 import {locationText, primaryFirst} from '@/entities/locations';
-import {groupEditPath, type GroupDetails, GroupDetailsProvider, type GroupId, groupPath, GROUPS_PATH, type GroupMember, type RelatedGroup, useGroupDetails} from '@/entities/groups';
+import {groupEditPath, type GroupDetails, GroupDetailsProvider, groupPath, GROUPS_PATH, type GroupMember, type RelatedGroup, useGroupDetails} from '@/entities/groups';
 import {CreditedReleaseList, CreditedSoftwareList} from '@/entities/software';
 import {SoftwareCard} from '@/features/software/vote';
 import {PopoverMenu, PopoverMenuItem} from '@/shared/ui/popover-menu';
@@ -19,7 +19,7 @@ import styles from './GroupView.module.css';
 import {useSkeleton} from '@/shared/lib/loading';
 
 export interface GroupViewProps {
-    readonly id: GroupId;
+    readonly id: string;
 }
 
 /** The page of one group: the main name over everything known about it. */
@@ -75,7 +75,7 @@ function Details({group}: {readonly group: GroupDetails}) {
             )}
             {group.labels.length > 0 && (
                 <Section label={t('group.labels')}>
-                    <ItemList label={t('group.labels')}>{group.labels.map((label) => <li key={label.id}><Text><TextLink href={labelPath(toLabelId(label.id))}>{label.name}</TextLink></Text></li>)}</ItemList>
+                    <ItemList label={t('group.labels')}>{group.labels.map((label) => <li key={label.id}><Text><TextLink href={labelPath(label.id)}>{label.name}</TextLink></Text></li>)}</ItemList>
                 </Section>
             )}
             {group.locations.length > 0 && (
@@ -110,7 +110,7 @@ function memberHref(member: GroupMember): string | null {
     if (member.id === null) {
         return null;
     }
-    return member.type === 'author-label' ? labelPath(toLabelId(member.id)) : authorPath(toAuthorId(member.id));
+    return member.type === 'author-label' ? labelPath(member.id) : authorPath(member.id);
 }
 
 /** The label a member was a member under, leading to its own page, with the person's main name leading to the person when it is another one. */
@@ -121,7 +121,7 @@ function Member({member}: {readonly member: GroupMember}) {
         <Inline gap="sm" align="baseline" wrap>
             <Text>{href === null ? member.name : <TextLink href={href}>{member.name}</TextLink>}</Text>
             {member.personName !== null && member.personId !== null && (
-                <>{' '}<Text variant="bodySm" tone="muted"><TextLink href={authorPath(toAuthorId(member.personId))}>{member.personName}</TextLink></Text></>
+                <>{' '}<Text variant="bodySm" tone="muted"><TextLink href={authorPath(member.personId)}>{member.personName}</TextLink></Text></>
             )}
             {/* An unknown role tells nothing to a reader. */}
             {member.roles.filter((role) => role !== 'unknown').map((role) => <Chip key={role} size="sm">{t(`roles.group.${role}`)}</Chip>)}

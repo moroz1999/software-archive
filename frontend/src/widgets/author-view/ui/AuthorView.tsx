@@ -1,9 +1,9 @@
 import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
-import {type AuthorDetails, AuthorDetailsProvider, authorEditPath, type AuthorId, AUTHORS_PATH, useAuthorDetails} from '@/entities/authors';
+import {type AuthorDetails, AuthorDetailsProvider, authorEditPath, AUTHORS_PATH, useAuthorDetails} from '@/entities/authors';
 import {locationText, primaryFirst} from '@/entities/locations';
-import {groupPath, toGroupId} from '@/entities/groups';
-import {labelPath, toLabelId} from '@/entities/labels';
+import {groupPath} from '@/entities/groups';
+import {labelPath} from '@/entities/labels';
 import {CreditedReleaseList, CreditedSoftwareList} from '@/entities/software';
 import {SoftwareCard} from '@/features/software/vote';
 import {PopoverMenu, PopoverMenuItem} from '@/shared/ui/popover-menu';
@@ -18,7 +18,7 @@ import styles from './AuthorView.module.css';
 import {useSkeleton} from '@/shared/lib/loading';
 
 export interface AuthorViewProps {
-    readonly id: AuthorId;
+    readonly id: string;
 }
 
 /** The page of one author: the main name over everything known about them. */
@@ -73,7 +73,7 @@ function Details({author}: {readonly author: AuthorDetails}) {
             {author.labels.length > 0 && (
                 <Section label={t('author.labels')}>
                     <ItemList label={t('author.labels')}>
-                        {author.labels.map((label) => <li key={label.id}><Text><TextLink href={labelPath(toLabelId(label.id))}>{label.name}</TextLink></Text></li>)}
+                        {author.labels.map((label) => <li key={label.id}><Text><TextLink href={labelPath(label.id)}>{label.name}</TextLink></Text></li>)}
                     </ItemList>
                 </Section>
             )}
@@ -90,7 +90,7 @@ function Details({author}: {readonly author: AuthorDetails}) {
                         {author.groups.map((group) => (
                             <li key={`${group.id}-${group.as ?? ''}`}>
                                 <Inline gap="sm" align="baseline" wrap>
-                                    <Text><TextLink href={groupPath(toGroupId(group.id))}>{group.name}</TextLink></Text>
+                                    <Text><TextLink href={groupPath(group.id)}>{group.name}</TextLink></Text>
                                     {group.as !== null && <>{' '}<Text variant="bodySm" tone="muted">{t('author.as', {name: group.as})}</Text></>}
                                 </Inline>
                             </li>

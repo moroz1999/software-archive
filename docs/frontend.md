@@ -51,7 +51,7 @@ Project rules enforced by ESLint:
 | Named exports only (tool configs excepted) | `no-restricted-syntax` |
 | No inline `style` | `react/forbid-dom-props` |
 | No native `<button>`/`<a>` outside `shared/ui` | `react/forbid-elements` |
-| No type assertions; `as` only in `model` segments and `shared/lib`, where value object constructors brand raw values | `@typescript-eslint/consistent-type-assertions` |
+| No type assertions | `@typescript-eslint/consistent-type-assertions` |
 | `fetch`/`XMLHttpRequest` only in `shared/api` | `no-restricted-globals` |
 | Only `*.module.css` imports outside `app/` | `no-restricted-imports` |
 
@@ -69,8 +69,12 @@ Design system rules enforced by Stylelint:
 
 ## Data loading
 
-- HTTP goes only through `shared/api`: `getJson` and the response readers (`readObject`, `readString`, `parsePage`, `mapResponse`, …) that turn `unknown` JSON into typed values without type assertions.
-- Each entity's `api` segment fetches and maps its DTOs into the entity model; a response that does not fit the model is a `SystemError` of kind `response`.
+- HTTP goes only through `shared/api`: the `api` client ([openapi-fetch](https://openapi-ts.dev/openapi-fetch/)), typed by the backend's OpenAPI document. The document (`shared/api/openapi.json`) is written by the backend and kept in git; `npm run typecheck` generates `shared/api/schema.ts` from it (not in git): the types, and every fixed set of values of the contract as a list (`releaseTypeValues`, `creditRoleValues`, …) in the order the backend gives. After a change of the REST contract run `make api-types`; the backend test of the contract fails while the document is stale.
+- No DTO type and no reader of JSON is written by hand: a DTO is `components['schemas'][…]`, a request is checked against `paths`. A call is the standard idiom of the client — `const {data, error, response} = await api.GET(path, {params, body, signal}); if (error !== undefined) throw apiError(response, error);` — and a multipart body passes `bodySerializer: multipartForm`.
+- The generated contract is the one thing of the archive's domain in `shared`: it is the shape of the API, used by every layer, not a slice of its own.
+- The frontend has no domain model of its own: no branded types, no value objects, no converters (`to…`) of what the API gives. An entity's model is the generated DTO under the entity's name (`type Software = components['schemas']['SoftwareListItemDto']`), a fixed set its schema type (`type ReleaseType = components['schemas']['ReleaseType']`), a page the DTO page as it comes (`content`, `page`). An `api` function returns `data`. The answer is not checked again: the contract is.
+- A set of values is never listed by hand: a form offers the generated list (`releaseTypeValues.map(…)`), and a raw value of a field or a URL is narrowed by finding it there (`releaseTypeValues.find((known) => known === raw)`). An id from a URL is checked to be one (`requireSoftwareId` → not found) and stays a `string`.
+- A model of its own is made only where the frontend needs another shape than the API gives, and says why: the entries of the author and group catalogs (two nullable ids made a union by kind), the titles and names in every language (a map that must hold the Russian one), the hardware and the places the management edits (two answers made one by kind), a credit or a member in a form (a found entry with the roles chosen).
 - Server state is held by TanStack Query: one `QueryClient` per page load (`createQueryClient()` from `shared/api`), shared by the route loaders and the blocks.
 - When and how blocks load — route preload with a 300 ms window, lazy loading by viewport, skeletons on first load, spinners for pagination and filters — is defined in [data-loading.md](data-loading.md).
 - In development, Vite proxies `/api` to the backend — see [local-dev.md](local-dev.md).
@@ -96,10 +100,6 @@ features/software/edit/
 widgets/software-editor/
   ui/SoftwareEditor.tsx               <EditSoftwareProvider …><SoftwareForm submitLabel="Save"/></EditSoftwareProvider>
 ```
-
-## Value objects
-
-Entity models use branded value objects; API DTOs use scalars and are mapped in the `api` segment — see [value-objects.md](value-objects.md).
 
 ## Errors
 

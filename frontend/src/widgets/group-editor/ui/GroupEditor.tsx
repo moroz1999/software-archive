@@ -1,5 +1,5 @@
 import {useTranslation} from 'react-i18next';
-import {GroupDetailsProvider, GroupForm, GroupFormSkeleton, type GroupId, groupPath, GROUPS_PATH, useGroupDetails} from '@/entities/groups';
+import {GroupDetailsProvider, GroupForm, GroupFormSkeleton, groupPath, GROUPS_PATH, useGroupDetails} from '@/entities/groups';
 import {DeleteGroupButton} from '@/features/group/delete';
 import {EditGroupProvider} from '@/features/group/edit';
 import {useSkeleton} from '@/shared/lib/loading';
@@ -9,7 +9,7 @@ import {PageLayout} from '@/shared/ui/page-layout';
 import {GroupLabels, GroupLocations} from './GroupFields';
 
 export interface GroupEditorProps {
-    readonly id: GroupId;
+    readonly id: string;
     /** Called once the group is saved. */
     readonly onSaved: () => void;
     /** Called once the group is deleted. */

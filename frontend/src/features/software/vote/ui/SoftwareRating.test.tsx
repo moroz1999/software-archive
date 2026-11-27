@@ -2,7 +2,6 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import i18n from 'i18next';
-import {toSoftwareId} from '@/entities/software';
 import {CurrentUserProvider} from '@/entities/users';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, noContent, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
@@ -26,7 +25,7 @@ function stubFetch(rating: () => Response, vote: () => Response = json({}), me: 
 function renderRating() {
     renderWithQueries(
         <CurrentUserProvider>
-            <SoftwareRatingProvider id={toSoftwareId(ID)}><SoftwareRating/></SoftwareRatingProvider>
+            <SoftwareRatingProvider id={ID}><SoftwareRating/></SoftwareRatingProvider>
         </CurrentUserProvider>,
     );
 }

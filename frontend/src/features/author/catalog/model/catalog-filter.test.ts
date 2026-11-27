@@ -1,5 +1,4 @@
 import {describe, expect, it} from 'vitest';
-import {toCityId, toCountryId} from '@/entities/locations';
 import {catalogHref, parseCatalogFilter} from './catalog-filter';
 
 const COUNTRY = '00000000-0000-0000-0002-000000000001';
@@ -49,7 +48,7 @@ describe(catalogHref, () => {
     });
 
     it('writes every filter and the page counted from 1', () => {
-        expect(catalogHref({letter: parse('letter=%23').letter, country: toCountryId(COUNTRY), city: toCityId(CITY), page: 1}))
+        expect(catalogHref({letter: parse('letter=%23').letter, country: COUNTRY, city: CITY, page: 1}))
             .toBe(`/authors?letter=%23&country=${COUNTRY}&city=${CITY}&page=2`);
     });
 });

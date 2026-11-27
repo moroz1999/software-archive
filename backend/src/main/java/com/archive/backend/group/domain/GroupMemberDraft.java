@@ -4,11 +4,11 @@ import com.archive.backend.author.domain.PersonReference;
 import com.archive.backend.shared.domain.error.InvalidValueException;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 public record GroupMemberDraft(PersonReference person, List<String> roles) {
 
-    public static final Set<String> ALLOWED_ROLES = Set.of(
+    /** The roles of a group member, in the order a form offers them. */
+    public static final List<String> ALLOWED_ROLES = List.of(
             "coder",
             "cracker",
             "graphician",

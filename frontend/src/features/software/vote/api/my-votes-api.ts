@@ -1,5 +1,4 @@
-import type {SoftwareId} from '@/entities/software';
-import {getJson, mapResponse, readArray, readNumber, readObject, readString} from '@/shared/api';
+import {api, apiError} from '@/shared/api';
 
 /** More than the largest page of software any list shows, as the archive allows. */
 const MOST_SOFTWARE = 100;
@@ -9,15 +8,15 @@ interface Waiting {
     readonly reject: (error: unknown) => void;
 }
 
-let waiting = new Map<SoftwareId, Waiting[]>();
+let waiting = new Map<string, Waiting[]>();
 
 /** The reader's votes on the software asked for in one go: `GET /api/my-votes?software={ids}`. */
-async function fetchMyVotes(ids: readonly SoftwareId[]): Promise<ReadonlyMap<string, number>> {
-    const json = await getJson(`/api/my-votes?software=${ids.map(encodeURIComponent).join(',')}`);
-    return mapResponse(() => new Map(readArray(json, 'votes').map((item) => {
-        const dto = readObject(item, 'vote');
-        return [readString(dto, 'software'), readNumber(dto, 'value')] as const;
-    })));
+async function fetchMyVotes(ids: readonly string[]): Promise<ReadonlyMap<string, number>> {
+    const {data, error, response} = await api.GET('/api/my-votes', {params: {query: {software: ids}}});
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
+    return new Map(data.map((vote) => [vote.software, vote.value]));
 }
 
 async function flush(): Promise<void> {
@@ -47,7 +46,7 @@ async function flush(): Promise<void> {
  * The stars the reader gave the software, `null` for none. The cards of one list ask at once, so their votes are asked
  * for together, in one request.
  */
-export function fetchMyVote(id: SoftwareId): Promise<number | null> {
+export function fetchMyVote(id: string): Promise<number | null> {
     return new Promise((resolve, reject) => {
         if (waiting.size === 0) {
             setTimeout(() => {

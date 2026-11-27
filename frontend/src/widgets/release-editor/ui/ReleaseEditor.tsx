@@ -1,23 +1,7 @@
 import type {ReactNode} from 'react';
 import type {UseQueryResult} from '@tanstack/react-query';
 import {useTranslation} from 'react-i18next';
-import {
-    type Hardware,
-    type ReleaseDetails,
-    PlatformHardwareProvider,
-    ReleaseDetailsProvider,
-    ReleaseForm,
-    type ReleaseId,
-    releasePath,
-    type SoftwareDetails,
-    SoftwareDetailsProvider,
-    SoftwareFormSkeleton,
-    type SoftwareId,
-    softwarePath,
-    usePlatformHardware,
-    useReleaseDetails,
-    useSoftwareDetails,
-} from '@/entities/software';
+import {type Hardware, type ReleaseDetails, PlatformHardwareProvider, ReleaseDetailsProvider, ReleaseForm, releasePath, type SoftwareDetails, SoftwareDetailsProvider, SoftwareFormSkeleton, softwarePath, usePlatformHardware, useReleaseDetails, useSoftwareDetails} from '@/entities/software';
 import {CreateReleaseProvider} from '@/features/release/create';
 import {DeleteReleaseButton} from '@/features/release/delete';
 import {EditReleaseProvider} from '@/features/release/edit';
@@ -30,7 +14,7 @@ import {PageLayout} from '@/shared/ui/page-layout';
 import {Stack} from '@/shared/ui/stack';
 
 export interface ReleaseCreatorProps {
-    readonly softwareId: SoftwareId;
+    readonly softwareId: string;
     /** Called once the release is added. */
     readonly onDone: () => void;
 }
@@ -53,8 +37,8 @@ export function ReleaseCreator({softwareId, onDone}: ReleaseCreatorProps) {
 }
 
 export interface ReleaseEditorProps {
-    readonly softwareId: SoftwareId;
-    readonly releaseId: ReleaseId;
+    readonly softwareId: string;
+    readonly releaseId: string;
     /** Called once the release is saved or deleted. */
     readonly onDone: () => void;
 }
@@ -109,7 +93,7 @@ function DeleteAction({software, onDone}: {readonly software: SoftwareDetails; r
 }
 
 interface WithSoftwareAndHardwareProps {
-    readonly id: SoftwareId;
+    readonly id: string;
     /** The page title until the software arrives. */
     readonly title: string;
     readonly titleOf: (software: SoftwareDetails) => string;

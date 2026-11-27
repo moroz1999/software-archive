@@ -18,14 +18,13 @@ import {releasePath} from '../config/paths';
 import {releaseDateText} from '../lib/release-date';
 import type {ReleaseType, SoftwareRelease} from '../model/release';
 import {fileSizeText, type ReleaseArchive} from '../model/release-archive';
-import type {SoftwareId} from '../model/software';
 import {useSoftwareReleases} from '../model/software-releases-context';
 import {type CreditHref, SoftwareCreditList} from './SoftwareCreditList';
 import styles from './SoftwareReleases.module.css';
 
 export interface SoftwareReleasesProps {
     /** The software whose releases these are: when given, every release title leads to its page. */
-    readonly softwareId?: SoftwareId;
+    readonly softwareId?: string;
     /** What can be done with a release, shown with it, such as a link to edit it. */
     readonly actions?: (release: SoftwareRelease) => ReactNode;
     /** Where the names credited on a release lead. */
@@ -60,7 +59,7 @@ export function SoftwareReleases({softwareId, actions, creditHref}: SoftwareRele
 }
 
 interface ReleaseListProps {
-    readonly softwareId: SoftwareId | undefined;
+    readonly softwareId: string | undefined;
     readonly releases: readonly SoftwareRelease[];
     readonly actions: SoftwareReleasesProps['actions'];
     readonly creditHref: SoftwareReleasesProps['creditHref'];
@@ -232,7 +231,7 @@ function ReleaseCards({softwareId, releases, actions, creditHref}: ReleaseListPr
 }
 
 interface ReleaseCardProps {
-    readonly softwareId: SoftwareId | undefined;
+    readonly softwareId: string | undefined;
     readonly release: SoftwareRelease;
     readonly actions: SoftwareReleasesProps['actions'];
     readonly creditHref: SoftwareReleasesProps['creditHref'];
@@ -275,7 +274,7 @@ function ReleaseCard({softwareId, release, actions, creditHref}: ReleaseCardProp
     );
 }
 
-function ReleaseTitle({softwareId, release}: {readonly softwareId: SoftwareId | undefined; readonly release: SoftwareRelease}) {
+function ReleaseTitle({softwareId, release}: {readonly softwareId: string | undefined; readonly release: SoftwareRelease}) {
     return softwareId === undefined ? release.title : <TextLink href={releasePath(softwareId, release.id)}>{release.title}</TextLink>;
 }
 

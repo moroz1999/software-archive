@@ -1,13 +1,13 @@
 import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import type {Software} from '@/entities/software';
+import type {SoftwareDetails} from '@/entities/software';
 import {Button} from '@/shared/ui/button';
 import {ConfirmDialog} from '@/shared/ui/confirm-dialog';
 import {useDeleteSoftware} from '../model/delete-software-context';
 import {DeleteSoftwareProvider} from '../model/DeleteSoftwareProvider';
 
 export interface DeleteSoftwareButtonProps {
-    readonly software: Software;
+    readonly software: SoftwareDetails;
     readonly onDeleted: () => void;
 }
 

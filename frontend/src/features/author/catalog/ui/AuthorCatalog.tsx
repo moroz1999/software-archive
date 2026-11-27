@@ -44,18 +44,18 @@ function Entries() {
         // The error dialog shows why it failed (docs/error-handling.md).
         return null;
     }
-    if (entries.data.items.length === 0) {
+    if (entries.data.content.length === 0) {
         return <Text tone="muted">{t('empty.authors')}</Text>;
     }
     return (
         <LoadingState loading={changing}>
             <Stack gap="lg">
                 <Grid as="ul" ariaLabel={t('pages.authors')} desktopColumns={4} tabletColumns={3} mobileColumns={1} gap="md">
-                    {entries.data.items.map((entry) => <li key={keyOf(entry)}><Entry entry={entry}/></li>)}
+                    {entries.data.content.map((entry) => <li key={keyOf(entry)}><Entry entry={entry}/></li>)}
                 </Grid>
                 <Pagination
-                    page={entries.data.number}
-                    totalPages={entries.data.totalPages}
+                    page={entries.data.page.number}
+                    totalPages={entries.data.page.totalPages}
                     hrefOf={(page) => catalogHref({...filter, page})}
                     disabled={changing}
                 />

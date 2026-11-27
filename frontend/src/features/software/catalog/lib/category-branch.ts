@@ -1,7 +1,7 @@
-import type {CategoryId, CategoryNode} from '@/entities/categories';
+import type {CategoryNode} from '@/entities/categories';
 
 /** The categories from the top of the tree down to the one of the id, itself included; empty when it is not in the tree. */
-export function branchTo(tree: readonly CategoryNode[], id: CategoryId): readonly CategoryNode[] {
+export function branchTo(tree: readonly CategoryNode[], id: string): readonly CategoryNode[] {
     for (const node of tree) {
         if (node.id === id) {
             return [node];

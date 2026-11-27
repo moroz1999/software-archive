@@ -1,9 +1,8 @@
-import type {GroupId} from '@/entities/groups';
 import {createRequiredContext} from '@/shared/lib/context';
 
 /** The group to delete, under the name it is shown by. */
 export interface DeletedGroup {
-    readonly id: GroupId;
+    readonly id: string;
     readonly name: string;
 }
 

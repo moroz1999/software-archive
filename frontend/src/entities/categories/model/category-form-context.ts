@@ -1,6 +1,5 @@
 import {createRequiredContext} from '@/shared/lib/context';
 import type {UiLanguage} from '@/shared/lib/i18n';
-import type {CategoryId} from './category';
 import type {CategoryFormErrors, CategoryFormValues} from './category-form';
 
 /** The texts of a refusal under the fields it names. */
@@ -19,7 +18,7 @@ export interface CategoryFormState {
     readonly changeTitle: (language: UiLanguage) => (value: string) => void;
     readonly changeParent: (value: string) => void;
     /** The category being edited: it and its subcategories cannot be its parent. */
-    readonly editing: CategoryId | undefined;
+    readonly editing: string | undefined;
     /** Checks the format rules and hands the draft on only when they pass. */
     readonly submit: () => void;
     /** Saving runs: the form is locked. */

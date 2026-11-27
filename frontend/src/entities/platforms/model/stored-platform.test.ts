@@ -1,5 +1,4 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {toPlatformCode} from './platform';
 import {readSelectedPlatform, storeSelectedPlatform} from './stored-platform';
 
 const KEY = 'archive.platform';
@@ -42,7 +41,7 @@ describe(storeSelectedPlatform, () => {
     });
 
     it('keeps the chosen platform in the browser', () => {
-        storeSelectedPlatform(toPlatformCode('msx'));
+        storeSelectedPlatform('msx');
 
         expect(localStorage.getItem(KEY)).toBe('msx');
     });
@@ -61,7 +60,7 @@ describe(storeSelectedPlatform, () => {
         });
 
         expect(() => {
-            storeSelectedPlatform(toPlatformCode('agat'));
+            storeSelectedPlatform('agat');
         }).not.toThrow();
     });
 });

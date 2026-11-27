@@ -1,9 +1,9 @@
-import type {LabelId, NamedLabelOwner} from '@/entities/labels';
+import type {NamedLabelOwner} from '@/entities/labels';
 import {createRequiredContext} from '@/shared/lib/context';
 
 /** The label to make an owner of, under its name, with whoever has it now. */
 export interface MadeOwnerLabel {
-    readonly id: LabelId;
+    readonly id: string;
     readonly name: string;
     readonly owner: NamedLabelOwner | null;
 }

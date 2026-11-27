@@ -1,5 +1,56 @@
 import {vi} from 'vitest';
 
+const SENT_FORM = Symbol('the form a request was made with');
+
+/**
+ * Makes every Request keep the form it was made with. A Request of Node reads no Blob of jsdom: a multipart body made in
+ * a test would hold "undefined" for every part, though a browser sends them. The test reads the form itself then.
+ * jsdom's FormData and Blob stay in place, as React makes the FormData of a form submitted.
+ */
+export function keepSentForms(): void {
+    class FormKeepingRequest extends Request {
+        readonly [SENT_FORM]: FormData | undefined;
+
+        constructor(input: RequestInfo | URL, init?: RequestInit) {
+            super(input, init);
+            const body = init?.body ?? (input instanceof FormKeepingRequest ? input[SENT_FORM] : undefined);
+            this[SENT_FORM] = body instanceof FormData ? body : undefined;
+        }
+    }
+    globalThis.Request = FormKeepingRequest;
+}
+
+function sentForm(request: Request): FormData | undefined {
+    return SENT_FORM in request && request[SENT_FORM] instanceof FormData ? request[SENT_FORM] : undefined;
+}
+
+/**
+ * A request as the test reads it: the path with its query, and how it was sent — the method, the headers and the body, the text of a JSON one
+ * or the form of a multipart one. The API client sends a Request; the mocks of a test see it in this shape.
+ */
+async function asSent(input: RequestInfo | URL, init?: RequestInit): Promise<[string, RequestInit]> {
+    if (!(input instanceof Request)) {
+        return [input instanceof URL ? input.href : input, init ?? {}];
+    }
+    const url = new URL(input.url);
+    const body = input.body === null ? null : sentForm(input) ?? await input.text();
+    return [`${url.pathname}${url.search}`, {method: input.method, headers: input.headers, body, signal: input.signal}];
+}
+
+/** The address a fetch is called with: a test's mocks see the path with its query. */
+export function urlOf(input: RequestInfo | URL): string {
+    return typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+}
+
+/** Puts the mock in place of fetch, called with each request as the test reads it. */
+export function stubGlobalFetch<T extends ReturnType<typeof vi.fn<typeof fetch>>>(fetchMock: T): T {
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+        const [path, sent] = await asSent(input, init);
+        return fetchMock(path, sent);
+    });
+    return fetchMock;
+}
+
 /** Answers every fetch with the given responses in order; the last one repeats. */
 export function stubFetch(...responses: (() => Response)[]): ReturnType<typeof vi.fn<typeof fetch>> {
     const fetchMock = vi.fn<typeof fetch>();
@@ -10,8 +61,7 @@ export function stubFetch(...responses: (() => Response)[]): ReturnType<typeof v
             fetchMock.mockImplementationOnce(() => Promise.resolve(response()));
         }
     });
-    vi.stubGlobal('fetch', fetchMock);
-    return fetchMock;
+    return stubGlobalFetch(fetchMock);
 }
 
 export function json(body: unknown, status = 200): () => Response {
@@ -27,12 +77,11 @@ export function json(body: unknown, status = 200): () => Response {
  */
 export function stubFetchRoutes(routes: Map<string, () => Response>): ReturnType<typeof vi.fn<typeof fetch>> {
     const fetchMock = vi.fn<typeof fetch>((input) => {
-        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+        const url = urlOf(input);
         const response = routes.get(url);
         return response === undefined ? Promise.reject(new TypeError(`Unexpected fetch: ${url}`)) : Promise.resolve(response());
     });
-    vi.stubGlobal('fetch', fetchMock);
-    return fetchMock;
+    return stubGlobalFetch(fetchMock);
 }
 
 /**
@@ -48,8 +97,8 @@ export function stubFetchAround(fixed: Map<string, () => Response>, ...responses
             others.mockImplementationOnce(() => Promise.resolve(response()));
         }
     });
-    vi.stubGlobal('fetch', vi.fn<typeof fetch>((input, init) => {
-        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+    stubGlobalFetch(vi.fn<typeof fetch>((input, init) => {
+        const url = urlOf(input);
         const response = fixed.get(url);
         return response === undefined ? others(input, init) : Promise.resolve(response());
     }));

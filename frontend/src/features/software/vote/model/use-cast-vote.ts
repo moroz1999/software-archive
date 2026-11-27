@@ -1,6 +1,5 @@
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useTranslation} from 'react-i18next';
-import type {SoftwareId} from '@/entities/software';
 import {businessErrorMessage, businessErrorOf} from '@/shared/api';
 import {castVote} from '../api/vote-api';
 import {myVoteQuery, softwareRatingQuery, softwareVotesQuery} from '../api/vote-queries';
@@ -19,7 +18,7 @@ export interface CastVote {
  * The reader's vote on one software, given and withdrawn: the answer is the new rating, kept for its page and its cards,
  * and the votes of the software are read again.
  */
-export function useCastVote(id: SoftwareId, onAnswer?: (rating: SoftwareRating) => void): CastVote {
+export function useCastVote(id: string, onAnswer?: (rating: SoftwareRating) => void): CastVote {
     const {t} = useTranslation();
     const queryClient = useQueryClient();
     const {mutate, isPending, error} = useMutation({

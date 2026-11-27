@@ -1,10 +1,8 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {SystemError} from '@/shared/api';
 import {json, noContent, stubFetch} from '@/shared/lib/test';
-import {toGroupId} from '../model/group';
 import {createGroup, deleteGroup, fetchGroup, fetchGroupTypes, updateGroup} from './group-api';
 
-const ID = toGroupId('00000000-0000-0000-0005-000000000001');
+const ID = '00000000-0000-0000-0005-000000000001';
 const CREW = {
     id: ID,
     name: 'Crew Ltd',
@@ -45,12 +43,6 @@ describe(fetchGroup, () => {
         stubFetch(json({status: 404, code: 'group.not-found'}, 404));
 
         await expect(fetchGroup(ID, new AbortController().signal)).rejects.toMatchObject({name: 'NotFoundError'});
-    });
-
-    it('fails with a system error on a malformed answer', async () => {
-        stubFetch(json({...CREW, members: null}));
-
-        await expect(fetchGroup(ID, new AbortController().signal)).rejects.toBeInstanceOf(SystemError);
     });
 });
 

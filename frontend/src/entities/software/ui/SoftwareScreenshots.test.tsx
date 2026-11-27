@@ -2,11 +2,10 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen, within} from '@testing-library/react';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, renderWithQueries, stubFetch} from '@/shared/lib/test';
-import {toSoftwareId} from '../model/software';
 import {ScreenshotsProvider} from '../model/ScreenshotsProvider';
 import {SoftwareScreenshots} from './SoftwareScreenshots';
 
-const ID = toSoftwareId('00000000-0000-0000-0001-000000000001');
+const ID = '00000000-0000-0000-0001-000000000001';
 const SHOTS = [
     {id: '00000000-0000-0000-0055-000000000001', url: '/api/screenshots/00000000-0000-0000-0055-000000000001'},
     {id: '00000000-0000-0000-0055-000000000002', url: '/api/screenshots/00000000-0000-0000-0055-000000000002'},

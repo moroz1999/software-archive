@@ -1,6 +1,6 @@
 import {useId, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {CitiesProvider, type PlaceDetails, placeName, toCountryId, useCities, useCountries} from '@/entities/locations';
+import {CitiesProvider, type PlaceDetails, placeName, useCities, useCountries} from '@/entities/locations';
 import {parseUiLanguage} from '@/shared/lib/i18n';
 import {Button} from '@/shared/ui/button';
 import {Dialog} from '@/shared/ui/dialog';
@@ -84,7 +84,7 @@ function MergeWithDialog() {
                         except={isCity ? undefined : place.id}
                     />
                     {isCity && (
-                        <CitiesProvider country={country === '' ? null : toCountryId(country)}>
+                        <CitiesProvider country={country === '' ? null : country}>
                             <CityChoice
                                 value={city}
                                 onChange={(chosen) => {

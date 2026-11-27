@@ -1,11 +1,11 @@
 import {describe, expect, it} from 'vitest';
-import {type CategoryNode, toCategoryId} from './category';
+import {type CategoryNode} from './category';
 import {parentOptions} from './category-tree';
 
-const GAMES = toCategoryId('00000000-0000-0000-0006-000000000001');
-const ACTION = toCategoryId('00000000-0000-0000-0006-000000000002');
-const SHOOTERS = toCategoryId('00000000-0000-0000-0006-000000000003');
-const DEMOSCENE = toCategoryId('00000000-0000-0000-0006-000000000004');
+const GAMES = '00000000-0000-0000-0006-000000000001';
+const ACTION = '00000000-0000-0000-0006-000000000002';
+const SHOOTERS = '00000000-0000-0000-0006-000000000003';
+const DEMOSCENE = '00000000-0000-0000-0006-000000000004';
 
 const TREE: readonly CategoryNode[] = [
     {id: GAMES, title: 'Games', children: [{id: ACTION, title: 'Action', children: [{id: SHOOTERS, title: 'Shooters', children: []}]}]},

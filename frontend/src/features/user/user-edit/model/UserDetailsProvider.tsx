@@ -1,11 +1,10 @@
 import type {ReactNode} from 'react';
 import {useQuery} from '@tanstack/react-query';
-import type {UserId} from '@/entities/users';
 import {userEditQuery} from '../api/user-edit-queries';
 import {UserDetailsContext} from './user-details-context';
 
 export interface UserDetailsProviderProps {
-    readonly id: UserId;
+    readonly id: string;
     readonly children: ReactNode;
 }
 

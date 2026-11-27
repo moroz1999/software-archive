@@ -1,5 +1,6 @@
 package com.archive.backend.software.web.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
 
@@ -10,7 +11,7 @@ import org.jspecify.annotations.Nullable;
 public record ReleaseRequestDto(
         @Nullable String title,
         @Nullable String version,
-        @Nullable String type,
+        @Schema(ref = "ReleaseType") @Nullable String type,
         @Nullable String releaseDate,
         @Nullable String description,
         @Nullable List<String> hardware,

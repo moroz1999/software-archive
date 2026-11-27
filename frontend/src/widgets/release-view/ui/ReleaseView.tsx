@@ -1,28 +1,9 @@
 import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
-import {
-    HardwareList,
-    fileSizeText,
-    releaseDateText,
-    releaseEditPath,
-    type ReleaseFile,
-    ReleaseFilesProvider,
-    type ReleaseId,
-    ScreenshotsProvider,
-    type SoftwareCredit,
-    SoftwareCreditList,
-    type SoftwareId,
-    SoftwareDetailsProvider,
-    softwarePath,
-    SoftwareReleasesProvider,
-    SoftwareScreenshots,
-    useSoftwareDetails,
-    useReleaseFiles,
-    useSoftwareReleases,
-} from '@/entities/software';
-import {authorPath, toAuthorId} from '@/entities/authors';
-import {groupPath, toGroupId} from '@/entities/groups';
-import {labelPath, toLabelId} from '@/entities/labels';
+import {HardwareList, fileSizeText, releaseDateText, releaseEditPath, type ReleaseFile, ReleaseFilesProvider, ScreenshotsProvider, type SoftwareCredit, SoftwareCreditList, SoftwareDetailsProvider, softwarePath, SoftwareReleasesProvider, SoftwareScreenshots, useSoftwareDetails, useReleaseFiles, useSoftwareReleases} from '@/entities/software';
+import {authorPath} from '@/entities/authors';
+import {groupPath} from '@/entities/groups';
+import {labelPath} from '@/entities/labels';
 import {ReparseReleaseFilesButton} from '@/features/release/reparse-files';
 import {softwareBreadcrumbs} from '@/features/software/catalog';
 import {EditScreenshotsProvider, MoveScreenshotButtons, ScreenshotsChangeError} from '@/features/software/screenshots';
@@ -42,8 +23,8 @@ import {Tree, type TreeItem} from '@/shared/ui/tree';
 import styles from './ReleaseView.module.css';
 
 export interface ReleaseViewProps {
-    readonly softwareId: SoftwareId;
-    readonly releaseId: ReleaseId;
+    readonly softwareId: string;
+    readonly releaseId: string;
 }
 
 /** One release in the context of the software it belongs to. */
@@ -192,12 +173,12 @@ function toTreeItem(file: ReleaseFile, executableLabel: string): TreeItem {
 /** Where a credited name leads: the person or the group, a label to its own page. */
 function creditHref(credit: SoftwareCredit): string | null {
     if (credit.type === 'author-label' || credit.type === 'group-label') {
-        return labelPath(toLabelId(credit.id));
+        return labelPath(credit.id);
     }
-    if (credit.ownerId === undefined || credit.ownerId === null) {
+    if (credit.ownerId === null) {
         return null;
     }
-    return credit.type === 'author' ? authorPath(toAuthorId(credit.ownerId)) : groupPath(toGroupId(credit.ownerId));
+    return credit.type === 'author' ? authorPath(credit.ownerId) : groupPath(credit.ownerId);
 }
 
 function Section({label, children}: {readonly label: string; readonly children: ReactNode}) {

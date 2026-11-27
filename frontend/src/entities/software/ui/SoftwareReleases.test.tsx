@@ -2,13 +2,12 @@ import {MemoryRouter} from 'react-router';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
+import {type components, subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, renderWithQueries, stubFetch} from '@/shared/lib/test';
-import {toSoftwareId} from '../model/software';
 import {SoftwareReleasesProvider} from '../model/SoftwareReleasesProvider';
 import {SoftwareReleases} from './SoftwareReleases';
 
-const ID = toSoftwareId('00000000-0000-0000-0001-000000000001');
+const ID = '00000000-0000-0000-0001-000000000001';
 const AY_MOD = {
     id: '00000000-0000-0000-0007-000000000001',
     title: 'Elite AY',
@@ -17,10 +16,12 @@ const AY_MOD = {
     releaseDate: '1990-03-01',
     description: 'With AY music',
     hardware: [{code: 'vector06c', name: 'Vector-06C', group: 'computers', groupName: 'Computers'}, {code: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound'}],
+    screenshots: [],
+    archive: null,
     credits: [],
     added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
     canChange: true,
-};
+} satisfies components['schemas']['SoftwareReleaseDto'];
 const FIX = {...AY_MOD, id: '00000000-0000-0000-0007-000000000002', title: 'Elite Fix', version: null, type: 'bugfix', releaseDate: '1988-05-01', description: null};
 const ORIGINAL = {...AY_MOD, id: '00000000-0000-0000-0007-000000000003', title: 'Elite', version: null, type: 'original', releaseDate: null, description: null};
 const UNKNOWN = {...ORIGINAL, id: '00000000-0000-0000-0007-000000000004', type: 'unknown'};

@@ -1,13 +1,13 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {AuthorForm, toAuthorId} from '@/entities/authors';
+import {AuthorForm} from '@/entities/authors';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, noContent, renderWithQueries, stubFetch} from '@/shared/lib/test';
 import {EditAuthorProvider} from './EditAuthorProvider';
 
 const AUTHOR = {
-    id: toAuthorId('00000000-0000-0000-0003-000000000001'),
+    id: '00000000-0000-0000-0003-000000000001',
     name: 'John Doe',
     realName: 'John Doe',
     notes: 'Coder since 1984',

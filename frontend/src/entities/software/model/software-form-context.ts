@@ -1,5 +1,5 @@
 import {createRequiredContext} from '@/shared/lib/context';
-import type {MemberRoleValue} from '@/shared/ui/member-role-editor';
+import type {CreditValue} from './software-form';
 import type {SoftwareProgram} from './software';
 import type {PlatformChoice, SoftwareFormErrors, SoftwareFormValues} from './software-form';
 
@@ -20,7 +20,7 @@ export interface SoftwareFormState {
     /** Replaces the chosen categories. */
     readonly changeCategories: (ids: readonly string[]) => void;
     /** Replaces everyone credited. */
-    readonly changeCredits: (credits: readonly MemberRoleValue[]) => void;
+    readonly changeCredits: (credits: readonly CreditValue[]) => void;
     readonly changeCompilationItems: (programs: readonly SoftwareProgram[]) => void;
     /** Checks the format rules and hands the draft on only when they pass. */
     readonly submit: () => void;

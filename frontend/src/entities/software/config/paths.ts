@@ -1,5 +1,3 @@
-import type {ReleaseId} from '../model/release';
-import type {SoftwareId} from '../model/software';
 
 /** Where software lives in the app. */
 export const SOFTWARE_LIST_PATH = '/software';
@@ -16,22 +14,22 @@ export const RELEASE_ROUTE = '/software/:id/releases/:releaseId';
 /** The route pattern of editing a release; its parameters are `id`, of the software, and `releaseId`. */
 export const RELEASE_EDIT_ROUTE = '/software/:id/releases/:releaseId/edit';
 
-export function softwarePath(id: SoftwareId): string {
+export function softwarePath(id: string): string {
     return `/software/${id}`;
 }
 
-export function softwareEditPath(id: SoftwareId): string {
+export function softwareEditPath(id: string): string {
     return `/software/${id}/edit`;
 }
 
-export function releaseNewPath(id: SoftwareId): string {
+export function releaseNewPath(id: string): string {
     return `/software/${id}/releases/new`;
 }
 
-export function releasePath(id: SoftwareId, releaseId: ReleaseId): string {
+export function releasePath(id: string, releaseId: string): string {
     return `/software/${id}/releases/${releaseId}`;
 }
 
-export function releaseEditPath(id: SoftwareId, releaseId: ReleaseId): string {
+export function releaseEditPath(id: string, releaseId: string): string {
     return `/software/${id}/releases/${releaseId}/edit`;
 }

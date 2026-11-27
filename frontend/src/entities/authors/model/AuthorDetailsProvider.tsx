@@ -1,11 +1,10 @@
 import type {ReactNode} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {authorDetailsQuery} from '../api/author-queries';
-import type {AuthorId} from './author';
 import {AuthorDetailsContext} from './author-details-context';
 
 export interface AuthorDetailsProviderProps {
-    readonly id: AuthorId;
+    readonly id: string;
     readonly children: ReactNode;
 }
 

@@ -1,14 +1,6 @@
 import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
-import {
-    CATEGORIES_PATH,
-    CategoryDetailsProvider,
-    CategoryForm,
-    CategoryFormSkeleton,
-    type CategoryId,
-    CategoryTreeProvider,
-    useCategoryDetails,
-} from '@/entities/categories';
+import {CATEGORIES_PATH, CategoryDetailsProvider, CategoryForm, CategoryFormSkeleton, CategoryTreeProvider, useCategoryDetails} from '@/entities/categories';
 import {DeleteCategoryButton} from '@/features/category/delete';
 import {EditCategoryProvider} from '@/features/category/edit';
 import {useSkeleton} from '@/shared/lib/loading';
@@ -16,7 +8,7 @@ import {Button} from '@/shared/ui/button';
 import {PageLayout} from '@/shared/ui/page-layout';
 
 export interface CategoryEditorProps {
-    readonly id: CategoryId;
+    readonly id: string;
     /** Called once the category is saved. */
     readonly onSaved: () => void;
     /** Called once the category is deleted. */

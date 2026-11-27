@@ -1,19 +1,17 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {toLabelId} from '@/entities/labels';
-import {toAuthorId, type AuthorId} from '@/entities/authors';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, noContent, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
 import {MergeLabelIntoAuthorDialog} from './MergeLabelIntoAuthorDialog';
 
-const LABEL = {id: toLabelId('00000000-0000-0000-0004-000000000001'), name: 'Ghost'};
+const LABEL = {id: '00000000-0000-0000-0004-000000000001', name: 'Ghost'};
 const JANE = '00000000-0000-0000-0003-000000000001';
 const LOOKUP = new Map([
     ['/api/entity-lookup?types=author&query=jane', json({items: [{id: JANE, type: 'author', title: 'Jane Doe'}]})],
 ]);
 
-function openDialog(onMerged = vi.fn<(author: AuthorId) => void>(), onClose = vi.fn<() => void>()) {
+function openDialog(onMerged = vi.fn<(author: string) => void>(), onClose = vi.fn<() => void>()) {
     renderWithQueries(<MergeLabelIntoAuthorDialog open label={LABEL} onClose={onClose} onMerged={onMerged}/>);
 }
 
@@ -40,13 +38,13 @@ describe(MergeLabelIntoAuthorDialog, () => {
 
     it('merges the label into the person found among people only and hands over the person', async () => {
         const fetchMock = stubFetchAround(LOOKUP, noContent());
-        const onMerged = vi.fn<(author: AuthorId) => void>();
+        const onMerged = vi.fn<(author: string) => void>();
         openDialog(onMerged);
 
         await chooseJaneAndMerge();
 
         await vi.waitFor(() => {
-            expect(onMerged).toHaveBeenCalledExactlyOnceWith(toAuthorId(JANE));
+            expect(onMerged).toHaveBeenCalledExactlyOnceWith(JANE);
         });
 
         expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/labels/${LABEL.id}/merge-into-author`);
@@ -92,7 +90,7 @@ describe(MergeLabelIntoAuthorDialog, () => {
 
     it('asks to be closed by Cancel', async () => {
         const onClose = vi.fn<() => void>();
-        openDialog(vi.fn<(author: AuthorId) => void>(), onClose);
+        openDialog(vi.fn<(author: string) => void>(), onClose);
 
         await userEvent.click(screen.getByRole('button', {name: 'Cancel'}));
 

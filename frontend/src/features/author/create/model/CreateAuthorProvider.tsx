@@ -1,12 +1,12 @@
 import type {ReactNode} from 'react';
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useTranslation} from 'react-i18next';
-import {AUTHOR_QUERY_KEY, type AuthorId, AuthorFormProvider, createAuthor} from '@/entities/authors';
+import {AUTHOR_QUERY_KEY, AuthorFormProvider, createAuthor} from '@/entities/authors';
 import {businessErrorOf} from '@/shared/api';
 import {createAuthorMessages} from '../config/messages';
 
 export interface CreateAuthorProviderProps {
-    readonly onCreated: (id: AuthorId) => void;
+    readonly onCreated: (id: string) => void;
     readonly children: ReactNode;
 }
 

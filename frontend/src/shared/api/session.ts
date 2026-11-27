@@ -1,25 +1,26 @@
-import {isObject, readObject, readString} from './parse';
-import {fetchOrFail, readJson, toError} from './transport';
+import createClient from 'openapi-fetch';
+import type {components, paths} from './schema';
+import {API_ORIGIN, apiError, fetchOrFail} from './transport';
+
+type CurrentUserDto = components['schemas']['CurrentUserDto'];
+type SessionDto = components['schemas']['SessionDto'];
 
 /** What the browser is: not known yet, a public visitor, or a signed-in user with the body `GET /api/auth/me` gave. */
 export type Session =
     | {readonly status: 'unknown'}
     | {readonly status: 'guest'}
-    | {readonly status: 'signed-in'; readonly user: unknown};
+    | {readonly status: 'signed-in'; readonly user: CurrentUserDto};
 
 type Listener = () => void;
 
 type SessionMessage =
     | {readonly status: 'guest'}
-    | {readonly status: 'signed-in'; readonly user: unknown; readonly accessToken: string};
+    | {readonly status: 'signed-in'; readonly user: CurrentUserDto; readonly accessToken: string};
 
-const ME_PATH = '/api/auth/me';
-const REFRESH_PATH = '/api/auth/refresh';
-const LOGOUT_PATH = '/api/auth/logout';
 
 /** The calls that make or end sessions themselves: a 401 of theirs is their answer, not a session to refresh. */
 export const SESSION_CALLS: readonly string[] = [
-    '/api/auth/login', LOGOUT_PATH, '/api/auth/register', '/api/auth/confirm', '/api/auth/resend-confirmation', REFRESH_PATH,
+    '/api/auth/login', '/api/auth/logout', '/api/auth/register', '/api/auth/confirm', '/api/auth/resend-confirmation', '/api/auth/refresh',
 ];
 
 /** The tabs of the archive in this browser tell each other what the session became. */
@@ -41,31 +42,18 @@ let refreshing: Promise<boolean> | null = null;
 // Typed through its constructor: the Node types the test setup is checked with declare it as a value only.
 let channel: InstanceType<typeof BroadcastChannel> | null = null;
 
-function readSessionMessage(data: unknown): SessionMessage | null {
-    if (!isObject(data)) {
-        return null;
-    }
-    if (data['status'] === 'guest') {
-        return {status: 'guest'};
-    }
-    return data['status'] === 'signed-in' && 'user' in data && typeof data['accessToken'] === 'string'
-        ? {status: 'signed-in', user: data['user'], accessToken: data['accessToken']}
-        : null;
-}
-
 /** The channel to the other tabs, opened on first use; jsdom and old browsers may lack it. */
 function tabs(): InstanceType<typeof BroadcastChannel> | null {
     if (channel === null && typeof BroadcastChannel !== 'undefined') {
         channel = new BroadcastChannel(CHANNEL);
-        channel.onmessage = (event: MessageEvent) => {
-            const told = readSessionMessage(event.data);
-            if (told !== null) {
-                if (told.status === 'guest') {
-                    become(GUEST, false);
-                } else {
-                    accessToken = told.accessToken;
-                    become({status: 'signed-in', user: told.user}, false);
-                }
+        channel.onmessage = (event: MessageEvent<SessionMessage>) => {
+            // Only the tabs of the archive post on this channel, and only session messages (`become`, `keepAccessToken`).
+            const told = event.data;
+            if (told.status === 'guest') {
+                become(GUEST, false);
+            } else {
+                accessToken = told.accessToken;
+                become({status: 'signed-in', user: told.user}, false);
             }
         };
     }
@@ -105,48 +93,41 @@ function keepAccessToken(token: string): void {
     }
 }
 
-async function readAccessToken(response: Response): Promise<string> {
-    return readString(readObject(await readJson(response), 'session'), 'accessToken');
-}
-
 function enqueue<T>(operation: () => Promise<T>): Promise<T> {
     const run = queue.then(operation);
     queue = run.catch(() => undefined);
     return run;
 }
 
-function post(path: string, body?: unknown): Promise<Response> {
-    return fetchOrFail(path, body === undefined
-        ? {method: 'POST', headers: {Accept: 'application/json'}}
-        : {method: 'POST', headers: {Accept: 'application/json', 'Content-Type': 'application/json'}, body: JSON.stringify(body)});
-}
+/**
+ * The calls of the session itself: sent as they are, with no wait for the session and no refresh, and answered with their status, which tells the
+ * session what it became.
+ */
+const sessionApi = createClient<paths>({baseUrl: API_ORIGIN, fetch: (request: Request) => fetchOrFail(withAccessToken(request))});
 
 /** Refreshes the session through its cookie: true once refreshed, false when there is no session to refresh. */
 async function refreshNow(): Promise<boolean> {
-    const response = await post(REFRESH_PATH);
-    if (response.ok) {
-        keepAccessToken(await readAccessToken(response));
+    const {data, error, response} = await sessionApi.POST('/api/auth/refresh');
+    if (error === undefined) {
+        keepAccessToken(data.accessToken);
         return true;
     }
     if (response.status === 401) {
         return false;
     }
-    throw await toError(response);
+    throw apiError(response, error);
 }
 
 /** Who is signed in now: the archive answers a guest with no content, and asks to refresh a session it holds. */
 async function whoIsSignedIn(refresh = true): Promise<Session> {
-    const response = await fetchOrFail(ME_PATH, withAccessToken({headers: {Accept: 'application/json'}}));
-    if (response.status === 200) {
-        return {status: 'signed-in', user: await readJson(response)};
+    const {data, error, response} = await sessionApi.GET('/api/auth/me');
+    if (error !== undefined) {
+        if (response.status === 401) {
+            return refresh && await refreshNow() ? whoIsSignedIn(false) : GUEST;
+        }
+        throw apiError(response, error);
     }
-    if (response.status === 204) {
-        return GUEST;
-    }
-    if (response.status === 401) {
-        return refresh && await refreshNow() ? whoIsSignedIn(false) : GUEST;
-    }
-    throw await toError(response);
+    return data === undefined ? GUEST : {status: 'signed-in', user: data};
 }
 
 export function getSession(): Session {
@@ -162,13 +143,13 @@ export function subscribeSession(listener: Listener): () => void {
 }
 
 /** Adds the in-memory access token to an API request, if this tab has one. */
-export function withAccessToken(init: RequestInit): RequestInit {
+export function withAccessToken(request: Request): Request {
     if (accessToken === null) {
-        return init;
+        return request;
     }
-    const headers = new Headers(init.headers);
+    const headers = new Headers(request.headers);
     headers.set('Authorization', `Bearer ${accessToken}`);
-    return {...init, headers};
+    return new Request(request, {headers});
 }
 
 /**
@@ -194,13 +175,15 @@ export function loadSession(): Promise<void> {
  * Makes a session by a call of its own (sign-in, confirmation), then asks who is signed in. A refused call keeps the
  * session as it was and fails with its error.
  */
-export function startSession(path: string, body: unknown): Promise<void> {
+export function startSession(
+    start: (client: typeof sessionApi) => Promise<{readonly data?: SessionDto; readonly error?: unknown; readonly response: Response}>,
+): Promise<void> {
     return enqueue(async () => {
-        const response = await post(path, body);
-        if (!response.ok) {
-            throw await toError(response);
+        const {data, error, response} = await start(sessionApi);
+        if (data === undefined) {
+            throw apiError(response, error);
         }
-        keepAccessToken(await readAccessToken(response));
+        keepAccessToken(data.accessToken);
         become(await whoIsSignedIn(false));
     });
 }
@@ -208,9 +191,9 @@ export function startSession(path: string, body: unknown): Promise<void> {
 /** Signs out: the archive forgets the session and clears its refresh cookie. */
 export function endSession(): Promise<void> {
     return enqueue(async () => {
-        const response = await post(LOGOUT_PATH);
-        if (!response.ok) {
-            throw await toError(response);
+        const {error, response} = await sessionApi.POST('/api/auth/logout');
+        if (error !== undefined) {
+            throw apiError(response, error);
         }
         become(GUEST);
     });

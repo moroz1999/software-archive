@@ -1,11 +1,10 @@
 import type {ReactNode} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {categoryDetailsQuery} from '../api/category-queries';
-import type {CategoryId} from './category';
 import {CategoryDetailsContext} from './category-details-context';
 
 export interface CategoryDetailsProviderProps {
-    readonly id: CategoryId;
+    readonly id: string;
     readonly children: ReactNode;
 }
 

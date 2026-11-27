@@ -1,121 +1,55 @@
-import {
-    deleteResource, getJson, type JsonObject, mapResponse, NotFoundError, postJson, postNoContent, readArray, readBoolean,
-    readNullableString, readNumber, readObject, readString,
-} from '@/shared/api';
-import {
-    type ActiveRun, type ChatMessage, type ChatPlan, type ConversationEntry, type ConversationId, type ConversationUpdate, type EntityRef,
-    type PlanAction, type PlanId, toConversationId, toMessageKind, toMessageRole, toPlanActionStatus, toPlanId, toPlanStatus,
-} from '../model/chat';
+import {api, apiError, NotFoundError} from '@/shared/api';
+import type {ConversationEntry, ConversationUpdate} from '../model/chat';
 import type {PageContext} from '../model/page-context';
-
-const BASE = '/api/assistant';
-
-
-function nullableObject(value: unknown, what: string): JsonObject | null {
-    return value === null || value === undefined ? null : readObject(value, what);
-}
-
-function readMessage(raw: unknown): ChatMessage {
-    const dto = readObject(raw, 'message');
-    return {
-        seq: readNumber(dto, 'seq'),
-        role: toMessageRole(readString(dto, 'role')),
-        kind: toMessageKind(readString(dto, 'kind')),
-        text: readString(dto, 'text'),
-        payload: nullableObject(dto['payload'], 'payload'),
-    };
-}
-
-function readAction(raw: unknown): PlanAction {
-    const dto = readObject(raw, 'plan action');
-    const state = dto['state'];
-    return {
-        position: readNumber(dto, 'position'),
-        tool: readString(dto, 'tool'),
-        arguments: readObject(dto['arguments'], 'arguments'),
-        kind: readString(dto, 'kind'),
-        entityType: readString(dto, 'entityType'),
-        state: Array.isArray(state) ? state : nullableObject(state, 'state'),
-        status: toPlanActionStatus(readString(dto, 'status')),
-        result: readNullableString(dto, 'result'),
-        error: readNullableString(dto, 'error'),
-    };
-}
-
-function readPlan(raw: unknown): ChatPlan {
-    const dto = readObject(raw, 'plan');
-    return {
-        id: toPlanId(readString(dto, 'id')),
-        title: readString(dto, 'title'),
-        status: toPlanStatus(readString(dto, 'status')),
-        actions: readArray(dto['actions'], 'actions').map(readAction),
-    };
-}
-
-function readRun(raw: unknown): ActiveRun | null {
-    return raw === null || raw === undefined ? null : {stopRequested: readBoolean(readObject(raw, 'run'), 'stopRequested')};
-}
-
-function readRefs(raw: unknown): Readonly<Record<string, EntityRef>> {
-    const dto = readObject(raw, 'refs');
-    return Object.fromEntries(Object.entries(dto).map(([id, value]) => {
-        const ref = readObject(value, 'ref');
-        return [id, {type: readString(ref, 'type'), title: readString(ref, 'title'), path: readString(ref, 'path')}];
-    }));
-}
-
-/** The update of a conversation in the body of `GET /api/assistant/conversations/{id}`. */
-export function readConversationUpdate(raw: unknown): ConversationUpdate {
-    return mapResponse(() => {
-        const dto = readObject(raw, 'conversation');
-        return {
-            messages: readArray(dto['messages'], 'messages').map(readMessage),
-            plans: readArray(dto['plans'], 'plans').map(readPlan),
-            activeRun: readRun(dto['activeRun']),
-            refs: readRefs(dto['refs']),
-        };
-    });
-}
 
 /** The editor's conversations, the latest first. */
 export async function listConversations(): Promise<readonly ConversationEntry[]> {
-    const raw = await getJson(`${BASE}/conversations`);
-    return mapResponse(() => readArray(raw, 'conversations').map((value) => {
-        const dto = readObject(value, 'conversation');
-        return {id: toConversationId(readString(dto, 'id')), title: readNullableString(dto, 'title'), running: readBoolean(dto, 'running')};
-    }));
+    const {data, error, response} = await api.GET('/api/assistant/conversations');
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
+    return data;
 }
 
-export async function createConversation(): Promise<ConversationId> {
-    const raw = await postJson(`${BASE}/conversations`, {});
-    return mapResponse(() => toConversationId(readString(readObject(raw, 'conversation'), 'id')));
+export async function createConversation(): Promise<string> {
+    const {data, error, response} = await api.POST('/api/assistant/conversations');
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
+    return data.id;
 }
 
 /** What is new in the conversation after the message; null when the conversation is gone. */
-export async function readConversation(id: ConversationId, afterSeq: number): Promise<ConversationUpdate | null> {
-    return orGone(async () => readConversationUpdate(await getJson(`${BASE}/conversations/${id}?afterSeq=${String(afterSeq)}`)));
+export async function readConversation(id: string, afterSeq: number): Promise<ConversationUpdate | null> {
+    return orGone(async () => {
+        const {data, error, response} = await api.GET('/api/assistant/conversations/{id}', {params: {path: {id}, query: {afterSeq}}});
+        if (error !== undefined) {
+            throw apiError(response, error);
+        }
+        return data;
+    });
 }
 
 /** Sends the message from the page; false when the conversation is gone. */
-export async function sendMessage(id: ConversationId, text: string, page: PageContext): Promise<boolean> {
-    return gone(() => postNoContent(`${BASE}/conversations/${id}/messages`, {text, page}));
+export async function sendMessage(id: string, text: string, page: PageContext): Promise<boolean> {
+    return gone(() => api.POST('/api/assistant/conversations/{id}/messages', {params: {path: {id}}, body: {text, page}}));
 }
 
-export async function stopRun(id: ConversationId): Promise<boolean> {
-    return gone(() => postNoContent(`${BASE}/conversations/${id}/stop`));
+export async function stopRun(id: string): Promise<boolean> {
+    return gone(() => api.POST('/api/assistant/conversations/{id}/stop', {params: {path: {id}}}));
 }
 
-export async function approvePlan(id: PlanId): Promise<boolean> {
-    return gone(() => postNoContent(`${BASE}/plans/${id}/approve`));
+export async function approvePlan(id: string): Promise<boolean> {
+    return gone(() => api.POST('/api/assistant/plans/{id}/approve', {params: {path: {id}}}));
 }
 
-export async function cancelPlan(id: PlanId): Promise<boolean> {
-    return gone(() => postNoContent(`${BASE}/plans/${id}/cancel`));
+export async function cancelPlan(id: string): Promise<boolean> {
+    return gone(() => api.POST('/api/assistant/plans/{id}/cancel', {params: {path: {id}}}));
 }
 
 /** Deletes the conversation; one already gone is as good as deleted. */
-export async function deleteConversation(id: ConversationId): Promise<void> {
-    await gone(() => deleteResource(`${BASE}/conversations/${id}`));
+export async function deleteConversation(id: string): Promise<void> {
+    await gone(() => api.DELETE('/api/assistant/conversations/{id}', {params: {path: {id}}}));
 }
 
 /**
@@ -133,9 +67,13 @@ async function orGone<T>(call: () => Promise<T>): Promise<T | null> {
     }
 }
 
-async function gone(call: () => Promise<void>): Promise<boolean> {
+/** A call answered with no content: true once done, false when what it concerns is gone. */
+async function gone(call: () => Promise<{readonly error?: unknown; readonly response: Response}>): Promise<boolean> {
     return await orGone(async () => {
-        await call();
+        const {error, response} = await call();
+        if (error !== undefined) {
+            throw apiError(response, error);
+        }
         return true;
     }) ?? false;
 }

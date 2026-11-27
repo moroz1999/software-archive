@@ -98,6 +98,7 @@ public class SoftwareController {
                 .toList();
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public ResponseEntity<SoftwareCreatedDto> create(Actor actor, @RequestBody SoftwareRequestDto request) {
         SoftwareId id = createHandler.handle(webMapper.toCreate(actor, request));

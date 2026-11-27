@@ -1,4 +1,4 @@
-import {parsePlatformCode, type PlatformCode} from './platform';
+import {parsePlatformCode} from './platform';
 
 const KEY = 'archive.platform';
 
@@ -6,7 +6,7 @@ const KEY = 'archive.platform';
  * The platform chosen with the switch, kept in the browser (docs/features/platform-switch.md); null for all
  * platforms. The route loaders read it here, the blocks through the PlatformSelectionProvider.
  */
-export function readSelectedPlatform(): PlatformCode | null {
+export function readSelectedPlatform(): string | null {
     try {
         return parsePlatformCode(localStorage.getItem(KEY));
     } catch {
@@ -16,7 +16,7 @@ export function readSelectedPlatform(): PlatformCode | null {
 }
 
 /** Keeps the chosen platform in the browser, forgets it for all platforms; a browser refusing its storage keeps nothing. */
-export function storeSelectedPlatform(platform: PlatformCode | null): void {
+export function storeSelectedPlatform(platform: string | null): void {
     try {
         if (platform === null) {
             localStorage.removeItem(KEY);

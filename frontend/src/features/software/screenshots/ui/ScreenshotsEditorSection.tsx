@@ -1,12 +1,12 @@
-import type {Gallery, ReleaseId, SoftwareId} from '@/entities/software';
+import type {Gallery} from '@/entities/software';
 import {useInViewport} from '@/shared/lib/screen';
 import {EditScreenshotsProvider} from '../model/EditScreenshotsProvider';
 import {ScreenshotsEditor} from './ScreenshotsEditor';
 
 export interface ScreenshotsEditorSectionProps {
-    readonly softwareId: SoftwareId;
+    readonly softwareId: string;
     /** The release whose screenshots these are; none for the software's own. */
-    readonly releaseId?: ReleaseId | null;
+    readonly releaseId?: string | null;
     /** The gallery of the software; screenshots by default. */
     readonly gallery?: Gallery;
 }

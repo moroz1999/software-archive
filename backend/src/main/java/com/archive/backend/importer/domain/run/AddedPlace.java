@@ -1,5 +1,6 @@
 package com.archive.backend.importer.domain.run;
 
+import com.archive.backend.shared.domain.EnumCodes;
 import com.archive.backend.shared.domain.ddd.ValueObject;
 import java.util.Objects;
 
@@ -10,7 +11,12 @@ public record AddedPlace(Kind kind, String name) {
     /** Which of the two the place is. */
     public enum Kind {
         CITY,
-        COUNTRY
+        COUNTRY;
+
+        /** The code it is known by outside the backend: {@code CITY} as {@code city}. */
+        public String code() {
+            return EnumCodes.kebab(this);
+        }
     }
 
     public AddedPlace {

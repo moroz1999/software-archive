@@ -1,20 +1,13 @@
 import {describe, expect, it} from 'vitest';
-import {movedScreenshot, SCREENSHOT_MAX_BYTES, screenshotFileProblem, toScreenshotId} from './screenshot';
+import {movedScreenshot, SCREENSHOT_MAX_BYTES, screenshotFileProblem} from './screenshot';
 
 function file(type: string, size = 3): File {
     return new File([new Uint8Array(size)], 'shot', {type});
 }
 
-const A = toScreenshotId('00000000-0000-0000-0055-000000000001');
-const B = toScreenshotId('00000000-0000-0000-0055-000000000002');
-const C = toScreenshotId('00000000-0000-0000-0055-000000000003');
-
-describe(toScreenshotId, () => {
-    it('takes a uuid only', () => {
-        expect(toScreenshotId(A)).toBe(A);
-        expect(() => toScreenshotId('not-an-id')).toThrow(TypeError);
-    });
-});
+const A = '00000000-0000-0000-0055-000000000001';
+const B = '00000000-0000-0000-0055-000000000002';
+const C = '00000000-0000-0000-0055-000000000003';
 
 describe(screenshotFileProblem, () => {
     it('takes PNG, JPEG, GIF and WebP pictures', () => {

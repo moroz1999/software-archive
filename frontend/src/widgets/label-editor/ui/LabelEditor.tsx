@@ -1,6 +1,6 @@
 import {useTranslation} from 'react-i18next';
 import {AUTHORS_PATH} from '@/entities/authors';
-import {LabelDetailsProvider, type LabelId, labelPath, useLabelDetails} from '@/entities/labels';
+import {LabelDetailsProvider, labelPath, useLabelDetails} from '@/entities/labels';
 import {DeleteLabelButton} from '@/features/label/delete';
 import {EditLabelForm, EditLabelFormSkeleton, EditLabelProvider} from '@/features/label/label-edit';
 import {useSkeleton} from '@/shared/lib/loading';
@@ -8,7 +8,7 @@ import {Button} from '@/shared/ui/button';
 import {PageLayout} from '@/shared/ui/page-layout';
 
 export interface LabelEditorProps {
-    readonly id: LabelId;
+    readonly id: string;
     /** Called once the label is saved. */
     readonly onSaved: () => void;
     /** Called once the label is deleted. */

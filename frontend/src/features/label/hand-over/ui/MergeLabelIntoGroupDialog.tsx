@@ -1,5 +1,4 @@
 import {useTranslation} from 'react-i18next';
-import {type GroupId, toGroupId} from '@/entities/groups';
 import {fetchLabelGroups, mergeLabelIntoGroup} from '@/entities/labels';
 import {giveToGroupMessages} from '../config/messages';
 import type {HandedLabel} from '../model/hand-over-context';
@@ -11,7 +10,7 @@ export interface MergeLabelIntoGroupDialogProps {
     readonly open: boolean;
     /** Asked to close: by Cancel or Escape. */
     readonly onClose: () => void;
-    readonly onMerged: (group: GroupId) => void;
+    readonly onMerged: (group: string) => void;
 }
 
 /** Merges a label found out to be a duplicate of a group into it: the group takes what the label had, and the label goes. */
@@ -23,7 +22,7 @@ export function MergeLabelIntoGroupDialog({label, open, onClose, onMerged}: Merg
             send={mergeLabelIntoGroup}
             messages={giveToGroupMessages(t)}
             onHandedOver={(group) => {
-                onMerged(toGroupId(group));
+                onMerged(group);
             }}
         >
             <ChoiceWindow

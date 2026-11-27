@@ -1,3 +1,4 @@
+import {releaseTypeValues} from '@/shared/api';
 import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Button} from '@/shared/ui/button';
@@ -15,7 +16,6 @@ import {
     RELEASE_VERSION_TOO_LONG_KEY,
     TITLE_PROBLEM_KEYS,
 } from '../config/messages';
-import {RELEASE_TYPES} from '../model/release';
 import {useReleaseForm} from '../model/release-form-context';
 import {fileSizeText} from '../model/release-archive';
 import {CreditsEditor} from './CreditsEditor';
@@ -31,7 +31,7 @@ export interface ReleaseFormProps {
 export function ReleaseForm({submitLabel, actions}: ReleaseFormProps) {
     const {t} = useTranslation();
     const {values, errors, refusals, change, changeCredits, submit, busy, error} = useReleaseForm();
-    const typeOptions = RELEASE_TYPES.map((type) => ({value: type, label: t(`release.types.${type}`)}));
+    const typeOptions = releaseTypeValues.map((type) => ({value: type, label: t(`release.types.${type}`)}));
 
     return (
         <Form onSubmit={submit} columns={2}>

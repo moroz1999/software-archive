@@ -83,6 +83,7 @@ public class LabelController {
     private final GiveLabelToGroupHandler giveHandler;
     private final LabelWebMapper webMapper;
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public ResponseEntity<LabelCreatedDto> create(Actor actor, @RequestBody NewLabelRequestDto request) {
         LabelId id = createHandler.handle(webMapper.toCreate(actor, request));
@@ -125,6 +126,7 @@ public class LabelController {
         }
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/{id}/author")
     public ResponseEntity<LabelMadeOwnerDto> makeAuthor(Actor actor, @PathVariable UUID id) {
         AuthorId author = makeAuthorHandler.handle(new MakeAuthorOfLabelCommand(actor, new LabelId(id)));
@@ -172,6 +174,7 @@ public class LabelController {
         giveHandler.handle(new GiveLabelToGroupCommand(actor, new LabelId(id), groupOf(request)));
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/{id}/group")
     public ResponseEntity<LabelMadeOwnerDto> makeGroup(
             Actor actor, @PathVariable UUID id, @RequestBody LabelGroupRequestDto request) {

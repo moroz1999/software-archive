@@ -1,157 +1,73 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {deleteResource, postForm, postJson, postNoContent, putJson} from './http';
-import {AuthenticationRequiredError, BusinessError, SystemError} from './errors';
+import {json, noContent, stubFetch} from '@/shared/lib/test';
+import {api} from './http';
+import {multipartForm} from './multipart';
 
-function respond(status: number, body: unknown = null) {
-    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response(
-        body === null ? null : JSON.stringify(body),
-        {status, headers: {'Content-Type': status < 400 ? 'application/json' : 'application/problem+json'}},
-    ));
-    vi.stubGlobal('fetch', fetchMock);
-    return fetchMock;
-}
+const ID = '00000000-0000-0000-0001-000000000001';
 
-describe(postJson, () => {
+describe('a write through the API client', () => {
     afterEach(() => {
         vi.unstubAllGlobals();
     });
 
-    it('posts the body as JSON and returns the parsed answer', async () => {
-        const fetchMock = respond(201, {id: '1'});
+    it('sends the body as JSON and returns the answer', async () => {
+        const fetchMock = stubFetch(json({rating: 4, votesAmount: 1, myVote: 4}));
 
-        await expect(postJson('/api/x', {title: 'Elite'})).resolves.toStrictEqual({id: '1'});
-        expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/x', {
-            method: 'POST',
-            headers: {Accept: 'application/json', 'Content-Type': 'application/json', 'Accept-Language': 'en'},
-            body: '{"title":"Elite"}',
-        });
+        const {data} = await api.PUT('/api/software/{id}/vote', {params: {path: {id: ID}}, body: {value: 4}});
+
+        expect(data).toStrictEqual({rating: 4, votesAmount: 1, myVote: 4});
+
+        const [path, init] = fetchMock.mock.calls[0] ?? [];
+
+        expect(path).toBe(`/api/software/${ID}/vote`);
+        expect(init?.method).toBe('PUT');
+        expect(new Headers(init?.headers).get('Content-Type')).toBe('application/json');
+        expect(init?.body).toBe('{"value":4}');
     });
 
-    it('turns a 422 with a code into a business error', async () => {
-        respond(422, {status: 422, code: 'software.title-taken'});
+    it('takes an answer of no content for done', async () => {
+        stubFetch(noContent());
 
-        await expect(postJson('/api/x', {})).rejects.toBeInstanceOf(BusinessError);
+        const {data, error} = await api.DELETE('/api/software/{id}', {params: {path: {id: ID}}});
+
+        expect([data, error]).toStrictEqual([undefined, undefined]);
     });
 
-    it('turns a 400 into a system error', async () => {
-        respond(400, {status: 400, code: 'software.title-required'});
+    it('sends nothing when the call has no body', async () => {
+        const fetchMock = stubFetch(noContent());
 
-        await expect(postJson('/api/x', {})).rejects.toMatchObject({name: 'SystemError', kind: 'server'});
+        await api.POST('/api/auth/logout');
+
+        expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({method: 'POST', body: null});
     });
 
-    it('turns a network failure into a system error', async () => {
-        vi.stubGlobal('fetch', vi.fn<typeof fetch>().mockRejectedValue(new TypeError('Failed to fetch')));
+    it('sends a multipart form of the files as they are and of anything else as a JSON part, leaving its content type to the browser', async () => {
+        const fetchMock = stubFetch(json([], 201));
+        const png = new File(['png'], 'title.png', {type: 'image/png'});
+        const gif = new File(['gif'], 'game.gif', {type: 'image/gif'});
 
-        await expect(postJson('/api/x', {})).rejects.toMatchObject({name: 'SystemError', kind: 'network'});
+        await api.POST('/api/software/{softwareId}/screenshots', {params: {path: {softwareId: ID}}, body: {files: [png, gif]}, bodySerializer: multipartForm});
+
+        const init = fetchMock.mock.calls[0]?.[1];
+        const form = init?.body;
+
+        expect(new Headers(init?.headers).get('Content-Type')).toMatch(/^multipart\/form-data; boundary=/u);
+        expect(form instanceof FormData ? form.getAll('files') : null).toStrictEqual([png, gif]);
     });
 });
 
-describe(putJson, () => {
-    afterEach(() => {
-        vi.unstubAllGlobals();
-    });
+describe(multipartForm, () => {
+    it('puts a file as it is, each file of a list, a value as a JSON part and leaves out what is not given', async () => {
+        const archive = new File(['zip'], 'elite.zip', {type: 'application/zip'});
 
-    it('puts the body as JSON and expects no answer', async () => {
-        const fetchMock = respond(204);
+        const form = multipartForm({release: {title: 'Elite'}, archive, shots: [archive], missing: undefined});
 
-        await expect(putJson('/api/x/1', {title: 'Elite'})).resolves.toBeUndefined();
-        expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/x/1', {
-            method: 'PUT',
-            headers: {Accept: 'application/json', 'Content-Type': 'application/json', 'Accept-Language': 'en'},
-            body: '{"title":"Elite"}',
-        });
-    });
+        expect(form.get('archive')).toBe(archive);
+        expect(form.getAll('shots')).toStrictEqual([archive]);
+        expect(form.has('missing')).toBe(false);
 
-    it('turns a 404 with a code into a not found error', async () => {
-        respond(404, {status: 404, code: 'software.not-found'});
+        const release = form.get('release');
 
-        await expect(putJson('/api/x/1', {})).rejects.toMatchObject({name: 'NotFoundError', code: 'software.not-found'});
-    });
-});
-
-describe(deleteResource, () => {
-    afterEach(() => {
-        vi.unstubAllGlobals();
-    });
-
-    it('deletes and expects no answer', async () => {
-        const fetchMock = respond(204);
-
-        await expect(deleteResource('/api/x/1')).resolves.toBeUndefined();
-        expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/x/1', {method: 'DELETE', headers: {Accept: 'application/json', 'Accept-Language': 'en'}});
-    });
-
-    it('turns a 500 into a system error', async () => {
-        respond(500, {status: 500});
-
-        await expect(deleteResource('/api/x/1')).rejects.toBeInstanceOf(SystemError);
-    });
-});
-
-describe(postNoContent, () => {
-    afterEach(() => {
-        vi.unstubAllGlobals();
-    });
-
-    it('posts the body as JSON and expects no answer', async () => {
-        const fetchMock = respond(204);
-
-        await expect(postNoContent('/api/x', {login: 'Zed'})).resolves.toBeUndefined();
-        expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/x', {
-            method: 'POST',
-            headers: {Accept: 'application/json', 'Content-Type': 'application/json', 'Accept-Language': 'en'},
-            body: '{"login":"Zed"}',
-        });
-    });
-
-    it('posts nothing when there is no body', async () => {
-        const fetchMock = respond(204);
-
-        await postNoContent('/api/x');
-
-        expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/x', {method: 'POST', headers: {Accept: 'application/json', 'Accept-Language': 'en'}});
-    });
-});
-
-describe(postForm, () => {
-    afterEach(() => {
-        vi.unstubAllGlobals();
-    });
-
-    it('posts the form as it is, leaving its content type to the browser, and returns the JSON answer', async () => {
-        const fetchMock = respond(201, [{id: '1'}]);
-        const form = new FormData();
-        form.append('files', new File(['png'], 'shot.png', {type: 'image/png'}));
-
-        await expect(postForm('/api/x', form)).resolves.toStrictEqual([{id: '1'}]);
-        expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/x', {method: 'POST', headers: {Accept: 'application/json', 'Accept-Language': 'en'}, body: form});
-    });
-
-    it('turns a 422 with a code into a business error', async () => {
-        respond(422, {status: 422, code: 'screenshot.format-unsupported', errors: [{field: 'files', code: 'screenshot.format-unsupported'}]});
-
-        await expect(postForm('/api/x', new FormData())).rejects.toMatchObject({name: 'BusinessError', status: 422, code: 'screenshot.format-unsupported'});
-    });
-});
-
-describe('a refused write', () => {
-    afterEach(() => {
-        vi.unstubAllGlobals();
-    });
-
-    it('turns a 403 with a code into a business error of its status', async () => {
-        respond(403, {status: 403, code: 'access.denied'});
-
-        await expect(postJson('/api/x', {})).rejects.toMatchObject({name: 'BusinessError', status: 403, code: 'access.denied'});
-    });
-
-    it('fails a write that wants a signed-in user with a business error the form shows', async () => {
-        respond(401, {status: 401, code: 'auth.required'});
-
-        const error = await postJson('/api/x', {}).catch((caught: unknown) => caught);
-
-        expect(error).toBeInstanceOf(AuthenticationRequiredError);
-        expect(error).toBeInstanceOf(BusinessError);
-        expect(error).toMatchObject({status: 401, code: 'auth.required'});
+        expect(release instanceof Blob ? [release.type, await release.text()] : null).toStrictEqual(['application/json', '{"title":"Elite"}']);
     });
 });

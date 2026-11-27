@@ -3,12 +3,12 @@ import {screen} from '@testing-library/react';
 import {createMemoryRouter, RouterProvider} from 'react-router';
 import {PlatformSelectionProvider} from '@/entities/platforms';
 import {CurrentUserProvider} from '@/entities/users';
-import {createQueryClient} from '@/shared/api';
+import {type components, createQueryClient} from '@/shared/api';
 import {json, noContent, pageResponse, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {SOFTWARE_CATEGORY_ROUTE} from '@/features/software/catalog';
 import {loadSoftwarePage, preloadSoftwarePage} from '../index';
 
-const ALPHA = {id: '00000000-0000-0000-0001-000000000001', title: 'Fixture Software Alpha', releaseDate: '1985-03-02'};
+const ALPHA = {id: '00000000-0000-0000-0001-000000000001', title: 'Fixture Software Alpha', releaseDate: '1985-03-02', screenshots: [], madeBy: [], rating: 0, votesAmount: 0} satisfies components['schemas']['SoftwareListItemDto'];
 const GAMES = '00000000-0000-0000-00fd-0000000000c1';
 const FACETS = {years: [{value: 1985, count: 1}], countries: [], cities: [], platforms: [], hardware: []};
 

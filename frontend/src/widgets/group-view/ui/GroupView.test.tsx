@@ -5,7 +5,6 @@ import {MemoryRouter} from 'react-router';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {CurrentUserProvider} from '@/entities/users';
 import {breadcrumbSteps, json, noContent, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
-import {toGroupId} from '@/entities/groups';
 import {GroupView} from './GroupView';
 
 const ID = '00000000-0000-0000-0005-000000000001';
@@ -52,7 +51,7 @@ const ELITE = '00000000-0000-0000-0001-000000000001';
 const TETRIS = '00000000-0000-0000-0001-000000000002';
 
 function renderView() {
-    renderWithQueries(<CurrentUserProvider><MemoryRouter><GroupView id={toGroupId(ID)}/></MemoryRouter></CurrentUserProvider>);
+    renderWithQueries(<CurrentUserProvider><MemoryRouter><GroupView id={ID}/></MemoryRouter></CurrentUserProvider>);
 }
 
 function itemsOf(name: string): string[] {

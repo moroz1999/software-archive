@@ -14,7 +14,7 @@ const SQUAD = '00000000-0000-0000-00fd-000000000021';
 const PHANTOM = '00000000-0000-0000-00fd-000000000031';
 
 const FOUND = {
-    software: {items: [{id: ELITE, title: 'Elite', releaseDate: '1987-05-01'}], total: 12},
+    software: {items: [{id: ELITE, title: 'Elite', releaseDate: '1987-05-01', screenshots: [], madeBy: [], rating: 0, votesAmount: 0}], total: 12},
     authors: {items: [{id: ZED, name: 'Zed', realName: 'John Doe', kind: 'person'}, {id: CARL, name: 'Carl', realName: null, kind: 'person'}], total: 2},
     groups: {items: [{id: SQUAD, name: 'ZS'}], total: 1},
 };

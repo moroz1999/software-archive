@@ -1,5 +1,5 @@
 import type {QueryClient} from '@tanstack/react-query';
-import {type Conversation, type ConversationId, NO_CONVERSATION, withUpdate} from '../model/chat';
+import {type Conversation, NO_CONVERSATION, withUpdate} from '../model/chat';
 import {listConversations, readConversation} from './assistant-api';
 
 export const ASSISTANT_QUERY_KEY = ['assistant'] as const;
@@ -15,7 +15,7 @@ export function conversationsQuery() {
     };
 }
 
-function conversationKey(id: ConversationId) {
+function conversationKey(id: string) {
     return [...ASSISTANT_QUERY_KEY, 'conversation', id] as const;
 }
 
@@ -23,7 +23,7 @@ function conversationKey(id: ConversationId) {
  * A conversation, read in parts: each read asks for the messages after those already held and lays them over them.
  * It is read again every 2 s while the assistant works on it. Null once the conversation is gone.
  */
-export function conversationQuery(queryClient: QueryClient, id: ConversationId) {
+export function conversationQuery(queryClient: QueryClient, id: string) {
     const queryKey = conversationKey(id);
     return {
         queryKey,

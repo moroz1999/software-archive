@@ -1,8 +1,8 @@
-import type {CategoryId, CategoryNode} from './category';
+import type {CategoryNode} from './category';
 
 /** A category to choose as a parent, at its depth in the tree. */
 export interface ParentOption {
-    readonly id: CategoryId;
+    readonly id: string;
     readonly title: string;
     readonly depth: number;
 }
@@ -11,7 +11,7 @@ export interface ParentOption {
  * Every category in the order of the tree, to choose a parent from. The category being edited and its subcategories are
  * left out: a category never goes under itself or its own subcategory (docs/domain/categories.md).
  */
-export function parentOptions(tree: readonly CategoryNode[], except?: CategoryId): readonly ParentOption[] {
+export function parentOptions(tree: readonly CategoryNode[], except?: string): readonly ParentOption[] {
     function walk(nodes: readonly CategoryNode[], depth: number): ParentOption[] {
         return nodes
             .filter((node) => node.id !== except)

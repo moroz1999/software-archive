@@ -1,6 +1,4 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {toPlatformCode} from '@/entities/platforms';
-import {SystemError} from '@/shared/api';
 import {json, stubFetch} from '@/shared/lib/test';
 import {fetchFullSearch} from './full-search-api';
 
@@ -13,7 +11,7 @@ const FOUND = {
     sets: [
         {type: 'author', total: 52, items: [{id: ZED, name: 'Zed', realName: 'John Doe', kind: 'person'}]},
         {type: 'group', total: 1, items: [{id: SQUAD, name: 'ZS'}]},
-        {type: 'software', total: 51, items: [{id: ELITE, title: 'Elite', releaseDate: '1987-05-01', screenshots: []}]},
+        {type: 'software', total: 51, items: [{id: ELITE, title: 'Elite', releaseDate: '1987-05-01', screenshots: [], madeBy: [], rating: 0, votesAmount: 0}]},
     ],
     page: PAGE,
 };
@@ -26,31 +24,12 @@ describe(fetchFullSearch, () => {
     it('asks with the keyword, the kinds chosen, the page and the platform', async () => {
         const fetchMock = stubFetch(json(FOUND));
 
-        await fetchFullSearch({keyword: 'zed squad', types: ['author', 'group'], page: 1}, toPlatformCode('bk'), new AbortController().signal);
+        await fetchFullSearch({keyword: 'zed squad', types: ['author', 'group'], page: 1}, 'bk', new AbortController().signal);
         await fetchFullSearch({keyword: 'z', types: [], page: 0}, null, new AbortController().signal);
 
         expect(fetchMock.mock.calls.map(([url]) => url)).toStrictEqual([
-            '/api/search?q=zed+squad&types=author%2Cgroup&page=1&platform=bk',
+            '/api/search?q=zed%20squad&types=author&types=group&page=1&platform=bk',
             '/api/search?q=z&page=0',
         ]);
-    });
-
-    it('reads the matches of every kind on the page with their counts, and the page', async () => {
-        stubFetch(json(FOUND));
-
-        await expect(fetchFullSearch({keyword: 'z', types: [], page: 1}, null, new AbortController().signal)).resolves.toStrictEqual({
-            sets: [
-                {kind: 'author', total: 52, items: [{id: ZED, name: 'Zed', realName: 'John Doe', kind: 'person'}]},
-                {kind: 'group', total: 1, items: [{id: SQUAD, name: 'ZS'}]},
-                {kind: 'software', total: 51, items: [{id: ELITE, title: 'Elite', releaseDate: '1987-05-01', screenshots: [], madeBy: []}]},
-            ],
-            page: {number: 1, size: 50, totalElements: 104, totalPages: 3},
-        });
-    });
-
-    it('fails with a system error on a kind it does not know', async () => {
-        stubFetch(json({sets: [{type: 'picture', total: 1, items: []}], page: PAGE}));
-
-        await expect(fetchFullSearch({keyword: 'z', types: [], page: 0}, null, new AbortController().signal)).rejects.toBeInstanceOf(SystemError);
     });
 });

@@ -1,11 +1,11 @@
 import {NavChip, NavChipRow, NavChips} from '@/shared/ui/nav-chips';
-import {CYRILLIC_LABEL_LETTERS, LATIN_LABEL_LETTERS, type LabelLetter, REST_LABEL_LETTER} from '../model/letter';
+import {CYRILLIC_LABEL_LETTERS, LATIN_LABEL_LETTERS, REST_LABEL_LETTER} from '../model/letter';
 
 export interface LetterFilterProps {
     /** The chosen letter; null for all of them. */
-    readonly current: LabelLetter | null;
+    readonly current: string | null;
     /** The address of the list narrowed to a letter, or not narrowed for null. */
-    readonly hrefOf: (letter: LabelLetter | null) => string;
+    readonly hrefOf: (letter: string | null) => string;
     readonly disabled: boolean;
 }
 

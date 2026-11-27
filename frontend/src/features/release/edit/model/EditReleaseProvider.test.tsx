@@ -1,34 +1,40 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {type Hardware, ReleaseForm, toReleaseId, toSoftwareId, toSoftwarePlatformCode, toSoftwareTitle} from '@/entities/software';
+import {type Hardware, ReleaseForm} from '@/entities/software';
 import {json, noContent, renderWithQueries, stubFetch} from '@/shared/lib/test';
 import {EditReleaseProvider} from './EditReleaseProvider';
 
 const SOFTWARE = {
-    id: toSoftwareId('00000000-0000-0000-0001-000000000001'),
-    title: toSoftwareTitle('Elite'),
+    id: '00000000-0000-0000-0001-000000000001',
+    title: 'Elite',
     description: null,
     releaseDate: null,
-    platform: {code: toSoftwarePlatformCode('vector'), name: 'Vector'},
+    platform: {code: 'vector', name: 'Vector'},
     hardware: [],
     categories: [],
     origins: [],
     added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
     canChange: true,
     preservation: 'unknown' as const,
+    compilationItems: [],
+    compilations: [],
+    credits: [],
+    instructions: null,
+    sources: [],
 };
 const AY: Hardware = {code: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound'};
 const BEEPER: Hardware = {code: 'beeper', name: 'Beeper', group: 'sound', groupName: 'Sound'};
 const RELEASE = {
-    id: toReleaseId('00000000-0000-0000-0007-000000000002'),
+    id: '00000000-0000-0000-0007-000000000002',
     title: 'Elite AY',
     version: '1.1',
     type: 'mod' as const,
     releaseDate: null,
     description: null,
     hardware: [AY],
-    credits: [{id: '00000000-0000-0000-0004-000000000002', type: 'group' as const, title: 'Crew', roles: ['release']}],
+    archive: null,
+    credits: [{id: '00000000-0000-0000-0004-000000000002', ownerId: null, type: 'group' as const, title: 'Crew', roles: ['release' as const]}],
 };
 
 function showEditForm(onSaved = vi.fn<() => void>()) {

@@ -1,7 +1,7 @@
 import type {ReactNode} from 'react';
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useTranslation} from 'react-i18next';
-import {createRelease, type Hardware, type ReleaseDraft, ReleaseFormProvider, type ReleaseId, SOFTWARE_QUERY_KEY, type SoftwareDetails} from '@/entities/software';
+import {createRelease, type Hardware, type ReleaseDraft, ReleaseFormProvider, SOFTWARE_QUERY_KEY, type SoftwareDetails} from '@/entities/software';
 import {businessErrorOf} from '@/shared/api';
 import {createReleaseMessages} from '../config/messages';
 
@@ -9,7 +9,7 @@ export interface CreateReleaseProviderProps {
     readonly software: SoftwareDetails;
     /** The hardware of the software's platform, to choose from. */
     readonly hardware: readonly Hardware[];
-    readonly onCreated: (id: ReleaseId) => void;
+    readonly onCreated: (id: string) => void;
     readonly children: ReactNode;
 }
 

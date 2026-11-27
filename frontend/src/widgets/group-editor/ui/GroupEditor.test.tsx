@@ -3,7 +3,6 @@ import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
 import {breadcrumbSteps, json, noContent, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
-import {toGroupId} from '@/entities/groups';
 import {GroupEditor} from './GroupEditor';
 
 const ID = '00000000-0000-0000-0005-000000000001';
@@ -32,7 +31,7 @@ const AROUND = new Map([
 ]);
 
 function renderEditor(onSaved = vi.fn<() => void>(), onDeleted = vi.fn<() => void>()) {
-    renderWithQueries(<MemoryRouter><GroupEditor id={toGroupId(ID)} onSaved={onSaved} onDeleted={onDeleted}/></MemoryRouter>);
+    renderWithQueries(<MemoryRouter><GroupEditor id={ID} onSaved={onSaved} onDeleted={onDeleted}/></MemoryRouter>);
 }
 
 describe(GroupEditor, () => {

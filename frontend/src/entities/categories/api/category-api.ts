@@ -1,68 +1,68 @@
-import {deleteResource, getJson, mapResponse, postJson, putJson, readArray, readNullableString, readObject, readString} from '@/shared/api';
+import {api, apiError, type components} from '@/shared/api';
 import {SUPPORTED_UI_LANGUAGES, type UiLanguage} from '@/shared/lib/i18n';
-import {type CategoryDetails, type CategoryId, type CategoryNode, type CategoryTitles, toCategoryId} from '../model/category';
+import {type CategoryDetails, type CategoryNode, type CategoryTitles} from '../model/category';
 import type {CategoryDraft} from '../model/category-form';
 
-function categoryPath(id: CategoryId): string {
-    return `/api/categories/${id}`;
-}
+type CategoryDetailsDto = components['schemas']['CategoryDetailsDto'];
 
-function toBody(draft: CategoryDraft): unknown {
+function toBody(draft: CategoryDraft): components['schemas']['CategoryRequestDto'] {
     return {titles: draft.titles, parentId: draft.parentId};
 }
 
-/** The titles in the languages of the site; one in another language is left out, a missing Russian one is malformed. */
-function parseTitles(value: unknown): CategoryTitles {
-    const dto = readObject(value, 'titles');
+/** The titles in the languages of the site; one in another language is left out, a category without a Russian one is broken. */
+function toTitles(dto: CategoryDetailsDto['titles']): CategoryTitles {
     const titles: Partial<Record<UiLanguage, string>> = {};
     for (const language of SUPPORTED_UI_LANGUAGES) {
-        if (dto[language] !== undefined) {
-            titles[language] = readString(dto, language);
+        const title = dto[language];
+        if (title !== undefined) {
+            titles[language] = title;
         }
     }
-    return {...titles, ru: readString(dto, 'ru')};
-}
-
-function parseNode(item: unknown): CategoryNode {
-    const dto = readObject(item, 'category');
-    return {
-        id: toCategoryId(readString(dto, 'id')),
-        title: readString(dto, 'title'),
-        children: readArray(dto['children'], 'children').map(parseNode),
-    };
+    const {ru} = dto;
+    if (ru === undefined) {
+        throw new TypeError('A category has a Russian title.');
+    }
+    return {...titles, ru};
 }
 
 /** The whole tree of categories: `GET /api/categories`. */
 export async function fetchCategoryTree(signal: AbortSignal): Promise<readonly CategoryNode[]> {
-    const json = await getJson('/api/categories', signal);
-    return mapResponse(() => readArray(json, 'categories').map(parseNode));
+    const {data, error, response} = await api.GET('/api/categories', {signal});
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
+    return data;
 }
 
 /** One category with its titles in every language and its parent: `GET /api/categories/{id}`. */
-export async function fetchCategory(id: CategoryId, signal: AbortSignal): Promise<CategoryDetails> {
-    const json = await getJson(categoryPath(id), signal);
-    return mapResponse(() => {
-        const dto = readObject(json, 'category');
-        const parentId = readNullableString(dto, 'parentId');
-        return {
-            id: toCategoryId(readString(dto, 'id')),
-            titles: parseTitles(dto['titles']),
-            parentId: parentId === null ? null : toCategoryId(parentId),
-        };
-    });
+export async function fetchCategory(id: string, signal: AbortSignal): Promise<CategoryDetails> {
+    const {data, error, response} = await api.GET('/api/categories/{id}', {params: {path: {id}}, signal});
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
+    return {...data, titles: toTitles(data.titles)};
 }
 
 /** Adds a category to the tree and returns its id. */
-export async function createCategory(draft: CategoryDraft): Promise<CategoryId> {
-    const json = await postJson('/api/categories', toBody(draft));
-    return mapResponse(() => toCategoryId(readString(readObject(json, 'created category'), 'id')));
+export async function createCategory(draft: CategoryDraft): Promise<string> {
+    const {data, error, response} = await api.POST('/api/categories', {body: toBody(draft)});
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
+    return data.id;
 }
 
-export async function updateCategory(id: CategoryId, draft: CategoryDraft): Promise<void> {
-    await putJson(categoryPath(id), toBody(draft));
+export async function updateCategory(id: string, draft: CategoryDraft): Promise<void> {
+    const {error, response} = await api.PUT('/api/categories/{id}', {params: {path: {id}}, body: toBody(draft)});
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
 }
 
 /** Deletes the category with its subcategories; their software only leaves them. */
-export async function deleteCategory(id: CategoryId): Promise<void> {
-    await deleteResource(categoryPath(id));
+export async function deleteCategory(id: string): Promise<void> {
+    const {error, response} = await api.DELETE('/api/categories/{id}', {params: {path: {id}}});
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
 }

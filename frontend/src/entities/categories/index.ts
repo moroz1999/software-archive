@@ -1,7 +1,7 @@
 export {createCategory, deleteCategory, fetchCategory, fetchCategoryTree, updateCategory} from './api/category-api';
 export {CATEGORY_QUERY_KEY, categoryDetailsQuery, categoryTreeQuery} from './api/category-queries';
 export {CATEGORIES_PATH, CATEGORY_EDIT_ROUTE, CATEGORY_NEW_PATH, categoryEditPath} from './config/paths';
-export {type CategoryDetails, type CategoryId, type CategoryNode, type CategoryTitles, categoryTitle, parseCategoryId, requireCategoryId, toCategoryId} from './model/category';
+export {type CategoryDetails, type CategoryNode, type CategoryTitles, categoryTitle, parseCategoryId, requireCategoryId} from './model/category';
 export {type CategoryDraft, type CategoryFormValues, toCategoryFormValues} from './model/category-form';
 export {type CategoryFormState, useCategoryForm} from './model/category-form-context';
 export {useCategoryDetails} from './model/category-details-context';

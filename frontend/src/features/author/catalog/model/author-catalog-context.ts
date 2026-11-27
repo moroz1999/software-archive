@@ -1,14 +1,13 @@
 import type {UseQueryResult} from '@tanstack/react-query';
 import type {City, Country} from '@/entities/locations';
-import type {Page} from '@/shared/api';
 import {createRequiredContext} from '@/shared/lib/context';
-import type {AuthorCatalogEntry} from './catalog';
+import type {AuthorCatalogPage} from './catalog';
 import type {AuthorCatalogFilter} from './catalog-filter';
 
 export interface AuthorCatalogState {
     /** What the address asks the catalog to show. */
     readonly filter: AuthorCatalogFilter;
-    readonly entries: UseQueryResult<Page<AuthorCatalogEntry>>;
+    readonly entries: UseQueryResult<AuthorCatalogPage>;
     readonly countries: UseQueryResult<readonly Country[]>;
     /** The cities of the chosen country; pending while none is chosen. */
     readonly cities: UseQueryResult<readonly City[]>;

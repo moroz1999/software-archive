@@ -9,7 +9,7 @@ export OPENAI_API_KEY
 FRONTEND := docker compose exec frontend npm run
 
 .DEFAULT_GOAL := help
-.PHONY: help up down wsl-up run run-fixtures reindex clean format test verify check test-front lint typecheck build
+.PHONY: help up down wsl-up run run-fixtures reindex clean format test verify api-types check test-front lint typecheck build
 
 help: ## List the commands
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
@@ -48,6 +48,10 @@ test: ## Backend unit tests
 
 verify: ## Backend unit and integration tests (Testcontainers)
 	$(MVNW) verify
+
+api-types: ## Write the backend's OpenAPI document into the frontend and generate its TypeScript types from it
+	$(MVNW) -q test-compile failsafe:integration-test failsafe:verify -Dit.test=OpenApiContractIT -Dopenapi.write=true
+	$(FRONTEND) api:types
 
 # Frontend
 

@@ -1,9 +1,8 @@
-import type {LabelId} from '@/entities/labels';
 import {createRequiredContext} from '@/shared/lib/context';
 
 /** The label to hand over, under its name. */
 export interface HandedLabel {
-    readonly id: LabelId;
+    readonly id: string;
     readonly name: string;
 }
 

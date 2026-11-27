@@ -1,6 +1,5 @@
 import type {UiLanguage} from '@/shared/lib/i18n';
-import {NotFoundError} from '@/shared/api';
-import type {CityId, CountryId} from './geo';
+import {type components, NotFoundError} from '@/shared/api';
 import {parseCityId, parseCountryId} from './geo';
 
 /** What is kept in the management: a country or a city. */
@@ -10,26 +9,17 @@ export type PlaceKind = 'country' | 'city';
 export type PlaceNames = Readonly<Partial<Record<UiLanguage, string>>> & {readonly ru: string};
 
 /** A city of a country in the tree, with how many places of people, groups and labels are in it. */
-export interface GeographyCity {
-    readonly id: CityId;
-    readonly name: string;
-    readonly places: number;
-}
+export type GeographyCity = components['schemas']['GeographyCityDto'];
 
 /** A country in the tree, with how many places are in it, in its cities too, and its cities. */
-export interface GeographyCountry {
-    readonly id: CountryId;
-    readonly name: string;
-    readonly places: number;
-    readonly cities: readonly GeographyCity[];
-}
+export type GeographyCountry = components['schemas']['GeographyCountryDto'];
 
 /** A country or a city as its form edits it; a country has no country, a city may have none while it is not known. */
 export interface PlaceDetails {
     readonly kind: PlaceKind;
-    readonly id: CountryId | CityId;
+    readonly id: string;
     readonly names: PlaceNames;
-    readonly countryId: CountryId | null;
+    readonly countryId: string | null;
     readonly latitude: number | null;
     readonly longitude: number | null;
 }
@@ -40,7 +30,7 @@ export function placeName(names: PlaceNames, language: UiLanguage): string {
 }
 
 /** The id of the place of the kind in a route parameter; one that cannot be an id is a page that does not exist. */
-export function requirePlaceId(kind: PlaceKind, raw: string | undefined): CountryId | CityId {
+export function requirePlaceId(kind: PlaceKind, raw: string | undefined): string {
     const id = kind === 'country' ? parseCountryId(raw ?? null) : parseCityId(raw ?? null);
     if (id === null) {
         throw new NotFoundError(kind === 'country' ? 'geo.country-not-found' : 'geo.city-not-found');
@@ -49,15 +39,7 @@ export function requirePlaceId(kind: PlaceKind, raw: string | undefined): Countr
 }
 
 /** A country or a city that may be a duplicate, with a city's country, null for none, and how many places are in it. */
-export interface GeoDuplicate {
-    readonly id: string;
-    readonly name: string;
-    readonly country: string | null;
-    readonly places: number;
-}
+export type GeoDuplicate = components['schemas']['GeoDuplicatesDto.DuplicateDto'];
 
 /** The countries, and the cities of each country or of none, that may be one; each group of what may be one. */
-export interface GeoDuplicates {
-    readonly countries: readonly (readonly GeoDuplicate[])[];
-    readonly cities: readonly {readonly country: string | null; readonly cities: readonly GeoDuplicate[]}[];
-}
+export type GeoDuplicates = components['schemas']['GeoDuplicatesDto'];

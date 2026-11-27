@@ -6,8 +6,5 @@ export {
 } from './model/account-rules';
 export {CurrentUserProvider} from './model/CurrentUserProvider';
 export {type CurrentUserState, useAbility, useCurrentUser} from './model/current-user-context';
-export {readUserEntry} from './api/user-api';
 export {USERS_QUERY_KEY} from './api/user-queries';
-export {
-    type Ability, type CurrentUser, type GrantedGroup, requireUserId, toUserGroup, toUserId, type UserEntry, type UserGroup, type UserId,
-} from './model/user';
+export {type Ability, type CurrentUser, type GrantedGroup, requireUserId, type UserEntry, type UserGroup} from './model/user';

@@ -1,7 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {toReleaseId} from './release';
 import {toReleaseFormValues, validateReleaseForm} from './release-form';
-import {toReleaseDate} from './software';
 
 const EMPTY = toReleaseFormValues();
 const AY = {code: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound'};
@@ -50,13 +48,14 @@ describe(toReleaseFormValues, () => {
 
     it('fills the form with what a release states, its hardware by code', () => {
         expect(toReleaseFormValues({
-            id: toReleaseId('00000000-0000-0000-0007-000000000002'),
+            id: '00000000-0000-0000-0007-000000000002',
             title: null,
             version: '1.1',
             type: 'mod',
-            releaseDate: toReleaseDate('1990-03-01'),
+            releaseDate: '1990-03-01',
             description: null,
             hardware: [AY],
+            archive: null,
             credits: [],
         })).toStrictEqual({title: '', version: '1.1', type: 'mod', releaseDate: '01.03.1990', description: '', hardware: ['ay8910'], credits: []});
     });

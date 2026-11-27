@@ -1,41 +1,30 @@
-import {toAuthorId} from '@/entities/authors';
-import {toLabelId} from '@/entities/labels';
-import type {PlatformCode} from '@/entities/platforms';
-import {getJson, mapResponse, type Page, parsePage, readNullableString, readObject, readString} from '@/shared/api';
-import type {AuthorCatalogEntry} from '../model/catalog';
+import {api, apiError, type components} from '@/shared/api';
+import type {AuthorCatalogEntry, AuthorCatalogPage} from '../model/catalog';
 import type {AuthorCatalogFilter} from '../model/catalog-filter';
 
-
 /** An entry is of a person or of a label, never both. */
-function parseEntry(item: unknown): AuthorCatalogEntry {
-    const dto = readObject(item, 'catalog entry');
-    const personId = readNullableString(dto, 'personId');
-    const labelId = readNullableString(dto, 'labelId');
-    const name = readString(dto, 'name');
-    const note = readNullableString(dto, 'note');
-    if ((personId === null) === (labelId === null)) {
-        throw new TypeError('A catalog entry is of a person or of a label, never both or neither.');
+function toEntry({personId, labelId, name, note}: components['schemas']['AuthorCatalogEntryDto']): AuthorCatalogEntry {
+    if (personId !== null && labelId === null) {
+        return {kind: 'person', personId: personId, name, note};
     }
-    return personId === null
-        ? {kind: 'label', labelId: toLabelId(labelId ?? ''), name, note}
-        : {kind: 'person', personId: toAuthorId(personId), name, note};
+    if (labelId !== null && personId === null) {
+        return {kind: 'label', labelId: labelId, name, note};
+    }
+    throw new TypeError('A catalog entry is of a person or of a label, never both or neither.');
 }
 
 /** A page of the catalog: `GET /api/authors`, with the filters that are set, of the platform when one is chosen. */
 export async function fetchAuthorCatalogPage(
     filter: AuthorCatalogFilter,
-    platform: PlatformCode | null,
+    platform: string | null,
     signal: AbortSignal,
-): Promise<Page<AuthorCatalogEntry>> {
-    const search = new URLSearchParams({page: String(filter.page)});
-    for (const [key, value] of [['letter', filter.letter], ['country', filter.country], ['city', filter.city]] as const) {
-        if (value !== null) {
-            search.set(key, value);
-        }
+): Promise<AuthorCatalogPage> {
+    const {data, error, response} = await api.GET('/api/authors', {
+        params: {query: {page: filter.page, letter: filter.letter, country: filter.country, city: filter.city, platform}},
+        signal,
+    });
+    if (error !== undefined) {
+        throw apiError(response, error);
     }
-    if (platform !== null) {
-        search.set('platform', platform);
-    }
-    const json = await getJson(`/api/authors?${search.toString()}`, signal);
-    return mapResponse(() => parsePage(json, parseEntry));
+    return {...data, content: data.content.map(toEntry)};
 }

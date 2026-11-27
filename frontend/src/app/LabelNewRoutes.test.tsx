@@ -2,7 +2,7 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import {render, screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {createQueryClient} from '@/shared/api';
-import {json} from '@/shared/lib/test';
+import {json, stubGlobalFetch} from '@/shared/lib/test';
 import {App} from './App';
 import {type AppRouter, createAppRouter} from './router';
 
@@ -51,7 +51,7 @@ function stubApi(routes: Routes) {
         const answer = answers.get(`${init?.method ?? 'GET'} ${url}`);
         return answer === undefined ? Promise.reject(new TypeError(`Unexpected fetch: ${url}`)) : Promise.resolve(answer());
     });
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobalFetch(fetchMock);
     return fetchMock;
 }
 

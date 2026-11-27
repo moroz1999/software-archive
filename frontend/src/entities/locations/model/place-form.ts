@@ -1,4 +1,4 @@
-import {SUPPORTED_UI_LANGUAGES, type UiLanguage} from '@/shared/lib/i18n';
+import {perUiLanguage, SUPPORTED_UI_LANGUAGES, type UiLanguage} from '@/shared/lib/i18n';
 import type {PlaceDetails, PlaceNames} from './geography';
 
 /**
@@ -87,7 +87,7 @@ export function validatePlaceForm(values: PlaceFormValues): PlaceFormResult {
 
 /** The form values of an existing country or city, or of an empty form. */
 export function toPlaceFormValues(place?: PlaceDetails): PlaceFormValues {
-    const names = Object.fromEntries(SUPPORTED_UI_LANGUAGES.map((language) => [language, place?.names[language] ?? ''])) as Record<UiLanguage, string>;
+    const names = perUiLanguage((language) => place?.names[language] ?? '');
     return {
         names,
         latitude: place?.latitude === null || place === undefined ? '' : String(place.latitude),

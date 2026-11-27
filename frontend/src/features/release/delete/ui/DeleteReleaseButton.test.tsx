@@ -1,27 +1,36 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {toReleaseId, toSoftwareId, toSoftwarePlatformCode, toSoftwareTitle} from '@/entities/software';
 import {json, noContent, renderWithQueries, stubFetch} from '@/shared/lib/test';
 import {DeleteReleaseButton} from './DeleteReleaseButton';
 
 const SOFTWARE = {
-    id: toSoftwareId('00000000-0000-0000-0001-000000000001'),
-    title: toSoftwareTitle('Elite'),
+    id: '00000000-0000-0000-0001-000000000001',
+    title: 'Elite',
     description: null,
     releaseDate: null,
-    platform: {code: toSoftwarePlatformCode('vector'), name: 'Vector'},
+    platform: {code: 'vector', name: 'Vector'},
     hardware: [],
+    categories: [],
+    origins: [],
+    added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
+    canChange: true,
+    preservation: 'unknown' as const,
+    compilationItems: [],
+    compilations: [],
     credits: [],
+    instructions: null,
+    sources: [],
 };
 const RELEASE = {
-    id: toReleaseId('00000000-0000-0000-0007-000000000002'),
+    id: '00000000-0000-0000-0007-000000000002',
     title: 'Elite AY',
     version: '1.1',
     type: 'mod' as const,
     releaseDate: null,
     description: null,
     hardware: [],
+    archive: null,
     credits: [],
 };
 

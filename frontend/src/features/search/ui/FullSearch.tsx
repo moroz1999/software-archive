@@ -13,7 +13,8 @@ import {Skeleton} from '@/shared/ui/skeleton';
 import {Stack} from '@/shared/ui/stack';
 import {Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow} from '@/shared/ui/table';
 import {Heading, Text, TextLink} from '@/shared/ui/typography';
-import {FOUND_KINDS, foundAuthorHref, type FoundKind, type FoundSet} from '../model/found';
+import {foundKindValues} from '@/shared/api';
+import {foundAuthorHref, type FoundKind, type FoundSet} from '../model/found';
 import {useFullSearch} from '../model/full-search-context';
 import {chosenKinds, fullSearchHref} from '../model/full-search-filter';
 import styles from './FullSearch.module.css';
@@ -55,21 +56,21 @@ export function FullSearch({Card}: FullSearchProps) {
 function Kinds() {
     const {t} = useTranslation();
     const {filter, changing, show} = useFullSearch();
-    const checked = new Set<FoundKind>(filter.types.length === 0 ? FOUND_KINDS : filter.types);
+    const checked = new Set<FoundKind>(filter.types.length === 0 ? foundKindValues : filter.types);
     const choose = (kinds: Iterable<FoundKind>) => {
         show({...filter, types: chosenKinds(kinds), page: 0});
     };
     return (
         <Inline gap="md" align="center" wrap>
             <Text as="span" variant="caption" tone="muted">{t('search.kindsLabel')}</Text>
-            {FOUND_KINDS.map((kind) => (
+            {foundKindValues.map((kind) => (
                 <Checkbox
                     key={kind}
                     label={t(KIND_KEYS[kind])}
                     checked={checked.has(kind)}
                     disabled={changing || (checked.has(kind) && checked.size === 1)}
                     onChange={(on) => {
-                        choose(FOUND_KINDS.filter((other) => (other === kind ? on : checked.has(other))));
+                        choose(foundKindValues.filter((other) => (other === kind ? on : checked.has(other))));
                     }}
                 />
             ))}
@@ -78,7 +79,7 @@ function Kinds() {
                 color="outlined"
                 disabled={changing}
                 onClick={() => {
-                    choose(FOUND_KINDS);
+                    choose(foundKindValues);
                 }}
             >
                 {t('search.selectAll')}
@@ -102,7 +103,7 @@ function Section({title, children}: {readonly title: string; readonly children: 
 
 function Matches({set, Card}: {readonly set: FoundSet} & FullSearchProps) {
     const {t} = useTranslation();
-    switch (set.kind) {
+    switch (set.type) {
         case 'author':
             return (
                 <Table label={t(TITLE_KEYS.author, {count: set.total})}>
@@ -178,7 +179,7 @@ function Results({Card}: FullSearchProps) {
         <LoadingState loading={changing}>
             <Stack gap="xl">
                 {sets.map((set) => (
-                    <Section key={set.kind} title={t(TITLE_KEYS[set.kind], {count: set.total})}>
+                    <Section key={set.type} title={t(TITLE_KEYS[set.type], {count: set.total})}>
                         <Matches set={set} Card={Card}/>
                     </Section>
                 ))}

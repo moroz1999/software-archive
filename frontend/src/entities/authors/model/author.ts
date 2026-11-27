@@ -1,66 +1,24 @@
-import {type Addition, type ExternalOrigin, NotFoundError} from '@/shared/api';
-import {type Brand} from '@/shared/lib/brand';
+import {type components, NotFoundError} from '@/shared/api';
 import {isUuid} from '@/shared/lib/uuid';
 
-/** The id of an author: the person behind the names. */
-export type AuthorId = Brand<string, 'AuthorId'>;
+type Schemas = components['schemas'];
 
-export interface AuthorLabel {
-    readonly id: string;
-    readonly name: string;
-    /** Chosen as the display name. */
-    readonly display: boolean;
-}
-
+/** A label of an author; one of them may be chosen as the display name. */
+export type AuthorLabel = Schemas['AuthorDetailsDto.LabelDto'];
 /** A group the author was a member of, under its main name; `as` is the label they were a member under, unless it is their main name. */
-export interface AuthorGroup {
-    readonly id: string;
-    readonly name: string;
-    readonly as: string | null;
-}
-
+export type AuthorGroup = Schemas['AuthorDetailsDto.GroupDto'];
 /** Where an author is located: a country, a city of it, or both; the country of a city given alone is its own. */
-export interface AuthorLocation {
-    readonly countryId: string | null;
-    readonly country: string | null;
-    readonly cityId: string | null;
-    readonly city: string | null;
-    readonly primary: boolean;
-}
-
-/** One author with everything shown on their page. */
-export interface AuthorDetails {
-    readonly id: AuthorId;
-    /** The main name (docs/domain/authors.md). */
-    readonly name: string;
-    readonly realName: string | null;
-    readonly notes: string | null;
-    readonly labels: readonly AuthorLabel[];
-    /** The primary location first. */
-    readonly locations: readonly AuthorLocation[];
-    readonly groups: readonly AuthorGroup[];
-    /** Where imports took them from. */
-    readonly origins: readonly ExternalOrigin[];
-    /** Who added it and when. */
-    readonly added: Addition;
-    /** Whether whoever reads it may change them, as the archive tells. */
-    readonly canChange: boolean;
-}
-
-export function toAuthorId(raw: string): AuthorId {
-    if (!isUuid(raw)) {
-        throw new TypeError(`Invalid author id: ${raw}`);
-    }
-    return raw as AuthorId;
-}
+export type AuthorLocation = Schemas['AuthorDetailsDto.LocationDto'];
+/** One author with everything shown on their page; the primary location first. */
+export type AuthorDetails = Schemas['AuthorDetailsDto'];
 
 /** The id in a raw value from outside (a URL), or null when it cannot be one. */
-export function parseAuthorId(raw: string | undefined): AuthorId | null {
-    return raw !== undefined && isUuid(raw) ? toAuthorId(raw) : null;
+export function parseAuthorId(raw: string | undefined): string | null {
+    return raw !== undefined && isUuid(raw) ? raw : null;
 }
 
 /** The id of a page's author from its URL; one that cannot be an id means the page does not exist. */
-export function requireAuthorId(raw: string | undefined): AuthorId {
+export function requireAuthorId(raw: string | undefined): string {
     const id = parseAuthorId(raw);
     if (id === null) {
         throw new NotFoundError('author.not-found');

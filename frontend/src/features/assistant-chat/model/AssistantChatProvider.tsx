@@ -6,7 +6,6 @@ import {approvePlan, cancelPlan, createConversation, deleteConversation, sendMes
 import {ASSISTANT_QUERY_KEY, conversationQuery, conversationsQuery} from '../api/assistant-queries';
 import {assistantMessages} from '../config/messages';
 import {AssistantChatContext, type AssistantChatState} from './assistant-chat-context';
-import {type ConversationId, type PlanId, toConversationId} from './chat';
 import {pageContextOf} from './page-context';
 
 interface Sending {
@@ -23,7 +22,7 @@ interface Sending {
 export function AssistantChatProvider({children}: {readonly children: ReactNode}) {
     const {t} = useTranslation();
     const queryClient = useQueryClient();
-    const [chosenId, setConversationId] = useState<ConversationId | null>(null);
+    const [chosenId, setConversationId] = useState<string | null>(null);
     const [draft, setDraft] = useState('');
     const [listShown, setListShown] = useState(false);
 
@@ -95,10 +94,10 @@ export function AssistantChatProvider({children}: {readonly children: ReactNode}
                 stop.mutate(conversationId);
             }
         },
-        approve: (plan: PlanId) => {
+        approve: (plan: string) => {
             approve.mutate(plan);
         },
-        cancel: (plan: PlanId) => {
+        cancel: (plan: string) => {
             cancel.mutate(plan);
         },
         planBusy: approve.isPending || cancel.isPending,
@@ -123,4 +122,4 @@ export function AssistantChatProvider({children}: {readonly children: ReactNode}
 }
 
 /** Stands for no conversation in the query that is off until one is open. */
-const PLACEHOLDER = toConversationId('00000000-0000-0000-0000-000000000000');
+const PLACEHOLDER = '00000000-0000-0000-0000-000000000000';

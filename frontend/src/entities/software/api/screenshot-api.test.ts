@@ -1,31 +1,17 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {BusinessError, NotFoundError, SystemError} from '@/shared/api';
+import {BusinessError, NotFoundError} from '@/shared/api';
 import {json, noContent, stubFetch} from '@/shared/lib/test';
-import {toReleaseId} from '../model/release';
-import {toScreenshotId} from '../model/screenshot';
-import {toSoftwareId} from '../model/software';
-import {deleteScreenshot, fetchScreenshots, parseScreenshots, reorderScreenshots, uploadScreenshots} from './screenshot-api';
+import {deleteScreenshot, fetchScreenshots, reorderScreenshots, uploadScreenshots} from './screenshot-api';
 
-const ELITE = toSoftwareId('00000000-0000-0000-0001-000000000001');
-const AY_MOD = toReleaseId('00000000-0000-0000-0007-000000000002');
-const TITLE = toScreenshotId('00000000-0000-0000-0055-000000000001');
-const GAME = toScreenshotId('00000000-0000-0000-0055-000000000002');
+const ELITE = '00000000-0000-0000-0001-000000000001';
+const AY_MOD = '00000000-0000-0000-0007-000000000002';
+const TITLE = '00000000-0000-0000-0055-000000000001';
+const GAME = '00000000-0000-0000-0055-000000000002';
 const SHOTS = [{id: TITLE, url: `/api/screenshots/${TITLE}`}, {id: GAME, url: `/api/screenshots/${GAME}`}];
 
 function signal(): AbortSignal {
     return new AbortController().signal;
 }
-
-describe(parseScreenshots, () => {
-    it('reads the screenshots, and none when missing', () => {
-        expect(parseScreenshots(SHOTS)).toStrictEqual(SHOTS);
-        expect(parseScreenshots(undefined)).toStrictEqual([]);
-    });
-
-    it('fails on a malformed screenshot', () => {
-        expect(() => parseScreenshots([{id: 'not-an-id', url: '/x'}])).toThrow(TypeError);
-    });
-});
 
 describe(fetchScreenshots, () => {
     afterEach(() => {
@@ -53,19 +39,18 @@ describe(fetchScreenshots, () => {
 
         await fetchScreenshots(ELITE, null, signal(), 'maps');
         await uploadScreenshots(ELITE, null, [png], 'maps');
-        await reorderScreenshots(ELITE, null, [toScreenshotId(GAME), toScreenshotId(TITLE)], 'maps');
-        await deleteScreenshot(ELITE, null, toScreenshotId(TITLE), 'maps');
+        await reorderScreenshots(ELITE, null, [GAME, TITLE], 'maps');
+        await deleteScreenshot(ELITE, null, TITLE, 'maps');
 
         expect(fetchMock.mock.calls.map(([url]) => url)).toStrictEqual([
             `/api/software/${ELITE}/maps`, `/api/software/${ELITE}/maps`, `/api/software/${ELITE}/maps/order`, `/api/software/${ELITE}/maps/${TITLE}`,
         ]);
     });
 
-    it('fails with not found for unknown software and with a system error on a malformed answer', async () => {
-        stubFetch(json({status: 404, code: 'software.not-found'}, 404), json([{id: 'x'}]));
+    it('fails with not found for unknown software', async () => {
+        stubFetch(json({status: 404, code: 'software.not-found'}, 404));
 
         await expect(fetchScreenshots(ELITE, null, signal())).rejects.toBeInstanceOf(NotFoundError);
-        await expect(fetchScreenshots(ELITE, null, signal())).rejects.toBeInstanceOf(SystemError);
     });
 });
 

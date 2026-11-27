@@ -2,7 +2,7 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import {render, screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {createQueryClient} from '@/shared/api';
-import {json, noContent} from '@/shared/lib/test';
+import {json, noContent, stubGlobalFetch} from '@/shared/lib/test';
 import {App} from './App';
 import {type AppRouter, createAppRouter} from './router';
 
@@ -38,7 +38,7 @@ function stubApi(user: typeof MEMBER, routes: Routes = {}) {
         const answer = answers.get(`${init?.method ?? 'GET'} ${url}`);
         return answer === undefined ? Promise.reject(new TypeError(`Unexpected fetch: ${url}`)) : Promise.resolve(answer());
     });
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobalFetch(fetchMock);
     return fetchMock;
 }
 
@@ -189,7 +189,7 @@ describe('hardware routes', () => {
 
             await backAtTheList();
 
-            expect(bodyOf(fetchMock, 'PUT', '/api/hardware-groups/storage')).toStrictEqual({names: {ru: 'Накопители', en: 'Storage'}});
+            expect(bodyOf(fetchMock, 'PUT', '/api/hardware-groups/storage')).toStrictEqual({code: null, names: {ru: 'Накопители', en: 'Storage'}});
         });
 
         it('hands a failure of saving to the error dialog, keeping what was typed', async () => {
@@ -371,7 +371,7 @@ describe('hardware routes', () => {
 
             await backAtTheList();
 
-            expect(bodyOf(fetchMock, 'PUT', '/api/hardware/floppy')).toStrictEqual({names: {ru: 'Дискета', en: 'Floppy disk'}, group: 'dos', platforms: ['vector', 'bk']});
+            expect(bodyOf(fetchMock, 'PUT', '/api/hardware/floppy')).toStrictEqual({code: null, names: {ru: 'Дискета', en: 'Floppy disk'}, group: 'dos', platforms: ['vector', 'bk']});
         });
 
         it('says under the platforms when software of a platform taken away has the hardware', async () => {

@@ -2,10 +2,9 @@ import type {ReactNode} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {compilationProgramsQuery} from '../api/software-queries';
 import {CompilationProgramsContext} from './compilation-programs-context';
-import type {SoftwareId} from './software';
 
 interface CompilationProgramsProviderProps {
-    readonly id: SoftwareId;
+    readonly id: string;
     readonly enabled: boolean;
     readonly children: ReactNode;
 }

@@ -1,15 +1,6 @@
 import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
-import {
-    type HardwareCode,
-    HardwareDetailsProvider,
-    HardwareForm,
-    HardwareFormSkeleton,
-    type HardwareGroupCode,
-    type HardwareKind,
-    HARDWARE_PATH,
-    useHardwareDetails,
-} from '@/entities/hardware';
+import {HardwareDetailsProvider, HardwareForm, HardwareFormSkeleton, type HardwareKind, HARDWARE_PATH, useHardwareDetails} from '@/entities/hardware';
 import {DeleteHardwareButton} from '@/features/hardware/delete';
 import {EditHardwareProvider} from '@/features/hardware/edit';
 import {useSkeleton} from '@/shared/lib/loading';
@@ -19,7 +10,7 @@ import {useHardwareChoices} from './hardware-choices';
 
 export interface HardwareEditorProps {
     readonly kind: HardwareKind;
-    readonly code: HardwareCode | HardwareGroupCode;
+    readonly code: string;
     /** Called once the group or the item is saved. */
     readonly onSaved: () => void;
     /** Called once it is deleted. */

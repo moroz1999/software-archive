@@ -1,4 +1,4 @@
-import type {JsonObject} from '@/shared/api';
+import type {JsonObject} from './chat';
 import type {ChatMessage, ChatPlan, EntityRef, PlanAction} from './chat';
 
 /** A piece of shown text: plain, a link to an entry, the id an earlier change of the plan makes, or a new line. */
@@ -74,7 +74,8 @@ function subjectOf(json: unknown): string | null {
     if (typeof parsed !== 'object' || parsed === null) {
         return null;
     }
-    const values: unknown[] = SUBJECTS.map((key) => (parsed as JsonObject)[key]);
+    const fields: JsonObject = Object.fromEntries(Object.entries(parsed));
+    const values: unknown[] = SUBJECTS.map((key) => fields[key]);
     const found = values.find((value): value is string => typeof value === 'string' && value.trim() !== '');
     return found ?? null;
 }
@@ -167,7 +168,7 @@ function before(state: JsonObject | null, field: string, value: unknown, shown: 
 }
 
 function isItem(value: unknown): value is JsonObject {
-    return typeof value === 'object' && value !== null && !Array.isArray(value) && typeof (value as JsonObject)['$ref'] !== 'number';
+    return typeof value === 'object' && value !== null && !Array.isArray(value) && !('$ref' in value && typeof value.$ref === 'number');
 }
 
 function valueSegments(field: string, value: unknown, refs: Refs, words: ValueWords): readonly Segment[] {
@@ -187,7 +188,7 @@ function valueSegments(field: string, value: unknown, refs: Refs, words: ValueWo
         return itemSegments(value, refs, words);
     }
     if (typeof value === 'object') {
-        return [{kind: 'madeBy', change: Number((value as JsonObject)['$ref'])}];
+        return [{kind: 'madeBy', change: '$ref' in value ? Number(value.$ref) : Number.NaN}];
     }
     return [{kind: 'text', text: typeof value === 'number' || typeof value === 'boolean' ? String(value) : JSON.stringify(value)}];
 }

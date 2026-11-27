@@ -30,13 +30,13 @@ export function LatestSoftware({Card}: LatestSoftwareProps) {
         // The error dialog shows why it failed (docs/error-handling.md).
         return null;
     }
-    if (query.data.items.length === 0) {
+    if (query.data.content.length === 0) {
         return <Text tone="muted">{t('empty.software')}</Text>;
     }
     return (
         <LoadingState loading={query.isRefetching}>
             <CardGrid>
-                {query.data.items.map((software) => (
+                {query.data.content.map((software) => (
                     <li key={software.id}>
                         <Card software={software} href={softwarePath(software.id)}/>
                     </li>

@@ -1,28 +1,33 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {type Hardware, ReleaseForm, type ReleaseId, toSoftwareId, toSoftwarePlatformCode, toSoftwareTitle} from '@/entities/software';
+import {type Hardware, ReleaseForm} from '@/entities/software';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, renderWithQueries, stubFetch} from '@/shared/lib/test';
 import {CreateReleaseProvider} from './CreateReleaseProvider';
 
 const SOFTWARE = {
-    id: toSoftwareId('00000000-0000-0000-0001-000000000001'),
-    title: toSoftwareTitle('Elite'),
+    id: '00000000-0000-0000-0001-000000000001',
+    title: 'Elite',
     description: null,
     releaseDate: null,
-    platform: {code: toSoftwarePlatformCode('vector'), name: 'Vector'},
+    platform: {code: 'vector', name: 'Vector'},
     hardware: [],
     categories: [],
     origins: [],
     added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
     canChange: true,
     preservation: 'unknown' as const,
+    compilationItems: [],
+    compilations: [],
+    credits: [],
+    instructions: null,
+    sources: [],
 };
 const RELEASE = '00000000-0000-0000-0007-000000000002';
 const HARDWARE: readonly Hardware[] = [{code: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound'}];
 
-function showCreateForm(onCreated = vi.fn<(id: ReleaseId) => void>()) {
+function showCreateForm(onCreated = vi.fn<(id: string) => void>()) {
     renderWithQueries(
         <CreateReleaseProvider software={SOFTWARE} hardware={HARDWARE} onCreated={onCreated}>
             <ReleaseForm submitLabel="Add release"/>

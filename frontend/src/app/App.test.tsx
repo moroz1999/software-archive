@@ -2,15 +2,15 @@ import {StrictMode} from 'react';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {render, screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {createQueryClient} from '@/shared/api';
-import {json, noContent, pageResponse, stubFetchAround, stubFetchRoutes} from '@/shared/lib/test';
+import {type components, createQueryClient} from '@/shared/api';
+import {json, noContent, pageResponse, stubFetchAround, stubFetchRoutes, stubGlobalFetch, urlOf} from '@/shared/lib/test';
 import {App} from './App';
 import {type AppRouter, createAppRouter} from './router';
 
-const ALPHA = {id: '00000000-0000-0000-0001-000000000001', title: 'Fixture Software Alpha', releaseDate: '1985-03-02'};
-const ALPHA_DETAILS = {...ALPHA, description: null, platform: {code: 'vector', name: 'Vector'}, hardware: [], categories: [], credits: [], sources: [], preservation: 'unknown', origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true};
+const ALPHA = {id: '00000000-0000-0000-0001-000000000001', title: 'Fixture Software Alpha', releaseDate: '1985-03-02', screenshots: [], madeBy: [], rating: 0, votesAmount: 0} satisfies components['schemas']['SoftwareListItemDto'];
+const ALPHA_DETAILS = {...ALPHA, description: null, platform: {code: 'vector', name: 'Vector'}, hardware: [], categories: [], credits: [], sources: [], preservation: 'unknown', instructions: null, compilationItems: [], compilations: [], origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true};
 const AY_MOD = '00000000-0000-0000-0007-000000000002';
-const AY_MOD_DETAILS = {id: AY_MOD, title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: null, description: null, hardware: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true};
+const AY_MOD_DETAILS = {id: AY_MOD, title: 'Elite AY', version: '1.1', type: 'mod', releaseDate: null, description: null, screenshots: [], archive: null, credits: [], hardware: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true};
 const ZED = '00000000-0000-0000-0003-000000000001';
 const CREW = '00000000-0000-0000-0005-000000000001';
 const ZED_DETAILS = {id: ZED, name: 'Zed', realName: null, notes: null, labels: [], locations: [], groups: [{id: CREW, name: 'Crew Ltd', as: null}], origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true};
@@ -181,7 +181,21 @@ describe(App, () => {
     });
 
     it('shows the saved values on the software page after editing', async () => {
-        stubFetch(json(ALPHA_DETAILS), noContent(), json({...ALPHA_DETAILS, title: 'Fixture Software Alpha Plus'}));
+        let details = ALPHA_DETAILS;
+        stubGlobalFetch(vi.fn<typeof fetch>((input, init) => {
+            const url = urlOf(input);
+            if (url === `/api/software/${ALPHA.id}` && init?.method === 'PUT') {
+                details = {...ALPHA_DETAILS, title: 'Fixture Software Alpha Plus'};
+                return Promise.resolve(noContent()());
+            }
+            const answers = new Map([
+                [`/api/software/${ALPHA.id}`, () => json(details)()],
+                [`/api/software/${ALPHA.id}/rating`, json({rating: 0, votesAmount: 0, myVote: null})],
+                [`/api/software/${ALPHA.id}/votes`, json([])],
+            ]);
+            const answer = answers.get(url);
+            return answer === undefined ? Promise.reject(new TypeError(`Unexpected fetch: ${url}`)) : Promise.resolve(answer());
+        }));
         window.history.replaceState(null, '', `/software/${ALPHA.id}`);
 
         render(<App router={appRouter()} queryClient={queryClient}/>);

@@ -118,7 +118,7 @@ describe(ReleaseForm, () => {
         renderForm({
             initial: {
                 title: 'Elite AY', version: '', type: 'mod', releaseDate: '', description: '', hardware: [],
-                credits: [{id: CREW, type: 'group', title: 'Crew', roles: ['release']}],
+                credits: [{id: CREW, ownerId: null, type: 'group', title: 'Crew', roles: ['release']}],
             },
         });
 

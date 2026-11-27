@@ -59,6 +59,7 @@ public class CategoryController {
         return webMapper.toDetails(getHandler.handle(new GetCategoryQuery(new CategoryId(id))));
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public ResponseEntity<CategoryCreatedDto> create(Actor actor, @RequestBody CategoryRequestDto request) {
         CategoryId id = createHandler.handle(webMapper.toCreate(actor, request));

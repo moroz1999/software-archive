@@ -1,19 +1,17 @@
 import {useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
-import type {CardRating, Software} from '@/entities/software';
+import type {Software} from '@/entities/software';
 import {useCurrentUser} from '@/entities/users';
 import {myVoteQuery} from '../api/vote-queries';
 import type {SoftwareRating} from '../model/rating';
 import {useCastVote} from '../model/use-cast-vote';
 import {VoteStars} from './VoteStars';
 
-/** The rating a vote answered with, over the rating of the card it was cast on. */
+/** The rating a vote answered with, over the card it was cast on. */
 interface Answer {
-    readonly to: CardRating | undefined;
+    readonly to: Software;
     readonly rating: SoftwareRating;
 }
-
-const UNRATED: CardRating = {rating: 0, votesAmount: 0};
 
 export interface SoftwareCardVoteProps {
     readonly software: Software;
@@ -28,10 +26,10 @@ export function SoftwareCardVote({software}: SoftwareCardVoteProps) {
     const mine = useQuery({...myVoteQuery(software.id), enabled: signedIn});
     const [answer, setAnswer] = useState<Answer | null>(null);
     const cast = useCastVote(software.id, (rating) => {
-        setAnswer({to: software.rating, rating});
+        setAnswer({to: software, rating});
     });
-    const rating = answer !== null && answer.to === software.rating
+    const rating = answer !== null && answer.to === software
         ? answer.rating
-        : {...(software.rating ?? UNRATED), myVote: mine.data ?? null};
+        : {rating: software.rating, votesAmount: software.votesAmount, myVote: mine.data ?? null};
     return <VoteStars rating={rating} {...cast}/>;
 }

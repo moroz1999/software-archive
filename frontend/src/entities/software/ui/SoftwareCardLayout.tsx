@@ -33,7 +33,7 @@ export interface SoftwareCardLayoutProps extends SoftwareCardContentProps {
 export function SoftwareCardLayout({software, href, children, footer}: SoftwareCardLayoutProps) {
     const titleId = useId();
     const {t} = useTranslation();
-    const madeBy = software.madeBy ?? [];
+    const {madeBy} = software;
     return (
         <Panel
             as="article"
@@ -46,7 +46,7 @@ export function SoftwareCardLayout({software, href, children, footer}: SoftwareC
                 <Inset padding="lg" side="inline"><Inset padding="lg" side="bottom">{footer}</Inset></Inset>
             )}
         >
-            {software.screenshots !== undefined && software.screenshots.length > 0
+            {software.screenshots.length > 0
                 ? <CardScreenshots urls={software.screenshots.map((screenshot) => screenshot.url)} alt={software.title}/>
                 : <ImagePlaceholder label={t('empty.noScreenshot')}/>}
             <Inset padding="lg">

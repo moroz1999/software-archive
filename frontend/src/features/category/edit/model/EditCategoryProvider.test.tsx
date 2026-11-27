@@ -1,7 +1,7 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {CategoryForm, CategoryTreeProvider, toCategoryId} from '@/entities/categories';
+import {CategoryForm, CategoryTreeProvider} from '@/entities/categories';
 import {json, noContent, renderWithQueries, stubFetchAround} from '@/shared/lib/test';
 import {EditCategoryProvider} from './EditCategoryProvider';
 
@@ -13,7 +13,7 @@ const TREE = [
     {id: GAMES, title: 'Games', children: [{id: ACTION, title: 'Action', children: [{id: SHOOTERS, title: 'Shooters', children: []}]}]},
     {id: DEMOSCENE, title: 'Demoscene', children: []},
 ];
-const CATEGORY = {id: toCategoryId(ACTION), titles: {ru: 'Action'}, parentId: toCategoryId(GAMES)};
+const CATEGORY = {id: ACTION, titles: {ru: 'Action'}, parentId: GAMES};
 
 const AROUND = new Map([['/api/categories', json(TREE)]]);
 

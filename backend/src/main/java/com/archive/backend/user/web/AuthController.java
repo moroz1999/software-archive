@@ -16,14 +16,18 @@ import com.archive.backend.user.web.dto.RegisterRequestDto;
 import com.archive.backend.user.web.dto.ResendConfirmationRequestDto;
 import com.archive.backend.user.web.dto.SessionDto;
 import com.archive.backend.user.web.mapper.AuthWebMapper;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -41,6 +45,7 @@ public class AuthController {
     private final AuthWebMapper webMapper;
     private final SessionCookies cookies;
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping("/register")
     public ResponseEntity<Void> register(@RequestBody RegisterRequestDto request) {
         registerHandler.handle(webMapper.toRegister(request));
@@ -53,6 +58,7 @@ public class AuthController {
         return ResponseEntity.ok().headers(cookies.issue(session)).body(webMapper.toSessionDto(session));
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping("/resend-confirmation")
     public ResponseEntity<Void> resendConfirmation(@RequestBody ResendConfirmationRequestDto request) {
         resendHandler.handle(webMapper.toResend(request));
@@ -76,6 +82,7 @@ public class AuthController {
     /**
      * Ends the session and clears its refresh cookie, also when the browser holds no session any more.
      */
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping("/logout")
     public ResponseEntity<Void> logOut(
             @CookieValue(name = SessionCookies.REFRESH_COOKIE, required = false) @Nullable String secret) {
@@ -87,6 +94,8 @@ public class AuthController {
      * The signed-in user; no content for a public visitor with no session to refresh.
      */
     @GetMapping("/me")
+    @ApiResponse(responseCode = "200", description = "The signed-in user")
+    @ApiResponse(responseCode = "204", description = "A visitor with no session", content = @Content)
     public ResponseEntity<CurrentUserDto> me(
             Actor actor,
             @CookieValue(name = SessionCookies.REFRESH_COOKIE, required = false) @Nullable String refresh) {

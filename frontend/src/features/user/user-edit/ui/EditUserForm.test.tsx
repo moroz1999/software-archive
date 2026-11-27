@@ -1,14 +1,14 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {toUserId, type UserEntry} from '@/entities/users';
+import {type UserEntry} from '@/entities/users';
 import {subscribeSystemErrors, type SystemErrorReport} from '@/shared/api';
 import {json, noContent, renderWithQueries, stubFetchRoutes} from '@/shared/lib/test';
 import {EditUserProvider} from '../model/EditUserProvider';
 import {EditUserForm} from './EditUserForm';
 
 const BOB: UserEntry = {
-    id: toUserId('00000000-0000-0000-0009-000000000003'),
+    id: '00000000-0000-0000-0009-000000000003',
     name: 'Bob',
     email: 'bob@example.com',
     confirmed: true,
@@ -16,7 +16,7 @@ const BOB: UserEntry = {
     groups: ['member', 'moderator'],
 };
 const AXE: UserEntry = {
-    id: toUserId('00000000-0000-0000-0009-000000000002'),
+    id: '00000000-0000-0000-0009-000000000002',
     name: 'Axe',
     email: 'axe@example.com',
     confirmed: false,

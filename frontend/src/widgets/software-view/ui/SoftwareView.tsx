@@ -1,34 +1,9 @@
 import {Fragment, type ReactNode, type Ref, useId} from 'react';
 import {useTranslation} from 'react-i18next';
-import {authorPath, toAuthorId} from '@/entities/authors';
-import {labelPath, toLabelId} from '@/entities/labels';
-import {groupPath, toGroupId} from '@/entities/groups';
-import {
-    CompilationProgramsProvider,
-    HardwareList,
-    releaseDateText,
-    releaseEditPath,
-    releaseYear,
-    releaseNewPath,
-    type SoftwareCategory,
-    type SoftwareCredit,
-    type SoftwareDetails,
-    SoftwareDetailsProvider,
-    softwareEditPath,
-    type SoftwareId,
-    softwarePath,
-    type SoftwareProgram,
-    SoftwareCardSkeleton,
-    SoftwareCreditList,
-    SoftwareReleases,
-    SoftwareReleasesProvider,
-    type Gallery,
-    SoftwareScreenshots,
-    ScreenshotsProvider,
-    useCompilationPrograms,
-    useSoftwareDetails,
-} from '@/entities/software';
-import {toCategoryId} from '@/entities/categories';
+import {authorPath} from '@/entities/authors';
+import {labelPath} from '@/entities/labels';
+import {groupPath} from '@/entities/groups';
+import {CompilationProgramsProvider, HardwareList, releaseDateText, releaseEditPath, releaseYear, releaseNewPath, type SoftwareCategory, type SoftwareCredit, type SoftwareDetails, SoftwareDetailsProvider, softwareEditPath, softwarePath, type SoftwareProgram, SoftwareCardSkeleton, SoftwareCreditList, SoftwareReleases, SoftwareReleasesProvider, type Gallery, SoftwareScreenshots, ScreenshotsProvider, useCompilationPrograms, useSoftwareDetails} from '@/entities/software';
 import {catalogHrefOf, softwareBreadcrumbs} from '@/features/software/catalog';
 import {EditScreenshotsProvider, MoveScreenshotButtons, ScreenshotsChangeError} from '@/features/software/screenshots';
 import {SoftwareCard, SoftwareRating, SoftwareRatingProvider, SoftwareVotes, SoftwareVotesProvider} from '@/features/software/vote';
@@ -50,7 +25,7 @@ import {useSkeleton} from '@/shared/lib/loading';
 import {useAbility} from '@/entities/users';
 
 export interface SoftwareViewProps {
-    readonly id: SoftwareId;
+    readonly id: string;
 }
 
 /** The page of one software: its title over everything known about it, its screenshots and its releases below. */
@@ -89,7 +64,7 @@ function LoadedView({id}: SoftwareViewProps) {
                 <SoftwareRatingProvider id={id}><SoftwareRating/></SoftwareRatingProvider>
                 {GALLERIES.map((gallery) => <Screenshots key={gallery} id={id} title={query.data.title} canChange={query.data.canChange} gallery={gallery}/>)}
                 <Releases id={id}/>
-                <CompilationPrograms id={id} programs={query.data.compilationItems ?? []}/>
+                <CompilationPrograms id={id} programs={query.data.compilationItems}/>
                 <Votes id={id}/>
                 <AdditionNote addition={query.data.added}/>
             </Stack>
@@ -130,13 +105,13 @@ function Details({software}: {readonly software: SoftwareDetails}) {
                     </Stack>
                 </Stack>
             )}
-            <ProgramCredits credits={software.credits ?? []}/>
+            <ProgramCredits credits={software.credits}/>
             <RelatedPrograms label={t('software.includedInCompilations')} programs={software.compilations}/>
-            {(software.sources?.length ?? 0) > 0 && (
+            {software.sources.length > 0 && (
                 <Stack as="section" gap="xs" ariaLabel={t('software.source')}>
                     <Text variant="label" tone="muted">{t('software.source')}</Text>
                     <Stack as="ul" gap="xs">
-                        {software.sources?.map((source) => <li key={source.url}><TextLink href={source.url}>{source.archive}</TextLink></li>)}
+                        {software.sources.map((source) => <li key={source.url}><TextLink href={source.url}>{source.archive}</TextLink></li>)}
                     </Stack>
                 </Stack>
             )}
@@ -215,12 +190,12 @@ function linesOf(text: string | null | undefined): readonly string[] {
 /** Where a credited name leads: the person or the group, a label to its own page. */
 function creditHref(credit: SoftwareCredit): string | null {
     if (credit.type === 'author-label' || credit.type === 'group-label') {
-        return labelPath(toLabelId(credit.id));
+        return labelPath(credit.id);
     }
-    if (credit.ownerId === undefined || credit.ownerId === null) {
+    if (credit.ownerId === null) {
         return null;
     }
-    return credit.type === 'author' ? authorPath(toAuthorId(credit.ownerId)) : groupPath(toGroupId(credit.ownerId));
+    return credit.type === 'author' ? authorPath(credit.ownerId) : groupPath(credit.ownerId);
 }
 
 /** A category of the software with its branch from the top of the tree down to it, each step leading to its catalog. */
@@ -230,7 +205,7 @@ function Branch({category}: {readonly category: SoftwareCategory}) {
             {category.branch.map((step, index) => (
                 <Fragment key={step.id}>
                     {index > 0 && <li aria-hidden="true"><Text as="span" tone="muted">›</Text></li>}
-                    <li><Chip href={catalogHrefOf({category: toCategoryId(step.id)})}>{step.title}</Chip></li>
+                    <li><Chip href={catalogHrefOf({category: step.id})}>{step.title}</Chip></li>
                 </Fragment>
             ))}
         </Inline>

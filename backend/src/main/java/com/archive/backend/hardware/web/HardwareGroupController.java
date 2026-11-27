@@ -55,6 +55,7 @@ public class HardwareGroupController {
         return webMapper.toDto(getHandler.handle(new GetHardwareGroupQuery(new HardwareGroupCode(code))));
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public ResponseEntity<HardwareCodeDto> create(Actor actor, @RequestBody HardwareGroupRequestDto request) {
         String code =

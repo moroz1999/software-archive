@@ -1,5 +1,11 @@
 package com.archive.backend.assistant.infra;
 
+import com.archive.backend.assistant.domain.chat.MessageKind;
+import com.archive.backend.assistant.domain.chat.MessageRole;
+import com.archive.backend.assistant.domain.chat.PlanActionStatus;
+import com.archive.backend.assistant.domain.chat.PlanStatus;
+import com.archive.backend.assistant.domain.chat.RunStatus;
+import com.archive.backend.assistant.domain.chat.RunType;
 import com.archive.backend.assistant.read.chat.ChatMessage;
 import com.archive.backend.assistant.read.chat.ChatPlan;
 import com.archive.backend.assistant.read.chat.ChatPlanAction;
@@ -62,8 +68,8 @@ public class JdbcChatReadRepository implements ChatReadRepository {
                 .param("after", afterSeq)
                 .query((rs, n) -> new ChatMessage(
                         rs.getLong("seq"),
-                        ChatRows.camel(rs.getString("role")),
-                        ChatRows.camel(rs.getString("kind")),
+                        MessageRole.valueOf(rs.getString("role")).code(),
+                        MessageKind.valueOf(rs.getString("kind")).code(),
                         rs.getString("text"),
                         rs.getString("payload"),
                         ChatRows.instant(rs, "created_at")))
@@ -116,14 +122,14 @@ public class JdbcChatReadRepository implements ChatReadRepository {
                     row.kind(),
                     row.entityType(),
                     row.state(),
-                    ChatRows.camel(row.status()),
+                    PlanActionStatus.valueOf(row.status()).code(),
                     row.result(),
                     row.error()));
         }
         return new ChatPlan(
                 rs.getObject("id", UUID.class),
                 rs.getString("title"),
-                ChatRows.camel(rs.getString("status")),
+                PlanStatus.valueOf(rs.getString("status")).code(),
                 ChatRows.instant(rs, "proposed_at"),
                 actions);
     }
@@ -132,9 +138,9 @@ public class JdbcChatReadRepository implements ChatReadRepository {
         return new ChatRun(
                 rs.getObject("id", UUID.class),
                 rs.getObject("conversation_id", UUID.class),
-                ChatRows.camel(rs.getString("type")),
+                RunType.valueOf(rs.getString("type")).code(),
                 rs.getObject("plan_id", UUID.class),
-                ChatRows.camel(rs.getString("status")),
+                RunStatus.valueOf(rs.getString("status")).code(),
                 rs.getString("stop").equals("ASKED"),
                 ChatRows.instant(rs, "queued_at"),
                 rs.getInt("steps"),

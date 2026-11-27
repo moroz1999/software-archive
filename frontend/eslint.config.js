@@ -25,7 +25,7 @@ const importPathPatterns = [
 ];
 
 export default tseslint.config(
-    {ignores: ['dist', 'src/**/*.module.css.d.ts']},
+    {ignores: ['dist', 'src/**/*.module.css.d.ts', 'src/shared/api/schema.ts']},
 
     // Base: strictest type-aware presets.
     {
@@ -63,7 +63,7 @@ export default tseslint.config(
                 message: 'Use named exports.',
             }],
 
-            // Branded value objects are created only by their constructor functions (see docs/value-objects.md).
+            // No type assertions: the types come from the API contract as they are (see docs/frontend.md#data-loading).
             '@typescript-eslint/consistent-type-assertions': ['error', {assertionStyle: 'never'}],
 
             // HTTP goes only through the shared API client: it classifies errors (see docs/error-handling.md).
@@ -115,17 +115,6 @@ export default tseslint.config(
         files: ['src/app/**/*.{ts,tsx}'],
         rules: {
             'no-restricted-imports': ['error', {patterns: importPathPatterns}],
-        },
-    },
-
-    // Value object constructors are the only place allowed to brand a raw value.
-    {
-        files: ['src/**/model/**/*.ts', 'src/shared/lib/**/*.ts'],
-        rules: {
-            '@typescript-eslint/consistent-type-assertions': ['error', {
-                assertionStyle: 'as',
-                objectLiteralTypeAssertions: 'never',
-            }],
         },
     },
 

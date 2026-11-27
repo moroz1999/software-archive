@@ -1,5 +1,4 @@
 import {describe, expect, it} from 'vitest';
-import {toGroupId} from './group';
 import {type GroupFormValues, toGroupFormValues, validateGroupForm} from './group-form';
 
 const LABEL = '00000000-0000-0000-0004-000000000001';
@@ -81,7 +80,7 @@ describe(toGroupFormValues, () => {
         expect(toGroupFormValues({
             origins: [],
             added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true,
-            id: toGroupId('00000000-0000-0000-0005-000000000001'),
+            id: '00000000-0000-0000-0005-000000000001',
             name: 'Crew Ltd',
             notes: null,
             types: ['demogroup'],

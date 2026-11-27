@@ -1,9 +1,8 @@
 import {describe, expect, it} from 'vitest';
-import {toCategoryId} from './category';
 import {toCategoryFormValues, validateCategoryForm} from './category-form';
 
-const GAMES = toCategoryId('00000000-0000-0000-0006-000000000001');
-const ACTION = toCategoryId('00000000-0000-0000-0006-000000000002');
+const GAMES = '00000000-0000-0000-0006-000000000001';
+const ACTION = '00000000-0000-0000-0006-000000000002';
 
 describe(validateCategoryForm, () => {
     it('turns filled values into a draft', () => {

@@ -1,4 +1,5 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
+import type {components} from '@/shared/api';
 import {screen} from '@testing-library/react';
 import {MemoryRouter} from 'react-router';
 import {PlatformSelectionProvider} from '@/entities/platforms';
@@ -9,7 +10,7 @@ import {LatestSoftware} from './LatestSoftware';
 
 vi.unmock('@/shared/lib/loading/skeleton-timing');
 
-const ELITE = {id: '00000000-0000-0000-0001-000000000001', title: 'Elite', releaseDate: '1984-09-20'};
+const ELITE = {id: '00000000-0000-0000-0001-000000000001', title: 'Elite', releaseDate: '1984-09-20', screenshots: [], madeBy: [], rating: 0, votesAmount: 0} satisfies components['schemas']['SoftwareListItemDto'];
 
 function CardLayout(props: SoftwareCardContentProps) {
     return <SoftwareCardLayout {...props} footer={null}/>;

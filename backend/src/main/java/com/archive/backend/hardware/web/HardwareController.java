@@ -58,6 +58,7 @@ public class HardwareController {
         return webMapper.toDto(getHandler.handle(new GetHardwareQuery(new HardwareCode(code))));
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public ResponseEntity<HardwareCodeDto> create(Actor actor, @RequestBody HardwareRequestDto request) {
         String code = createHandler.handle(webMapper.toCreate(actor, request)).value();

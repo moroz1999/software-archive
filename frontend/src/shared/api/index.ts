@@ -1,12 +1,13 @@
 export {AuthenticationRequiredError, BusinessError, businessErrorOf, NotFoundError, SystemError, type BusinessStatus, type FieldError, type SystemErrorKind} from './errors';
-export {deleteResource, getJson, postForm, postJson, postNoContent, putForm, putJson, putJsonForAnswer} from './http';
+export {api} from './http';
+export {multipartForm} from './multipart';
+export {apiError} from './transport';
+export * from './schema';
 export {endSession, getSession, loadSession, resetSessionForTests, type Session, startSession, subscribeSession} from './session';
 export {businessErrorMessage, type BusinessMessages} from './messages';
 export {type FieldRefusals, type FormRefusal, splitRefusal, unedited} from './form-refusal';
-export {type Addition, readAddition} from './addition';
-export {type ExternalOrigin, readOrigins} from './external-origin';
-export {mapResponse, readArray, readBoolean, readNullableString, readNumber, readObject, readString, readStringArray, type JsonObject} from './parse';
-export {parsePage, type Page} from './page';
+export type {Addition} from './addition';
+export type {ExternalOrigin} from './external-origin';
 export {reportSystemError, subscribeSystemErrors, type SystemErrorReport} from './system-errors';
 export {createQueryClient} from './query-client';
 export {setContentLanguage} from './content-language';

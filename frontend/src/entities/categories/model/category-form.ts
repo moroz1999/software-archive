@@ -1,4 +1,4 @@
-import {SUPPORTED_UI_LANGUAGES, type UiLanguage} from '@/shared/lib/i18n';
+import {perUiLanguage, SUPPORTED_UI_LANGUAGES, type UiLanguage} from '@/shared/lib/i18n';
 import {type TitleProblem, titleProblem} from '@/shared/lib/form-rules';
 import type {CategoryDetails, CategoryTitles} from './category';
 
@@ -55,6 +55,6 @@ export function validateCategoryForm(values: CategoryFormValues): CategoryFormRe
 
 /** The form values of an existing category, or of an empty form. */
 export function toCategoryFormValues(category?: CategoryDetails): CategoryFormValues {
-    const titles = Object.fromEntries(SUPPORTED_UI_LANGUAGES.map((language) => [language, category?.titles[language] ?? ''])) as Record<UiLanguage, string>;
+    const titles = perUiLanguage((language) => category?.titles[language] ?? '');
     return {titles, parent: category?.parentId ?? ''};
 }
