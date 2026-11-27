@@ -24,10 +24,10 @@ What a source tells that would be of use to the archive but that the archive has
 - The description of a site is judged first: one that reads as the official description of the work (of its authors, publisher or the box) is taken exactly and in full; informal text of fans is retold as a calm formal description of the facts it clearly states, with nothing added. The assistant tells the editor which way it went and why.
 - The rights to what the archive takes from such sites are agreed with their owners, who gave their permission: texts, pictures and files of their pages are taken without any copyright caveats.
 - Maps, covers and adverts of the work go into the galleries of the software ([software.md](software.md#pictures)); how it is loaded, run and played goes into its instructions, never into its description.
-- When a source lists the programs in a compilation, the assistant plans to link confirmed matches in the archive and tells the editor about missing or ambiguous entries.
+- When importing a compilation, the assistant plans to add a separate entry for every identified program the archive lacks and reuse confirmed matches. It assigns known release years, credits and screenshots to the programs they describe, then adds the programs to the compilation in the same plan. It tells the editor what it could not identify.
 
 ### Sources
-The software the assistant adds or edits from a page of another site always remembers that page as its source, shown in Sources like the page of an import ([imports.md](imports.md#origin)). A page that is already the source of other software is refused before anything is changed, so no software is left half-added: the assistant offers to complete that software instead.
+The software the assistant adds or edits from its own page on another site remembers that page as its source, shown in Sources like the page of an import ([imports.md](imports.md#origin)). A compilation page is the source of the compilation, and a program has its own source when there is a page for it. A page that is already the source of other software is refused before anything is changed, so no software is left half-added: the assistant offers to complete that software instead.
 
 ### Ids
 A model copying a long id now and then swaps or mixes its digits, and then finds nothing. So the assistant copies ids exactly, and an id not found is checked against the result it came from and looked up again, never taken for an entry gone.
@@ -42,7 +42,7 @@ A model copying a long id now and then swaps or mixes its digits, and then finds
 - The editor can stop the assistant at any moment, also in the middle of a plan; the change being made is finished, the rest is not made.
 
 ### What a plan can change
-- Software: adding, editing, deleting it with its releases, changing its credits, and adding existing programs to a compilation.
+- Software: adding, editing, deleting it with its releases, changing its credits, and adding programs to a compilation. A plan can create the programs it adds.
 - Releases: adding one (without its archive), editing, deleting; crediting on it and taking a credit away.
 - People and groups: adding them with their labels, locations and (of a group) members; editing, deleting (their labels stay, as labels of nobody); taking a member into a group, giving a member other roles, taking one out.
 - Labels: adding a label of nobody; renaming and relocating one (whose it is stays); attaching a label of nobody to its person or group, taking a label away from its owner, making a label a label of a group; merging a label into the person, the group or the label it duplicates; making a new person or group of a label of nobody; deleting one.

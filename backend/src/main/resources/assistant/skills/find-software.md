@@ -13,7 +13,7 @@ description: Finding whether software from a source or a request is already in t
 - Also compare the platform, the year (a re-release may be later), the hardware and the category.
 - Same work: some of the source's people are the candidate's, and nothing contradicts.
 - Another work: none of the source's people is credited on the candidate, or the platform or the year clearly disagree. Add it as new; in the plan name the namesake you checked and why it is another work.
-- Ask the editor only when the people cannot be compared: the source names nobody, or the candidate credits nobody. Then do not add or change anything.
+- With no plausible candidate, add the work as new even when its credits or date are unknown. When a plausible candidate remains and its credits cannot be compared with the source, ask the editor to resolve the match before adding or changing that work.
 - Never fit stored software to the source. Different people, platform or year mean another work or a wrong record; the editor decides which.
 - Same work: add only what the source adds. A stored value the source contradicts stays; mention it in your answer.
 - A version of the work (another release type, a crack, an adaptation, a translation) is a release of the stored software, not new software.
