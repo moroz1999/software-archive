@@ -37,7 +37,7 @@ Platforms of people and groups are those of the software they are credited on, b
 ## Synchronization
 
 1. **Outbox.** In the same transaction as a change, the type and id of every entity whose document changed go to `search_outbox`, written by in-transaction listeners of the domain events ([backend.md](../backend.md)). One row per entity: a new change of a waiting entity renews its row instead of adding one, and the worker removes a row only if it was not renewed while being processed, so no change is lost. Changes reach other documents:
-   - software saved or deleted → the software, and the people and groups of its credits before and after (platforms);
+   - software saved or deleted → the software, the compilations including it directly or through other compilations (their cards show its pictures), and the people and groups of its credits before and after (platforms);
    - a label attached to or taken from an owner, deleted → its old and new owner, and the software it is credited on (countries);
    - locations of a person or a group changed, as by an import filling them → the software they are credited on, by themselves or by their labels (countries, cities);
    - a person or a group edited or deleted → the software whose card names them: credited on by themselves or by a label.

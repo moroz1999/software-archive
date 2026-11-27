@@ -145,6 +145,28 @@ class CreditedReleasesIT {
     }
 
     @Test
+    void aReleaseWithoutScreenshotsOfItsOwnShowsThoseOfItsSoftware() throws Exception {
+        UUID ofElite = id(31);
+        UUID ofEliteAy = id(32);
+        jdbc.update(
+                "INSERT INTO software_screenshot (software_id, position, id, format, file_name, size) VALUES (?, 0, ?, 'png', 'shot.png', 1)",
+                ELITE,
+                ofElite);
+        jdbc.update(
+                "INSERT INTO software_release_screenshot (release_id, position, id, format, file_name, size) VALUES (?, 0, ?, 'png', 'shot.png', 1)",
+                ELITE_AY,
+                ofEliteAy);
+
+        mvc.perform(get("/api/authors/{id}/releases", JANE))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].id")
+                        .value(contains(ELITE_AY.toString(), ELITE_CRACK.toString(), TETRIS_ORIGINAL.toString())))
+                .andExpect(jsonPath("$[0].screenshots[*].id").value(contains(ofEliteAy.toString())))
+                .andExpect(jsonPath("$[1].screenshots[*].id").value(contains(ofElite.toString())))
+                .andExpect(jsonPath("$[2].screenshots").value(empty()));
+    }
+
+    @Test
     void listsNothingForSomebodyUnknown() throws Exception {
         mvc.perform(get("/api/authors/{id}/releases", id(99)))
                 .andExpect(status().isOk())

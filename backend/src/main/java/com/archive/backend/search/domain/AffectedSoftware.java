@@ -31,6 +31,12 @@ public interface AffectedSoftware {
      */
     List<UUID> creditedFromCountry(UUID country);
 
+    /**
+     * The compilations that include the software, directly or through other compilations: their cards may show its
+     * pictures.
+     */
+    List<UUID> compilationsIncluding(UUID software);
+
     /** The software that has the hardware, on itself or on a release of it. */
     List<UUID> withHardware(String hardware);
 }

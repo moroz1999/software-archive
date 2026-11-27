@@ -40,11 +40,15 @@ public class EnqueueSearchDocumentsHandler {
     private final AffectedSoftware affected;
     private final AffectedOwners owners;
 
-    /** The software, and the people, groups and labels of nobody credited on it: their platforms may have changed. */
+    /**
+     * The software, the compilations whose cards may show its pictures, and the people, groups and labels of nobody
+     * credited on it: their platforms may have changed.
+     */
     @EventListener
     public void on(SoftwareChanged event) {
         UUID software = event.software().value();
         enqueueSoftware(List.of(software));
+        enqueueSoftware(affected.compilationsIncluding(software));
         enqueue(SearchEntityType.AUTHOR, owners.peopleCreditedOn(software));
         enqueue(SearchEntityType.GROUP, owners.groupsCreditedOn(software));
         enqueue(SearchEntityType.AUTHOR, owners.labelsOfNobodyCreditedOn(software));

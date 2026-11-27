@@ -26,6 +26,17 @@ public class JdbcAffectedSoftware implements AffectedSoftware {
     }
 
     @Override
+    public List<UUID> compilationsIncluding(UUID software) {
+        return jdbc.sql("""
+                        WITH RECURSIVE containing (id) AS (
+                            SELECT compilation_id FROM software_compilation_item WHERE item_id = :software
+                            UNION
+                            SELECT i.compilation_id FROM software_compilation_item i JOIN containing c ON c.id = i.item_id)
+                        SELECT id FROM containing
+                        """).param("software", software).query(UUID.class).list();
+    }
+
+    @Override
     public List<UUID> creditedOn(Collection<UUID> labels) {
         return jdbc.sql("""
                         SELECT DISTINCT software_id FROM software_contribution WHERE label_id IN (:labels)

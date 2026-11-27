@@ -62,6 +62,19 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     /** The credits of software or of releases: their table and the column of what they credit. */
     private record Credited(String table, String of) {}
 
+    /**
+     * The screenshots a release shows in a list, of the release {@code r} of the software {@code s}: its own, else the
+     * own screenshots of its software (docs/domain/software.md#screenshots).
+     */
+    private static final String LISTED_RELEASE_SCREENSHOTS = """
+            COALESCE(
+                (SELECT array_agg(own.id ORDER BY own.position)
+                 FROM software_release_screenshot own WHERE own.release_id = r.id),
+                (SELECT array_agg(of_software.id ORDER BY of_software.position)
+                 FROM software_screenshot of_software
+                 WHERE of_software.software_id = s.id AND of_software.gallery = 'screenshots'),
+                ARRAY[]::uuid[])""";
+
     private static final Credited SOFTWARE_CREDITS = new Credited("software_contribution", "software_id");
     private static final Credited RELEASE_CREDITS = new Credited("software_release_contribution", "release_id");
 
@@ -278,12 +291,12 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
         }
         return jdbc.sql("""
                         SELECT r.id, r.software_id, s.title AS software_title, COALESCE(r.title, s.title) AS title,
-                               r.version, r.type, %s AS release_date
+                               r.version, r.type, %s AS release_date, %s AS screenshots
                         FROM software_release r
                         JOIN software s ON s.id = r.software_id
                         WHERE r.id IN (:ids)
                         ORDER BY %s, lower(COALESCE(r.title, s.title)), r.id
-                        """.formatted(ReleaseDateSql.of("r"), ReleaseDateSql.order("r")))
+                        """.formatted(ReleaseDateSql.of("r"), LISTED_RELEASE_SCREENSHOTS, ReleaseDateSql.order("r")))
                 .param("ids", credits.keySet())
                 .query((rs, row) -> {
                     UUID id = rs.getObject("id", UUID.class);
@@ -295,7 +308,7 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                             rs.getString("version"),
                             rs.getString("type"),
                             rs.getString("release_date"),
-                            findReleaseScreenshots(id),
+                            screenshots(rs),
                             List.copyOf(credits.getOrDefault(id, List.of())));
                 })
                 .list();
@@ -387,12 +400,16 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
         return jdbc.sql("""
                         SELECT r.id, COALESCE(r.title, s.title) AS title, r.version, r.type, %s AS release_date,
                                r.description, r.archive_id, r.archive_file_name, r.archive_size, r.added_by,
-                               %s
+                               %s, %s AS screenshots
                         FROM software_release r
                         JOIN software s ON s.id = r.software_id
                         WHERE r.software_id = :id
                         ORDER BY %s, lower(COALESCE(r.title, s.title)), r.id
-                        """.formatted(ReleaseDateSql.of("r"), AdditionSql.columns("r"), ReleaseDateSql.order("r")))
+                        """.formatted(
+                                ReleaseDateSql.of("r"),
+                                AdditionSql.columns("r"),
+                                LISTED_RELEASE_SCREENSHOTS,
+                                ReleaseDateSql.order("r")))
                 .param("id", softwareId)
                 .query((rs, row) -> {
                     UUID id = rs.getObject("id", UUID.class);
@@ -404,7 +421,7 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                             rs.getString("release_date"),
                             rs.getString("description"),
                             hardware("software_release_hardware", "release_id", id, language),
-                            findReleaseScreenshots(id),
+                            screenshots(rs),
                             archive(rs),
                             AdditionSql.of(rs),
                             rs.getObject("added_by", UUID.class),

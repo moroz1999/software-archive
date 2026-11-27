@@ -161,6 +161,66 @@ class JdbcSoftwareReadRepositoryIT {
     }
 
     @Test
+    void aReleaseWithoutScreenshotsOfItsOwnShowsThoseOfItsSoftwareInTheList() {
+        softwareShots(ELITE, shot(2), shot(1));
+        galleryPictures(ELITE, "maps", 10, shot(3));
+        releaseShots(AY_MOD, shot(5));
+
+        assertThat(reads.findReleases(ELITE, "en"))
+                .extracting(SoftwareRelease::id, SoftwareRelease::screenshots)
+                .containsExactly(
+                        tuple(FIRST, List.of(shot(2), shot(1))),
+                        tuple(DISK, List.of(shot(2), shot(1))),
+                        tuple(AY_MOD, List.of(shot(5))),
+                        tuple(ORIGINAL, List.of(shot(2), shot(1))));
+        // The gallery of the release itself, on its page and in its editing, stays its own.
+        assertThat(reads.findReleaseScreenshots(ORIGINAL)).isEmpty();
+    }
+
+    /** Puts the programs into the compilation. */
+    private void include(UUID compilation, UUID... programs) {
+        for (UUID program : programs) {
+            jdbc.update(
+                    "INSERT INTO software_compilation_item (compilation_id, item_id) VALUES (?, ?)",
+                    compilation,
+                    program);
+        }
+    }
+
+    @Test
+    void aCompilationWithoutPicturesOfItsOwnShowsTheFirstTwoOfTheCardOfEachProgramInTheirOrder() {
+        UUID hits = id(4);
+        UUID arcade = id(5);
+        jdbc.update("""
+                INSERT INTO software (id, title, platform_code, created_at) VALUES
+                    (?, 'Hits', 'vector', TIMESTAMPTZ '2019-01-01 00:00Z'),
+                    (?, 'Arcade pack', 'vector', TIMESTAMPTZ '2018-01-01 00:00Z')
+                """, hits, arcade);
+        // Elite shows the screenshots of its releases, Newest its own, Arcade pack those of Tetris inside it.
+        releaseShots(FIRST, shot(7));
+        releaseShots(AY_MOD, shot(5), shot(4));
+        softwareShots(NEWEST, shot(8), shot(9), shot(10));
+        softwareShots(TETRIS, shot(11), shot(12), shot(13));
+        include(hits, NEWEST, ELITE, arcade);
+        include(arcade, TETRIS);
+
+        assertThat(cardOf(arcade)).containsExactly(shot(11), shot(12));
+        assertThat(cardOf(hits)).containsExactly(shot(11), shot(12), shot(7), shot(5), shot(8), shot(9));
+    }
+
+    @Test
+    void aCompilationWithPicturesOfItsOwnOrOfItsReleasesShowsOnlyThose() {
+        softwareShots(NEWEST, shot(8));
+        releaseShots(AY_MOD, shot(5));
+        include(ELITE, NEWEST);
+        include(TETRIS, NEWEST);
+        softwareShots(TETRIS, shot(11));
+
+        assertThat(cardOf(ELITE)).containsExactly(shot(5));
+        assertThat(cardOf(TETRIS)).containsExactly(shot(11));
+    }
+
+    @Test
     void theCardShowsTheScreenshotsOfTheReleasesInTheirOrderWhenTheSoftwareHasNoneOfItsOwn() {
         releaseShots(ORIGINAL, shot(6));
         releaseShots(AY_MOD, shot(5), shot(4));

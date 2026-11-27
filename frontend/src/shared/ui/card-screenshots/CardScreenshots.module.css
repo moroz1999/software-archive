@@ -12,11 +12,19 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
-    visibility: hidden;
+    opacity: 0;
+    transition: opacity var(--card-screenshots-fade-duration) ease-in-out;
 }
 
+/* The shown picture fades in over the one before, also when it is put in the frame only now. */
 .shown {
-    visibility: visible;
+    opacity: 1;
+}
+
+@starting-style {
+    .shown {
+        opacity: 0;
+    }
 }
 
 .strips {

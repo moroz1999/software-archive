@@ -14,4 +14,7 @@
 
     /* How fast the bars appear when the pointer comes over the frame. */
     --card-screenshots-indicator-duration: var(--animation-sm);
+
+    /* How long one picture fades into another. */
+    --card-screenshots-fade-duration: var(--animation-md);
 }

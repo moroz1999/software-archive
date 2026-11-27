@@ -13,7 +13,9 @@ The screenshots of software and of its releases ([domain/software.md](../domain/
 
 ## Card
 
-The card of software shows its own screenshots — never its maps, covers or adverts —, or when it has none those of its releases, releases in the order of the release list (by release date — a year before the days of that year —, unknown dates last, then title), each release's in its order. One SQL expression (`software/read/CardScreenshotsSql`) gives them to the latest list and to the search documents, so the home page, the catalog and the search show the same pictures; the search keeps them in the `screenshots` field of the software document, not indexed. Every change of the screenshots of software or of a release changes its card, so the search document is updated as for any change of the software ([search.md](search.md#synchronization)).
+The card of software shows its own screenshots — never its maps, covers or adverts —, or when it has none those of its releases, releases in the order of the release list (by release date — a year before the days of that year —, unknown dates last, then title), each release's in its order. A compilation without either shows the first two pictures of the card of each program, in the order of its programs (by title); a program without pictures of its own or of its releases is walked down to its own programs. One SQL expression (`software/read/CardScreenshotsSql`) gives them to the latest list and to the search documents, so the home page, the catalog and the search show the same pictures; the search keeps them in the `screenshots` field of the software document, not indexed. Every change of the screenshots of software or of a release changes its card and the cards of the compilations that include it, so their search documents are updated as for any change of the software ([search.md](search.md#synchronization)).
+
+A release in a list — the releases of the software, of a person, a group or a label — shows its own screenshots, or when it has none the own screenshots of its software. The gallery of the release page and of its editing stays its own.
 
 ## Pages
 
@@ -23,7 +25,7 @@ The card of software shows its own screenshots — never its maps, covers or adv
 | Software page | "Maps", "Covers", "Adverts" after the screenshots, in that order, each a gallery of its own; each left out without any |
 | Release page | "Screenshots" below the release facts, a gallery of the release's own; left out without any ([release-view.md](release-view.md)) |
 | Software page and release page, for whoever may change them | "‹" and "›" over the foot of every thumbnail, to move it a place; the reason of a refusal under the gallery |
-| Releases on the software page | the first screenshot of a release beside its title in the table; all of them on its card |
+| Releases on the software page | the first screenshot of a release beside its title in the table; all of them on its card; those of the software for a release without its own |
 | Software editing, release editing | "Screenshots" below the form: the pictures in their order, each with "‹" and "›" to move it a place and "Delete"; "Add screenshots" with the formats and the size under it |
 | Software editing | "Maps", "Covers", "Adverts" below the screenshots, each the same block in its own words ("Add maps", "Delete map 2 from the archive?") |
 

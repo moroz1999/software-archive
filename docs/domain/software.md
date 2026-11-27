@@ -53,7 +53,8 @@ Screenshots are part of what the archive knows, as much as its records: they are
 - Screenshots of software are added, deleted and reordered by whoever may change the software, the order also right where the screenshots are shown; screenshots of a release, by whoever may change the release ([users.md](users.md#user-groups)). A screenshot remembers nobody who added it; it keeps the name of its original file and its size.
 - Reordering names every screenshot in its new order; when the screenshots have changed meanwhile, the order is refused and has to be chosen again.
 - Deleting a release or software deletes its screenshots.
-- The card of software in a list shows the software's own screenshots; software without its own shows the screenshots of its releases, release by release in the order of the releases. Pointing at the picture across its width goes through them.
+- The card of software in a list shows the software's own screenshots; software without its own shows the screenshots of its releases, release by release in the order of the releases. A compilation without either shows the first two pictures of the card of each of its programs, in the order of its programs; a program that is itself such a compilation gives those of its own programs. Pointing at the picture across its width goes through them, one fading into the next.
+- A release in a list without screenshots of its own shows the screenshots of its software. The page of a release, and of a compilation, shows only their own.
 - A screenshot opens in a full-screen viewer. A picture that fits is enlarged only by whole multiples of its native size, while one too large to fit is reduced proportionally.
 
 ## Pictures

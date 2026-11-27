@@ -306,6 +306,28 @@ class SoftwareSearchSyncIT {
     }
 
     @Test
+    void aCompilationShowsThePicturesOfItsProgramsAsTheyChangeThroughNestedCompilations() throws Exception {
+        SoftwareId hits = create("Hits");
+        SoftwareId pack = create("Pack");
+        SoftwareId elite = create("Elite");
+        jdbc.update(
+                "INSERT INTO software_compilation_item (compilation_id, item_id) VALUES (?, ?), (?, ?)",
+                hits.value(),
+                pack.value(),
+                pack.value(),
+                elite.value());
+        worker.handle();
+
+        List<ScreenshotId> ofElite = screenshots(elite, null, 3);
+        worker.handle();
+        assertThat(listIn(document(hits), "screenshots")).containsExactlyElementsOf(strings(ofElite.subList(0, 2)));
+
+        deleteSoftware.handle(new DeleteSoftwareCommand(ADMIN, elite));
+        worker.handle();
+        assertThat(listIn(document(hits), "screenshots")).isEmpty();
+    }
+
+    @Test
     void reindexesEditedSoftware() throws Exception {
         SoftwareId elite = create("Elite");
         worker.handle();
