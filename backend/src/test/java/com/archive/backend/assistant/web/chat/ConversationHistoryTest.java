@@ -57,6 +57,27 @@ class ConversationHistoryTest {
     }
 
     @Test
+    void tellsTheAssistantToAskBeforeProceedingWhenAMaterialIssueIsUnresolved() {
+        assertThat(history.build(List.of()).get(0).text())
+                .contains("Never silently skip a requested item or a material issue")
+                .contains(
+                        "stop, explain what you found, ask the editor a specific question, and wait for their answer");
+    }
+
+    @Test
+    void tellsTheAssistantToImportDistinctNamesakesAndReportSimilarPrograms() {
+        LoadSkillHandler loadSkill = new LoadSkillHandler(new ClasspathSkillReadRepository());
+
+        assertThat(loadSkill
+                        .handle(new LoadSkillQuery(new SkillName("import-software")))
+                        .instructions())
+                .contains("Different programs can share a title")
+                .contains("same-titled programs by different authors, propose a separate entry")
+                .contains("Tell the editor which similar programs you found")
+                .contains("If a plausible match remains unresolved, ask the editor how to proceed");
+    }
+
+    @Test
     void givesCompilationInstructionsOnlyInTheSoftwareImportSkill() {
         ClasspathSkillReadRepository skills = new ClasspathSkillReadRepository();
         ConversationHistory history = new ConversationHistory(new ListSkillsHandler(skills));

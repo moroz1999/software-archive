@@ -1,6 +1,8 @@
 # AI assistant
 
-An assistant that helps trusted editors fill and clean the archive. An editor gives it a task in a chat — about the page they are looking at, about a page of another site, or about the archive as a whole — and the assistant researches the archive, asks when something is ambiguous, and proposes a **plan**: an ordered list of changes. Nothing is changed until the editor approves the whole plan.
+An assistant that helps trusted editors fill and clean the archive. An editor gives it a task in a chat — about the page they are looking at, about a page of another site, or about the archive as a whole — and the assistant researches the archive and proposes a **plan**, an ordered list of changes. Nothing is changed until the editor approves the whole plan.
+
+The assistant brings material issues to the editor's attention. When the evidence and archive rules leave a choice open, it stops, explains what it found, asks a specific question and waits for the editor's decision.
 
 ## Who may use it
 Only members of the user group **AI assistant**, given on purpose by an administrator, like the moderator group ([users.md](users.md#user-groups)). It is given only to administrators: the head administrator sees to it; the archive itself does not tie the two. Everyone else sees nothing of the assistant. The assistant acts as the editor who asked it: it sees what they may see, and every change of a plan is made as theirs, by the rules they obey, so a change they may not make fails when the plan runs.
@@ -21,6 +23,7 @@ Releases are found by the assistant on their own, apart from their software: by 
 What a source tells that would be of use to the archive but that the archive has no place for yet — photos of media, manuals, prices, magazine reviews, cheat codes, a person's photo or dates of life, and the like — the assistant never drops silently and never puts into a field it does not belong to: it tells the editor in its answer what it is and where it is.
 
 ### Taking software from a site
+- Different programs can share a title. When the assistant finds same-titled programs by other authors and confirms the imported work is distinct, it proposes a separate entry and tells the editor which similar programs it found.
 - The description of a site is judged first: one that reads as the official description of the work (of its authors, publisher or the box) is taken exactly and in full; informal text of fans is retold as a calm formal description of the facts it clearly states, with nothing added. The assistant tells the editor which way it went and why.
 - The rights to what the archive takes from such sites are agreed with their owners, who gave their permission: texts, pictures and files of their pages are taken without any copyright caveats.
 - Maps, covers and adverts of the work go into the galleries of the software ([software.md](software.md#pictures)); how it is loaded, run and played goes into its instructions, never into its description.
