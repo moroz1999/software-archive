@@ -3,7 +3,7 @@ export {api} from './http';
 export {multipartForm} from './multipart';
 export {apiError} from './transport';
 export * from './schema';
-export {endSession, getSession, loadSession, resetSessionForTests, type Session, startSession, subscribeSession} from './session';
+export {endSession, getSession, loadSession, resetSessionForTests, type Session, startSession, subscribeSession, subscribeSessionExpiry} from './session';
 export {businessErrorMessage, type BusinessMessages} from './messages';
 export {type FieldRefusals, type FormRefusal, splitRefusal, unedited} from './form-refusal';
 export type {Addition} from './addition';

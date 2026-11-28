@@ -32,6 +32,7 @@ const GUEST: Session = {status: 'guest'};
 let session: Session = UNKNOWN;
 let accessToken: string | null = null;
 const listeners = new Set<Listener>();
+const expiryListeners = new Set<Listener>();
 /**
  * What changes the session runs one after another: each starts once the one before is done, so no answer of an
  * earlier session lands after a later one.
@@ -107,7 +108,7 @@ const sessionApi = createClient<paths>({baseUrl: API_ORIGIN, fetch: (request: Re
 
 /** Refreshes the session through its cookie: true once refreshed, false when there is no session to refresh. */
 async function refreshNow(): Promise<boolean> {
-    const {data, error, response} = await sessionApi.POST('/api/auth/refresh');
+    const {data, error, response} = await sessionApi.POST('/api/auth/refresh', {fetch: fetchOrFail});
     if (error === undefined) {
         keepAccessToken(data.accessToken);
         return true;
@@ -139,6 +140,13 @@ export function subscribeSession(listener: Listener): () => void {
     listeners.add(listener);
     return () => {
         listeners.delete(listener);
+    };
+}
+
+export function subscribeSessionExpiry(listener: Listener): () => void {
+    expiryListeners.add(listener);
+    return () => {
+        expiryListeners.delete(listener);
     };
 }
 
@@ -207,7 +215,13 @@ export function refreshSession(): Promise<boolean> {
     refreshing ??= enqueue(async () => {
         const refreshed = await refreshNow();
         if (!refreshed) {
+            const wasSignedIn = session.status === 'signed-in';
             become(GUEST);
+            if (wasSignedIn) {
+                expiryListeners.forEach((listener) => {
+                    listener();
+                });
+            }
         }
         return refreshed;
     }).finally(() => {

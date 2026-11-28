@@ -147,6 +147,38 @@ describe(App, () => {
         expect(screen.queryByRole('dialog', {name: 'Account'})).not.toBeInTheDocument();
     });
 
+    it('shows a dismissible session expiry message when the assistant can no longer renew the session', async () => {
+        const editor = {
+            id: ZED, name: 'Zed', email: 'zed@example.com', groups: ['member', 'ai-assistant'], abilities: ['use-assistant'],
+        } satisfies components['schemas']['CurrentUserDto'];
+        stubRoutes([
+            ['/api/software/latest', json(pageResponse([]))],
+            ['/api/auth/me', vi.fn<() => Response>()
+                .mockImplementationOnce(json({status: 401, code: 'auth.required'}, 401))
+                .mockImplementation(json(editor))],
+            ['/api/auth/refresh', vi.fn<() => Response>()
+                .mockImplementationOnce(json({accessToken: 'access-jwt'}))
+                .mockImplementation(json({status: 401, code: 'auth.session-expired'}, 401))],
+            ['/api/assistant/conversations', json({status: 401, code: 'auth.access-token-invalid'}, 401)],
+        ]);
+        render(<App router={appRouter()} queryClient={queryClient}/>);
+
+        await userEvent.click(await screen.findByRole('button', {name: 'AI assistant'}));
+        const assistant = within(screen.getByRole('dialog', {name: 'AI assistant'}));
+
+        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+
+        await userEvent.click(assistant.getByRole('button', {name: 'Conversations'}));
+
+        const notice = await screen.findByRole('alertdialog', {name: 'Session expired'});
+
+        expect(within(notice).getByText('Your session has expired. Sign in again.')).toBeInTheDocument();
+
+        await userEvent.click(within(notice).getByRole('button', {name: 'OK'}));
+
+        expect(notice).not.toBeInTheDocument();
+    });
+
     it('shows the not found page for a group that does not exist', async () => {
         stubFetch(json({status: 404, code: 'group.not-found'}, 404));
         window.history.replaceState(null, '', `/groups/${CREW}`);

@@ -230,17 +230,18 @@ describe('the session of the browser', () => {
         const fetchMock = respond({
             '/api/auth/me': [GUEST, SIGNED_IN],
             '/api/auth/login': [ACCESS],
-            '/api/platforms': [REQUIRED, [200, {ok: true}]],
+            '/api/platforms': [[401, {status: 401, code: 'auth.access-token-invalid'}], [200, [{code: 'vector', name: 'Vector'}]]],
             '/api/auth/refresh': [NEW_ACCESS],
         });
         await loadSession();
         await signIn();
 
-        await expect(read('/api/platforms')).resolves.toStrictEqual({ok: true});
+        await expect(read('/api/platforms')).resolves.toStrictEqual([{code: 'vector', name: 'Vector'}]);
 
         expect(authorization(fetchMock, '/api/platforms', 0)).toBe('Bearer access-jwt');
         expect(authorization(fetchMock, '/api/platforms', 1)).toBe('Bearer new-access-jwt');
         expect(paths(fetchMock).filter((path) => path === '/api/auth/refresh')).toHaveLength(1);
+        expect(authorization(fetchMock, '/api/auth/refresh')).toBeNull();
     });
 
     it('shares one refresh between requests refused at the same time in one tab', async () => {

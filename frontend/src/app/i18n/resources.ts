@@ -7,7 +7,7 @@ export const resources = {
         },
         actions: {
             menu: 'Actions', addSoftware: 'Add software', editSoftware: 'Edit software', save: 'Save', edit: 'Edit', delete: 'Delete',
-            deleteForGood: 'Delete for good', cancel: 'Cancel', close: 'Close', retry: 'Retry', addRelease: 'Add release',
+            deleteForGood: 'Delete for good', cancel: 'Cancel', close: 'Close', retry: 'Retry', ok: 'OK', addRelease: 'Add release',
             addAuthor: 'Add author', editAuthor: 'Edit author', remove: 'Remove', addGroup: 'Add group', editGroup: 'Edit group', addLabel: 'Add label', editLabel: 'Edit label',
             addCategory: 'Add category', editCategory: 'Edit category',
             addCountry: 'Add country', editCountry: 'Edit country', addCity: 'Add city', editCity: 'Edit city', editUser: 'Edit user',
@@ -140,6 +140,7 @@ export const resources = {
         account: {
             menu: 'Account', login: 'User name or email', password: 'Password', remember: 'Remember me', signIn: 'Sign in',
             signOut: 'Sign out', register: 'Register', credentialsInvalid: 'Wrong user name, email or password.',
+            sessionExpired: 'Session expired', sessionExpiredMessage: 'Your session has expired. Sign in again.',
             unconfirmed: 'Your account is not confirmed yet: open the link from the email we sent.',
             resend: 'Send the link again', resent: 'A new link is on its way to your email.',
             registration: 'Registration', name: 'User name', email: 'Email', repeatPassword: 'Repeat the password',
@@ -414,7 +415,7 @@ export const resources = {
         },
         actions: {
             menu: 'Действия', addSoftware: 'Добавить программу', editSoftware: 'Редактировать программу', save: 'Сохранить', edit: 'Редактировать',
-            delete: 'Удалить', deleteForGood: 'Удалить навсегда', cancel: 'Отмена', close: 'Закрыть', retry: 'Повторить',
+            delete: 'Удалить', deleteForGood: 'Удалить навсегда', cancel: 'Отмена', close: 'Закрыть', retry: 'Повторить', ok: 'ОК',
             addRelease: 'Добавить релиз', addAuthor: 'Добавить автора', editAuthor: 'Редактировать автора', remove: 'Убрать', addGroup: 'Добавить группу', editGroup: 'Редактировать группу', addLabel: 'Добавить псевдоним', editLabel: 'Редактировать псевдоним',
             addCategory: 'Добавить категорию', editCategory: 'Редактировать категорию',
             addCountry: 'Добавить страну', editCountry: 'Редактировать страну', addCity: 'Добавить город', editCity: 'Редактировать город', editUser: 'Редактировать пользователя',
@@ -548,6 +549,7 @@ export const resources = {
         account: {
             menu: 'Аккаунт', login: 'Имя пользователя или эл. почта', password: 'Пароль', remember: 'Запомнить меня', signIn: 'Войти',
             signOut: 'Выйти', register: 'Регистрация', credentialsInvalid: 'Неверное имя пользователя, эл. почта или пароль.',
+            sessionExpired: 'Сессия истекла', sessionExpiredMessage: 'Сессия истекла. Войдите снова.',
             unconfirmed: 'Аккаунт ещё не подтверждён: откройте ссылку из нашего письма.',
             resend: 'Отправить ссылку ещё раз', resent: 'Новая ссылка уже летит на вашу почту.',
             registration: 'Регистрация', name: 'Имя пользователя', email: 'Эл. почта', repeatPassword: 'Повторите пароль',

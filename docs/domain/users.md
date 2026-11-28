@@ -11,7 +11,8 @@ An unconfirmed user can ask for a new link by giving their user name or email an
 An account left unconfirmed after its link expired does not hold its user name or email: registering with them again replaces it.
 
 ## Sessions
-A signed-in user stays signed in until they sign out. "Remember me" keeps them signed in across browser restarts for 30 days of inactivity; without it the session ends with the browser.
+The archive renews the session as a signed-in user uses it. "Remember me" keeps the user signed in across browser restarts for 30 days of inactivity. Without it, the session ends when the browser closes.
+If a session expires while the user is signed in, a message asks them to sign in again. They can dismiss it with OK.
 
 ## User groups
 What a user may do comes from their groups, and for the entries of the archive also from who added the entry.
