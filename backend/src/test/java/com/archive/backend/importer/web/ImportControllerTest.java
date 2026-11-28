@@ -3,6 +3,7 @@ package com.archive.backend.importer.web;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -19,6 +20,7 @@ import com.archive.backend.importer.app.StartImportCommand;
 import com.archive.backend.importer.app.StartImportHandler;
 import com.archive.backend.importer.domain.ImportRunningException;
 import com.archive.backend.importer.domain.basis.BasisCategory;
+import com.archive.backend.importer.domain.bkcatalog.BkCatalogSection;
 import com.archive.backend.importer.domain.run.ImportLogSeq;
 import com.archive.backend.importer.domain.run.ImportSource;
 import com.archive.backend.importer.domain.vektor.VektorSection;
@@ -33,6 +35,7 @@ import com.archive.backend.importer.read.ImportRunPlaceEntry;
 import com.archive.backend.importer.read.ImportRunProgressEntry;
 import com.archive.backend.importer.read.ImportRunReport;
 import com.archive.backend.importer.read.ImportRunSkippedEntry;
+import com.archive.backend.importer.read.ImportRunWarningEntry;
 import com.archive.backend.importer.web.mapper.ImportWebMapperImpl;
 import com.archive.backend.shared.config.SecurityConfig;
 import com.archive.backend.shared.config.WebConfig;
@@ -141,6 +144,46 @@ class ImportControllerTest {
     }
 
     @Test
+    void reportsTheWarningsOfTheRunAndEachOfThemInItsLog() throws Exception {
+        ImportRunReport report = report(List.of(new ImportRunLogLine(
+                1,
+                Instant.parse("2026-11-14T10:01:00Z"),
+                "warning",
+                new ImportRunWarningEntry(
+                        "game-555901",
+                        "https://kalininskiy.github.io/bk-catalog/#game-555901",
+                        "Artillery 2026",
+                        "genre",
+                        "Симулятор"))));
+        when(lastRunHandler.handle(any()))
+                .thenReturn(Optional.of(new ImportRunReport(
+                        report.id(),
+                        "bk-catalog",
+                        "games",
+                        report.state(),
+                        report.startedAt(),
+                        null,
+                        1,
+                        0,
+                        0,
+                        0,
+                        3,
+                        report.progress(),
+                        report.log())));
+
+        mvc.perform(get("/api/imports/last-run"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.run.warnings").value(3))
+                .andExpect(jsonPath("$.run.log[0].kind").value("warning"))
+                .andExpect(jsonPath("$.run.log[0].entry.externalId").value("game-555901"))
+                .andExpect(jsonPath("$.run.log[0].entry.url")
+                        .value("https://kalininskiy.github.io/bk-catalog/#game-555901"))
+                .andExpect(jsonPath("$.run.log[0].entry.title").value("Artillery 2026"))
+                .andExpect(jsonPath("$.run.log[0].entry.kind").value("genre"))
+                .andExpect(jsonPath("$.run.log[0].entry.value").value("Симулятор"));
+    }
+
+    @Test
     void asksForTheLinesOfTheLogAfterTheOneGiven() throws Exception {
         when(lastRunHandler.handle(new GetLastImportRunQuery(Actor.anonymous(), new ImportLogSeq(41))))
                 .thenReturn(Optional.of(report(List.of())));
@@ -162,6 +205,7 @@ class ImportControllerTest {
                 2,
                 0,
                 1,
+                0,
                 new ImportRunProgressEntry(4, 12, "https://vektor-06c.ru/512-demo/"),
                 log);
     }
@@ -247,6 +291,31 @@ class ImportControllerTest {
 
         verify(startHandler)
                 .handle(new StartImportCommand(Actor.anonymous(), ImportSource.BASIS, new BasisCategory("arcade")));
+    }
+
+    @Test
+    void startsTheImportOfTheWholeBkCatalog() throws Exception {
+        mvc.perform(post("/api/imports/bk-catalog")).andExpect(status().isAccepted());
+
+        verify(startHandler).handle(new StartImportCommand(Actor.anonymous(), ImportSource.BK_CATALOG, null));
+    }
+
+    @Test
+    void startsTheImportOfOneSectionOfBkCatalog() throws Exception {
+        mvc.perform(post("/api/imports/bk-catalog").param("section", "demoscene"))
+                .andExpect(status().isAccepted());
+
+        verify(startHandler)
+                .handle(new StartImportCommand(Actor.anonymous(), ImportSource.BK_CATALOG, BkCatalogSection.DEMOSCENE));
+    }
+
+    @Test
+    void refusesASectionBkCatalogDoesNotHave() throws Exception {
+        mvc.perform(post("/api/imports/bk-catalog").param("section", "magazines"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("import.section-invalid"));
+
+        verifyNoInteractions(startHandler);
     }
 
     @Test

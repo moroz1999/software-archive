@@ -11,7 +11,8 @@ public enum SoftwareSupplement {
     PRESERVATION,
     CATEGORIES,
     CREDITS,
-    SCREENSHOTS;
+    SCREENSHOTS,
+    LINEAGE;
 
     /** The code it is known by outside the backend: {@code RELEASE_DATE} as {@code release-date}. */
     public String code() {

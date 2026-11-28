@@ -12,6 +12,7 @@ import com.archive.backend.importer.read.ImportRunPlaceEntry;
 import com.archive.backend.importer.read.ImportRunProgressEntry;
 import com.archive.backend.importer.read.ImportRunReport;
 import com.archive.backend.importer.read.ImportRunSkippedEntry;
+import com.archive.backend.importer.read.ImportRunWarningEntry;
 import com.archive.backend.importer.web.dto.ImportRunAddedDto;
 import com.archive.backend.importer.web.dto.ImportRunAuthorDto;
 import com.archive.backend.importer.web.dto.ImportRunDownloadedDto;
@@ -23,6 +24,7 @@ import com.archive.backend.importer.web.dto.ImportRunLogLineDto;
 import com.archive.backend.importer.web.dto.ImportRunPlaceDto;
 import com.archive.backend.importer.web.dto.ImportRunProgressDto;
 import com.archive.backend.importer.web.dto.ImportRunSkippedDto;
+import com.archive.backend.importer.web.dto.ImportRunWarningDto;
 import java.time.Instant;
 import org.jspecify.annotations.Nullable;
 import org.mapstruct.Mapper;
@@ -53,6 +55,8 @@ public interface ImportWebMapper {
 
     ImportRunDownloadedDto toDto(ImportRunDownloadedEntry entry);
 
+    ImportRunWarningDto toDto(ImportRunWarningEntry entry);
+
     /** A line of the log with what it tells in the shape of its kind. */
     default ImportRunLogLineDto toDto(ImportRunLogLine line) {
         long seq = line.seq();
@@ -66,6 +70,7 @@ public interface ImportWebMapper {
             case ImportRunFailedEntry e -> new ImportRunLogLineDto.Failed(seq, at, toDto(e));
             case ImportRunAuthorEntry e -> new ImportRunLogLineDto.Author(seq, at, toDto(e));
             case ImportRunPlaceEntry e -> new ImportRunLogLineDto.Place(seq, at, toDto(e));
+            case ImportRunWarningEntry e -> new ImportRunLogLineDto.Warning(seq, at, toDto(e));
         };
     }
 

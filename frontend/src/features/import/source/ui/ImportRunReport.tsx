@@ -12,7 +12,7 @@ import {Skeleton} from '@/shared/ui/skeleton';
 import {Stack} from '@/shared/ui/stack';
 import {Heading, Text, TextLink} from '@/shared/ui/typography';
 import {logTimeText, runTimeText} from '../lib/run-time';
-import {type ImportLogLine, type ImportRun, type ImportRunAuthor, type ImportRunProgress, importSourceOf} from '../model/import-run';
+import {bkCatalogSectionOf, type ImportLogLine, type ImportRun, type ImportRunAuthor, type ImportRunProgress, importSourceOf} from '../model/import-run';
 import {useSourceImport} from '../model/source-import-context';
 import styles from './ImportRunReport.module.css';
 
@@ -51,6 +51,7 @@ function Report({run}: {readonly run: ImportRun}) {
                         : t('imports.ranFromTo', {from: runTimeText(run.startedAt), to: runTimeText(run.endedAt)})}
                 </Text>
                 <Text>{t('imports.counts', {added: run.added, known: run.known, skipped: run.skipped, failed: run.failed})}</Text>
+                {run.warnings > 0 && <Text tone="strong">{t('imports.warnings', {count: run.warnings})}</Text>}
                 {run.state === 'running' && <Progress progress={run.progress}/>}
             </Stack>
             {run.log.length > 0 && (
@@ -125,6 +126,19 @@ function LogEntryText({line}: {readonly line: ImportLogLine}) {
                     components={{program: <LinkTo href={line.entry.url}/>}}
                 />
             );
+        case 'warning':
+            return (
+                <Inline as="span" gap="sm" align="center" wrap>
+                    <Chip size="sm">{t('imports.warning')}</Chip>
+                    <span>
+                        <Trans
+                            i18nKey={`imports.lines.warning.${line.entry.kind}`}
+                            values={{title: line.entry.title, value: line.entry.value}}
+                            components={{program: <LinkTo href={line.entry.url}/>}}
+                        />
+                    </span>
+                </Inline>
+            );
         case 'failed':
             return (
                 <Trans
@@ -180,12 +194,21 @@ function authorHref(author: ImportRunAuthor): string {
     }
 }
 
-/** What the run read: the archive, and for vektor-06c.ru its section or the whole site. */
+/** What the run read: the archive, and for vektor-06c.ru and bk-catalog its section or the whole of it. */
 function scopeText(run: ImportRun, t: TFunction): string {
     const source = importSourceOf(run.archive);
     if (source === undefined) {
         return run.archive;
     }
     const archive = t(`imports.sources.${source}`);
-    return source === 'vektor' ? `${archive} · ${run.section ?? t('imports.wholeSite')}` : archive;
+    switch (source) {
+        case 'vektor':
+            return `${archive} · ${run.section ?? t('imports.wholeSite')}`;
+        case 'bkCatalog': {
+            const section = run.section === null ? undefined : bkCatalogSectionOf(run.section);
+            return `${archive} · ${section === undefined ? run.section ?? t('imports.wholeCatalog') : t(`imports.bkCatalogSections.${section}`)}`;
+        }
+        case 'basis':
+            return archive;
+    }
 }

@@ -23,8 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Adds to software what an import found and it lacks, never rewriting what it has (docs/domain/imports.md):
- * categories and participants join those there, a screenshot of a size it has is not taken again. Tells what it
- * added.
+ * categories, participants and links join those there, a screenshot of a size it has is not taken again, and a lineage
+ * is taken only while the software's is unknown. Tells what it added.
  */
 @Service
 @RequiredArgsConstructor
@@ -49,6 +49,10 @@ public class SupplementSoftwareHandler {
                 c.preservation(),
                 categorySets.of(categories),
                 creditSets.of(c.credits())));
+        if (software.supplementLineage(c.lineage())) {
+            supplements.add(SoftwareSupplement.LINEAGE);
+        }
+        c.links().forEach(software::addLink);
         List<ScreenshotImage> images = software.screenshotsOfNewSizes(c.screenshots());
         List<Screenshot> added = images.stream()
                 .map(image ->

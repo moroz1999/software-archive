@@ -11,11 +11,13 @@ import com.archive.backend.assistant.domain.chat.RunType;
 import com.archive.backend.author.domain.PersonReferenceType;
 import com.archive.backend.group.domain.GroupMemberDraft;
 import com.archive.backend.importer.domain.ExternalKind;
+import com.archive.backend.importer.domain.bkcatalog.BkCatalogSection;
 import com.archive.backend.importer.domain.run.AddedPlace;
 import com.archive.backend.importer.domain.run.ImportLogEntry;
 import com.archive.backend.importer.domain.run.ImportRunState;
 import com.archive.backend.importer.domain.run.SkipReason;
 import com.archive.backend.importer.domain.run.TakenAuthor;
+import com.archive.backend.importer.domain.source.SourceWarning;
 import com.archive.backend.search.domain.CatalogOrder;
 import com.archive.backend.search.domain.FoundKind;
 import com.archive.backend.shared.domain.Language;
@@ -99,6 +101,8 @@ class OpenApiConfig {
             entry("SoftwareSupplement", codes(SoftwareSupplement.values(), SoftwareSupplement::code)),
             entry("DownloadedFile", codes(ImportLogEntry.DownloadedFile.values(), ImportLogEntry.DownloadedFile::code)),
             entry("SkipReason", codes(SkipReason.values(), SkipReason::code)),
+            entry("ImportWarningKind", codes(SourceWarning.Kind.values(), SourceWarning.Kind::code)),
+            entry("BkCatalogSection", codes(BkCatalogSection.values(), BkCatalogSection::code)),
             entry(
                     "TakenAuthorKind",
                     TakenAuthor.KINDS.stream().map(ExternalKind::code).toList()),

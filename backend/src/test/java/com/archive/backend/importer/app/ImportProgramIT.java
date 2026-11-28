@@ -35,6 +35,8 @@ import com.archive.backend.importer.domain.source.SourceAuthorKind;
 import com.archive.backend.importer.domain.source.SourcePlace;
 import com.archive.backend.importer.domain.source.SourcePlaceKind;
 import com.archive.backend.importer.domain.source.SourceProgram;
+import com.archive.backend.importer.domain.source.SourceRelease;
+import com.archive.backend.importer.domain.source.SourceWarning;
 import com.archive.backend.importer.read.ImportRunAuthorEntry;
 import com.archive.backend.importer.read.ImportRunKnownEntry;
 import com.archive.backend.importer.read.ImportRunLogEntry;
@@ -42,6 +44,7 @@ import com.archive.backend.importer.read.ImportRunLogLine;
 import com.archive.backend.importer.read.ImportRunPlaceEntry;
 import com.archive.backend.importer.read.ImportRunReadRepository;
 import com.archive.backend.importer.read.ImportRunReport;
+import com.archive.backend.importer.read.ImportRunWarningEntry;
 import com.archive.backend.label.app.EditLabelCommand;
 import com.archive.backend.label.app.EditLabelHandler;
 import com.archive.backend.label.app.MakeAuthorOfLabelCommand;
@@ -62,16 +65,25 @@ import com.archive.backend.software.app.CreateSoftwareCommand;
 import com.archive.backend.software.app.CreateSoftwareHandler;
 import com.archive.backend.software.app.DeleteSoftwareCommand;
 import com.archive.backend.software.app.DeleteSoftwareHandler;
+import com.archive.backend.software.domain.LineageKind;
+import com.archive.backend.software.domain.LineageReliability;
+import com.archive.backend.software.domain.LineageRework;
+import com.archive.backend.software.domain.LineageSource;
 import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.ReleaseArchiveUpload;
 import com.archive.backend.software.domain.ReleaseContent;
 import com.archive.backend.software.domain.ReleaseDate;
+import com.archive.backend.software.domain.ReleaseDescription;
 import com.archive.backend.software.domain.ReleaseType;
 import com.archive.backend.software.domain.ScreenshotFileName;
 import com.archive.backend.software.domain.ScreenshotImage;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
+import com.archive.backend.software.domain.SoftwareLineage;
+import com.archive.backend.software.domain.SoftwareLink;
+import com.archive.backend.software.domain.SoftwareLinkType;
 import com.archive.backend.software.domain.SoftwareTitle;
+import com.archive.backend.software.domain.SoftwareUrl;
 import com.archive.backend.user.TestActors;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -79,6 +91,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.Year;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -198,6 +211,201 @@ class ImportProgramIT {
         jdbc.update("DELETE FROM city WHERE country_id IS NULL");
         jdbc.update("DELETE FROM country WHERE id IN (SELECT country_id FROM country_name WHERE name = 'Атлантида')");
         jdbc.update("DELETE FROM import_run");
+    }
+
+    @Test
+    void addsEveryReleaseOfAProgramWithItsFileDescriptionAndDate() {
+        importProgram(program("1", "Digger", zip(Map.of("DIGGER.ROM", ELITE_ROM)))
+                .releases(
+                        new SourceRelease(
+                                null,
+                                ReleaseDate.ofYear(Year.of(1990)),
+                                Set.of(),
+                                upload("digger.zip", zip(Map.of("DIGGER.ROM", ELITE_ROM)))),
+                        new SourceRelease(
+                                new ReleaseDescription("Исправленная версия"),
+                                ReleaseDate.ofDay(LocalDate.of(1991, 3, 7)),
+                                Set.of(TAPE),
+                                upload("digger-fixed.zip", zip(Map.of("DIGGER2.ROM", EXTRA_ROM)))),
+                        new SourceRelease(new ReleaseDescription("Кассетная версия"), null, Set.of(), null))
+                .build());
+
+        assertThat(jdbc.queryForList(
+                        "SELECT coalesce(archive_file_name, '-') || ' | ' || coalesce(description, '-') || ' | '"
+                                + " || coalesce(release_year::text, '-') || ' | ' || coalesce(release_day::text, '-')"
+                                + " FROM software_release WHERE software_id = ?",
+                        String.class,
+                        software("Digger")))
+                .containsExactlyInAnyOrder(
+                        "digger.zip | - | 1990 | -",
+                        "digger-fixed.zip | Исправленная версия | 1991 | 1991-03-07",
+                        "- | Кассетная версия | - | -");
+    }
+
+    @Test
+    void takesAProgramOneOfWhoseFilesIsAReleaseOfTheArchiveAsTheSameSoftware() {
+        SoftwareId ours = ourSoftware("Digger", zip(Map.of("DIGGER2.ROM", EXTRA_ROM)));
+
+        importProgram(program("1", "Digger", zip(Map.of("DIGGER.ROM", ELITE_ROM)))
+                .releases(
+                        new SourceRelease(
+                                null, null, Set.of(), upload("digger.zip", zip(Map.of("DIGGER.ROM", ELITE_ROM)))),
+                        new SourceRelease(
+                                null,
+                                null,
+                                Set.of(),
+                                upload("digger-fixed.zip", zip(Map.of("DIGGER2.ROM", EXTRA_ROM)))))
+                .build());
+
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM software WHERE title = 'Digger'", Integer.class))
+                .isOne();
+        assertThat(origin("SOFTWARE", "1")).isEqualTo(ours.value());
+        assertThat(lastReport().known()).isOne();
+    }
+
+    @Test
+    void creditsEveryAuthorWithTheRolesTheSourceTells() {
+        importProgram(program("1", "Digger", zip(Map.of("DIGGER.ROM", ELITE_ROM)))
+                .authors(
+                        SourceAuthor.label(new LabelName("Савин В."), List.of("unknown")),
+                        SourceAuthor.label(new LabelName("АКТ"), List.of("publisher")),
+                        SourceAuthor.label(new LabelName("Manwe/SandS"), List.of("graphics", "music")))
+                .build());
+
+        assertThat(jdbc.queryForList(
+                        "SELECT l.name || ': ' || array_to_string(c.role_codes, ' ') FROM software_contribution c"
+                                + " JOIN label l ON l.id = c.label_id WHERE c.software_id = ?",
+                        String.class,
+                        software("Digger")))
+                .containsExactlyInAnyOrder("Савин В.: unknown", "АКТ: publisher", "Manwe/SandS: graphics music");
+    }
+
+    @Test
+    void addsTheLinksOfANewProgramEachAddressOnce() {
+        importProgram(program("1", "Digger", zip(Map.of("DIGGER.ROM", ELITE_ROM)))
+                .links(
+                        link(SoftwareLinkType.GENERAL, "https://www.pouet.net/prod.php?which=1"),
+                        link(SoftwareLinkType.HOMEPAGE, "https://github.com/someone/digger"),
+                        link(SoftwareLinkType.YOUTUBE, "https://youtu.be/xyz"),
+                        link(SoftwareLinkType.GENERAL, "https://www.pouet.net/prod.php?which=1"))
+                .build());
+
+        assertThat(links(software("Digger")))
+                .containsExactlyInAnyOrder(
+                        "general https://www.pouet.net/prod.php?which=1",
+                        "homepage https://github.com/someone/digger",
+                        "youtube https://youtu.be/xyz");
+    }
+
+    @Test
+    void addsToAKnownProgramOnlyTheLinksItLacks() {
+        importProgram(program("1", "Digger", zip(Map.of("DIGGER.ROM", ELITE_ROM)))
+                .links(link(SoftwareLinkType.GENERAL, "https://www.pouet.net/prod.php?which=1"))
+                .build());
+
+        importProgram(program("1", "Digger", zip(Map.of("DIGGER.ROM", ELITE_ROM)))
+                .links(
+                        link(SoftwareLinkType.GENERAL, "https://www.pouet.net/prod.php?which=1"),
+                        link(SoftwareLinkType.YOUTUBE, "https://youtu.be/xyz"))
+                .build());
+
+        assertThat(links(software("Digger")))
+                .containsExactlyInAnyOrder(
+                        "general https://www.pouet.net/prod.php?which=1", "youtube https://youtu.be/xyz");
+    }
+
+    @Test
+    void tellsWhereANewProgramComesFrom() {
+        importProgram(program("1", "Digger", zip(Map.of("DIGGER.ROM", ELITE_ROM)))
+                .lineage(PORT_OF_DIGGER)
+                .build());
+
+        assertThat(lineage(software("Digger"))).isEqualTo("port reliable {original-material-used} Digger, IBM PC");
+    }
+
+    @Test
+    void fillsTheLineageOfAKnownProgramOnlyWhileItIsUnknown() {
+        importProgram(
+                program("1", "Digger", zip(Map.of("DIGGER.ROM", ELITE_ROM))).build());
+
+        importProgram(program("1", "Digger", zip(Map.of("DIGGER.ROM", ELITE_ROM)))
+                .lineage(PORT_OF_DIGGER)
+                .build());
+        importProgram(program("1", "Digger", zip(Map.of("DIGGER.ROM", ELITE_ROM)))
+                .lineage(new SoftwareLineage(LineageKind.REMAKE, null, Set.of(), null))
+                .build());
+
+        assertThat(lineage(software("Digger"))).isEqualTo("port reliable {original-material-used} Digger, IBM PC");
+        assertThat(entries(reports.findLatest(null).orElseThrow(), ImportRunKnownEntry.class))
+                .singleElement()
+                .satisfies(known -> assertThat(known.supplements()).isEmpty());
+    }
+
+    @Test
+    void reportsTheLineageAddedToAKnownProgram() {
+        importProgram(
+                program("1", "Digger", zip(Map.of("DIGGER.ROM", ELITE_ROM))).build());
+
+        importProgram(program("1", "Digger", zip(Map.of("DIGGER.ROM", ELITE_ROM)))
+                .lineage(PORT_OF_DIGGER)
+                .build());
+
+        assertThat(entries(lastReport(), ImportRunKnownEntry.class))
+                .singleElement()
+                .satisfies(known -> assertThat(known.supplements()).containsExactly("lineage"));
+    }
+
+    @Test
+    void logsTheWarningsOfAProgramAfterWhatItCameToAndCountsThem() {
+        importProgram(program("1", "Digger", zip(Map.of("DIGGER.ROM", ELITE_ROM)))
+                .warnings(
+                        new SourceWarning(SourceWarning.Kind.GENRE, "Симулятор"),
+                        new SourceWarning(SourceWarning.Kind.FILE_MISSING, "lost.zip"))
+                .build());
+
+        ImportRunReport report = lastReport();
+        assertThat(report.warnings()).isEqualTo(2);
+        assertThat(report.log()).extracting(ImportRunLogLine::kind).containsExactly("added", "warning", "warning");
+        assertThat(entries(report, ImportRunWarningEntry.class))
+                .containsExactly(
+                        new ImportRunWarningEntry(
+                                "1", "https://test-archive.invalid/1", "Digger", "genre", "Симулятор"),
+                        new ImportRunWarningEntry(
+                                "1", "https://test-archive.invalid/1", "Digger", "file-missing", "lost.zip"));
+    }
+
+    @Test
+    void countsTheWarningsOfTheWholeRunWhenOnlyTheLinesAfterOneAreAsked() {
+        importProgram(program("1", "Digger", zip(Map.of("DIGGER.ROM", ELITE_ROM)))
+                .warnings(new SourceWarning(SourceWarning.Kind.GENRE, "Симулятор"))
+                .build());
+        long last = lastReport().log().getLast().seq();
+
+        assertThat(reports.findLatest(last).orElseThrow().warnings()).isOne();
+    }
+
+    private static final SoftwareLineage PORT_OF_DIGGER = new SoftwareLineage(
+            LineageKind.PORT,
+            LineageReliability.RELIABLE,
+            Set.of(LineageRework.ORIGINAL_MATERIAL_USED),
+            new LineageSource("Digger, IBM PC"));
+
+    private static SoftwareLink link(SoftwareLinkType type, String url) {
+        return new SoftwareLink(type, new SoftwareUrl(url));
+    }
+
+    private List<String> links(UUID software) {
+        return jdbc.queryForList(
+                "SELECT type || ' ' || url FROM software_links WHERE software_id = ?", String.class, software);
+    }
+
+    /** The lineage of software as one line: its kind, reliability, rework and original. */
+    private String lineage(UUID software) {
+        return jdbc.queryForObject(
+                "SELECT concat_ws(' ', lineage_kind, lineage_reliability, lineage_rework::text, lineage_source)"
+                        + " FROM software WHERE id = ?",
+                String.class,
+                software);
     }
 
     @Test
@@ -1117,6 +1325,10 @@ class ImportProgramIT {
         private List<SourceAuthor> authors = List.of();
         private List<ScreenshotImage> screenshots = List.of();
         private PreservationStatus preservation = PreservationStatus.UNKNOWN;
+        private @Nullable List<SourceRelease> releases;
+        private List<SoftwareLink> links = List.of();
+        private SoftwareLineage lineage = SoftwareLineage.UNKNOWN;
+        private List<SourceWarning> warnings = List.of();
 
         private ProgramBuilder(String id, String title, ReleaseArchiveUpload file) {
             this.id = id;
@@ -1159,6 +1371,27 @@ class ImportProgramIT {
             return this;
         }
 
+        /** The releases of the program in place of its one release with the file it was made with. */
+        ProgramBuilder releases(SourceRelease... values) {
+            releases = List.of(values);
+            return this;
+        }
+
+        ProgramBuilder links(SoftwareLink... values) {
+            links = List.of(values);
+            return this;
+        }
+
+        ProgramBuilder lineage(SoftwareLineage value) {
+            lineage = value;
+            return this;
+        }
+
+        ProgramBuilder warnings(SourceWarning... values) {
+            warnings = List.of(values);
+            return this;
+        }
+
         SourceProgram build() {
             return new SourceProgram(
                     ARCHIVE,
@@ -1167,15 +1400,16 @@ class ImportProgramIT {
                     new SoftwareTitle(title),
                     description == null ? null : new SoftwareDescription(description),
                     ReleaseDate.ofYear(Year.of(1987)),
-                    null,
                     preservation,
                     VECTOR,
                     hardware,
-                    releaseHardware,
                     categories,
                     authors,
                     screenshots,
-                    file);
+                    releases == null ? List.of(new SourceRelease(null, null, releaseHardware, file)) : releases,
+                    links,
+                    lineage,
+                    warnings);
         }
     }
 }

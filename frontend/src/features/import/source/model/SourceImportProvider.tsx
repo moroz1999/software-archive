@@ -2,10 +2,10 @@ import {type ReactNode, useState} from 'react';
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {useTranslation} from 'react-i18next';
 import {businessErrorMessage, businessErrorOf} from '@/shared/api';
-import {startBasisImport, startVektorImport} from '../api/import-api';
+import {startBasisImport, startBkCatalogImport, startVektorImport} from '../api/import-api';
 import {basisCategoriesQuery, lastImportRunQuery, vektorSectionsQuery} from '../api/import-queries';
 import {importMessages} from '../config/messages';
-import type {ImportSource} from './import-run';
+import {bkCatalogSectionOf, type ImportSource} from './import-run';
 import {SourceImportContext, type SourceImportState} from './source-import-context';
 
 /**
@@ -21,8 +21,16 @@ export function SourceImportProvider({children}: {readonly children: ReactNode})
     const basisCategories = useQuery({...basisCategoriesQuery(), enabled: source === 'basis'});
     const lastRun = useQuery(lastImportRunQuery());
     const {mutate, isPending, isSuccess, error, reset} = useMutation({
-        mutationFn: ({source: chosen, section: code}: {readonly source: ImportSource; readonly section: string | null}) =>
-            chosen === 'basis' ? startBasisImport(code) : startVektorImport(code),
+        mutationFn: ({source: chosen, section: code}: {readonly source: ImportSource; readonly section: string | null}) => {
+            switch (chosen) {
+                case 'vektor':
+                    return startVektorImport(code);
+                case 'basis':
+                    return startBasisImport(code);
+                case 'bkCatalog':
+                    return startBkCatalogImport(code === null ? null : bkCatalogSectionOf(code) ?? null);
+            }
+        },
         // The run is written down before the start answers: its report shows at once.
         onSuccess: () => queryClient.invalidateQueries({queryKey: lastImportRunQuery().queryKey}),
     });

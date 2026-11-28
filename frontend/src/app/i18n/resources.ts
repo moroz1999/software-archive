@@ -17,14 +17,16 @@ export const resources = {
         breadcrumbs: {label: 'Breadcrumbs', editing: 'Editing'},
         pages: {recentlyAdded: 'Recently added', software: 'Software', authors: 'Authors', groups: 'Groups', categories: 'Categories', geography: 'Geography', hardware: 'Hardware', search: 'Search', users: 'Users', imports: 'Imports'},
         imports: {
-            whatToImport: 'What to import', source: 'Source', sources: {vektor: 'vektor-06c.ru', basis: 'caglrc.cc (Basis)'},
-            section: 'Section', category: 'Category', wholeSite: 'Whole site', wholeCardIndex: 'Whole card index', start: 'Start',
+            whatToImport: 'What to import', source: 'Source', sources: {vektor: 'vektor-06c.ru', basis: 'caglrc.cc (Basis)', bkCatalog: 'bk-catalog'},
+            section: 'Section', category: 'Category', wholeSite: 'Whole site', wholeCardIndex: 'Whole card index', wholeCatalog: 'Whole catalog', start: 'Start',
+            bkCatalogSections: {games: 'Games', software: 'Programs', demoscene: 'Demoscene'},
             started: 'The import has started.',
             errors: {running: 'An import is already running.', forbidden: 'Only an administrator starts an import.'},
             lastRun: 'Last import', noRun: 'Nothing has been imported yet.',
             states: {running: 'Running', done: 'Done', stopped: 'Stopped'},
             startedAt: 'Started {{time}}', ranFromTo: '{{from}} – {{to}}',
             counts: 'Added {{added}} · already there {{known}} · left out {{skipped}} · failed {{failed}}',
+            warnings: 'Warnings: {{count}}', warning: 'Warning',
             deleted: '{{title}} (deleted since)', log: 'Log',
             lines: {
                 list: 'Read the list: <page>page {{number}} of {{pages}}</page>, {{programs}} programs',
@@ -37,8 +39,18 @@ export const resources = {
                 skipped: {
                     section: '<program>{{title}}</program>: left out, the section {{detail}} is not imported',
                     category: '<program>{{title}}</program>: left out, the category {{detail}} is not imported',
+                    platform: '<program>{{title}}</program>: left out, the platform {{detail}} is not imported',
                 },
                 failed: '<page>{{url}}</page>: failed: {{reason}}',
+                warning: {
+                    platform: '<program>{{title}}</program>: the platform {{value}} is unknown, the program is taken without it',
+                    genre: '<program>{{title}}</program>: the genre {{value}} is unknown, the program is taken without it',
+                    date: '<program>{{title}}</program>: the date {{value}} cannot be read, the program is taken without it',
+                    lineage: '<program>{{title}}</program>: the lineage {{value}} is unknown, the program is taken without it',
+                    'lineage-source-too-long': '<program>{{title}}</program>: the original is longer than 255 characters, the program is taken without it',
+                    'file-missing': '<program>{{title}}</program>: the file {{value}} is not in the source, its release is taken without it',
+                    'screenshot-missing': '<program>{{title}}</program>: the screenshot {{value}} is not in the source',
+                },
                 created: {author: 'Created the person <author>{{name}}</author>', group: 'Created the group <author>{{name}}</author>', label: 'Created the label <author>{{name}}</author>'},
                 found: {
                     author: 'Found the person <author>{{name}}</author> in the archive', group: 'Found the group <author>{{name}}</author> in the archive',
@@ -49,7 +61,7 @@ export const resources = {
             now: {list: 'Now: reading the list of programs', program: 'Now: program {{position}} of {{total}}', programUncounted: 'Now: program {{position}}'},
             supplements: {
                 description: 'description', 'release-date': 'release date', preservation: 'preservation status', categories: 'categories',
-                credits: 'authors', screenshots: 'screenshots',
+                credits: 'authors', screenshots: 'screenshots', lineage: 'lineage',
             },
         },
         empty: {
@@ -412,14 +424,16 @@ export const resources = {
         breadcrumbs: {label: 'Навигационная цепочка', editing: 'Редактирование'},
         pages: {recentlyAdded: 'Недавно добавленное', software: 'Программы', authors: 'Авторы', groups: 'Группы', categories: 'Категории', geography: 'География', hardware: 'Железо', search: 'Поиск', users: 'Пользователи', imports: 'Импорт'},
         imports: {
-            whatToImport: 'Что импортировать', source: 'Источник', sources: {vektor: 'vektor-06c.ru', basis: 'caglrc.cc («Базис»)'},
-            section: 'Раздел', category: 'Категория', wholeSite: 'Весь сайт', wholeCardIndex: 'Вся картотека', start: 'Запустить',
+            whatToImport: 'Что импортировать', source: 'Источник', sources: {vektor: 'vektor-06c.ru', basis: 'caglrc.cc («Базис»)', bkCatalog: 'bk-catalog'},
+            section: 'Раздел', category: 'Категория', wholeSite: 'Весь сайт', wholeCardIndex: 'Вся картотека', wholeCatalog: 'Весь каталог', start: 'Запустить',
+            bkCatalogSections: {games: 'Игры', software: 'Программы', demoscene: 'Демосцена'},
             started: 'Импорт запущен.',
             errors: {running: 'Импорт уже идёт.', forbidden: 'Импорт запускает только администратор.'},
             lastRun: 'Последний импорт', noRun: 'Импортов ещё не было.',
             states: {running: 'Идёт', done: 'Закончен', stopped: 'Прерван'},
             startedAt: 'Начат {{time}}', ranFromTo: '{{from}} – {{to}}',
             counts: 'Добавлено {{added}} · уже были {{known}} · пропущено {{skipped}} · не удалось {{failed}}',
+            warnings: 'Замечания: {{count}}', warning: 'Замечание',
             deleted: '{{title}} (с тех пор удалена)', log: 'Журнал',
             lines: {
                 list: 'Прочитан список: <page>страница {{number}} из {{pages}}</page>, программ: {{programs}}',
@@ -432,8 +446,18 @@ export const resources = {
                 skipped: {
                     section: '<program>{{title}}</program>: пропущена, раздел {{detail}} не импортируется',
                     category: '<program>{{title}}</program>: пропущена, категория {{detail}} не импортируется',
+                    platform: '<program>{{title}}</program>: пропущена, платформа {{detail}} не импортируется',
                 },
                 failed: '<page>{{url}}</page>: не удалась: {{reason}}',
+                warning: {
+                    platform: '<program>{{title}}</program>: платформа {{value}} неизвестна, программа взята без неё',
+                    genre: '<program>{{title}}</program>: жанр {{value}} неизвестен, программа взята без него',
+                    date: '<program>{{title}}</program>: дату {{value}} не прочесть, программа взята без неё',
+                    lineage: '<program>{{title}}</program>: происхождение {{value}} неизвестно, программа взята без него',
+                    'lineage-source-too-long': '<program>{{title}}</program>: первоисточник длиннее 255 символов, программа взята без него',
+                    'file-missing': '<program>{{title}}</program>: файла {{value}} нет в источнике, его релиз взят без него',
+                    'screenshot-missing': '<program>{{title}}</program>: скриншота {{value}} нет в источнике',
+                },
                 created: {author: 'Создан человек <author>{{name}}</author>', group: 'Создана группа <author>{{name}}</author>', label: 'Создан псевдоним <author>{{name}}</author>'},
                 found: {
                     author: 'Найден в архиве человек <author>{{name}}</author>', group: 'Найдена в архиве группа <author>{{name}}</author>',
@@ -444,7 +468,7 @@ export const resources = {
             now: {list: 'Сейчас: читаю список программ', program: 'Сейчас: программа {{position}} из {{total}}', programUncounted: 'Сейчас: программа {{position}}'},
             supplements: {
                 description: 'описание', 'release-date': 'дата выпуска', preservation: 'статус сохранности', categories: 'категории',
-                credits: 'авторы', screenshots: 'скриншоты',
+                credits: 'авторы', screenshots: 'скриншоты', lineage: 'происхождение',
             },
         },
         empty: {

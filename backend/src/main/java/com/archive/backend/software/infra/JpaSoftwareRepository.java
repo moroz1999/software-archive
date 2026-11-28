@@ -5,7 +5,7 @@ import com.archive.backend.category.domain.CategoryId;
 import com.archive.backend.category.domain.CategorySet;
 import com.archive.backend.software.domain.Software;
 import com.archive.backend.software.domain.SoftwareId;
-import com.archive.backend.software.domain.SoftwareLinkType;
+import com.archive.backend.software.domain.SoftwareLink;
 import com.archive.backend.software.domain.SoftwareRepository;
 import java.util.List;
 import java.util.Map;
@@ -46,11 +46,11 @@ public class JpaSoftwareRepository implements SoftwareRepository {
         SoftwareEntity entity = mapper.toEntity(software);
         springDataSoftwareRepository.findById(entity.getId()).ifPresent(stored -> keepCreditRows(stored, entity));
         springDataSoftwareRepository.saveAndFlush(entity);
-        software.homepagesToAdd().forEach(url -> addHomepage(entity.getId(), url.value()));
+        software.linksToAdd().forEach(link -> addLink(entity.getId(), link));
     }
 
-    /** Writes new homepages while the software is locked, keeping any existing link rows. */
-    private void addHomepage(UUID id, String url) {
+    /** Writes new links while the software is locked, keeping any existing link rows. */
+    private void addLink(UUID id, SoftwareLink link) {
         jdbc.sql("""
                         INSERT INTO software_links (software_id, type, url)
                         SELECT :id, :type, :url
@@ -59,8 +59,8 @@ public class JpaSoftwareRepository implements SoftwareRepository {
                         )
                         """)
                 .param("id", id)
-                .param("type", SoftwareLinkType.HOMEPAGE.code())
-                .param("url", url)
+                .param("type", link.type().code())
+                .param("url", link.url().value())
                 .update();
     }
 

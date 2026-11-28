@@ -6,7 +6,10 @@ import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
-/** The report of a run: {@code state} is {@code running}, {@code done} or {@code stopped}. */
+/**
+ * The report of a run: {@code state} is {@code running}, {@code done} or {@code stopped}; {@code warnings} counts the
+ * warnings of its log.
+ */
 public record ImportRunDto(
         UUID id,
         String archive,
@@ -18,5 +21,6 @@ public record ImportRunDto(
         int known,
         int skipped,
         int failed,
+        int warnings,
         ImportRunProgressDto progress,
         List<ImportRunLogLineDto> log) {}

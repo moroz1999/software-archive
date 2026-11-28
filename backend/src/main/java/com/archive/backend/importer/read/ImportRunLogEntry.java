@@ -9,4 +9,5 @@ public sealed interface ImportRunLogEntry
                 ImportRunSkippedEntry,
                 ImportRunFailedEntry,
                 ImportRunAuthorEntry,
-                ImportRunPlaceEntry {}
+                ImportRunPlaceEntry,
+                ImportRunWarningEntry {}

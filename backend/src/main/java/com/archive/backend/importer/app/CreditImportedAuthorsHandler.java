@@ -48,7 +48,9 @@ import com.archive.backend.software.domain.SoftwareReference;
 import com.archive.backend.software.domain.SoftwareReferenceId;
 import com.archive.backend.software.domain.SoftwareReferenceType;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -68,8 +70,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CreditImportedAuthorsHandler {
 
-    private static final List<String> UNKNOWN_ROLE = List.of("unknown");
-
     private final ImportedEntryRepository entries;
     private final AuthorRepository authors;
     private final GroupRepository groups;
@@ -84,16 +84,20 @@ public class CreditImportedAuthorsHandler {
     private final GeoCatalog geoCatalog;
     private final MatchingAuthors matching;
 
-    /** The credits of the authors of a program, each subject once, with an unknown role: no source tells roles yet. */
+    /**
+     * The credits of the authors of a program, each subject once, with the roles the source tells of every author it
+     * stands for.
+     */
     public ImportedCredits handle(CreditImportedAuthorsCommand c) {
         String archive = c.program().archive();
         Taking taking = new Taking();
-        List<SoftwareCreditDraft> credits = c.program().authors().stream()
-                .map(author -> referenceOf(archive, author, taking))
-                .distinct()
-                .map(reference -> new SoftwareCreditDraft(reference, UNKNOWN_ROLE))
-                .toList();
-        return new ImportedCredits(credits, new TakenAuthors(taking.authors, taking.places));
+        Map<SoftwareReference, SoftwareCreditDraft> credits = new LinkedHashMap<>();
+        for (SourceAuthor author : c.program().authors()) {
+            SoftwareReference reference = referenceOf(archive, author, taking);
+            credits.merge(
+                    reference, new SoftwareCreditDraft(reference, author.roles()), SoftwareCreditDraft::joinedWith);
+        }
+        return new ImportedCredits(List.copyOf(credits.values()), new TakenAuthors(taking.authors, taking.places));
     }
 
     /** The authors and places one program makes the import take for the first time, for the report of the run. */

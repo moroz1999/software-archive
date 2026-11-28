@@ -74,7 +74,7 @@ public final class Software {
     private final List<DomainEvent> events = new ArrayList<>();
 
     @Getter(lombok.AccessLevel.NONE)
-    private final Set<SoftwareUrl> homepagesToAdd = new HashSet<>();
+    private final Set<SoftwareLink> linksToAdd = new HashSet<>();
 
     public Software(
             SoftwareId id,
@@ -291,6 +291,20 @@ public final class Software {
         return added;
     }
 
+    /**
+     * Takes the lineage an import found while the software's is unknown, never rewriting one it has
+     * (docs/domain/imports.md); tells whether it took it.
+     */
+    public boolean supplementLineage(SoftwareLineage found) {
+        Objects.requireNonNull(found, "found");
+        if (!lineage.equals(SoftwareLineage.UNKNOWN) || found.equals(SoftwareLineage.UNKNOWN)) {
+            return false;
+        }
+        lineage = found;
+        markChanged();
+        return true;
+    }
+
     /** The pictures of sizes the software has no screenshot of yet, each size once (docs/domain/imports.md). */
     public List<ScreenshotImage> screenshotsOfNewSizes(List<ScreenshotImage> images) {
         Set<Long> sizes = getScreenshots().all().stream().map(Screenshot::size).collect(Collectors.toSet());
@@ -485,11 +499,17 @@ public final class Software {
     }
 
     public void addHomepage(SoftwareUrl url) {
-        homepagesToAdd.add(Objects.requireNonNull(url, "url"));
+        addLink(new SoftwareLink(SoftwareLinkType.HOMEPAGE, url));
     }
 
-    public Set<SoftwareUrl> homepagesToAdd() {
-        return Set.copyOf(homepagesToAdd);
+    /** Adds a link the software does not have yet, of its type and address; one it has stays as it is. */
+    public void addLink(SoftwareLink link) {
+        linksToAdd.add(Objects.requireNonNull(link, "link"));
+    }
+
+    /** The links added since the software was read, for its repository to write beside those it has. */
+    public Set<SoftwareLink> linksToAdd() {
+        return Set.copyOf(linksToAdd);
     }
 
     /** The screenshots of the software itself, or of its release when one is named. */

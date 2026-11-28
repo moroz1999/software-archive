@@ -1,4 +1,5 @@
 import {useTranslation} from 'react-i18next';
+import {bkCatalogSectionValues} from '@/shared/api';
 import {Button} from '@/shared/ui/button';
 import {Form, FormActions, FormField, FormMessage, FormSection} from '@/shared/ui/form';
 import {Select} from '@/shared/ui/select';
@@ -25,9 +26,8 @@ export function SourceImport() {
 
 function SourceImportForm() {
     const {t} = useTranslation();
-    const {sections, basisCategories, source, chooseSource, section, choose, start, starting, started, error} = useSourceImport();
-    const vektor = source === 'vektor';
-    const choices = vektor ? sections : basisCategories;
+    const {source, chooseSource, start, starting, started, error} = useSourceImport();
+    const {label, options, placeholder, ready} = useSectionChoice();
 
     return (
         <Form onSubmit={start}>
@@ -49,22 +49,66 @@ function SourceImportForm() {
                         />
                     )}
                 </FormField>
-                <FormField label={t(vektor ? 'imports.section' : 'imports.category')}>
-                    {(control) => (
-                        <Select
-                            {...control}
-                            value={section}
-                            onChange={choose}
-                            options={(choices.data ?? []).map((code) => ({value: code, label: code}))}
-                            placeholder={t(vektor ? 'imports.wholeSite' : 'imports.wholeCardIndex')}
-                            disabled={starting || choices.data === undefined}
-                        />
-                    )}
-                </FormField>
+                <SectionField label={label} options={options} placeholder={placeholder} disabled={starting || !ready}/>
             </FormSection>
             <FormActions>
-                <Button type="submit" loading={starting} disabled={choices.data === undefined}>{t('imports.start')}</Button>
+                <Button type="submit" loading={starting} disabled={!ready}>{t('imports.start')}</Button>
             </FormActions>
         </Form>
+    );
+}
+
+interface SectionChoice {
+    readonly label: string;
+    readonly options: readonly {readonly value: string; readonly label: string}[];
+    readonly placeholder: string;
+    /** Whether the choices are there to start from: the sections of a site are read from the archive first. */
+    readonly ready: boolean;
+}
+
+/** What part of the chosen source can be imported: the sections or categories it has, or the whole of it. */
+function useSectionChoice(): SectionChoice {
+    const {t} = useTranslation();
+    const {sections, basisCategories, source} = useSourceImport();
+    switch (source) {
+        case 'vektor':
+            return {
+                label: t('imports.section'),
+                options: (sections.data ?? []).map((code) => ({value: code, label: code})),
+                placeholder: t('imports.wholeSite'),
+                ready: sections.data !== undefined,
+            };
+        case 'basis':
+            return {
+                label: t('imports.category'),
+                options: (basisCategories.data ?? []).map((code) => ({value: code, label: code})),
+                placeholder: t('imports.wholeCardIndex'),
+                ready: basisCategories.data !== undefined,
+            };
+        case 'bkCatalog':
+            return {
+                label: t('imports.section'),
+                options: bkCatalogSectionValues.map((code) => ({value: code, label: t(`imports.bkCatalogSections.${code}`)})),
+                placeholder: t('imports.wholeCatalog'),
+                ready: true,
+            };
+    }
+}
+
+interface SectionFieldProps {
+    readonly label: string;
+    readonly options: SectionChoice['options'];
+    readonly placeholder: string;
+    readonly disabled: boolean;
+}
+
+function SectionField({label, options, placeholder, disabled}: SectionFieldProps) {
+    const {section, choose} = useSourceImport();
+    return (
+        <FormField label={label}>
+            {(control) => (
+                <Select {...control} value={section} onChange={choose} options={options} placeholder={placeholder} disabled={disabled}/>
+            )}
+        </FormField>
     );
 }

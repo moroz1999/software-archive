@@ -10,6 +10,7 @@ import org.jspecify.annotations.Nullable;
  *
  * @param section the code of the section imported; the whole archive without one
  * @param state {@code RUNNING}, {@code DONE} or {@code STOPPED}
+ * @param warnings how many warnings its log has: what of the programs it could not take as the source gives it
  * @param log the lines of its log in the order the run went: all of them, or those after the line asked for
  */
 public record ImportRunReport(
@@ -23,5 +24,6 @@ public record ImportRunReport(
         int known,
         int skipped,
         int failed,
+        int warnings,
         ImportRunProgressEntry progress,
         List<ImportRunLogLine> log) {}

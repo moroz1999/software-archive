@@ -11,6 +11,7 @@ import com.archive.backend.importer.domain.source.SourceAuthorKind;
 import com.archive.backend.importer.domain.source.SourcePlace;
 import com.archive.backend.importer.domain.source.SourcePlaceKind;
 import com.archive.backend.importer.domain.source.SourceProgram;
+import com.archive.backend.importer.domain.source.SourceRelease;
 import com.archive.backend.label.domain.LabelName;
 import com.archive.backend.shared.domain.Language;
 import com.archive.backend.software.domain.PreservationStatus;
@@ -62,7 +63,7 @@ class BasisSourceProgramsTest {
         assertThat(program.title().value()).isEqualTo("Piton");
         assertThat(program.description()).isNotNull();
         assertThat(program.softwareDate()).isEqualTo(ReleaseDate.ofYear(Year.of(1991)));
-        assertThat(program.releaseDate()).isNull();
+        assertThat(program.releases().getFirst().date()).isNull();
         assertThat(program.platform().value()).isEqualTo("vector");
     }
 
@@ -129,7 +130,7 @@ class BasisSourceProgramsTest {
                         code("kvaz"),
                         code("barkar"),
                         code("z80"));
-        assertThat(program.releaseHardware()).containsExactlyInAnyOrder(code("tape"), code("floppy"));
+        assertThat(program.releases().getFirst().hardware()).containsExactlyInAnyOrder(code("tape"), code("floppy"));
     }
 
     @Test
@@ -198,7 +199,8 @@ class BasisSourceProgramsTest {
         assertThat(program.screenshots())
                 .extracting(image -> image.name().value())
                 .containsExactly("pitongln1.png", "pitongln2.png");
-        ReleaseArchiveUpload file = Objects.requireNonNull(program.file());
+        ReleaseArchiveUpload file =
+                Objects.requireNonNull(program.releases().getFirst().file());
         assertThat(file.fileName()).isEqualTo("pitongln.rom");
         assertThat(site.downloaded)
                 .containsExactly(MEDIA + "s/pitongln1.png", MEDIA + "s/pitongln2.png", MEDIA + "w/pitongln.rom");
@@ -207,7 +209,9 @@ class BasisSourceProgramsTest {
     @Test
     void hasNoFileWhenTheCardHasNone() {
         assertThat(BasisSourcePrograms.of(program("231", "", List.of("demo")), site)
-                        .file())
+                        .releases())
+                .singleElement()
+                .extracting(SourceRelease::file)
                 .isNull();
     }
 

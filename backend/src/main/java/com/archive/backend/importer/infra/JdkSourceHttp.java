@@ -48,6 +48,9 @@ public class JdkSourceHttp implements SourceHttp {
                 if (status == 200) {
                     return response.body();
                 }
+                if (status == 404) {
+                    throw new SourceNotFoundException(url);
+                }
                 failure = "status " + status;
                 if (status < 500 && status != 429) {
                     break;

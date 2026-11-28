@@ -2,6 +2,7 @@ package com.archive.backend.importer.app;
 
 import com.archive.backend.importer.domain.ImportRunningException;
 import com.archive.backend.importer.domain.basis.BasisCategory;
+import com.archive.backend.importer.domain.bkcatalog.BkCatalogSection;
 import com.archive.backend.importer.domain.run.ImportRun;
 import com.archive.backend.importer.domain.run.ImportRunId;
 import com.archive.backend.importer.domain.run.ImportRunRepository;
@@ -31,6 +32,7 @@ public class StartImportHandler {
 
     private final ImportVektorHandler vektor;
     private final ImportBasisHandler basis;
+    private final ImportBkCatalogHandler bkCatalog;
     private final ImportRunRepository runs;
     private final EndImportRunHandler endRun;
     private final Clock clock;
@@ -41,12 +43,14 @@ public class StartImportHandler {
     public StartImportHandler(
             ImportVektorHandler vektor,
             ImportBasisHandler basis,
+            ImportBkCatalogHandler bkCatalog,
             ImportRunRepository runs,
             EndImportRunHandler endRun,
             Clock clock,
             @Qualifier("applicationTaskExecutor") Executor executor) {
         this.vektor = vektor;
         this.basis = basis;
+        this.bkCatalog = bkCatalog;
         this.runs = runs;
         this.endRun = endRun;
         this.clock = clock;
@@ -67,6 +71,8 @@ public class StartImportHandler {
                     switch (c.source()) {
                         case VEKTOR -> vektor.handle(new ImportVektorCommand(id, vektorSection(c.section())));
                         case BASIS -> basis.handle(new ImportBasisCommand(id, basisCategory(c.section())));
+                        case BK_CATALOG ->
+                            bkCatalog.handle(new ImportBkCatalogCommand(id, bkCatalogSection(c.section())));
                     }
                 } catch (RuntimeException e) {
                     log.error("The import of {} stopped", c.source().archive(), e);
@@ -83,6 +89,10 @@ public class StartImportHandler {
 
     private static @Nullable VektorSection vektorSection(@Nullable ImportSection section) {
         return (VektorSection) section;
+    }
+
+    private static @Nullable BkCatalogSection bkCatalogSection(@Nullable ImportSection section) {
+        return (BkCatalogSection) section;
     }
 
     private static @Nullable BasisCategory basisCategory(@Nullable ImportSection section) {

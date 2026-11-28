@@ -23,6 +23,9 @@ const GRAFOV = '00000000-0000-0000-0004-000000000001';
 const IVAN = '00000000-0000-0000-0003-000000000001';
 const CREW = '00000000-0000-0000-0005-000000000001';
 const AT = '2026-11-14T12:01:00Z';
+const BK_CATALOG_START = '/api/imports/bk-catalog';
+const DIGGER = 'https://kalininskiy.github.io/bk-catalog/#game-555893';
+const BK_TURBO = 'https://kalininskiy.github.io/bk-catalog/#software-2026321';
 const LOG = [
     {seq: 1, at: AT, kind: 'list', entry: {url: LIST_PAGE, number: 1, pages: 24, programs: 10}},
     {seq: 2, at: AT, kind: 'download', entry: {externalId: '599', title: 'Disk Loader', file: 'archive', name: 'disk.zip', size: 2048}},
@@ -52,6 +55,7 @@ const RUN = {
     known: 2,
     skipped: 2,
     failed: 1,
+    warnings: 0,
     progress: {position: 37, total: 512, url: G_DOS},
     log: LOG,
 };
@@ -85,7 +89,7 @@ describe(SourceImport, () => {
         const source = await screen.findByRole('combobox', {name: 'Source'});
 
         expect(source).toHaveDisplayValue('vektor-06c.ru');
-        expect(within(source).getAllByRole('option').map((option) => option.textContent)).toStrictEqual(['vektor-06c.ru', 'caglrc.cc (Basis)']);
+        expect(within(source).getAllByRole('option').map((option) => option.textContent)).toStrictEqual(['vektor-06c.ru', 'caglrc.cc (Basis)', 'bk-catalog']);
     });
 
     it('offers the whole card index and every category of Basis', async () => {
@@ -158,6 +162,137 @@ describe(SourceImport, () => {
         });
 
         expect(reports[0]?.error.kind).toBe('server');
+    });
+
+    it('offers the whole of bk-catalog and each of its sections by name, without asking the archive', async () => {
+        stubFetchRoutes(new Map([[LAST_RUN, NO_RUN], [SECTIONS, json(['zagruzchiki'])]]));
+        renderImport();
+
+        await screen.findByRole('option', {name: 'zagruzchiki'});
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Source'}), 'bk-catalog');
+
+        const section = screen.getByRole('combobox', {name: 'Section'});
+
+        expect(within(section).getAllByRole('option').map((option) => option.textContent)).toStrictEqual(['Whole catalog', 'Games', 'Programs', 'Demoscene']);
+        expect(section).toBeEnabled();
+    });
+
+    it('starts the import of the chosen section of bk-catalog', async () => {
+        const fetchMock = stubFetchRoutes(new Map([
+            [LAST_RUN, NO_RUN],
+            [SECTIONS, json(['zagruzchiki'])],
+            [`${BK_CATALOG_START}?section=demoscene`, accepted()],
+        ]));
+        renderImport();
+
+        await screen.findByRole('option', {name: 'zagruzchiki'});
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Source'}), 'bk-catalog');
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Section'}), 'Demoscene');
+        await userEvent.click(screen.getByRole('button', {name: 'Start'}));
+
+        await expect(screen.findByRole('status')).resolves.toHaveTextContent('The import has started.');
+        expect(fetchMock).toHaveBeenCalledWith(`${BK_CATALOG_START}?section=demoscene`, expect.objectContaining({method: 'POST'}));
+    });
+
+    it('starts the import of the whole of bk-catalog when no section is chosen', async () => {
+        const fetchMock = stubFetchRoutes(new Map([[LAST_RUN, NO_RUN], [SECTIONS, json(['zagruzchiki'])], [BK_CATALOG_START, accepted()]]));
+        renderImport();
+
+        await screen.findByRole('option', {name: 'zagruzchiki'});
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Source'}), 'bk-catalog');
+        await userEvent.click(screen.getByRole('button', {name: 'Start'}));
+
+        await screen.findByRole('status');
+
+        expect(fetchMock).toHaveBeenCalledWith(BK_CATALOG_START, expect.objectContaining({method: 'POST'}));
+    });
+
+    it('names the section of bk-catalog the last import read, or the whole catalog', async () => {
+        stubFetchRoutes(new Map([[LAST_RUN, json({run: {...RUN, archive: 'bk-catalog', section: 'games'}})], [SECTIONS, json(['zagruzchiki'])]]));
+        renderImport();
+
+        const report = within(await screen.findByRole('region', {name: 'Last import'}));
+
+        await expect(report.findByText('bk-catalog · Games')).resolves.toBeInTheDocument();
+    });
+
+    it('names the whole of bk-catalog when the last import read it all', async () => {
+        stubFetchRoutes(new Map([[LAST_RUN, json({run: {...RUN, archive: 'bk-catalog', section: null}})], [SECTIONS, json(['zagruzchiki'])]]));
+        renderImport();
+
+        const report = within(await screen.findByRole('region', {name: 'Last import'}));
+
+        await expect(report.findByText('bk-catalog · Whole catalog')).resolves.toBeInTheDocument();
+    });
+
+    it('counts the warnings of the last import apart, so that they are not missed among its lines', async () => {
+        stubFetchRoutes(new Map([[LAST_RUN, json({run: {...RUN, warnings: 3}})], [SECTIONS, json(['zagruzchiki'])]]));
+        renderImport();
+
+        const report = within(await screen.findByRole('region', {name: 'Last import'}));
+
+        await expect(report.findByText('Added 2 · already there 2 · left out 2 · failed 1')).resolves.toBeInTheDocument();
+        expect(report.getByText('Warnings: 3')).toBeInTheDocument();
+    });
+
+    it('tells no warnings of an import that had none', async () => {
+        stubFetchRoutes(new Map([[LAST_RUN, json({run: RUN})], [SECTIONS, json(['zagruzchiki'])]]));
+        renderImport();
+
+        const report = within(await screen.findByRole('region', {name: 'Last import'}));
+        await report.findByText('Running');
+
+        expect(report.queryByText(/^Warnings/u)).not.toBeInTheDocument();
+    });
+
+    it('marks every warning in the log, telling what could not be taken and leading to the entry in the source', async () => {
+        const warning = (seq: number, kind: string, value: string) => ({
+            seq, at: AT, kind: 'warning', entry: {externalId: 'game-555893', url: DIGGER, title: 'Digger', kind, value},
+        });
+        stubFetchRoutes(new Map([
+            [LAST_RUN, json({run: {...RUN, archive: 'bk-catalog', section: null, warnings: 7, log: [
+                warning(1, 'platform', 'БК0012'),
+                warning(2, 'genre', 'Симулятор'),
+                warning(3, 'date', 'весна 1991'),
+                warning(4, 'lineage', 'Конверсия'),
+                warning(5, 'lineage-source-too-long', 'Elite…'),
+                warning(6, 'file-missing', 'lost.zip'),
+                warning(7, 'screenshot-missing', 'lost.png'),
+            ]}})],
+            [SECTIONS, json(['zagruzchiki'])],
+        ]));
+        renderImport();
+
+        const lines = await logLines();
+
+        expect(lines.map((line) => line.replace(/^\d{2}:\d{2}:\d{2}/u, ''))).toStrictEqual([
+            'WarningDigger: the platform БК0012 is unknown, the program is taken without it',
+            'WarningDigger: the genre Симулятор is unknown, the program is taken without it',
+            'WarningDigger: the date весна 1991 cannot be read, the program is taken without it',
+            'WarningDigger: the lineage Конверсия is unknown, the program is taken without it',
+            'WarningDigger: the original is longer than 255 characters, the program is taken without it',
+            'WarningDigger: the file lost.zip is not in the source, its release is taken without it',
+            'WarningDigger: the screenshot lost.png is not in the source',
+        ]);
+        expect(within(screen.getByRole('list', {name: 'Log'})).getAllByRole('link', {name: 'Digger'}).at(0)).toHaveAttribute('href', DIGGER);
+    });
+
+    it('tells a program left out by its platform and the lineage added to a known one', async () => {
+        stubFetchRoutes(new Map([
+            [LAST_RUN, json({run: {...RUN, archive: 'bk-catalog', section: null, log: [
+                {seq: 1, at: AT, kind: 'skipped', entry: {externalId: 'software-2026321', url: BK_TURBO, title: 'BK Turbo 8', reason: 'platform', detail: 'Windows'}},
+                {seq: 2, at: AT, kind: 'known', entry: {externalId: 'game-555893', softwareId: MICRODOS, title: 'Digger', exists: true, supplements: ['lineage']}},
+            ]}})],
+            [SECTIONS, json(['zagruzchiki'])],
+        ]));
+        renderImport();
+
+        const lines = await logLines();
+
+        expect(lines.map((line) => line.replace(/^\d{2}:\d{2}:\d{2}/u, ''))).toStrictEqual([
+            'BK Turbo 8: left out, the platform Windows is not imported',
+            'Digger: already there, added lineage',
+        ]);
     });
 
     it('names the archive the last import read', async () => {

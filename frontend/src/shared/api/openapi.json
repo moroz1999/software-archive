@@ -6276,6 +6276,95 @@
         "tags" : [ "import-controller" ]
       }
     },
+    "/api/imports/bk-catalog" : {
+      "post" : {
+        "operationId" : "startBkCatalog",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "section",
+          "required" : false,
+          "schema" : {
+            "$ref" : "#/components/schemas/BkCatalogSection"
+          }
+        } ],
+        "responses" : {
+          "202" : {
+            "description" : "Accepted"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "401" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "422" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Unprocessable Entity"
+          },
+          "500" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "tags" : [ "import-controller" ]
+      }
+    },
     "/api/imports/last-run" : {
       "get" : {
         "operationId" : "lastRun",
@@ -12291,6 +12380,10 @@
         },
         "required" : [ "city", "country", "primary" ]
       },
+      "BkCatalogSection" : {
+        "type" : "string",
+        "enum" : [ "games", "software", "demoscene" ]
+      },
       "CardScreenshotDto" : {
         "type" : "object",
         "properties" : {
@@ -13645,9 +13738,13 @@
           "state" : {
             "type" : "string",
             "$ref" : "#/components/schemas/ImportRunState"
+          },
+          "warnings" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "added", "archive", "endedAt", "failed", "id", "known", "log", "progress", "section", "skipped", "startedAt", "state" ]
+        "required" : [ "added", "archive", "endedAt", "failed", "id", "known", "log", "progress", "section", "skipped", "startedAt", "state", "warnings" ]
       },
       "ImportRunFailedDto" : {
         "type" : "object",
@@ -13721,7 +13818,8 @@
             "known" : "#/components/schemas/ImportRunLogLineDto.Known",
             "list" : "#/components/schemas/ImportRunLogLineDto.ListRead",
             "place" : "#/components/schemas/ImportRunLogLineDto.Place",
-            "skipped" : "#/components/schemas/ImportRunLogLineDto.Skipped"
+            "skipped" : "#/components/schemas/ImportRunLogLineDto.Skipped",
+            "warning" : "#/components/schemas/ImportRunLogLineDto.Warning"
           },
           "propertyName" : "kind"
         },
@@ -13741,6 +13839,8 @@
           "$ref" : "#/components/schemas/ImportRunLogLineDto.Author"
         }, {
           "$ref" : "#/components/schemas/ImportRunLogLineDto.Place"
+        }, {
+          "$ref" : "#/components/schemas/ImportRunLogLineDto.Warning"
         } ]
       },
       "ImportRunLogLineDto.Added" : {
@@ -13911,6 +14011,27 @@
         },
         "required" : [ "at", "entry", "kind", "seq" ]
       },
+      "ImportRunLogLineDto.Warning" : {
+        "type" : "object",
+        "properties" : {
+          "at" : {
+            "type" : [ "string", "null" ],
+            "format" : "date-time"
+          },
+          "entry" : {
+            "$ref" : "#/components/schemas/ImportRunWarningDto"
+          },
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "warning" ]
+          },
+          "seq" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "at", "entry", "kind", "seq" ]
+      },
       "ImportRunPlaceDto" : {
         "type" : "object",
         "properties" : {
@@ -13966,6 +14087,32 @@
       "ImportRunState" : {
         "type" : "string",
         "enum" : [ "running", "done", "stopped" ]
+      },
+      "ImportRunWarningDto" : {
+        "type" : "object",
+        "properties" : {
+          "externalId" : {
+            "type" : "string"
+          },
+          "kind" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/ImportWarningKind"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "url" : {
+            "type" : "string"
+          },
+          "value" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "externalId", "kind", "title", "url", "value" ]
+      },
+      "ImportWarningKind" : {
+        "type" : "string",
+        "enum" : [ "platform", "genre", "date", "lineage", "lineage-source-too-long", "file-missing", "screenshot-missing" ]
       },
       "LabelAuthorChoiceDto" : {
         "type" : "object",
@@ -14850,7 +14997,7 @@
       },
       "SkipReason" : {
         "type" : "string",
-        "enum" : [ "section", "category" ]
+        "enum" : [ "section", "category", "platform" ]
       },
       "SoftwareCatalogDto" : {
         "type" : "object",
@@ -15485,7 +15632,7 @@
       },
       "SoftwareSupplement" : {
         "type" : "string",
-        "enum" : [ "description", "release-date", "preservation", "categories", "credits", "screenshots" ]
+        "enum" : [ "description", "release-date", "preservation", "categories", "credits", "screenshots", "lineage" ]
       },
       "SoftwareVoteDto" : {
         "type" : "object",

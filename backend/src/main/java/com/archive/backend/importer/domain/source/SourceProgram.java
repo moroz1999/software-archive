@@ -10,6 +10,8 @@ import com.archive.backend.software.domain.ReleaseArchiveUpload;
 import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.ScreenshotImage;
 import com.archive.backend.software.domain.SoftwareDescription;
+import com.archive.backend.software.domain.SoftwareLineage;
+import com.archive.backend.software.domain.SoftwareLink;
 import com.archive.backend.software.domain.SoftwareTitle;
 import java.util.List;
 import java.util.Objects;
@@ -23,7 +25,9 @@ import org.jspecify.annotations.Nullable;
  * @param archive the source archive, such as vektor-06c.ru
  * @param id the id of the program there
  * @param hardware the base hardware of the software
- * @param releaseHardware the hardware of its one release, such as its storage
+ * @param releases its releases, each with its file; most sources give one
+ * @param lineage where the work comes from, unknown when the source does not tell
+ * @param warnings what of the program the import could not take as the source gives it
  */
 @ValueObject
 public record SourceProgram(
@@ -33,15 +37,16 @@ public record SourceProgram(
         SoftwareTitle title,
         @Nullable SoftwareDescription description,
         @Nullable ReleaseDate softwareDate,
-        @Nullable ReleaseDate releaseDate,
         PreservationStatus preservation,
         PlatformCode platform,
         Set<HardwareCode> hardware,
-        Set<HardwareCode> releaseHardware,
         Set<CategoryId> categories,
         List<SourceAuthor> authors,
         List<ScreenshotImage> screenshots,
-        @Nullable ReleaseArchiveUpload file) {
+        List<SourceRelease> releases,
+        List<SoftwareLink> links,
+        SoftwareLineage lineage,
+        List<SourceWarning> warnings) {
 
     public SourceProgram {
         Objects.requireNonNull(archive, "archive");
@@ -50,10 +55,49 @@ public record SourceProgram(
         Objects.requireNonNull(title, "title");
         Objects.requireNonNull(preservation, "preservation");
         Objects.requireNonNull(platform, "platform");
+        Objects.requireNonNull(lineage, "lineage");
         hardware = Set.copyOf(hardware);
-        releaseHardware = Set.copyOf(releaseHardware);
         categories = Set.copyOf(categories);
         authors = List.copyOf(authors);
         screenshots = List.copyOf(screenshots);
+        releases = List.copyOf(releases);
+        links = List.copyOf(links);
+        warnings = List.copyOf(warnings);
+    }
+
+    /** A program of one release, without links, lineage or warnings: what most sources give. */
+    public SourceProgram(
+            String archive,
+            String id,
+            ExternalPage page,
+            SoftwareTitle title,
+            @Nullable SoftwareDescription description,
+            @Nullable ReleaseDate softwareDate,
+            @Nullable ReleaseDate releaseDate,
+            PreservationStatus preservation,
+            PlatformCode platform,
+            Set<HardwareCode> hardware,
+            Set<HardwareCode> releaseHardware,
+            Set<CategoryId> categories,
+            List<SourceAuthor> authors,
+            List<ScreenshotImage> screenshots,
+            @Nullable ReleaseArchiveUpload file) {
+        this(
+                archive,
+                id,
+                page,
+                title,
+                description,
+                softwareDate,
+                preservation,
+                platform,
+                hardware,
+                categories,
+                authors,
+                screenshots,
+                List.of(new SourceRelease(null, releaseDate, releaseHardware, file)),
+                List.of(),
+                SoftwareLineage.UNKNOWN,
+                List.of());
     }
 }

@@ -1,12 +1,12 @@
-import type {components} from '@/shared/api';
+import {bkCatalogSectionValues, type components} from '@/shared/api';
 
 
 /** The source archives an import reads, in the order they are offered. */
-export const IMPORT_SOURCES = ['vektor', 'basis'] as const;
+export const IMPORT_SOURCES = ['vektor', 'basis', 'bkCatalog'] as const;
 
 export type ImportSource = (typeof IMPORT_SOURCES)[number];
 
-const SOURCE_ARCHIVES: Readonly<Record<ImportSource, string>> = {vektor: 'vektor-06c.ru', basis: 'caglrc.cc'};
+const SOURCE_ARCHIVES: Readonly<Record<ImportSource, string>> = {vektor: 'vektor-06c.ru', basis: 'caglrc.cc', bkCatalog: 'bk-catalog'};
 
 /** The source an archive name of a run stands for; undefined for an archive this page does not know. */
 export function importSourceOf(archive: string): ImportSource | undefined {
@@ -20,6 +20,13 @@ export function isImportSource(raw: string): raw is ImportSource {
 type Schemas = components['schemas'];
 
 export type ImportRunState = Schemas['ImportRunState'];
+/** A section of bk-catalog: its games, its programs or its demoscene. */
+export type BkCatalogSection = Schemas['BkCatalogSection'];
+
+/** The section of bk-catalog a code stands for; undefined for one this page does not know. */
+export function bkCatalogSectionOf(code: string): BkCatalogSection | undefined {
+    return bkCatalogSectionValues.find((section) => section === code);
+}
 /** What an import adds to software it found, in the order the report names them. */
 export type SoftwareSupplement = Schemas['SoftwareSupplement'];
 /** An author a run took for the first time: created by it, or found in the archive; whether it is still there. */

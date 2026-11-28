@@ -8,12 +8,16 @@ import com.archive.backend.importer.domain.ImportedEntryId;
 import com.archive.backend.importer.domain.ImportedEntryRepository;
 import com.archive.backend.importer.domain.Importer;
 import com.archive.backend.importer.domain.run.AddedProgram;
+import com.archive.backend.importer.domain.run.ImportLogEntry;
 import com.archive.backend.importer.domain.run.ImportOutcome;
 import com.archive.backend.importer.domain.run.ImportedCredits;
 import com.archive.backend.importer.domain.run.KnownProgram;
 import com.archive.backend.importer.domain.source.SourceProgram;
+import com.archive.backend.importer.domain.source.SourceRelease;
 import com.archive.backend.software.app.AddScreenshotsCommand;
 import com.archive.backend.software.app.AddScreenshotsHandler;
+import com.archive.backend.software.app.AddSoftwareLinksCommand;
+import com.archive.backend.software.app.AddSoftwareLinksHandler;
 import com.archive.backend.software.app.CreateReleaseCommand;
 import com.archive.backend.software.app.CreateReleaseHandler;
 import com.archive.backend.software.app.CreateSoftwareCommand;
@@ -21,7 +25,6 @@ import com.archive.backend.software.app.CreateSoftwareHandler;
 import com.archive.backend.software.app.SupplementSoftwareCommand;
 import com.archive.backend.software.app.SupplementSoftwareHandler;
 import com.archive.backend.software.domain.ProgramFiles;
-import com.archive.backend.software.domain.ReleaseArchiveUpload;
 import com.archive.backend.software.domain.ReleaseContent;
 import com.archive.backend.software.domain.ReleaseFile;
 import com.archive.backend.software.domain.ReleaseFileHash;
@@ -35,6 +38,7 @@ import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareSupplement;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -43,8 +47,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * The one import of every source archive (docs/domain/imports.md): finds the program among the software of the archive
- * by its origin or by the files of its release, adds it when it is not there, and otherwise adds to it only what the
- * archive lacks. It all commits together or not at all.
+ * by its origin or by the files of its releases, adds it when it is not there, and otherwise adds to it only what the
+ * archive lacks; then logs what of it could not be taken as the source gives it. It all commits together or not at all.
  */
 @Service
 @RequiredArgsConstructor
@@ -59,6 +63,8 @@ public class ImportProgramHandler {
     private final AddScreenshotsHandler addScreenshots;
     private final SupplementSoftwareHandler supplementSoftware;
     private final RecordImportOutcomeHandler recordOutcome;
+    private final RecordImportLogHandler logged;
+    private final AddSoftwareLinksHandler addLinks;
 
     @Transactional
     public ImportProgramResult handle(ImportProgramCommand c) {
@@ -75,7 +81,9 @@ public class ImportProgramHandler {
                     program.preservation(),
                     program.categories(),
                     credits,
-                    program.screenshots()));
+                    program.screenshots(),
+                    program.lineage(),
+                    program.links()));
             recordOutcome.handle(new RecordImportOutcomeCommand(
                     c.run(),
                     new ImportOutcome.Known(
@@ -85,6 +93,7 @@ public class ImportProgramHandler {
                                     program.title().value(),
                                     supplements),
                             imported.taken())));
+            logWarnings(c, program);
             return ImportProgramResult.KNOWN;
         }
         SoftwareId software = add(program, credits);
@@ -97,12 +106,18 @@ public class ImportProgramHandler {
                                 new ImportedEntryId(software.value()),
                                 program.title().value()),
                         imported.taken())));
+        logWarnings(c, program);
         return ImportProgramResult.ADDED;
     }
 
+    /** What of the program could not be taken as the source gives it, after what it came to. */
+    private void logWarnings(ImportProgramCommand c, SourceProgram program) {
+        logged.handle(new RecordImportLogCommand(c.run(), ImportLogEntry.warningsOf(program)));
+    }
+
     /**
-     * The software the program became in an earlier run, or the one whose release has its program files; the latter
-     * is remembered as coming from this source too.
+     * The software the program became in an earlier run, or the one with a release of the program files of any of its
+     * releases; the latter is remembered as coming from this source too.
      */
     private Optional<SoftwareId> knownSoftware(SourceProgram program) {
         Optional<SoftwareId> imported = entries.findByOrigin(origin(program))
@@ -110,11 +125,12 @@ public class ImportProgramHandler {
         if (imported.isPresent()) {
             return imported;
         }
-        ReleaseArchiveUpload file = program.file();
-        if (file == null) {
-            return Optional.empty();
-        }
-        Optional<SoftwareId> matched = sameRelease(program, parser.parse(program.platform(), file));
+        Optional<SoftwareId> matched = program.releases().stream()
+                .map(SourceRelease::file)
+                .filter(Objects::nonNull)
+                .map(file -> sameRelease(program, parser.parse(program.platform(), file)))
+                .flatMap(Optional::stream)
+                .findFirst();
         matched.ifPresent(software -> remember(program, software));
         return matched;
     }
@@ -148,17 +164,24 @@ public class ImportProgramHandler {
                 program.hardware(),
                 program.categories(),
                 credits,
-                program.preservation()));
-        createRelease.handle(new CreateReleaseCommand(
-                Importer.ACTOR,
-                software,
-                new ReleaseContent(null, null, ReleaseType.ORIGINAL, program.releaseDate(), null),
-                program.releaseHardware(),
-                program.file()));
+                program.preservation(),
+                null,
+                null,
+                null,
+                program.lineage()));
+        for (SourceRelease release : program.releases()) {
+            createRelease.handle(new CreateReleaseCommand(
+                    Importer.ACTOR,
+                    software,
+                    new ReleaseContent(null, null, ReleaseType.ORIGINAL, release.date(), release.description()),
+                    release.hardware(),
+                    release.file()));
+        }
         List<ScreenshotImage> screenshots = ofDistinctSizes(program.screenshots());
         if (!screenshots.isEmpty()) {
             addScreenshots.handle(new AddScreenshotsCommand(Importer.ACTOR, software, null, screenshots));
         }
+        addLinks.handle(new AddSoftwareLinksCommand(Importer.ACTOR, software, program.links()));
         return software;
     }
 

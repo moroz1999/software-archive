@@ -7,6 +7,8 @@ import com.archive.backend.software.domain.ScreenshotImage;
 import com.archive.backend.software.domain.SoftwareCreditDraft;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
+import com.archive.backend.software.domain.SoftwareLineage;
+import com.archive.backend.software.domain.SoftwareLink;
 import com.archive.backend.user.domain.Actor;
 import java.util.List;
 import java.util.Set;
@@ -21,4 +23,6 @@ public record SupplementSoftwareCommand(
         PreservationStatus preservation,
         Set<CategoryId> categories,
         List<SoftwareCreditDraft> credits,
-        List<ScreenshotImage> screenshots) {}
+        List<ScreenshotImage> screenshots,
+        SoftwareLineage lineage,
+        List<SoftwareLink> links) {}

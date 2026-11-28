@@ -1,6 +1,7 @@
 package com.archive.backend.importer.domain.run;
 
 import com.archive.backend.importer.domain.basis.BasisSite;
+import com.archive.backend.importer.domain.bkcatalog.BkCatalogSite;
 import com.archive.backend.importer.domain.vektor.VektorSite;
 import com.archive.backend.shared.domain.ddd.ValueObject;
 
@@ -8,7 +9,8 @@ import com.archive.backend.shared.domain.ddd.ValueObject;
 @ValueObject
 public enum ImportSource {
     VEKTOR(VektorSite.ARCHIVE),
-    BASIS(BasisSite.ARCHIVE);
+    BASIS(BasisSite.ARCHIVE),
+    BK_CATALOG(BkCatalogSite.ARCHIVE);
 
     private final String archive;
 

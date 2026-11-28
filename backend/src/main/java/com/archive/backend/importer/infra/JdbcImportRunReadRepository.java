@@ -4,6 +4,7 @@ import com.archive.backend.importer.domain.ExternalKind;
 import com.archive.backend.importer.domain.run.AddedPlace;
 import com.archive.backend.importer.domain.run.ImportLogEntry;
 import com.archive.backend.importer.domain.run.SkipReason;
+import com.archive.backend.importer.domain.source.SourceWarning;
 import com.archive.backend.importer.read.ImportRunAddedEntry;
 import com.archive.backend.importer.read.ImportRunAuthorEntry;
 import com.archive.backend.importer.read.ImportRunDownloadedEntry;
@@ -17,6 +18,7 @@ import com.archive.backend.importer.read.ImportRunProgressEntry;
 import com.archive.backend.importer.read.ImportRunReadRepository;
 import com.archive.backend.importer.read.ImportRunReport;
 import com.archive.backend.importer.read.ImportRunSkippedEntry;
+import com.archive.backend.importer.read.ImportRunWarningEntry;
 import com.archive.backend.software.domain.SoftwareSupplement;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -42,9 +44,11 @@ public class JdbcImportRunReadRepository implements ImportRunReadRepository {
     @Override
     public Optional<ImportRunReport> findLatest(@Nullable Long after) {
         return jdbc.sql("""
-                        SELECT id, archive, section, state, started_at, ended_at, added, known, skipped, failed,
-                               progress_position, progress_total, progress_url
-                        FROM import_run ORDER BY started_at DESC, id LIMIT 1
+                        SELECT r.id, r.archive, r.section, r.state, r.started_at, r.ended_at, r.added, r.known,
+                               r.skipped, r.failed, r.progress_position, r.progress_total, r.progress_url,
+                               (SELECT count(*) FROM import_run_log l
+                                WHERE l.run_id = r.id AND l.kind = 'WARNING') AS warnings
+                        FROM import_run r ORDER BY r.started_at DESC, r.id LIMIT 1
                         """)
                 .query((rs, row) -> {
                     UUID id = rs.getObject("id", UUID.class);
@@ -60,6 +64,7 @@ public class JdbcImportRunReadRepository implements ImportRunReadRepository {
                             rs.getInt("known"),
                             rs.getInt("skipped"),
                             rs.getInt("failed"),
+                            rs.getInt("warnings"),
                             new ImportRunProgressEntry(
                                     rs.getInt("progress_position"),
                                     rs.getObject("progress_total", Integer.class),
@@ -158,6 +163,13 @@ public class JdbcImportRunReadRepository implements ImportRunReadRepository {
                         present);
             case "PLACE" ->
                 new ImportRunPlaceEntry(AddedPlace.Kind.valueOf(text(e, "kind")).code(), text(e, "name"));
+            case "WARNING" ->
+                new ImportRunWarningEntry(
+                        text(e, "externalId"),
+                        text(e, "url"),
+                        text(e, "title"),
+                        SourceWarning.Kind.valueOf(text(e, "kind")).code(),
+                        text(e, "value"));
             default -> throw new IllegalStateException("Unknown kind of a log line: " + kind);
         };
     }

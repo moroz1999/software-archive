@@ -32,6 +32,7 @@ class GetLastImportRunHandlerTest {
             0,
             0,
             0,
+            0,
             new ImportRunProgressEntry(0, null, null),
             List.of());
 

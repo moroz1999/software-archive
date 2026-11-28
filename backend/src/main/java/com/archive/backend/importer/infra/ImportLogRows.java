@@ -22,6 +22,7 @@ final class ImportLogRows {
             case ImportLogEntry.Failed f -> "FAILED";
             case ImportLogEntry.Author a -> "AUTHOR";
             case ImportLogEntry.Place p -> "PLACE";
+            case ImportLogEntry.Warning w -> "WARNING";
         };
     }
 
@@ -80,6 +81,13 @@ final class ImportLogRows {
             case ImportLogEntry.Place p -> {
                 json.put("kind", p.place().kind().name());
                 json.put("name", p.place().name());
+            }
+            case ImportLogEntry.Warning w -> {
+                json.put("externalId", w.externalId());
+                json.put("url", w.page().url());
+                json.put("title", w.title());
+                json.put("kind", w.warning().kind().name());
+                json.put("value", w.warning().value());
             }
         }
         return json;

@@ -99,6 +99,22 @@ class JdkSourceHttpTest {
         assertThat(requests).hasValue(1);
     }
 
+    @Test
+    void tellsAMissingPageFromAFailure() {
+        statuses.add(404);
+
+        assertThatThrownBy(() -> http.get(url())).isInstanceOf(SourceNotFoundException.class);
+    }
+
+    @Test
+    void tellsNoFailureOfTheSiteAMissingPage() {
+        statuses.add(403);
+
+        assertThatThrownBy(() -> http.get(url()))
+                .isInstanceOf(IllegalStateException.class)
+                .isNotInstanceOf(SourceNotFoundException.class);
+    }
+
     private String url() {
         return "http://127.0.0.1:" + server.getAddress().getPort() + "/page";
     }

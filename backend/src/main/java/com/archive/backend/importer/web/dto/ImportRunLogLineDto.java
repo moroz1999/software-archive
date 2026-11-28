@@ -15,7 +15,8 @@ import org.jspecify.annotations.Nullable;
             ImportRunLogLineDto.Skipped.class,
             ImportRunLogLineDto.Failed.class,
             ImportRunLogLineDto.Author.class,
-            ImportRunLogLineDto.Place.class
+            ImportRunLogLineDto.Place.class,
+            ImportRunLogLineDto.Warning.class
         },
         discriminatorProperty = "kind",
         discriminatorMapping = {
@@ -26,7 +27,8 @@ import org.jspecify.annotations.Nullable;
             @DiscriminatorMapping(value = "skipped", schema = ImportRunLogLineDto.Skipped.class),
             @DiscriminatorMapping(value = "failed", schema = ImportRunLogLineDto.Failed.class),
             @DiscriminatorMapping(value = "author", schema = ImportRunLogLineDto.Author.class),
-            @DiscriminatorMapping(value = "place", schema = ImportRunLogLineDto.Place.class)
+            @DiscriminatorMapping(value = "place", schema = ImportRunLogLineDto.Place.class),
+            @DiscriminatorMapping(value = "warning", schema = ImportRunLogLineDto.Warning.class)
         })
 public sealed interface ImportRunLogLineDto {
 
@@ -108,6 +110,16 @@ public sealed interface ImportRunLogLineDto {
             ImportRunPlaceDto entry) implements ImportRunLogLineDto {
         public Place(long seq, @Nullable Instant at, ImportRunPlaceDto entry) {
             this(seq, at, "place", entry);
+        }
+    }
+
+    record Warning(
+            long seq,
+            @Nullable Instant at,
+            @Schema(allowableValues = "warning") String kind,
+            ImportRunWarningDto entry) implements ImportRunLogLineDto {
+        public Warning(long seq, @Nullable Instant at, ImportRunWarningDto entry) {
+            this(seq, at, "warning", entry);
         }
     }
 }

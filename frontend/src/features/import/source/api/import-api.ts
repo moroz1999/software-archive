@@ -1,5 +1,5 @@
 import {api, apiError} from '@/shared/api';
-import type {ImportRun} from '../model/import-run';
+import type {BkCatalogSection, ImportRun} from '../model/import-run';
 
 /** The codes of the sections of vektor-06c.ru an import can be started for: `GET /api/imports/vektor/sections`. */
 export async function fetchVektorSections(signal: AbortSignal): Promise<readonly string[]> {
@@ -30,6 +30,14 @@ export async function fetchBasisCategories(signal: AbortSignal): Promise<readonl
 /** Starts the import of one category of "Базис", or of the whole card index without one. */
 export async function startBasisImport(category: string | null): Promise<void> {
     const {error, response} = await api.POST('/api/imports/basis', {params: {query: {category}}});
+    if (error !== undefined) {
+        throw apiError(response, error);
+    }
+}
+
+/** Starts the import of one section of bk-catalog, or of the whole catalog without one. */
+export async function startBkCatalogImport(section: BkCatalogSection | null): Promise<void> {
+    const {error, response} = await api.POST('/api/imports/bk-catalog', section === null ? {} : {params: {query: {section}}});
     if (error !== undefined) {
         throw apiError(response, error);
     }

@@ -56,7 +56,7 @@ class JdbcCategoryReadRepositoryIT {
                         "Press",
                         "Applications",
                         "Series");
-        assertThat(tree.stream().flatMap(JdbcCategoryReadRepositoryIT::flatten)).hasSize(288);
+        assertThat(tree.stream().flatMap(JdbcCategoryReadRepositoryIT::flatten)).hasSize(290);
         assertThat(child(tree.get(5), "Intro").children())
                 .extracting(CategoryNode::title)
                 .containsExactly(

@@ -1,7 +1,9 @@
 -- The BK family (docs/domain/hardware.md): its computers, the SMK-512 controller, and BASIC and FOCAL, the
 -- interpreters in the ROM of the BK, in a group of their own.
+-- After the groups there are: an administrator may have added some of their own.
 INSERT INTO hardware_group (code, position)
-VALUES ('firmware', 7);
+SELECT 'firmware', COALESCE(MAX(position), 0) + 1
+FROM hardware_group;
 
 INSERT INTO hardware_group_name (group_code, language, name)
 VALUES ('firmware', 'en', 'ROM firmware'),

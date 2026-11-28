@@ -1,7 +1,9 @@
 package com.archive.backend.importer.infra;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,6 +12,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * A source archive as a test lines it up: answers by address, and remembers what was asked.
@@ -63,7 +67,7 @@ public class FakeSourceHttp implements SourceHttp {
         if (url.contains("/upload/") || url.contains("/scalar/media/")) {
             return upload(url);
         }
-        throw new IllegalStateException("Not found: " + url);
+        throw new SourceNotFoundException(url);
     }
 
     /** Any file the site keeps among its uploads: a picture or an archive by the extension of its name. */
@@ -84,7 +88,22 @@ public class FakeSourceHttp implements SourceHttp {
         if (name.endsWith(".rom") || name.endsWith(".com")) {
             return ("program " + name).getBytes(StandardCharsets.UTF_8);
         }
-        throw new IllegalStateException("Not found: " + url);
+        throw new SourceNotFoundException(url);
+    }
+
+    /** A ZIP archive of program files of these names, each holding its own name, so no two archives match. */
+    public static byte[] zip(String... names) {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (ZipOutputStream zip = new ZipOutputStream(bytes)) {
+            for (String name : names) {
+                zip.putNextEntry(new ZipEntry(name));
+                zip.write(("program " + name).getBytes(StandardCharsets.UTF_8));
+                zip.closeEntry();
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        return bytes.toByteArray();
     }
 
     /** A page as vektor-06c.ru served it, kept among the test resources. */

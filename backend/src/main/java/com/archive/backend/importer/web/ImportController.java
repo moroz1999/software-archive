@@ -9,12 +9,15 @@ import com.archive.backend.importer.app.ListVektorSectionsQuery;
 import com.archive.backend.importer.app.StartImportCommand;
 import com.archive.backend.importer.app.StartImportHandler;
 import com.archive.backend.importer.domain.basis.BasisCategory;
+import com.archive.backend.importer.domain.bkcatalog.BkCatalogSection;
 import com.archive.backend.importer.domain.run.ImportLogSeq;
 import com.archive.backend.importer.domain.run.ImportSource;
 import com.archive.backend.importer.domain.vektor.VektorSection;
 import com.archive.backend.importer.web.dto.LastImportRunDto;
 import com.archive.backend.importer.web.mapper.ImportWebMapper;
 import com.archive.backend.user.domain.Actor;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
@@ -77,6 +80,18 @@ public class ImportController {
     public ResponseEntity<Void> startBasis(Actor actor, @RequestParam(required = false) @Nullable String category) {
         startImport.handle(new StartImportCommand(
                 actor, ImportSource.BASIS, category == null ? null : new BasisCategory(category)));
+        return ResponseEntity.accepted().build();
+    }
+
+    /** Starts the import of the whole of bk-catalog, or of one section by its code; it runs on alone. */
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    @PostMapping("/bk-catalog")
+    public ResponseEntity<Void> startBkCatalog(
+            Actor actor,
+            @RequestParam(required = false) @Parameter(schema = @Schema(ref = "BkCatalogSection")) @Nullable
+                    String section) {
+        startImport.handle(new StartImportCommand(
+                actor, ImportSource.BK_CATALOG, section == null ? null : BkCatalogSection.fromCode(section)));
         return ResponseEntity.accepted().build();
     }
 }

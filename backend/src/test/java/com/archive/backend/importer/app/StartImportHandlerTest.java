@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 import com.archive.backend.importer.domain.ImportRunningException;
 import com.archive.backend.importer.domain.ImportSummary;
 import com.archive.backend.importer.domain.basis.BasisCategory;
+import com.archive.backend.importer.domain.bkcatalog.BkCatalogSection;
 import com.archive.backend.importer.domain.run.ImportRun;
 import com.archive.backend.importer.domain.run.ImportRunRepository;
 import com.archive.backend.importer.domain.run.ImportRunState;
@@ -44,11 +45,12 @@ class StartImportHandlerTest {
     private final Executor executor = background::add;
     private final ImportVektorHandler importer = mock(ImportVektorHandler.class);
     private final ImportBasisHandler basisImporter = mock(ImportBasisHandler.class);
+    private final ImportBkCatalogHandler bkCatalogImporter = mock(ImportBkCatalogHandler.class);
     private final ImportRunRepository runs = mock(ImportRunRepository.class);
     private final EndImportRunHandler endRun = mock(EndImportRunHandler.class);
     private final Clock clock = Clock.fixed(Instant.parse("2026-11-14T10:00:00Z"), ZoneOffset.UTC);
     private final StartImportHandler handler =
-            new StartImportHandler(importer, basisImporter, runs, endRun, clock, executor);
+            new StartImportHandler(importer, basisImporter, bkCatalogImporter, runs, endRun, clock, executor);
 
     private static ImportVektorCommand of(@Nullable VektorSection section) {
         return argThat(command -> Objects.equals(command.section(), section));
@@ -171,6 +173,19 @@ class StartImportHandlerTest {
         assertThat(saved.getValue().getScope()).isEqualTo(new ImportScope("caglrc.cc", arcade));
         background.poll().run();
         verify(basisImporter).handle(new ImportBasisCommand(saved.getValue().getId(), arcade));
+        verify(importer, never()).handle(any());
+    }
+
+    @Test
+    void importsOneSectionOfBkCatalogAndWritesItInTheRunScope() {
+        handler.handle(new StartImportCommand(ADMIN, ImportSource.BK_CATALOG, BkCatalogSection.GAMES));
+
+        ArgumentCaptor<ImportRun> saved = ArgumentCaptor.forClass(ImportRun.class);
+        verify(runs).save(saved.capture());
+        assertThat(saved.getValue().getScope()).isEqualTo(new ImportScope("bk-catalog", BkCatalogSection.GAMES));
+        background.poll().run();
+        verify(bkCatalogImporter)
+                .handle(new ImportBkCatalogCommand(saved.getValue().getId(), BkCatalogSection.GAMES));
         verify(importer, never()).handle(any());
     }
 
