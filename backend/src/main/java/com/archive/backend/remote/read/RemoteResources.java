@@ -5,7 +5,7 @@ public interface RemoteResources {
 
     FetchedPage fetchPage(String url, int maxBytes);
 
-    /** A PNG, JPEG, GIF or WebP of at most {@code maxBytes}; anything else is refused. */
+    /** A PNG, JPEG, GIF, WebP or BMP of at most {@code maxBytes}; anything else is refused. */
     ViewedImage viewImage(String url, int maxBytes);
 
     /** The file into a temporary one, refused past {@code maxBytes} or on a status other than success. */

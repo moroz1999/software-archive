@@ -10,14 +10,14 @@ const B = '00000000-0000-0000-0055-000000000002';
 const C = '00000000-0000-0000-0055-000000000003';
 
 describe(screenshotFileProblem, () => {
-    it('takes PNG, JPEG, GIF and WebP pictures', () => {
-        for (const type of ['image/png', 'image/jpeg', 'image/gif', 'image/webp']) {
+    it('takes PNG, JPEG, GIF, WebP and BMP pictures', () => {
+        for (const type of ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/bmp']) {
             expect(screenshotFileProblem(file(type))).toBeNull();
         }
     });
 
     it('refuses any other kind of file', () => {
-        expect(screenshotFileProblem(file('image/bmp'))).toBe('format');
+        expect(screenshotFileProblem(file('image/tiff'))).toBe('format');
         expect(screenshotFileProblem(file('text/plain'))).toBe('format');
         expect(screenshotFileProblem(file(''))).toBe('format');
     });

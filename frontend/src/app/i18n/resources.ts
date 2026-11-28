@@ -360,11 +360,11 @@ export const resources = {
         screenshots: {
             heading: 'Screenshots', numbered: 'Screenshot {{n}}', nOfCount: 'Screenshot {{n}} of {{count}}',
             previous: 'Previous screenshot', next: 'Next screenshot', none: 'No screenshots yet.', add: 'Add screenshots',
-            hint: 'PNG, JPEG, GIF or WebP, up to 10 MB each.',
+            hint: 'PNG, JPEG, GIF, WebP or BMP, up to 10 MB each.',
             moveLeft: 'Move screenshot {{n}} left', moveRight: 'Move screenshot {{n}} right', delete: 'Delete screenshot {{n}}',
             deleteTitle: 'Delete screenshot', deleteQuestion: 'Delete screenshot {{n}} from the archive?',
             errors: {
-                format: 'Only PNG, JPEG, GIF and WebP pictures can be screenshots.', size: 'A screenshot can be at most 10 MB.',
+                format: 'Only PNG, JPEG, GIF, WebP and BMP pictures can be screenshots.', size: 'A screenshot can be at most 10 MB.',
                 orderOutdated: 'The screenshots have changed meanwhile; here they are as they are now.',
             },
         },
@@ -749,11 +749,11 @@ export const resources = {
         screenshots: {
             heading: 'Скриншоты', numbered: 'Скриншот {{n}}', nOfCount: 'Скриншот {{n}} из {{count}}',
             previous: 'Предыдущий скриншот', next: 'Следующий скриншот', none: 'Скриншотов пока нет.', add: 'Добавить скриншоты',
-            hint: 'PNG, JPEG, GIF или WebP, до 10 МБ каждый.',
+            hint: 'PNG, JPEG, GIF, WebP или BMP, до 10 МБ каждый.',
             moveLeft: 'Сдвинуть скриншот {{n}} влево', moveRight: 'Сдвинуть скриншот {{n}} вправо', delete: 'Удалить скриншот {{n}}',
             deleteTitle: 'Удалить скриншот', deleteQuestion: 'Удалить скриншот {{n}} из архива?',
             errors: {
-                format: 'Скриншотом может быть только картинка PNG, JPEG, GIF или WebP.', size: 'Скриншот может весить не больше 10 МБ.',
+                format: 'Скриншотом может быть только картинка PNG, JPEG, GIF, WebP или BMP.', size: 'Скриншот может весить не больше 10 МБ.',
                 orderOutdated: 'Скриншоты успели измениться; вот они такими, какие есть сейчас.',
             },
         },

@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** A picture of another site to look at: a PNG, JPEG, GIF or WebP of at most 5 MB. */
+/** A picture of another site to look at: a PNG, JPEG, GIF, WebP or BMP of at most 5 MB. */
 @Service
 @RequiredArgsConstructor
 public class ViewImageHandler {

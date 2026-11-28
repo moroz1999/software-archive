@@ -25,6 +25,10 @@ public final class ScreenshotImages {
         return "RIFF\u0000\u0000\u0000\u0000WEBPVP8 ".getBytes(StandardCharsets.ISO_8859_1);
     }
 
+    public static byte[] bmp() {
+        return new byte[] {'B', 'M', 0x3A, 0, 0, 0, 0, 0, 0, 0, 0x36, 0};
+    }
+
     public static byte[] text() {
         return "not a picture at all".getBytes(StandardCharsets.ISO_8859_1);
     }

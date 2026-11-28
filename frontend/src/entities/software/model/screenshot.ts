@@ -7,7 +7,7 @@ export type Gallery = 'screenshots' | 'maps' | 'covers' | 'adverts';
 export type Screenshot = components['schemas']['ScreenshotDto'];
 
 /** The kinds of pictures a screenshot may be, as browsers name them. */
-export const SCREENSHOT_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'] as const;
+export const SCREENSHOT_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/bmp'] as const;
 
 /** The largest picture of a screenshot: 10 MB. */
 export const SCREENSHOT_MAX_BYTES = 10 * 1024 * 1024;

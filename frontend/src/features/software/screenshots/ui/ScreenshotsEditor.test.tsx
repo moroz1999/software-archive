@@ -51,7 +51,7 @@ describe(ScreenshotsEditor, () => {
 
         await expect(shownUrls()).resolves.toStrictEqual([A.url, B.url, C.url]);
         expect(screen.getByRole('img', {name: 'Screenshot 2'})).toBeInTheDocument();
-        expect(screen.getByText('PNG, JPEG, GIF or WebP, up to 10 MB each.')).toBeInTheDocument();
+        expect(screen.getByText('PNG, JPEG, GIF, WebP or BMP, up to 10 MB each.')).toBeInTheDocument();
     });
 
     it('moves no screenshot past an end', async () => {
@@ -153,9 +153,9 @@ describe(ScreenshotsEditor, () => {
         renderEditor();
         await shownUrls();
 
-        await userEvent.upload(screen.getByLabelText('Add screenshots'), [PNG, new File(['bmp'], 'old.bmp', {type: 'image/bmp'})], {applyAccept: false});
+        await userEvent.upload(screen.getByLabelText('Add screenshots'), [PNG, new File(['tiff'], 'old.tiff', {type: 'image/tiff'})], {applyAccept: false});
 
-        expect(screen.getByText('Only PNG, JPEG, GIF and WebP pictures can be screenshots.')).toBeInTheDocument();
+        expect(screen.getByText('Only PNG, JPEG, GIF, WebP and BMP pictures can be screenshots.')).toBeInTheDocument();
 
         await userEvent.upload(screen.getByLabelText('Add screenshots'), new File([new Uint8Array(10 * 1024 * 1024 + 1)], 'huge.png', {type: 'image/png'}));
 
@@ -173,7 +173,7 @@ describe(ScreenshotsEditor, () => {
 
         await userEvent.upload(screen.getByLabelText('Add screenshots'), PNG);
 
-        await expect(screen.findByText('Only PNG, JPEG, GIF and WebP pictures can be screenshots.')).resolves.toBeInTheDocument();
+        await expect(screen.findByText('Only PNG, JPEG, GIF, WebP and BMP pictures can be screenshots.')).resolves.toBeInTheDocument();
     });
 
     it('tells a visitor to sign in and someone who may not that they may not', async () => {

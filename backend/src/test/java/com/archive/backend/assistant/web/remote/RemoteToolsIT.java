@@ -14,10 +14,13 @@ import com.archive.backend.shared.domain.Language;
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.user.TestActors;
 import com.jayway.jsonpath.DocumentContext;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
 import java.util.UUID;
+import javax.imageio.ImageIO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,7 +54,8 @@ class RemoteToolsIT {
                         200,
                         Map.of("Content-Type", "text/html; charset=utf-8"),
                         "<h1>Elite</h1>".getBytes(StandardCharsets.UTF_8))
-                .serve("/shot.png", 200, Map.of("Content-Type", "image/png"), png);
+                .serve("/shot.png", 200, Map.of("Content-Type", "image/png"), png)
+                .serve("/shot.bmp", 200, Map.of("Content-Type", "image/bmp"), TestImages.bmp(8, 6));
     }
 
     @AfterEach
@@ -82,6 +86,27 @@ class RemoteToolsIT {
         assertThat(image.read("$.mediaType", String.class)).isEqualTo("image/png");
         assertThat(Base64.getDecoder().decode(image.read("$.data", String.class)))
                 .isEqualTo(png);
+    }
+
+    @Test
+    void copiesABmpScreenshotAndShowsItToTheModelAsAPng() throws Exception {
+        UUID software = calls.write("create_software", "{\"title\": \"Elite\", \"platform\": \"vector\"}", MEMBER)
+                .uuid();
+        calls.write("add_screenshots", """
+                {"softwareId": "%s", "releaseId": null, "urls": ["%s"]}
+                """.formatted(software, site.url("/shot.bmp")), MEMBER);
+        String screenshot = ToolJson.of(calls.read("get_software", "{\"id\": \"%s\"}".formatted(software), MEMBER))
+                .read("$.screenshots[0].id", String.class);
+
+        for (String arguments : new String[] {url("/shot.bmp"), "{\"screenshotId\": \"%s\"}".formatted(screenshot)}) {
+            DocumentContext image = ToolJson.of(calls.read("view_image", arguments, MEMBER));
+
+            assertThat(image.read("$.mediaType", String.class)).isEqualTo("image/png");
+            BufferedImage shown = ImageIO.read(
+                    new ByteArrayInputStream(Base64.getDecoder().decode(image.read("$.data", String.class))));
+            assertThat(shown.getWidth()).isEqualTo(8);
+            assertThat(shown.getHeight()).isEqualTo(6);
+        }
     }
 
     @Test

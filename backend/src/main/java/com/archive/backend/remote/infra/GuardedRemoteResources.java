@@ -130,7 +130,7 @@ public class GuardedRemoteResources implements RemoteResources {
             }
             String type = imageType(bytes);
             if (type == null) {
-                throw new RemoteRequestRefusedException("Not a PNG, JPEG, GIF or WebP picture: " + url);
+                throw new RemoteRequestRefusedException("Not a PNG, JPEG, GIF, WebP or BMP picture: " + url);
             }
             return new ViewedImage(type, Base64.getEncoder().encodeToString(bytes));
         }
@@ -329,6 +329,9 @@ public class GuardedRemoteResources implements RemoteResources {
                 && b[10] == 'B'
                 && b[11] == 'P') {
             return "image/webp";
+        }
+        if (starts(b, 'B', 'M')) {
+            return "image/bmp";
         }
         return null;
     }

@@ -18,6 +18,7 @@ class ScreenshotImageTest {
         assertThat(ScreenshotImages.image(ScreenshotImages.jpeg()).format()).isEqualTo(ScreenshotFormat.JPEG);
         assertThat(ScreenshotImages.image(ScreenshotImages.gif()).format()).isEqualTo(ScreenshotFormat.GIF);
         assertThat(ScreenshotImages.image(ScreenshotImages.webp()).format()).isEqualTo(ScreenshotFormat.WEBP);
+        assertThat(ScreenshotImages.image(ScreenshotImages.bmp()).format()).isEqualTo(ScreenshotFormat.BMP);
     }
 
     @Test

@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
- * The picture of a screenshot as uploaded, kept byte for byte: a PNG, JPEG, GIF or WebP by its content, of at most
+ * The picture of a screenshot as uploaded, kept byte for byte: a PNG, JPEG, GIF, WebP or BMP by its content, of at most
  * {@link #MAX_BYTES} (docs/domain/software.md#screenshots). It is judged by its first bytes and its size; the whole
  * picture is only streamed to where it is kept.
  */
@@ -56,6 +56,9 @@ public final class ScreenshotImage {
         }
         if (startsWith(bytes, 0, ascii("RIFF")) && startsWith(bytes, 8, ascii("WEBP"))) {
             return ScreenshotFormat.WEBP;
+        }
+        if (startsWith(bytes, 0, ascii("BM"))) {
+            return ScreenshotFormat.BMP;
         }
         throw new ScreenshotFormatUnsupportedException();
     }

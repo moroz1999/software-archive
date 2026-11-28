@@ -10,7 +10,8 @@ public enum ScreenshotFormat {
     PNG("png"),
     JPEG("jpeg"),
     GIF("gif"),
-    WEBP("webp");
+    WEBP("webp"),
+    BMP("bmp");
 
     private final String code;
 

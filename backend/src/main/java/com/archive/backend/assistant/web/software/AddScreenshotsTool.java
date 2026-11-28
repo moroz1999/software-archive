@@ -50,7 +50,7 @@ public class AddScreenshotsTool implements WriteTool<AddScreenshotsArguments> {
     @Override
     public String description() {
         return "Adds screenshots to software, or to its release when releaseId is given, from pictures of another site: a"
-                + " PNG, JPEG, GIF or WebP of at most 10 MB each, all of them or none. The plan shows the screenshots"
+                + " PNG, JPEG, GIF, WebP or BMP of at most 10 MB each, all of them or none. The plan shows the screenshots"
                 + " there are.";
     }
 
