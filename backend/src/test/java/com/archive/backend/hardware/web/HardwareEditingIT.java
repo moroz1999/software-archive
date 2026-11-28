@@ -68,15 +68,25 @@ class HardwareEditingIT {
         mvc.perform(get("/api/hardware-groups").header("Accept-Language", "ru"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].code")
-                        .value(contains("computers", "storage", "dos", "sound", "controls", "expansion")))
+                        .value(contains("computers", "storage", "dos", "sound", "controls", "expansion", "firmware")))
                 .andExpect(jsonPath("$[*].name")
-                        .value(contains("Компьютеры", "Носители", "DOS", "Звук", "Управление", "Расширения")))
+                        .value(contains(
+                                "Компьютеры", "Носители", "DOS", "Звук", "Управление", "Расширения", "Прошивка ПЗУ")))
                 .andExpect(jsonPath(computers + ".hardware[*].name")
-                        .value(containsInAnyOrder("Вектор Старт-1200", "Вектор-06Ц", "Криста-2", "ПК-6128Ц")))
+                        .value(containsInAnyOrder(
+                                "Вектор Старт-1200",
+                                "Вектор-06Ц",
+                                "Криста-2",
+                                "ПК-6128Ц",
+                                "БК-0010",
+                                "БК-0010-01",
+                                "БК-0011",
+                                "БК-0011М",
+                                "AZБК")))
                 .andExpect(jsonPath("$[?(@.code == 'dos')].hardware[*]").value(empty()));
         mvc.perform(get("/api/hardware-groups").header("Accept-Language", "en"))
                 .andExpect(jsonPath("$[0].name").value("Computers"))
-                .andExpect(jsonPath("$[0].hardware[0].name").value("Krista-2"));
+                .andExpect(jsonPath("$[0].hardware[0].name").value("AZBK"));
     }
 
     @Test
@@ -94,9 +104,9 @@ class HardwareEditingIT {
                 .andExpect(jsonPath("$.names.ru").value("Видео"))
                 .andExpect(jsonPath("$.names.en").value("Video"));
         mvc.perform(get("/api/hardware-groups").header("Accept-Language", "en"))
-                .andExpect(jsonPath("$[6].code").value("video"))
-                .andExpect(jsonPath("$[6].name").value("Video"))
-                .andExpect(jsonPath("$[6].hardware").value(empty()));
+                .andExpect(jsonPath("$[7].code").value("video"))
+                .andExpect(jsonPath("$[7].name").value("Video"))
+                .andExpect(jsonPath("$[7].hardware").value(empty()));
     }
 
     @Test

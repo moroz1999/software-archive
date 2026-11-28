@@ -221,9 +221,9 @@ class FixturesIT {
     }
 
     @Test
-    void noPlatformButTheVectorFamilyHasHardwareYet() throws Exception {
+    void noPlatformButTheVectorAndBkFamiliesHasHardwareYet() throws Exception {
         for (String platform : new String[] {
-            "agat", "bashkiria", "bk", "korvet", "lviv", "msx", "okean", "orion", "pk8000", "rk", "specialist", "xt"
+            "agat", "bashkiria", "korvet", "lviv", "msx", "okean", "orion", "pk8000", "rk", "specialist", "xt"
         }) {
             mvc.perform(get("/api/hardware").param("platform", platform))
                     .andExpect(status().isOk())

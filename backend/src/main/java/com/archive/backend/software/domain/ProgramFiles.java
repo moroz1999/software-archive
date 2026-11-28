@@ -7,11 +7,14 @@ import java.util.Set;
 
 /**
  * The files that make a release of a platform, by which an import knows a program it has met before
- * (docs/domain/imports.md#software): its executable files, and on Vector floppy images and tape recordings too.
+ * (docs/domain/imports.md#software): its executable files, its floppy images and tape recordings, and on BK the
+ * programs of BASIC and FOCAL too. A file without an extension is never one.
  */
 public final class ProgramFiles {
 
-    private static final Map<String, Set<String>> MEDIA = Map.of("vector", Set.of("fdd", "cas", "wav"));
+    private static final Map<String, Set<String>> MEDIA = Map.of(
+            "vector", Set.of("fdd", "cas", "wav"),
+            "bk", Set.of("bkd", "img", "dsk", "wav", "tap", "cod", "asc", "foc"));
 
     private ProgramFiles() {}
 

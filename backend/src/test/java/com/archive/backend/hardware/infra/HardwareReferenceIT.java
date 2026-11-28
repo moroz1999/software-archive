@@ -17,10 +17,18 @@ class HardwareReferenceIT {
     private JdbcTemplate jdbc;
 
     @Test
-    void holdsOnlyTheHardwareOfTheVectorFamily() {
+    void holdsOnlyTheHardwareOfTheVectorAndBkFamilies() {
         assertThat(jdbc.queryForList(
                         "SELECT hardware_code || ':' || platform_code FROM hardware_platform ORDER BY 1", String.class))
-                .containsExactly(
+                .containsExactlyInAnyOrder(
+                        "azbk:bk",
+                        "basic:bk",
+                        "bk0010:bk",
+                        "bk0010-01:bk",
+                        "bk0011:bk",
+                        "bk0011m:bk",
+                        "focal:bk",
+                        "smk512:bk",
                         "ay8910:vector",
                         "barkar:vector",
                         "beeper:vector",
@@ -37,7 +45,15 @@ class HardwareReferenceIT {
                         "vi53:vector",
                         "z80:vector");
         assertThat(jdbc.queryForList("SELECT code FROM hardware ORDER BY 1", String.class))
-                .containsExactly(
+                .containsExactlyInAnyOrder(
+                        "azbk",
+                        "basic",
+                        "bk0010",
+                        "bk0010-01",
+                        "bk0011",
+                        "bk0011m",
+                        "focal",
+                        "smk512",
                         "ay8910",
                         "barkar",
                         "beeper",
@@ -58,8 +74,26 @@ class HardwareReferenceIT {
     @Test
     void holdsTheModelsAndClonesOfTheVectorFamilyAsItsComputers() {
         assertThat(jdbc.queryForList(
-                        "SELECT code FROM hardware WHERE hardware_group = 'computers' ORDER BY 1", String.class))
+                        "SELECT h.code FROM hardware h JOIN hardware_platform p ON p.hardware_code = h.code"
+                                + " WHERE p.platform_code = 'vector' AND h.hardware_group = 'computers' ORDER BY 1",
+                        String.class))
                 .containsExactly("krista2", "pk6128c", "start1200", "vector06c");
+    }
+
+    @Test
+    void holdsTheModelsAndClonesOfTheBkFamilyAsItsComputersAndTheSmk512AsItsExpansion() {
+        assertThat(jdbc.queryForList(
+                        "SELECT h.code || ':' || h.hardware_group FROM hardware h"
+                                + " JOIN hardware_platform p ON p.hardware_code = h.code"
+                                + " WHERE p.platform_code = 'bk' AND h.hardware_group IN ('computers', 'expansion')",
+                        String.class))
+                .containsExactlyInAnyOrder(
+                        "azbk:computers",
+                        "bk0010:computers",
+                        "bk0010-01:computers",
+                        "bk0011:computers",
+                        "bk0011m:computers",
+                        "smk512:expansion");
     }
 
     @Test

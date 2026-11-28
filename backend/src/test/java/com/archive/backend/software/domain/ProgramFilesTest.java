@@ -12,6 +12,8 @@ class ProgramFilesTest {
 
     private static final PlatformCode VECTOR = new PlatformCode("vector");
 
+    private static final PlatformCode BK = new PlatformCode("bk");
+
     @Test
     void areTheRomFilesFloppyImagesAndTapeRecordingsOfVectorWhateverTheCaseOfTheirNames() {
         ReleaseFile root = zip(
@@ -45,8 +47,37 @@ class ProgramFilesTest {
     }
 
     @Test
+    void areTheBinaryFilesFloppyImagesTapeRecordingsAndBasicAndFocalProgramsOfBkWhateverTheCaseOfTheirNames() {
+        ReleaseFile root = zip(
+                "bundle.zip",
+                file("LPUFF.BIN", "a"),
+                file("module1.ovl", "b"),
+                file("LITTLE.GME", "c"),
+                directory("disks", file("GAMES.BKD", "d"), file("andos.img", "e"), file("sabot2.Dsk", "f")),
+                file("river.wav", "1"),
+                file("river.tap", "2"),
+                file("ARTIL.COD", "3"),
+                file("artil.asc", "4"),
+                file("calc.foc", "5"),
+                file("readme.txt", "6"));
+
+        assertThat(ProgramFiles.of(BK, root))
+                .containsExactlyInAnyOrder(
+                        hash("a"), hash("b"), hash("c"), hash("d"), hash("e"), hash("f"), hash("1"), hash("2"),
+                        hash("3"), hash("4"), hash("5"));
+    }
+
+    @Test
+    void neverAreTheFilesWithoutAnExtensionOfBk() {
+        ReleaseFile root = zip(
+                "solit.zip", file("SOLIT.BIN", "a"), file("SOLIT-A", "b"), file("LICENSE", "c"), file("Makefile", "d"));
+
+        assertThat(ProgramFiles.of(BK, root)).containsExactly(hash("a"));
+    }
+
+    @Test
     void isNothingOnAPlatformThatHasNoProgramFilesYet() {
-        assertThat(ProgramFiles.of(new PlatformCode("bk"), zip("bundle.zip", file("ELITE.ROM", "a"))))
+        assertThat(ProgramFiles.of(new PlatformCode("orion"), zip("bundle.zip", file("ELITE.ROM", "a"))))
                 .isEmpty();
     }
 

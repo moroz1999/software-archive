@@ -7,7 +7,9 @@ import java.util.Set;
 /** Which file names each platform executes directly: fixed per platform, kept here rather than edited. */
 public final class ExecutableFiles {
 
-    private static final Map<String, Set<String>> EXTENSIONS = Map.of("vector", Set.of("rom", "com", "r0m", "vec"));
+    private static final Map<String, Set<String>> EXTENSIONS = Map.of(
+            "vector", Set.of("rom", "com", "r0m", "vec"),
+            "bk", Set.of("bin", "ovl", "gme"));
 
     private ExecutableFiles() {}
 

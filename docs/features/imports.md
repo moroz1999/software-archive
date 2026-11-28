@@ -5,7 +5,7 @@ Every source archive has a parser of its own that only reads the source and hand
 ## Finding a program
 
 - First by origin: `external_origin` (archive, `SOFTWARE`, id).
-- Otherwise by its file. The file is parsed with the release file parser and `ProgramFiles` takes the digests of its program files: by extension, whatever the case, fixed per platform in code (Vector: `rom`, `fdd`, `cas`, `wav`), never looking into a program file. `ReleaseFileTrees` gives the stored trees of releases of the same platform holding any of those digests, and the first whose program files are the same set is the program. A file without program files matches nothing. A match is remembered as an origin of this source too.
+- Otherwise by its file. The file is parsed with the release file parser and `ProgramFiles` takes the digests of its program files: by extension, whatever the case, fixed per platform in code (Vector: `rom`, `com`, `r0m`, `vec`, `fdd`, `cas`, `wav`; BK: `bin`, `ovl`, `gme`, `bkd`, `img`, `dsk`, `wav`, `tap`, `cod`, `asc`, `foc`), never looking into a program file. `ReleaseFileTrees` gives the stored trees of releases of the same platform holding any of those digests, and the first whose program files are the same set is the program. A file without program files matches nothing. A match is remembered as an origin of this source too.
 - Otherwise the program is added: software, its one original release with the file, the screenshots (one per size), the credits and the origin with the address of its page.
 
 ## Adding to a program found
