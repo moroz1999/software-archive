@@ -71,6 +71,24 @@ ON CONFLICT (id) DO UPDATE
         platform_code = EXCLUDED.platform_code,
         added_by      = EXCLUDED.added_by;
 
+-- Lineage (docs/domain/software.md#lineage): Lode Runner on BK a reliable port of the Apple II game, with a link in
+-- its original; Tetris on BK a clone of an original not reliably known; every other fixture of unknown lineage.
+UPDATE software
+SET lineage_kind        = CASE id
+                              WHEN '00000000-0000-0000-0001-000000000005' THEN 'port'
+                              WHEN '00000000-0000-0000-0001-000000000004' THEN 'clone' END,
+    lineage_reliability = CASE id WHEN '00000000-0000-0000-0001-000000000005' THEN 'reliable' END,
+    lineage_rework      = CASE id
+                              WHEN '00000000-0000-0000-0001-000000000005'
+                                  THEN ARRAY ['original-material-used', 'graphics-and-sound-changed']
+                              ELSE '{}' END,
+    lineage_source      = CASE id
+                              WHEN '00000000-0000-0000-0001-000000000005'
+                                  THEN 'Lode Runner (Broderbund, 1983), Apple II, https://www.mobygames.com/game/261/lode-runner/'
+                              WHEN '00000000-0000-0000-0001-000000000004'
+                                  THEN 'Tetris (Alexey Pajitnov, 1984), Elektronika-60' END
+WHERE id::text LIKE '00000000-0000-0000-0001-%';
+
 INSERT INTO software_links (id, software_id, type, url)
 VALUES ('00000000-0000-0000-0059-000000000001', '00000000-0000-0000-0001-000000000001',
         'homepage', 'https://example.org/elite/')

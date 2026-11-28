@@ -19,6 +19,9 @@ import com.archive.backend.importer.domain.run.TakenAuthor;
 import com.archive.backend.search.domain.CatalogOrder;
 import com.archive.backend.search.domain.FoundKind;
 import com.archive.backend.shared.domain.Language;
+import com.archive.backend.software.domain.LineageKind;
+import com.archive.backend.software.domain.LineageReliability;
+import com.archive.backend.software.domain.LineageRework;
 import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.ReleaseType;
 import com.archive.backend.software.domain.SoftwareCreditDraft;
@@ -79,6 +82,9 @@ class OpenApiConfig {
     static final SortedMap<String, List<String>> VALUE_SETS = new TreeMap<>(Map.ofEntries(
             entry("ReleaseType", codes(ReleaseType.values(), ReleaseType::code)),
             entry("PreservationStatus", codes(PreservationStatus.values(), PreservationStatus::code)),
+            entry("LineageKind", codes(LineageKind.values(), LineageKind::code)),
+            entry("LineageReliability", codes(LineageReliability.values(), LineageReliability::code)),
+            entry("LineageRework", codes(LineageRework.values(), LineageRework::code)),
             entry("SoftwareReferenceType", codes(SoftwareReferenceType.values(), SoftwareReferenceType::code)),
             entry("SoftwareLinkType", codes(SoftwareLinkType.values(), SoftwareLinkType::code)),
             entry("CreditRole", SoftwareCreditDraft.ALLOWED_ROLES),

@@ -8,7 +8,7 @@ import {loadReleaseEditPage, preloadReleaseEditPage} from '../index';
 
 const ID = '00000000-0000-0000-0001-000000000001';
 const RELEASE = '00000000-0000-0000-0007-000000000002';
-const ELITE = {id: ID, title: 'Elite', description: null, releaseDate: null, platform: {code: 'vector', name: 'Vector'}, hardware: [], categories: [], credits: [], sources: [], links: [], preservation: 'unknown', instructions: null, compilationItems: [], compilations: [], origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true};
+const ELITE = {id: ID, title: 'Elite', description: null, releaseDate: null, platform: {code: 'vector', name: 'Vector'}, hardware: [], categories: [], credits: [], sources: [], links: [], preservation: 'unknown', instructions: null, lineage: {kind: null, reliability: null, rework: [], source: null}, compilationItems: [], compilations: [], origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true};
 const AY = {code: 'ay8910', name: 'AY-3-8910', group: 'sound', groupName: 'Sound'};
 const SHOT = {id: '00000000-0000-0000-0055-000000000001', url: '/api/screenshots/00000000-0000-0000-0055-000000000001'};
 const ARCHIVE = {fileName: 'elite-ay.zip', size: 1536, url: `/api/software/${ID}/releases/${RELEASE}/archive`};

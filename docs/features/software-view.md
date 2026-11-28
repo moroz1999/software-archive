@@ -10,6 +10,7 @@ The page of one software ([domain/software.md](../domain/software.md)) at `/soft
 - Platform: the software's platform.
 - Rating, under the details: the stars alone, the number of votes in their tooltip ("3 votes", "No votes yet."); a signed-in user gives their stars on them, sees their own vote as a number to the right of them and withdraws it with the cross after it; a refusal of the vote is shown under them ([voting.md](voting.md)).
 - Preservation status: left out while unknown.
+- Lineage: "Port with changes (reliable); graphics and sound changed" — the kind, its reliability in brackets, the nature of the rework after a semicolon —, and "Original" under it, its text with every `http(s)://` address in it as a link. Unknown parts are left out, the section while the lineage is unknown.
 - Categories: each category of the software with its whole branch from the top of the tree, one line of chips joined by "›" per category (`Games › Action › Shooters`), in the order of the tree; the section is left out without categories.
 - Developer, Publisher and Authors show the [software credits](../domain/software.md#credits), with role chips in Authors for known roles. A person or group leads to their page and a label always leads to its own page ([label-view.md](label-view.md)).
 - "Included in compilations" links to collections that include the software. It appears when it has links.

@@ -82,7 +82,9 @@ public class UpdateSoftwareTool implements WriteTool<UpdateSoftwareArguments> {
                 Changes.given(a.hardware(), current.hardware()),
                 Changes.given(a.categoryIds(), current.categoryIds()),
                 Changes.given(SoftwareForms.credits(a.credits()), SoftwareForms.currentCredits(current.credits())),
-                Changes.given(a.preservation(), current.preservation()));
+                Changes.given(a.preservation(), current.preservation()),
+                null,
+                current.lineage());
         handler.handle(mapper.toUpdate(context.actor(), a.id(), request, SoftwareUrl.ofNullable(a.sourceUrl())));
         return Written.of(a.id());
     }

@@ -113,6 +113,7 @@ describe(SoftwareForm, () => {
             credits: [],
             preservation: 'unknown',
             instructions: null,
+            lineage: {kind: null, reliability: null, rework: [], source: null},
         });
     });
 
@@ -143,6 +144,115 @@ describe(SoftwareForm, () => {
         await userEvent.click(screen.getByRole('button', {name: 'Save'}));
 
         expect(onSubmit).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({preservation: 'missing-in-action'}));
+    });
+
+    it('offers the lineage in a section of its own, unknown until it is known', () => {
+        renderForm();
+
+        const lineage = screen.getByRole('region', {name: 'Lineage'});
+
+        expect(within(lineage).getByRole('combobox', {name: 'Kind'})).toHaveDisplayValue('Unknown');
+        expect(within(lineage).getByRole('combobox', {name: 'Reliability'})).toHaveDisplayValue('Unknown');
+        expect(within(within(lineage).getByRole('group', {name: 'Nature of the rework'})).getAllByRole('checkbox')).toHaveLength(5);
+        expect(within(lineage).getByRole('textbox', {name: 'Original'})).toHaveValue('');
+    });
+
+    it('puts the lineage between the classification and the credits', () => {
+        renderForm();
+
+        const lineage = screen.getByRole('region', {name: 'Lineage'});
+
+        expect(screen.getByRole('region', {name: 'Classification'}).compareDocumentPosition(lineage) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+        expect(lineage.compareDocumentPosition(screen.getByRole('region', {name: 'Credits'})) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+
+    it('submits the lineage chosen', async () => {
+        const {onSubmit} = renderForm();
+
+        await userEvent.type(screen.getByRole('textbox', {name: 'Title'}), 'Elite');
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Platform'}), 'BK');
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Kind'}), 'Port with changes');
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Reliability'}), 'Assumption');
+        await userEvent.click(screen.getByRole('checkbox', {name: 'Graphics and sound changed'}));
+        await userEvent.click(screen.getByRole('checkbox', {name: 'New levels added'}));
+        await userEvent.type(screen.getByRole('textbox', {name: 'Original'}), 'Elite (Acornsoft, 1984), BBC Micro');
+        await userEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        expect(onSubmit).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
+            lineage: {
+                kind: 'port-with-changes',
+                reliability: 'assumption',
+                rework: ['graphics-and-sound-changed', 'new-levels-added'],
+                source: 'Elite (Acornsoft, 1984), BBC Micro',
+            },
+        }));
+    });
+
+    it('locks the reliability and the rework while the kind is unknown', async () => {
+        renderForm();
+
+        expect(screen.getByRole('combobox', {name: 'Reliability'})).toBeDisabled();
+        expect(screen.getByRole('checkbox', {name: 'New levels added'})).toBeDisabled();
+
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Kind'}), 'Remake');
+
+        expect(screen.getByRole('combobox', {name: 'Reliability'})).toBeEnabled();
+        expect(screen.getByRole('checkbox', {name: 'New levels added'})).toBeEnabled();
+    });
+
+    it('clears the reliability and the rework when the kind is made unknown again', async () => {
+        const {onSubmit} = renderForm();
+        const kind = screen.getByRole('combobox', {name: 'Kind'});
+
+        await userEvent.selectOptions(kind, 'Remake');
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Reliability'}), 'Reliable');
+        await userEvent.click(screen.getByRole('checkbox', {name: 'New levels added'}));
+        await userEvent.selectOptions(kind, 'Unknown');
+
+        expect(screen.getByRole('combobox', {name: 'Reliability'})).toHaveDisplayValue('Unknown');
+        expect(screen.getByRole('checkbox', {name: 'New levels added'})).not.toBeChecked();
+
+        await userEvent.type(screen.getByRole('textbox', {name: 'Title'}), 'Elite');
+        await userEvent.selectOptions(screen.getByRole('combobox', {name: 'Platform'}), 'BK');
+        await userEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        expect(onSubmit).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({lineage: {kind: null, reliability: null, rework: [], source: null}}));
+    });
+
+    it('starts from the lineage of the software', () => {
+        renderForm({initial: {
+            title: 'Elite', description: '', releaseDate: '', platform: 'bk', hardware: [], categories: [],
+            lineage: {kind: 'clone', reliability: 'reliable', rework: ['no-substantial-changes'], source: 'Elite, BBC Micro'},
+        }});
+
+        expect(screen.getByRole('combobox', {name: 'Kind'})).toHaveDisplayValue('Clone');
+        expect(screen.getByRole('combobox', {name: 'Reliability'})).toHaveDisplayValue('Reliable');
+        expect(screen.getByRole('checkbox', {name: 'No substantial changes'})).toBeChecked();
+        expect(screen.getByRole('textbox', {name: 'Original'})).toHaveValue('Elite, BBC Micro');
+    });
+
+    it('does not submit an original longer than 255 characters and says so under the field', async () => {
+        const {onSubmit} = renderForm({initial: {
+            title: 'Elite', description: '', releaseDate: '', platform: 'bk', hardware: [], categories: [],
+            lineage: {kind: '', reliability: '', rework: [], source: 'a'.repeat(256)},
+        }});
+
+        await userEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        expect(onSubmit).not.toHaveBeenCalled();
+        expect(screen.getByRole('textbox', {name: 'Original'})).toHaveAccessibleDescription('Keep the original within 255 characters.');
+    });
+
+    it('locks the lineage while it is being saved', () => {
+        renderForm({busy: true, initial: {
+            title: 'Elite', description: '', releaseDate: '', platform: 'bk', hardware: [], categories: [],
+            lineage: {kind: 'port', reliability: '', rework: [], source: ''},
+        }});
+
+        expect(screen.getByRole('combobox', {name: 'Kind'})).toBeDisabled();
+        expect(screen.getByRole('combobox', {name: 'Reliability'})).toBeDisabled();
+        expect(screen.getByRole('checkbox', {name: 'No substantial changes'})).toBeDisabled();
+        expect(screen.getByRole('textbox', {name: 'Original'})).toBeDisabled();
     });
 
     it('takes a year alone as the release date and tells how to write one', async () => {

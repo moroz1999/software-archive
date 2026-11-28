@@ -16,6 +16,7 @@ function toBody(draft: SoftwareDraft): components['schemas']['SoftwareRequestDto
         preservation: draft.preservation,
         instructions: draft.instructions,
         compilationItemIds: draft.compilationItemIds ?? null,
+        lineage: draft.lineage,
     };
 }
 

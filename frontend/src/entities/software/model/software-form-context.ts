@@ -1,5 +1,5 @@
 import {createRequiredContext} from '@/shared/lib/context';
-import type {CreditValue} from './software-form';
+import type {CreditValue, LineageValues} from './software-form';
 import type {SoftwareProgram} from './software';
 import type {PlatformChoice, SoftwareFormErrors, SoftwareFormValues} from './software-form';
 
@@ -22,6 +22,8 @@ export interface SoftwareFormState {
     /** Replaces everyone credited. */
     readonly changeCredits: (credits: readonly CreditValue[]) => void;
     readonly changeCompilationItems: (programs: readonly SoftwareProgram[]) => void;
+    /** Replaces the lineage. */
+    readonly changeLineage: (lineage: LineageValues) => void;
     /** Checks the format rules and hands the draft on only when they pass. */
     readonly submit: () => void;
     /** The platforms to choose from. */

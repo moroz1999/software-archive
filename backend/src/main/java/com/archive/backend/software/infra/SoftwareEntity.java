@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.Data;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
 
 @Entity
@@ -30,6 +32,20 @@ public class SoftwareEntity {
 
     @Column(nullable = false)
     private String preservation = "unknown";
+
+    @Column(name = "lineage_kind")
+    private @Nullable String lineageKind;
+
+    @Column(name = "lineage_reliability")
+    private @Nullable String lineageReliability;
+
+    /** The codes of the rework, in the order of the list of the domain. */
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    @Column(name = "lineage_rework", columnDefinition = "text[]", nullable = false)
+    private List<String> lineageRework = new ArrayList<>();
+
+    @Column(name = "lineage_source")
+    private @Nullable String lineageSource;
 
     /**
      * Set by the database default.

@@ -55,6 +55,9 @@ public final class Software {
     /** Whether the software can be had and how; unknown until it is known. */
     private PreservationStatus preservation;
 
+    /** Where the work comes from (docs/domain/software.md#lineage); unknown until it is known. */
+    private SoftwareLineage lineage;
+
     private final List<Release> releases;
 
     /**
@@ -86,7 +89,8 @@ public final class Software {
             Map<Gallery, Screenshots> galleries,
             PreservationStatus preservation,
             @Nullable SoftwareInstructions instructions,
-            SoftwareCompilationItems compilationItems) {
+            SoftwareCompilationItems compilationItems,
+            SoftwareLineage lineage) {
         this.id = Objects.requireNonNull(id, "id");
         this.title = Objects.requireNonNull(title, "title");
         this.description = description;
@@ -104,6 +108,38 @@ public final class Software {
         this.instructions = instructions;
         compilationItems.requireOwner(id);
         this.compilationItems = compilationItems;
+        this.lineage = Objects.requireNonNull(lineage, "lineage");
+    }
+
+    public Software(
+            SoftwareId id,
+            SoftwareTitle title,
+            @Nullable SoftwareDescription description,
+            @Nullable ReleaseDate releaseDate,
+            HardwareSet hardware,
+            CategorySet categories,
+            SoftwareCredits credits,
+            List<Release> releases,
+            AddedBy addedBy,
+            Map<Gallery, Screenshots> galleries,
+            PreservationStatus preservation,
+            @Nullable SoftwareInstructions instructions,
+            SoftwareCompilationItems compilationItems) {
+        this(
+                id,
+                title,
+                description,
+                releaseDate,
+                hardware,
+                categories,
+                credits,
+                releases,
+                addedBy,
+                galleries,
+                preservation,
+                instructions,
+                compilationItems,
+                SoftwareLineage.UNKNOWN);
     }
 
     public Software(
@@ -259,6 +295,11 @@ public final class Software {
     public List<ScreenshotImage> screenshotsOfNewSizes(List<ScreenshotImage> images) {
         Set<Long> sizes = getScreenshots().all().stream().map(Screenshot::size).collect(Collectors.toSet());
         return images.stream().filter(image -> sizes.add(image.size())).toList();
+    }
+
+    public void changeLineage(SoftwareLineage lineage) {
+        this.lineage = Objects.requireNonNull(lineage, "lineage");
+        markChanged();
     }
 
     public void changePreservation(PreservationStatus preservation) {

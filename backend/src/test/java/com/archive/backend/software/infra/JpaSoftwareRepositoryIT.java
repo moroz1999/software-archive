@@ -16,6 +16,10 @@ import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.HardwareSet;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.software.domain.Gallery;
+import com.archive.backend.software.domain.LineageKind;
+import com.archive.backend.software.domain.LineageReliability;
+import com.archive.backend.software.domain.LineageRework;
+import com.archive.backend.software.domain.LineageSource;
 import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.Release;
 import com.archive.backend.software.domain.ReleaseArchive;
@@ -37,6 +41,7 @@ import com.archive.backend.software.domain.SoftwareCredits;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareInstructions;
+import com.archive.backend.software.domain.SoftwareLineage;
 import com.archive.backend.software.domain.SoftwareReference;
 import com.archive.backend.software.domain.SoftwareReferenceId;
 import com.archive.backend.software.domain.SoftwareReferenceType;
@@ -219,6 +224,38 @@ class JpaSoftwareRepositoryIT {
         assertThat(jdbc.queryForObject("SELECT preservation FROM software WHERE id = ?", String.class, ID.value()))
                 .isEqualTo("donationware");
         assertThat(repository.findById(ID).orElseThrow().getPreservation()).isEqualTo(PreservationStatus.DONATIONWARE);
+    }
+
+    @Test
+    void storesAndRestoresTheLineageAndClearsIt() {
+        Software software = Software.create(
+                ID,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                NO_HARDWARE,
+                CategorySet.EMPTY,
+                SoftwareCredits.EMPTY,
+                BY_OTHER);
+        SoftwareLineage port = new SoftwareLineage(
+                LineageKind.PORT,
+                LineageReliability.ASSUMPTION,
+                Set.of(LineageRework.NO_SUBSTANTIAL_CHANGES, LineageRework.ORIGINAL_MATERIAL_USED),
+                new LineageSource("Elite, BBC Micro"));
+        software.changeLineage(port);
+        repository.save(software);
+        springDataSoftwareRepository.flush();
+        entityManager.clear();
+
+        Software restored = repository.findById(ID).orElseThrow();
+        assertThat(restored.getLineage()).isEqualTo(port);
+
+        restored.changeLineage(SoftwareLineage.UNKNOWN);
+        repository.save(restored);
+        springDataSoftwareRepository.flush();
+        entityManager.clear();
+
+        assertThat(repository.findById(ID).orElseThrow().getLineage()).isEqualTo(SoftwareLineage.UNKNOWN);
     }
 
     @Test

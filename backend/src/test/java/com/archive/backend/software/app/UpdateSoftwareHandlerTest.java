@@ -27,6 +27,9 @@ import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.shared.domain.error.NotFoundException;
 import com.archive.backend.shared.domain.error.RuleViolationException;
 import com.archive.backend.software.domain.KnownReferences;
+import com.archive.backend.software.domain.LineageKind;
+import com.archive.backend.software.domain.LineageRework;
+import com.archive.backend.software.domain.LineageSource;
 import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.Software;
@@ -34,6 +37,7 @@ import com.archive.backend.software.domain.SoftwareCompilationSets;
 import com.archive.backend.software.domain.SoftwareCredits;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareInstructions;
+import com.archive.backend.software.domain.SoftwareLineage;
 import com.archive.backend.software.domain.SoftwareTitle;
 import com.archive.backend.user.domain.ChangeForbiddenException;
 import java.time.LocalDate;
@@ -85,6 +89,40 @@ class UpdateSoftwareHandlerTest {
 
         handler.handle(updateWithInstructions(null));
         assertThat(repository.findById(ELITE).map(Software::getInstructions)).isEmpty();
+    }
+
+    @Test
+    void replacesAndClearsTheLineage() {
+        repository.save(elite());
+        SoftwareLineage remake = new SoftwareLineage(
+                LineageKind.REMAKE,
+                null,
+                Set.of(LineageRework.NEW_IMPLEMENTATION),
+                new LineageSource("Elite, BBC Micro"));
+
+        handler.handle(updateWithLineage(remake));
+        assertThat(repository.findById(ELITE).map(Software::getLineage)).contains(remake);
+
+        handler.handle(updateWithLineage(SoftwareLineage.UNKNOWN));
+        assertThat(repository.findById(ELITE).map(Software::getLineage)).contains(SoftwareLineage.UNKNOWN);
+    }
+
+    private static UpdateSoftwareCommand updateWithLineage(SoftwareLineage lineage) {
+        return new UpdateSoftwareCommand(
+                ADMIN,
+                ELITE,
+                new SoftwareTitle("Elite"),
+                null,
+                null,
+                VECTOR,
+                Set.of(),
+                Set.of(),
+                List.of(),
+                PreservationStatus.UNKNOWN,
+                null,
+                null,
+                null,
+                lineage);
     }
 
     private static UpdateSoftwareCommand updateWithInstructions(@Nullable SoftwareInstructions instructions) {

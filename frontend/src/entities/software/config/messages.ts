@@ -24,3 +24,5 @@ export const PLATFORM_REQUIRED_KEY = 'validation.platformRequired';
 export const RELEASE_VERSION_TOO_LONG_KEY = 'validation.versionTooLong';
 
 export const RELEASE_TYPE_REQUIRED_KEY = 'validation.typeRequired';
+
+export const LINEAGE_SOURCE_TOO_LONG_KEY = 'validation.lineageSourceTooLong';

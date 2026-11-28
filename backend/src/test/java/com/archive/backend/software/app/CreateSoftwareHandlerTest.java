@@ -22,6 +22,10 @@ import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.shared.domain.error.RuleViolationException;
 import com.archive.backend.software.domain.KnownReferences;
+import com.archive.backend.software.domain.LineageKind;
+import com.archive.backend.software.domain.LineageReliability;
+import com.archive.backend.software.domain.LineageRework;
+import com.archive.backend.software.domain.LineageSource;
 import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.Software;
@@ -29,6 +33,7 @@ import com.archive.backend.software.domain.SoftwareCompilationSets;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareInstructions;
+import com.archive.backend.software.domain.SoftwareLineage;
 import com.archive.backend.software.domain.SoftwareTitle;
 import com.archive.backend.user.domain.Actor;
 import com.archive.backend.user.domain.AddedBy;
@@ -84,6 +89,32 @@ class CreateSoftwareHandlerTest {
 
         assertThat(repository.findById(id).map(Software::getInstructions))
                 .contains(new SoftwareInstructions("Press Space to start."));
+    }
+
+    @Test
+    void storesTheLineageOfNewSoftware() {
+        SoftwareLineage port = new SoftwareLineage(
+                LineageKind.PORT_WITH_CHANGES,
+                LineageReliability.ASSUMPTION,
+                Set.of(LineageRework.ORIGINAL_MATERIAL_USED, LineageRework.NEW_LEVELS_ADDED),
+                new LineageSource("Montezuma's Revenge (Parker Brothers, 1984), Atari 2600"));
+
+        SoftwareId id = handler.handle(new CreateSoftwareCommand(
+                ADMIN,
+                new SoftwareTitle("Montezuma's Revenge"),
+                null,
+                null,
+                VECTOR,
+                Set.of(),
+                Set.of(),
+                List.of(),
+                PreservationStatus.UNKNOWN,
+                null,
+                null,
+                null,
+                port));
+
+        assertThat(repository.findById(id).map(Software::getLineage)).contains(port);
     }
 
     @Test

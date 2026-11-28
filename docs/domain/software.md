@@ -7,6 +7,7 @@ Software (a production) is a release of a program: the work itself, as it is kno
 - It can be in categories of the archive's tree — see [categories.md](categories.md). The way down to software goes through the catalog and the branch of its first category from the top: Software › Games › Action › Elite; software in no category stands right under the catalog. A release is the next step under its software.
 - It has credits: who made it, published it and worked on it — see [Credits](#credits).
 - It has a preservation status, shown to everybody and chosen in its form: unknown (until it is known, and then not shown), missing in action (nobody has it; «Потеряна»), donationware (given away for a donation; «За донат») or in sales (still sold; «В продаже»).
+- It has its lineage: where the work comes from — see [Lineage](#lineage).
 - It has instructions: how it is loaded, run and played, kept apart from the description and written the same way. The instructions may be unknown.
 - The title follows the common title rules (see the domain index). The description and the release date may be unknown.
 - Software can be added, edited and deleted, its base hardware with it, chosen from the hardware of its platform. For now anyone can do it; access rules come later.
@@ -16,6 +17,17 @@ Software (a production) is a release of a program: the work itself, as it is kno
 - Languages — of the software and of its alternative titles — are chosen from the archive's fixed list of languages, each known by its code.
 - Its Links section shows homepages and other external links alongside the pages of the archives it was imported from. Several programs can share a link. Each distinct address appears once on a program's page.
 - A saved link is an absolute web address (HTTP or HTTPS) of one kind: general, homepage, store or video.
+
+## Lineage
+Where the work comes from: an original, or a port, a remake or a sequel of another work, which often is of another platform and not in the archive. Every part of it may be unknown.
+- The kind, one of a fixed list: original, port, port with changes, based on, clone, remake, remaster, modification, new levels, sequel, demo. Unknown when not known.
+- How reliable that is: reliable, or an assumption. Unknown when not known.
+- The nature of the rework, any number of a fixed list: no substantial changes, material of the original used, new levels added, graphics and sound changed, an entirely new implementation.
+- The original: free text of at most 255 characters, naming the work it comes from as it is best known — its title, authors, year, platform, the address of its page — in any form. A web address in it leads to that page.
+- The reliability and the nature of the rework tell of the kind, so they are given only together with a kind; the original may be given without one.
+- The author of the original is credited apart from the lineage, by the role original author ([Credits](#credits)).
+- The page of the software shows its lineage in its details: "Lineage: Port with changes (reliable); graphics and sound changed", and under it the original. Unknown parts are left out, and the whole lineage while it is unknown.
+- It is edited in the form of the software, by whoever may change the software. An import fills it only while it is unknown ([imports.md](imports.md#software)).
 
 ## Compilations
 

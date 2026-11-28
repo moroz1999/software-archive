@@ -2,6 +2,7 @@ package com.archive.backend.software.web;
 
 import static com.archive.backend.user.TestActors.ADDED;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -40,14 +41,20 @@ import com.archive.backend.software.app.ListSoftwareReleasesQuery;
 import com.archive.backend.software.app.LookupSoftwareTitlesHandler;
 import com.archive.backend.software.app.UpdateSoftwareCommand;
 import com.archive.backend.software.app.UpdateSoftwareHandler;
+import com.archive.backend.software.domain.LineageKind;
+import com.archive.backend.software.domain.LineageReliability;
+import com.archive.backend.software.domain.LineageRework;
+import com.archive.backend.software.domain.LineageSource;
 import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareInstructions;
+import com.archive.backend.software.domain.SoftwareLineage;
 import com.archive.backend.software.domain.SoftwareNotFoundException;
 import com.archive.backend.software.domain.SoftwarePlatformLockedException;
 import com.archive.backend.software.domain.SoftwareTitle;
+import com.archive.backend.software.read.LineageDetails;
 import com.archive.backend.software.read.SoftwareCategory;
 import com.archive.backend.software.read.SoftwareCategoryStep;
 import com.archive.backend.software.read.SoftwareDetails;
@@ -271,6 +278,110 @@ class SoftwareControllerTest {
         ArgumentCaptor<UpdateSoftwareCommand> updated = ArgumentCaptor.forClass(UpdateSoftwareCommand.class);
         verify(updateHandler).handle(updated.capture());
         assertThat(updated.getValue().instructions()).isEqualTo(new SoftwareInstructions("Press Space to start."));
+    }
+
+    @Test
+    void returnsTheLineageOfTheSoftwareAndAnUnknownOneAsEmpty() throws Exception {
+        when(getHandler.handle(new GetSoftwareQuery(Actor.anonymous(), new SoftwareId(ID), Language.EN)))
+                .thenReturn(detailsWithLineage(new LineageDetails(
+                        "port-with-changes",
+                        "reliable",
+                        List.of("graphics-and-sound-changed"),
+                        "Elite (Acornsoft, 1984), BBC Micro")));
+
+        mvc.perform(get("/api/software/{id}", ID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.lineage.kind").value("port-with-changes"))
+                .andExpect(jsonPath("$.lineage.reliability").value("reliable"))
+                .andExpect(jsonPath("$.lineage.rework[0]").value("graphics-and-sound-changed"))
+                .andExpect(jsonPath("$.lineage.source").value("Elite (Acornsoft, 1984), BBC Micro"));
+
+        when(getHandler.handle(new GetSoftwareQuery(Actor.anonymous(), new SoftwareId(ID), Language.EN)))
+                .thenReturn(detailsWithLineage(LineageDetails.UNKNOWN));
+
+        mvc.perform(get("/api/software/{id}", ID))
+                .andExpect(jsonPath("$.lineage.kind").value(nullValue()))
+                .andExpect(jsonPath("$.lineage.reliability").value(nullValue()))
+                .andExpect(jsonPath("$.lineage.rework").isEmpty())
+                .andExpect(jsonPath("$.lineage.source").value(nullValue()));
+    }
+
+    @Test
+    void createsAndUpdatesSoftwareWithItsLineage() throws Exception {
+        String body = """
+                {"title": "Elite", "platform": "vector", "lineage": {"kind": "remake", "reliability": "assumption",
+                 "rework": ["new-levels-added", "new-implementation"], "source": "Elite, BBC Micro"}}""";
+        mvc.perform(
+                post("/api/software").contentType(MediaType.APPLICATION_JSON).content(body));
+        mvc.perform(put("/api/software/{id}", ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isNoContent());
+
+        SoftwareLineage remake = new SoftwareLineage(
+                LineageKind.REMAKE,
+                LineageReliability.ASSUMPTION,
+                Set.of(LineageRework.NEW_LEVELS_ADDED, LineageRework.NEW_IMPLEMENTATION),
+                new LineageSource("Elite, BBC Micro"));
+        ArgumentCaptor<CreateSoftwareCommand> created = ArgumentCaptor.forClass(CreateSoftwareCommand.class);
+        verify(createHandler).handle(created.capture());
+        assertThat(created.getValue().lineage()).isEqualTo(remake);
+        ArgumentCaptor<UpdateSoftwareCommand> updated = ArgumentCaptor.forClass(UpdateSoftwareCommand.class);
+        verify(updateHandler).handle(updated.capture());
+        assertThat(updated.getValue().lineage()).isEqualTo(remake);
+    }
+
+    @Test
+    void takesAMissingLineageAsAnUnknownOne() throws Exception {
+        mvc.perform(post("/api/software")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"title\":\"Elite\",\"platform\":\"vector\",\"lineage\":null}"));
+
+        ArgumentCaptor<CreateSoftwareCommand> created = ArgumentCaptor.forClass(CreateSoftwareCommand.class);
+        verify(createHandler).handle(created.capture());
+        assertThat(created.getValue().lineage()).isEqualTo(SoftwareLineage.UNKNOWN);
+    }
+
+    @Test
+    void answers400ForALineageBreakingItsRules() throws Exception {
+        for (String[] refused : new String[][] {
+            {"{\"kind\": \"conversion\", \"rework\": []}", "software.lineage-kind-invalid"},
+            {"{\"kind\": \"port\", \"reliability\": \"maybe\", \"rework\": []}", "software.lineage-reliability-invalid"
+            },
+            {"{\"kind\": \"port\", \"rework\": [\"sound-added\"]}", "software.lineage-rework-invalid"},
+            {"{\"reliability\": \"reliable\", \"rework\": []}", "software.lineage-kind-required"},
+            {"{\"rework\": [\"new-levels-added\"]}", "software.lineage-kind-required"},
+            {"{\"rework\": [], \"source\": \" \"}", "software.lineage-source-invalid"}
+        }) {
+            mvc.perform(post("/api/software")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"title\":\"Elite\",\"platform\":\"vector\",\"lineage\":" + refused[0] + "}"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value(refused[1]));
+        }
+    }
+
+    private static SoftwareDetails detailsWithLineage(LineageDetails lineage) {
+        return new SoftwareDetails(
+                ID,
+                "Elite",
+                null,
+                null,
+                null,
+                "unknown",
+                new SoftwarePlatform("vector", "Vector"),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                ADDED,
+                null,
+                false,
+                List.of(),
+                List.of(),
+                List.of(),
+                lineage);
     }
 
     @Test

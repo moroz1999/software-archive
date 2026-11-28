@@ -16,10 +16,18 @@ import com.archive.backend.assistant.web.tool.WriteToolsTestData;
 import com.archive.backend.shared.domain.Language;
 import com.archive.backend.shared.domain.error.BusinessException;
 import com.archive.backend.shared.domain.error.NotFoundException;
+import com.archive.backend.software.domain.LineageKind;
+import com.archive.backend.software.domain.LineageReliability;
+import com.archive.backend.software.domain.LineageRework;
+import com.archive.backend.software.domain.Software;
+import com.archive.backend.software.domain.SoftwareId;
+import com.archive.backend.software.domain.SoftwareLineage;
+import com.archive.backend.software.domain.SoftwareRepository;
 import com.archive.backend.user.TestActors;
 import com.jayway.jsonpath.DocumentContext;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,6 +52,9 @@ class SoftwareWriteToolsIT {
 
     @Autowired
     private JdbcTemplate jdbc;
+
+    @Autowired
+    private SoftwareRepository softwareRepository;
 
     @BeforeEach
     void insert() {
@@ -105,6 +116,21 @@ class SoftwareWriteToolsIT {
         assertThat(ToolJson.list(software, "$.software.categories[*].id")).containsExactly(GAMES.toString());
         assertThat(ToolJson.list(software, "$.software.credits[*].id")).containsExactly(JD.toString());
         assertThat(software.read("$.software.preservation", String.class)).isEqualTo("missing-in-action");
+    }
+
+    @Test
+    void keepsTheLineageOfTheSoftwareItChanges() {
+        UUID id = calls.write("create_software", elite(), MEMBER).uuid();
+        SoftwareLineage port = new SoftwareLineage(
+                LineageKind.PORT, LineageReliability.RELIABLE, Set.of(LineageRework.NO_SUBSTANTIAL_CHANGES), null);
+        Software software = softwareRepository.findById(new SoftwareId(id)).orElseThrow();
+        software.changeLineage(port);
+        softwareRepository.save(software);
+
+        calls.write("update_software", "{\"id\": \"%s\", \"title\": \"Elite Plus\"}".formatted(id), MEMBER);
+
+        assertThat(softwareRepository.findById(new SoftwareId(id)).orElseThrow().getLineage())
+                .isEqualTo(port);
     }
 
     @Test

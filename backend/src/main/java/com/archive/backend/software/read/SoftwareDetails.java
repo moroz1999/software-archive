@@ -28,7 +28,49 @@ public record SoftwareDetails(
         boolean canChange,
         List<SoftwareLink> compilationItems,
         List<SoftwareLink> compilations,
-        List<ExternalLink> links) {
+        List<ExternalLink> links,
+        LineageDetails lineage) {
+
+    public SoftwareDetails(
+            UUID id,
+            String title,
+            @Nullable String description,
+            @Nullable String instructions,
+            @Nullable String releaseDate,
+            String preservation,
+            SoftwarePlatform platform,
+            List<SoftwareHardware> hardware,
+            List<SoftwareCategory> categories,
+            List<SoftwareCredit> credits,
+            List<SoftwareSource> sources,
+            List<ExternalOrigin> origins,
+            Addition added,
+            @Nullable UUID addedBy,
+            boolean canChange,
+            List<SoftwareLink> compilationItems,
+            List<SoftwareLink> compilations,
+            List<ExternalLink> links) {
+        this(
+                id,
+                title,
+                description,
+                instructions,
+                releaseDate,
+                preservation,
+                platform,
+                hardware,
+                categories,
+                credits,
+                sources,
+                origins,
+                added,
+                addedBy,
+                canChange,
+                compilationItems,
+                compilations,
+                links,
+                LineageDetails.UNKNOWN);
+    }
 
     public record ExternalLink(String url, String type) {}
 
@@ -130,6 +172,7 @@ public record SoftwareDetails(
                 canChange,
                 compilationItems,
                 compilations,
-                links);
+                links,
+                lineage);
     }
 }

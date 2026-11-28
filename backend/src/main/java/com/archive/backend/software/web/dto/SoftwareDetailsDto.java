@@ -24,7 +24,8 @@ public record SoftwareDetailsDto(
         boolean canChange,
         List<SoftwareLinkDto> compilationItems,
         List<SoftwareLinkDto> compilations,
-        List<ExternalLinkDto> links) {
+        List<ExternalLinkDto> links,
+        SoftwareLineageDto lineage) {
 
     public record ExternalLinkDto(
             String url, @Schema(ref = "SoftwareLinkType") String type) {}

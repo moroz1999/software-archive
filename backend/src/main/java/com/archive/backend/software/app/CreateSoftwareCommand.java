@@ -9,6 +9,7 @@ import com.archive.backend.software.domain.SoftwareCreditDraft;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareInstructions;
+import com.archive.backend.software.domain.SoftwareLineage;
 import com.archive.backend.software.domain.SoftwareTitle;
 import com.archive.backend.software.domain.SoftwareUrl;
 import com.archive.backend.user.domain.Actor;
@@ -28,7 +29,37 @@ public record CreateSoftwareCommand(
         PreservationStatus preservation,
         @Nullable SoftwareInstructions instructions,
         @Nullable Set<SoftwareId> compilationItemIds,
-        @Nullable SoftwareUrl homepage) {
+        @Nullable SoftwareUrl homepage,
+        SoftwareLineage lineage) {
+
+    public CreateSoftwareCommand(
+            Actor actor,
+            SoftwareTitle title,
+            @Nullable SoftwareDescription description,
+            @Nullable ReleaseDate releaseDate,
+            PlatformCode platform,
+            Set<HardwareCode> hardware,
+            Set<CategoryId> categories,
+            List<SoftwareCreditDraft> credits,
+            PreservationStatus preservation,
+            @Nullable SoftwareInstructions instructions,
+            @Nullable Set<SoftwareId> compilationItemIds,
+            @Nullable SoftwareUrl homepage) {
+        this(
+                actor,
+                title,
+                description,
+                releaseDate,
+                platform,
+                hardware,
+                categories,
+                credits,
+                preservation,
+                instructions,
+                compilationItemIds,
+                homepage,
+                SoftwareLineage.UNKNOWN);
+    }
 
     public CreateSoftwareCommand(
             Actor actor,

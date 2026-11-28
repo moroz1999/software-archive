@@ -8,6 +8,7 @@ import com.archive.backend.software.read.CardMadeBySql;
 import com.archive.backend.software.read.CardScreenshotsSql;
 import com.archive.backend.software.read.CreditedRelease;
 import com.archive.backend.software.read.CreditedSoftware;
+import com.archive.backend.software.read.LineageDetails;
 import com.archive.backend.software.read.ReleaseArchiveDetails;
 import com.archive.backend.software.read.ReleaseDateSql;
 import com.archive.backend.software.read.ReleaseDetails;
@@ -165,7 +166,8 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
     @Override
     public Optional<SoftwareDetails> findById(UUID id, String language) {
         return jdbc.sql("""
-                        SELECT s.title, s.description, s.instructions, s.preservation, %s AS release_date, p.code, %s AS name, s.added_by, %s
+                        SELECT s.title, s.description, s.instructions, s.preservation, s.lineage_kind, s.lineage_reliability,
+                               s.lineage_rework, s.lineage_source, %s AS release_date, p.code, %s AS name, s.added_by, %s
                         FROM software s
                         JOIN platform p ON p.code = s.platform_code
                         WHERE s.id = :id
@@ -191,7 +193,13 @@ public class JdbcSoftwareReadRepository implements SoftwareReadRepository {
                         false,
                         compilationLinks(id, "compilation_id", "item_id"),
                         compilationLinks(id, "item_id", "compilation_id"),
-                        externalLinks(id)))
+                        externalLinks(id),
+                        new LineageDetails(
+                                rs.getString("lineage_kind"),
+                                rs.getString("lineage_reliability"),
+                                Arrays.asList(
+                                        (String[]) rs.getArray("lineage_rework").getArray()),
+                                rs.getString("lineage_source"))))
                 .optional();
     }
 

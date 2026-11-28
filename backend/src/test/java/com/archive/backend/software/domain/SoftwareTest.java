@@ -134,6 +134,27 @@ class SoftwareTest {
     }
 
     @Test
+    void isCreatedWithAnUnknownLineage() {
+        assertThat(elite().getLineage()).isEqualTo(SoftwareLineage.UNKNOWN);
+    }
+
+    @Test
+    void changesAndClearsItsLineage() {
+        Software software = elite();
+        SoftwareLineage port = new SoftwareLineage(
+                LineageKind.PORT,
+                LineageReliability.RELIABLE,
+                Set.of(LineageRework.GRAPHICS_AND_SOUND_CHANGED),
+                new LineageSource("Elite (Acornsoft, 1984), BBC Micro"));
+
+        software.changeLineage(port);
+        assertThat(software.getLineage()).isEqualTo(port);
+
+        software.changeLineage(SoftwareLineage.UNKNOWN);
+        assertThat(software.getLineage()).isEqualTo(SoftwareLineage.UNKNOWN);
+    }
+
+    @Test
     void changesItsPreservationStatus() {
         Software software = elite();
 

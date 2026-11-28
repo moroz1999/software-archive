@@ -19,7 +19,33 @@ public record SoftwareRequestDto(
         @Nullable List<UUID> categories,
         @Nullable List<CreditDto> credits,
         @Schema(ref = "PreservationStatus") @Nullable String preservation,
-        @Nullable List<@Nullable UUID> compilationItemIds) {
+        @Nullable List<@Nullable UUID> compilationItemIds,
+        @Nullable SoftwareLineageDto lineage) {
+
+    public SoftwareRequestDto(
+            @Nullable String title,
+            @Nullable String description,
+            @Nullable String instructions,
+            @Nullable String releaseDate,
+            @Nullable String platform,
+            @Nullable List<String> hardware,
+            @Nullable List<UUID> categories,
+            @Nullable List<CreditDto> credits,
+            @Nullable String preservation,
+            @Nullable List<@Nullable UUID> compilationItemIds) {
+        this(
+                title,
+                description,
+                instructions,
+                releaseDate,
+                platform,
+                hardware,
+                categories,
+                credits,
+                preservation,
+                compilationItemIds,
+                null);
+    }
 
     public SoftwareRequestDto(
             @Nullable String title,

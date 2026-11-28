@@ -7,11 +7,16 @@ import com.archive.backend.shared.domain.error.InvalidValueException;
 import com.archive.backend.software.app.CreateSoftwareCommand;
 import com.archive.backend.software.app.ListLatestSoftwareQuery;
 import com.archive.backend.software.app.UpdateSoftwareCommand;
+import com.archive.backend.software.domain.LineageKind;
+import com.archive.backend.software.domain.LineageReliability;
+import com.archive.backend.software.domain.LineageRework;
+import com.archive.backend.software.domain.LineageSource;
 import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.ReleaseDate;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareInstructions;
+import com.archive.backend.software.domain.SoftwareLineage;
 import com.archive.backend.software.domain.SoftwareTitle;
 import com.archive.backend.software.domain.SoftwareUrl;
 import com.archive.backend.software.read.CreditedRelease;
@@ -29,6 +34,7 @@ import com.archive.backend.software.web.dto.ReleaseArchiveDto;
 import com.archive.backend.software.web.dto.ScreenshotDto;
 import com.archive.backend.software.web.dto.SoftwareCreatedDto;
 import com.archive.backend.software.web.dto.SoftwareDetailsDto;
+import com.archive.backend.software.web.dto.SoftwareLineageDto;
 import com.archive.backend.software.web.dto.SoftwareLinkDto;
 import com.archive.backend.software.web.dto.SoftwareListItemDto;
 import com.archive.backend.software.web.dto.SoftwareReleaseDto;
@@ -124,7 +130,8 @@ public interface SoftwareWebMapper {
                 toPreservation(request.preservation()),
                 toInstructions(request.instructions()),
                 toCompilationItems(request.compilationItemIds()),
-                homepage);
+                homepage,
+                toLineage(request.lineage()));
     }
 
     default UpdateSoftwareCommand toUpdate(Actor actor, UUID id, SoftwareRequestDto request) {
@@ -146,10 +153,29 @@ public interface SoftwareWebMapper {
                 toPreservation(request.preservation()),
                 toInstructions(request.instructions()),
                 toCompilationItems(request.compilationItemIds()),
-                homepage);
+                homepage,
+                toLineage(request.lineage()));
     }
 
     // Request scalars -> value objects.
+
+    /** A request that does not tell the lineage leaves it unknown. */
+    private static SoftwareLineage toLineage(@Nullable SoftwareLineageDto value) {
+        if (value == null) {
+            return SoftwareLineage.UNKNOWN;
+        }
+        String kind = value.kind();
+        String reliability = value.reliability();
+        String source = value.source();
+        List<String> rework = value.rework();
+        return new SoftwareLineage(
+                kind == null ? null : LineageKind.fromCode(kind),
+                reliability == null ? null : LineageReliability.fromCode(reliability),
+                rework == null
+                        ? Set.of()
+                        : rework.stream().map(LineageRework::fromCode).collect(Collectors.toSet()),
+                source == null ? null : new LineageSource(source));
+    }
 
     /** A request that does not tell the status leaves it unknown. */
     private static PreservationStatus toPreservation(@Nullable String value) {

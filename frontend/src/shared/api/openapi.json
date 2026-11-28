@@ -14241,6 +14241,18 @@
         },
         "required" : [ "run" ]
       },
+      "LineageKind" : {
+        "type" : "string",
+        "enum" : [ "original", "port", "port-with-changes", "based-on", "clone", "remake", "remaster", "modification", "new-levels", "sequel", "demo" ]
+      },
+      "LineageReliability" : {
+        "type" : "string",
+        "enum" : [ "reliable", "assumption" ]
+      },
+      "LineageRework" : {
+        "type" : "string",
+        "enum" : [ "no-substantial-changes", "original-material-used", "new-levels-added", "graphics-and-sound-changed", "new-implementation" ]
+      },
       "LogInRequestDto" : {
         "type" : "object",
         "properties" : {
@@ -15021,6 +15033,9 @@
           "instructions" : {
             "type" : [ "string", "null" ]
           },
+          "lineage" : {
+            "$ref" : "#/components/schemas/SoftwareLineageDto"
+          },
           "links" : {
             "type" : "array",
             "items" : {
@@ -15053,7 +15068,7 @@
             "type" : "string"
           }
         },
-        "required" : [ "added", "canChange", "categories", "compilationItems", "compilations", "credits", "description", "hardware", "id", "instructions", "links", "origins", "platform", "preservation", "releaseDate", "sources", "title" ]
+        "required" : [ "added", "canChange", "categories", "compilationItems", "compilations", "credits", "description", "hardware", "id", "instructions", "lineage", "links", "origins", "platform", "preservation", "releaseDate", "sources", "title" ]
       },
       "SoftwareDetailsDto.AddedDto" : {
         "type" : "object",
@@ -15140,6 +15155,35 @@
           }
         },
         "required" : [ "code", "group", "groupName", "name" ]
+      },
+      "SoftwareLineageDto" : {
+        "type" : "object",
+        "properties" : {
+          "kind" : {
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/LineageKind"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "reliability" : {
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/LineageReliability"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "rework" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LineageRework"
+            }
+          },
+          "source" : {
+            "type" : [ "string", "null" ]
+          }
+        },
+        "required" : [ "kind", "reliability", "rework", "source" ]
       },
       "SoftwareLinkDto" : {
         "type" : "object",
@@ -15378,6 +15422,13 @@
           "instructions" : {
             "type" : [ "string", "null" ]
           },
+          "lineage" : {
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/SoftwareLineageDto"
+            }, {
+              "type" : "null"
+            } ]
+          },
           "platform" : {
             "type" : [ "string", "null" ]
           },
@@ -15395,7 +15446,7 @@
             "type" : [ "string", "null" ]
           }
         },
-        "required" : [ "categories", "compilationItemIds", "credits", "description", "hardware", "instructions", "platform", "preservation", "releaseDate", "title" ]
+        "required" : [ "categories", "compilationItemIds", "credits", "description", "hardware", "instructions", "lineage", "platform", "preservation", "releaseDate", "title" ]
       },
       "SoftwareRequestDto.CreditDto" : {
         "type" : "object",

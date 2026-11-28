@@ -40,6 +40,7 @@ const ELITE = {
     sources: [], links: [],
     preservation: 'unknown',
     instructions: null,
+    lineage: {kind: null, reliability: null, rework: [], source: null},
     compilationItems: [],
     compilations: [],
     origins: [], added: {by: 'Zork', at: '2026-03-04T05:06:07Z'},
@@ -610,6 +611,85 @@ describe(SoftwareView, () => {
         await screen.findByRole('heading', {level: 1, name: 'Elite'});
 
         expect(detailLabels('Preservation status')).toHaveLength(0);
+    });
+
+    it('tells where the software comes from: the kind, its reliability, the rework and the original', async () => {
+        stubFetch(json({
+            ...ELITE,
+            lineage: {
+                kind: 'port-with-changes',
+                reliability: 'reliable',
+                rework: ['original-material-used', 'graphics-and-sound-changed'],
+                source: 'Elite (Acornsoft, 1984), BBC Micro',
+            },
+        }));
+        renderView(ID);
+
+        await screen.findByRole('heading', {level: 1, name: 'Elite'});
+
+        expect(detailLabels('Lineage')).toHaveLength(1);
+        expect(screen.getByText('Port with changes (reliable); material of the original used, graphics and sound changed')).toBeInTheDocument();
+        expect(detailLabels('Original')).toHaveLength(1);
+        expect(screen.getByText('Elite (Acornsoft, 1984), BBC Micro')).toBeInTheDocument();
+    });
+
+    it('leads by every web address in the original to its page', async () => {
+        stubFetch(json({
+            ...ELITE,
+            lineage: {
+                kind: 'port',
+                reliability: null,
+                rework: [],
+                source: 'Elite, https://www.mobygames.com/game/elite/ and http://elite.example.org',
+            },
+        }));
+        renderView(ID);
+
+        await screen.findByRole('heading', {level: 1, name: 'Elite'});
+
+        expect(screen.getByText('Port')).toBeInTheDocument();
+        expect(screen.getByRole('link', {name: 'https://www.mobygames.com/game/elite/'})).toHaveAttribute('href', 'https://www.mobygames.com/game/elite/');
+        expect(screen.getByRole('link', {name: 'http://elite.example.org'})).toHaveAttribute('href', 'http://elite.example.org');
+    });
+
+    it('shows the original alone when the kind is unknown', async () => {
+        stubFetch(json({...ELITE, lineage: {kind: null, reliability: null, rework: [], source: 'Elite, BBC Micro'}}));
+        renderView(ID);
+
+        await screen.findByRole('heading', {level: 1, name: 'Elite'});
+
+        expect(detailLabels('Lineage')).toHaveLength(0);
+        expect(detailLabels('Original')).toHaveLength(1);
+        expect(screen.getByText('Elite, BBC Micro')).toBeInTheDocument();
+    });
+
+    it('tells the lineage in Russian', async () => {
+        await i18n.changeLanguage('ru');
+        try {
+            stubFetch(json({
+                ...ELITE,
+                lineage: {kind: 'remake', reliability: 'assumption', rework: ['new-implementation'], source: 'Elite, BBC Micro'},
+            }));
+            renderView(ID);
+
+            await screen.findByRole('heading', {level: 1, name: 'Elite'});
+
+            expect(detailLabels('Происхождение')).toHaveLength(1);
+            expect(screen.getByText('Ремейк (предположение); полностью новая реализация')).toBeInTheDocument();
+            expect(detailLabels('Первоисточник')).toHaveLength(1);
+        } finally {
+            await i18n.changeLanguage('en');
+        }
+    });
+
+    it('shows no lineage while it is unknown', async () => {
+        stubFetch(json(ELITE));
+        renderView(ID);
+
+        await screen.findByRole('heading', {level: 1, name: 'Elite'});
+
+        expect(detailLabels('Lineage')).toHaveLength(0);
+        expect(detailLabels('Original')).toHaveLength(0);
     });
 
     it('shows nothing for an unknown description and release date', async () => {

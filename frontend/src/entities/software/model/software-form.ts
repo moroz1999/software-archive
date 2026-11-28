@@ -1,11 +1,25 @@
 import {type TitleProblem, titleProblem} from '@/shared/lib/form-rules';
-import {type components, preservationStatusValues} from '@/shared/api';
+import {type components, lineageKindValues, lineageReliabilityValues, lineageReworkValues, preservationStatusValues} from '@/shared/api';
 import type {MemberRoleValue} from '@/shared/ui/member-role-editor';
 import {parseReleaseDateText, releaseDateField} from '../lib/release-date';
-import {type PreservationStatus, type SoftwareDetails, type SoftwareProgram, type SoftwareReference} from './software';
+import {type PreservationStatus, type SoftwareDetails, type SoftwareLineage, type SoftwareProgram, type SoftwareReference} from './software';
 
 /** A credit in the form: the person, group or label found, with the roles chosen for it. */
 export type CreditValue = MemberRoleValue<SoftwareReference, components['schemas']['CreditRole']>;
+
+/** The lineage in the form: the codes chosen, empty for unknown, and the text of the original. */
+export interface LineageValues {
+    readonly kind: string;
+    readonly reliability: string;
+    /** The codes of the rework, in the order they were checked. */
+    readonly rework: readonly string[];
+    readonly source: string;
+}
+
+/** The longest original the archive keeps (docs/domain/software.md#lineage). */
+export const LINEAGE_SOURCE_MAX_LENGTH = 255;
+
+const UNKNOWN_LINEAGE: LineageValues = {kind: '', reliability: '', rework: [], source: ''};
 
 /** What the software form holds while it is being filled: raw text of every field, the chosen hardware and categories. */
 export interface SoftwareFormValues {
@@ -24,6 +38,7 @@ export interface SoftwareFormValues {
     /** The code of the chosen preservation status; unknown when absent. */
     readonly preservation?: string;
     readonly instructions?: string;
+    readonly lineage?: LineageValues;
 }
 
 /** A platform the form offers. */
@@ -44,12 +59,14 @@ export interface SoftwareDraft {
     readonly compilationItemIds?: readonly string[];
     readonly preservation: PreservationStatus;
     readonly instructions: string | null;
+    readonly lineage: SoftwareLineage;
 }
 
 export interface SoftwareFormErrors {
     readonly title?: TitleProblem;
     readonly releaseDate?: 'invalid';
     readonly platform?: 'required';
+    readonly lineageSource?: 'too-long';
 }
 
 export type SoftwareFormResult =
@@ -65,13 +82,16 @@ export function validateSoftwareForm(values: SoftwareFormValues): SoftwareFormRe
     const releaseDate = values.releaseDate === '' ? null : parseReleaseDateText(values.releaseDate);
     const releaseDateInvalid = values.releaseDate !== '' && releaseDate === null;
     const platformMissing = values.platform === '';
-    if (title !== null || releaseDateInvalid || platformMissing) {
+    const lineage = values.lineage ?? UNKNOWN_LINEAGE;
+    const sourceTooLong = lineage.source.length > LINEAGE_SOURCE_MAX_LENGTH;
+    if (title !== null || releaseDateInvalid || platformMissing || sourceTooLong) {
         return {
             ok: false,
             errors: {
                 ...(title === null ? {} : {title}),
                 ...(releaseDateInvalid ? {releaseDate: 'invalid'} : {}),
                 ...(platformMissing ? {platform: 'required'} : {}),
+                ...(sourceTooLong ? {lineageSource: 'too-long'} : {}),
             },
         };
     }
@@ -88,7 +108,19 @@ export function validateSoftwareForm(values: SoftwareFormValues): SoftwareFormRe
             credits: values.credits ?? [],
             preservation: preservationStatusValues.find((known) => known === values.preservation) ?? 'unknown',
             instructions: textOrNull(values.instructions),
+            lineage: toLineage(lineage),
         },
+    };
+}
+
+/** The lineage of the draft: the reliability and the rework tell of a kind, so none goes without one. */
+function toLineage(values: LineageValues): SoftwareLineage {
+    const kind = lineageKindValues.find((known) => known === values.kind) ?? null;
+    return {
+        kind,
+        reliability: kind === null ? null : lineageReliabilityValues.find((known) => known === values.reliability) ?? null,
+        rework: kind === null ? [] : values.rework.flatMap((code) => lineageReworkValues.filter((known) => known === code)),
+        source: textOrNull(values.source),
     };
 }
 
@@ -105,6 +137,12 @@ export function toSoftwareFormValues(software?: SoftwareDetails): SoftwareFormVa
         ...(software?.compilationItems === undefined ? {} : {compilationItems: software.compilationItems}),
         preservation: software?.preservation ?? 'unknown',
         instructions: software?.instructions ?? '',
+        lineage: software === undefined ? UNKNOWN_LINEAGE : {
+            kind: software.lineage.kind ?? '',
+            reliability: software.lineage.reliability ?? '',
+            rework: software.lineage.rework,
+            source: software.lineage.source ?? '',
+        },
     };
 }
 

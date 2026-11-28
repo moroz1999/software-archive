@@ -36,7 +36,7 @@ export {useScreenshots} from './model/screenshots-context';
 export {ScreenshotsProvider, type ScreenshotsProviderProps} from './model/ScreenshotsProvider';
 export {usePlatformHardware} from './model/platform-hardware-context';
 export {PlatformHardwareProvider, type PlatformHardwareProviderProps} from './model/PlatformHardwareProvider';
-export {type Hardware, type PreservationStatus, type Software, type SoftwareCategory, type SoftwareCredit, type SoftwareDetails, type SoftwarePlatform, type SoftwareProgram, type SoftwareReference, type SoftwareReferenceType, parseSoftwareId, requireSoftwareId} from './model/software';
+export {type Hardware, type PreservationStatus, type Software, type SoftwareCategory, type SoftwareCredit, type SoftwareDetails, type SoftwareLineage, type SoftwarePlatform, type SoftwareProgram, type SoftwareReference, type SoftwareReferenceType, parseSoftwareId, requireSoftwareId} from './model/software';
 export {type PlatformChoice, type SoftwareDraft, type SoftwareFormValues, toSoftwareFormValues} from './model/software-form';
 export {useSoftwareDetails} from './model/software-details-context';
 export {useCompilationPrograms} from './model/compilation-programs-context';

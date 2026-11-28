@@ -64,16 +64,16 @@ export const resources = {
             hardware: 'Hardware', hardwareChosen: 'Hardware: {{names}}', platforms: 'Platforms', apply: 'Apply', reset: 'Reset',
             order: 'Order', orderByTitle: 'By title', orderByRating: 'By rating',
         },
-        formSections: {main: 'Main', classification: 'Classification', credits: 'Credits', hardwareAndArchive: 'Hardware and archive', names: 'Names', geography: 'Geography', members: 'Members', account: 'Account', groups: 'Groups', sources: 'Sources'},
+        formSections: {main: 'Main', classification: 'Classification', lineage: 'Lineage', credits: 'Credits', hardwareAndArchive: 'Hardware and archive', names: 'Names', geography: 'Geography', members: 'Members', account: 'Account', groups: 'Groups', sources: 'Sources'},
         fields: {
             title: 'Title', platform: 'Platform', description: 'Description', instructions: 'Instructions', releaseDate: 'Release date', releaseDateHint: 'A year, such as 1987, or a day, such as 12.05.1987.', version: 'Version',
-            type: 'Type', preservation: 'Preservation status', hardware: 'Hardware', categories: 'Categories', credits: 'Credits', participant: 'Person or group',
+            type: 'Type', preservation: 'Preservation status', lineage: 'Lineage', lineageKind: 'Kind', lineageReliability: 'Reliability', lineageRework: 'Nature of the rework', lineageSource: 'Original', hardware: 'Hardware', categories: 'Categories', credits: 'Credits', participant: 'Person or group',
             compilationItems: 'Compilation programs',
             choosePlatform: 'Choose a platform', chooseType: 'Choose a type',
             platformLocked: 'Remove the hardware to change the platform.',
         },
         validation: {
-            titleRequired: 'Enter a title.', titleTooLong: 'Keep the title within 255 characters.',
+            titleRequired: 'Enter a title.', titleTooLong: 'Keep the title within 255 characters.', lineageSourceTooLong: 'Keep the original within 255 characters.',
             releaseDateInvalid: 'Enter a year or a full date.', platformRequired: 'Choose a platform.',
             versionTooLong: 'Keep the version within 50 characters.', typeRequired: 'Choose a type.',
             authorNameless: 'Enter a real name or add a label.', realNameTooLong: 'Keep the real name within 255 characters.',
@@ -339,7 +339,24 @@ export const resources = {
         },
         software: {delete: 'Delete software', deleteQuestion: 'Delete “{{title}}” from the archive?', links: 'Links', software: 'Software', creditedAs: 'as {{name}}',
             includedInCompilations: 'Included in compilations',
-            preservation: {unknown: 'Unknown', 'missing-in-action': 'Missing in action', donationware: 'Donationware', 'in-sales': 'In sales'}},
+            preservation: {unknown: 'Unknown', 'missing-in-action': 'Missing in action', donationware: 'Donationware', 'in-sales': 'In sales'},
+            lineage: {
+                unknown: 'Unknown',
+                kinds: {
+                    original: 'Original', port: 'Port', 'port-with-changes': 'Port with changes', 'based-on': 'Based on', clone: 'Clone', remake: 'Remake',
+                    remaster: 'Remaster', modification: 'Modification', 'new-levels': 'New levels', sequel: 'Sequel', demo: 'Demo',
+                },
+                reliabilities: {reliable: 'Reliable', assumption: 'Assumption'},
+                reliabilityNotes: {reliable: 'reliable', assumption: 'assumption'},
+                reworks: {
+                    'no-substantial-changes': 'No substantial changes', 'original-material-used': 'Material of the original used', 'new-levels-added': 'New levels added',
+                    'graphics-and-sound-changed': 'Graphics and sound changed', 'new-implementation': 'An entirely new implementation',
+                },
+                reworkNotes: {
+                    'no-substantial-changes': 'no substantial changes', 'original-material-used': 'material of the original used', 'new-levels-added': 'new levels added',
+                    'graphics-and-sound-changed': 'graphics and sound changed', 'new-implementation': 'an entirely new implementation',
+                },
+            }},
         galleries: {
             maps: {
                 heading: 'Maps', numbered: 'Map {{n}}', nOfCount: 'Map {{n}} of {{count}}', none: 'No maps yet.', add: 'Add maps',
@@ -442,16 +459,16 @@ export const resources = {
             hardware: 'Железо', hardwareChosen: 'Железо: {{names}}', platforms: 'Платформы', apply: 'Применить', reset: 'Сбросить',
             order: 'Порядок', orderByTitle: 'По названию', orderByRating: 'По рейтингу',
         },
-        formSections: {main: 'Основное', classification: 'Классификация', credits: 'Авторы', hardwareAndArchive: 'Оборудование и архив', names: 'Имена', geography: 'География', members: 'Участники', account: 'Учётная запись', groups: 'Группы', sources: 'Источники'},
+        formSections: {main: 'Основное', classification: 'Классификация', lineage: 'Происхождение', credits: 'Авторы', hardwareAndArchive: 'Оборудование и архив', names: 'Имена', geography: 'География', members: 'Участники', account: 'Учётная запись', groups: 'Группы', sources: 'Источники'},
         fields: {
             title: 'Название', platform: 'Платформа', description: 'Описание', instructions: 'Инструкция', releaseDate: 'Дата выпуска', releaseDateHint: 'Год, например 1987, или день, например 12.05.1987.', version: 'Версия',
-            type: 'Тип', preservation: 'Статус сохранности', hardware: 'Оборудование', categories: 'Категории', credits: 'Авторы', participant: 'Человек или группа',
+            type: 'Тип', preservation: 'Статус сохранности', lineage: 'Происхождение', lineageKind: 'Вид', lineageReliability: 'Достоверность', lineageRework: 'Характер переработки', lineageSource: 'Первоисточник', hardware: 'Оборудование', categories: 'Категории', credits: 'Авторы', participant: 'Человек или группа',
             compilationItems: 'Программы сборника',
             choosePlatform: 'Выберите платформу', chooseType: 'Выберите тип',
             platformLocked: 'Удалите оборудование, чтобы изменить платформу.',
         },
         validation: {
-            titleRequired: 'Введите название.', titleTooLong: 'Название должно содержать не более 255 символов.',
+            titleRequired: 'Введите название.', titleTooLong: 'Название должно содержать не более 255 символов.', lineageSourceTooLong: 'Первоисточник должен содержать не более 255 символов.',
             releaseDateInvalid: 'Введите год или полную дату.', platformRequired: 'Выберите платформу.',
             versionTooLong: 'Версия должна содержать не более 50 символов.', typeRequired: 'Выберите тип.',
             authorNameless: 'Введите настоящее имя или добавьте псевдоним.',
@@ -728,7 +745,24 @@ export const resources = {
         },
         software: {delete: 'Удалить программу', deleteQuestion: 'Удалить «{{title}}» из архива?', links: 'Ссылки', software: 'Софт', creditedAs: 'как {{name}}',
             includedInCompilations: 'Входит в сборники',
-            preservation: {unknown: 'Неизвестно', 'missing-in-action': 'Потеряна', donationware: 'За донат', 'in-sales': 'В продаже'}},
+            preservation: {unknown: 'Неизвестно', 'missing-in-action': 'Потеряна', donationware: 'За донат', 'in-sales': 'В продаже'},
+            lineage: {
+                unknown: 'Неизвестно',
+                kinds: {
+                    original: 'Оригинал', port: 'Порт', 'port-with-changes': 'Порт с изменениями', 'based-on': 'По мотивам', clone: 'Клон', remake: 'Ремейк',
+                    remaster: 'Ремастер', modification: 'Модификация', 'new-levels': 'Новые уровни', sequel: 'Продолжение', demo: 'Демо',
+                },
+                reliabilities: {reliable: 'Достоверно', assumption: 'Предположение'},
+                reliabilityNotes: {reliable: 'достоверно', assumption: 'предположение'},
+                reworks: {
+                    'no-substantial-changes': 'Без существенных изменений', 'original-material-used': 'Использованы материалы оригинала', 'new-levels-added': 'Добавлены новые уровни',
+                    'graphics-and-sound-changed': 'Изменены графика и звук', 'new-implementation': 'Полностью новая реализация',
+                },
+                reworkNotes: {
+                    'no-substantial-changes': 'без существенных изменений', 'original-material-used': 'использованы материалы оригинала', 'new-levels-added': 'добавлены новые уровни',
+                    'graphics-and-sound-changed': 'изменены графика и звук', 'new-implementation': 'полностью новая реализация',
+                },
+            }},
         galleries: {
             maps: {
                 heading: 'Карты', numbered: 'Карта {{n}}', nOfCount: 'Карта {{n}} из {{count}}', none: 'Карт пока нет.', add: 'Добавить карты',

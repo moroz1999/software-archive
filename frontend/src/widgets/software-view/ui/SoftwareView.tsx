@@ -3,7 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {authorPath} from '@/entities/authors';
 import {labelPath} from '@/entities/labels';
 import {groupPath} from '@/entities/groups';
-import {CompilationProgramsProvider, HardwareList, releaseDateText, releaseEditPath, releaseYear, releaseNewPath, type SoftwareCategory, type SoftwareCredit, type SoftwareDetails, SoftwareDetailsProvider, softwareEditPath, softwarePath, type SoftwareProgram, SoftwareCardSkeleton, SoftwareCreditList, SoftwareReleases, SoftwareReleasesProvider, type Gallery, SoftwareScreenshots, ScreenshotsProvider, useCompilationPrograms, useSoftwareDetails} from '@/entities/software';
+import {CompilationProgramsProvider, HardwareList, releaseDateText, releaseEditPath, releaseYear, releaseNewPath, type SoftwareCategory, type SoftwareCredit, type SoftwareDetails, SoftwareDetailsProvider, type SoftwareLineage, softwareEditPath, softwarePath, type SoftwareProgram, SoftwareCardSkeleton, SoftwareCreditList, SoftwareReleases, SoftwareReleasesProvider, type Gallery, SoftwareScreenshots, ScreenshotsProvider, useCompilationPrograms, useSoftwareDetails} from '@/entities/software';
 import {catalogHrefOf, softwareBreadcrumbs} from '@/features/software/catalog';
 import {EditScreenshotsProvider, MoveScreenshotButtons, ScreenshotsChangeError} from '@/features/software/screenshots';
 import {SoftwareCard, SoftwareRating, SoftwareRatingProvider, SoftwareVotes, SoftwareVotesProvider} from '@/features/software/vote';
@@ -91,6 +91,7 @@ function Details({software}: {readonly software: SoftwareDetails}) {
             {software.preservation !== 'unknown' && (
                 <Section label={t('fields.preservation')}><Text>{t(`software.preservation.${software.preservation}`)}</Text></Section>
             )}
+            <Lineage lineage={software.lineage}/>
             {software.hardware.length > 0 && (
                 <Stack as="section" gap="xs" ariaLabel={t('fields.hardware')}>
                     <Text variant="label" tone="muted">{t('fields.hardware')}</Text>
@@ -121,6 +122,34 @@ function Details({software}: {readonly software: SoftwareDetails}) {
             )}
         </Stack>
     );
+}
+
+/** Where the work comes from: the kind with its reliability and rework, then the original; unknown parts left out. */
+function Lineage({lineage}: {readonly lineage: SoftwareLineage}) {
+    const {t} = useTranslation();
+    const {kind, reliability, rework, source} = lineage;
+    let summary: string | null = null;
+    if (kind !== null) {
+        const reliable = reliability === null ? '' : ` (${t(`software.lineage.reliabilityNotes.${reliability}`)})`;
+        const reworked = rework.length === 0 ? '' : `; ${rework.map((code) => t(`software.lineage.reworkNotes.${code}`)).join(', ')}`;
+        summary = `${t(`software.lineage.kinds.${kind}`)}${reliable}${reworked}`;
+    }
+    return (
+        <>
+            {summary !== null && <Section label={t('fields.lineage')}><Text>{summary}</Text></Section>}
+            {source !== null && <Section label={t('fields.lineageSource')}><Text><TextWithLinks text={source}/></Text></Section>}
+        </>
+    );
+}
+
+const WEB_ADDRESS = /(https?:\/\/\S+)/;
+
+/** A text with every web address in it leading to its page. */
+function TextWithLinks({text}: {readonly text: string}) {
+    return text.split(WEB_ADDRESS).map((part, index) => (
+        // The parts of a text keep their places: the index is their identity.
+        index % 2 === 1 ? <TextLink key={index} href={part}>{part}</TextLink> : <Fragment key={index}>{part}</Fragment>
+    ));
 }
 
 function ProgramLinks({sources, links}: Pick<SoftwareDetails, 'sources' | 'links'>) {

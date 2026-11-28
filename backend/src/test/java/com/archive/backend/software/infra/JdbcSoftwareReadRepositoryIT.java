@@ -7,6 +7,15 @@ import static org.assertj.core.api.Assertions.tuple;
 
 import com.archive.backend.IntegrationTest;
 import com.archive.backend.shared.read.ExternalOrigin;
+import com.archive.backend.software.domain.LineageKind;
+import com.archive.backend.software.domain.LineageReliability;
+import com.archive.backend.software.domain.LineageRework;
+import com.archive.backend.software.domain.LineageSource;
+import com.archive.backend.software.domain.Software;
+import com.archive.backend.software.domain.SoftwareId;
+import com.archive.backend.software.domain.SoftwareLineage;
+import com.archive.backend.software.domain.SoftwareRepository;
+import com.archive.backend.software.read.LineageDetails;
 import com.archive.backend.software.read.ReleaseDetails;
 import com.archive.backend.software.read.SoftwareCategory;
 import com.archive.backend.software.read.SoftwareCategoryStep;
@@ -20,6 +29,7 @@ import com.archive.backend.software.read.SoftwareSource;
 import com.archive.backend.software.read.SoftwareSummary;
 import com.archive.backend.user.TestActors;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -62,6 +72,9 @@ class JdbcSoftwareReadRepositoryIT {
 
     @Autowired
     private JdbcTemplate jdbc;
+
+    @Autowired
+    private SoftwareRepository softwareRepository;
 
     @BeforeEach
     void insert() {
@@ -437,6 +450,28 @@ class JdbcSoftwareReadRepositoryIT {
         assertThat(reads.findById(TETRIS, "en"))
                 .hasValueSatisfying(
                         details -> assertThat(details.preservation()).isEqualTo("unknown"));
+    }
+
+    @Test
+    void readsTheLineageOfSoftwareByItsCodesAndAnUnknownOneAsEmpty() {
+        Software elite = softwareRepository.findById(new SoftwareId(ELITE)).orElseThrow();
+        elite.changeLineage(new SoftwareLineage(
+                LineageKind.PORT_WITH_CHANGES,
+                LineageReliability.RELIABLE,
+                Set.of(LineageRework.GRAPHICS_AND_SOUND_CHANGED, LineageRework.ORIGINAL_MATERIAL_USED),
+                new LineageSource("Elite (Acornsoft, 1984), BBC Micro, https://www.mobygames.com/game/elite")));
+        softwareRepository.save(elite);
+
+        assertThat(reads.findById(ELITE, "en")).hasValueSatisfying(details -> {
+            assertThat(details.lineage().kind()).isEqualTo("port-with-changes");
+            assertThat(details.lineage().reliability()).isEqualTo("reliable");
+            assertThat(details.lineage().rework())
+                    .containsExactly("original-material-used", "graphics-and-sound-changed");
+            assertThat(details.lineage().source())
+                    .isEqualTo("Elite (Acornsoft, 1984), BBC Micro, https://www.mobygames.com/game/elite");
+        });
+        assertThat(reads.findById(TETRIS, "en"))
+                .hasValueSatisfying(details -> assertThat(details.lineage()).isEqualTo(LineageDetails.UNKNOWN));
     }
 
     @Test

@@ -8,12 +8,14 @@ import com.archive.backend.software.app.GetSoftwareReleaseHandler;
 import com.archive.backend.software.app.GetSoftwareReleaseQuery;
 import com.archive.backend.software.domain.ReleaseId;
 import com.archive.backend.software.domain.SoftwareId;
+import com.archive.backend.software.read.LineageDetails;
 import com.archive.backend.software.read.ReleaseDetails;
 import com.archive.backend.software.read.SoftwareCategory;
 import com.archive.backend.software.read.SoftwareCredit;
 import com.archive.backend.software.read.SoftwareDetails;
 import com.archive.backend.software.read.SoftwareHardware;
 import com.archive.backend.software.web.dto.ReleaseRequestDto;
+import com.archive.backend.software.web.dto.SoftwareLineageDto;
 import com.archive.backend.software.web.dto.SoftwareRequestDto;
 import com.archive.backend.software.web.dto.SoftwareRequestDto.CreditDto;
 import java.util.ArrayList;
@@ -46,7 +48,8 @@ class SoftwareForms {
                 details.hardware().stream().map(SoftwareHardware::code).toList(),
                 details.categories().stream().map(SoftwareCategory::id).toList(),
                 creditStates(details.credits()),
-                details.preservation());
+                details.preservation(),
+                lineage(details.lineage()));
     }
 
     ReleaseState release(ToolContext context, UUID softwareId, UUID releaseId) {
@@ -62,6 +65,10 @@ class SoftwareForms {
                 creditStates(details.credits()));
     }
 
+    private static SoftwareLineageDto lineage(LineageDetails lineage) {
+        return new SoftwareLineageDto(lineage.kind(), lineage.reliability(), lineage.rework(), lineage.source());
+    }
+
     /** The software as it is, with these credits. */
     static SoftwareRequestDto request(SoftwareState state, List<CreditDto> credits) {
         return new SoftwareRequestDto(
@@ -73,7 +80,9 @@ class SoftwareForms {
                 state.hardware(),
                 state.categoryIds(),
                 credits,
-                state.preservation());
+                state.preservation(),
+                null,
+                state.lineage());
     }
 
     /** The release as it states itself, with these credits. */

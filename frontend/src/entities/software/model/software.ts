@@ -14,6 +14,8 @@ export type SoftwareReference = Schemas['SoftwareReferenceDto'];
 export type SoftwareReferenceType = Schemas['SoftwareReferenceType'];
 /** Whether software can be had and how (docs/domain/software.md); unknown until it is known. */
 export type PreservationStatus = Schemas['PreservationStatus'];
+/** Where the work comes from (docs/domain/software.md#lineage): every part may be unknown. */
+export type SoftwareLineage = Schemas['SoftwareLineageDto'];
 export type SoftwareProgram = Schemas['SoftwareLinkDto'];
 export type SoftwareCategory = Schemas['SoftwareCategoryDto'];
 export type SoftwarePlatform = Schemas['SoftwarePlatformDto'];

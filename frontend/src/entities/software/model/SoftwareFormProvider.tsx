@@ -33,6 +33,10 @@ export function SoftwareFormProvider({onSubmit, initial, platforms = [], busy = 
     const refusal = splitRefusal(error, messages, FIELDS);
     const refusals: SoftwareFormRefusals = unedited(refusal.fields, edited.fields);
 
+    function clearError(error: keyof SoftwareFormErrors) {
+        setErrors((current) => (error in current ? {...current, [error]: undefined} : current));
+    }
+
     function markEdited(field: SoftwareFormField) {
         setErrors((current) => (field in current ? {...current, [field]: undefined} : current));
         setEdited((current) => (current.fields.has(field) ? current : {...current, fields: new Set([...current.fields, field])}));
@@ -62,6 +66,11 @@ export function SoftwareFormProvider({onSubmit, initial, platforms = [], busy = 
             setValues((current) => ({...current, compilationItems}));
             setCompilationItemsChanged(true);
             markEdited('compilationItemIds');
+        },
+        changeLineage: (lineage) => {
+            setValues((current) => ({...current, lineage}));
+            clearError('lineageSource');
+            markEdited('lineage');
         },
         submit: () => {
             const result = validateSoftwareForm(values);

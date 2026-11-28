@@ -6,6 +6,10 @@ import com.archive.backend.hardware.domain.HardwareCode;
 import com.archive.backend.hardware.domain.HardwareSet;
 import com.archive.backend.hardware.domain.PlatformCode;
 import com.archive.backend.software.domain.Gallery;
+import com.archive.backend.software.domain.LineageKind;
+import com.archive.backend.software.domain.LineageReliability;
+import com.archive.backend.software.domain.LineageRework;
+import com.archive.backend.software.domain.LineageSource;
 import com.archive.backend.software.domain.PreservationStatus;
 import com.archive.backend.software.domain.Release;
 import com.archive.backend.software.domain.ReleaseArchive;
@@ -29,6 +33,7 @@ import com.archive.backend.software.domain.SoftwareCredits;
 import com.archive.backend.software.domain.SoftwareDescription;
 import com.archive.backend.software.domain.SoftwareId;
 import com.archive.backend.software.domain.SoftwareInstructions;
+import com.archive.backend.software.domain.SoftwareLineage;
 import com.archive.backend.software.domain.SoftwareReference;
 import com.archive.backend.software.domain.SoftwareReferenceId;
 import com.archive.backend.software.domain.SoftwareReferenceType;
@@ -81,7 +86,32 @@ public interface SoftwareMapper {
                         id,
                         entity.getCompilationItems().stream()
                                 .map(SoftwareId::new)
-                                .collect(Collectors.toSet())));
+                                .collect(Collectors.toSet())),
+                toLineage(entity));
+    }
+
+    private static SoftwareLineage toLineage(SoftwareEntity entity) {
+        String kind = entity.getLineageKind();
+        String reliability = entity.getLineageReliability();
+        String source = entity.getLineageSource();
+        return new SoftwareLineage(
+                kind == null ? null : LineageKind.fromCode(kind),
+                reliability == null ? null : LineageReliability.fromCode(reliability),
+                entity.getLineageRework().stream().map(LineageRework::fromCode).collect(Collectors.toSet()),
+                source == null ? null : new LineageSource(source));
+    }
+
+    private static void fromLineage(SoftwareLineage lineage, SoftwareEntity entity) {
+        LineageKind kind = lineage.kind();
+        LineageReliability reliability = lineage.reliability();
+        LineageSource source = lineage.source();
+        entity.setLineageKind(kind == null ? null : kind.code());
+        entity.setLineageReliability(reliability == null ? null : reliability.code());
+        entity.setLineageRework(lineage.rework().stream()
+                .sorted()
+                .map(LineageRework::code)
+                .collect(Collectors.toCollection(ArrayList::new)));
+        entity.setLineageSource(source == null ? null : source.value());
     }
 
     default SoftwareEntity toEntity(Software software) {
@@ -93,6 +123,7 @@ public interface SoftwareMapper {
         SoftwareInstructions instructions = software.getInstructions();
         entity.setInstructions(instructions == null ? null : instructions.value());
         entity.setPreservation(software.getPreservation().code());
+        fromLineage(software.getLineage(), entity);
         ReleaseDate releaseDate = software.getReleaseDate();
         entity.setReleaseYear(releaseDate == null ? null : releaseDate.year().getValue());
         entity.setReleaseDay(releaseDate == null ? null : releaseDate.day());

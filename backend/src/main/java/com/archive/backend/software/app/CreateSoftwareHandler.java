@@ -39,6 +39,7 @@ public class CreateSoftwareHandler {
                 creditSets.of(c.credits()),
                 addedBy);
         software.changePreservation(c.preservation());
+        software.changeLineage(c.lineage());
         software.changeInstructions(c.instructions());
         var homepage = c.homepage();
         if (homepage != null) {

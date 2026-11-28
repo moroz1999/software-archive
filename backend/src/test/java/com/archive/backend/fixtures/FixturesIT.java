@@ -3,10 +3,12 @@ package com.archive.backend.fixtures;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -37,6 +39,10 @@ class FixturesIT {
     private static final String ELITE = "00000000-0000-0000-0001-000000000001";
 
     private static final String VECTOR_COLLECTION = "00000000-0000-0000-0001-000000000054";
+    /** A fixture BK port of a game of another platform, with its whole lineage. */
+    private static final String BK_LODE_RUNNER = "00000000-0000-0000-0001-000000000005";
+    /** A fixture BK clone of a game whose original is named but not reliably known. */
+    private static final String BK_TETRIS = "00000000-0000-0000-0001-000000000004";
     /** A fixture RK game released for every machine of the family, with music on the Apogey. */
     private static final String KHRYUKOSTYAG = "00000000-0000-0000-0001-000000000015";
     /** A fixture group with every kind of member and groups around it. */
@@ -218,6 +224,22 @@ class FixturesIT {
 
             assertThat(count).as(platform).isGreaterThanOrEqualTo(4);
         }
+    }
+
+    @Test
+    void fixtureSoftwareTellsWhereItComesFrom() throws Exception {
+        mvc.perform(get("/api/software/{id}", BK_LODE_RUNNER))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.lineage.kind").value("port"))
+                .andExpect(jsonPath("$.lineage.reliability").value("reliable"))
+                .andExpect(jsonPath("$.lineage.rework", hasSize(2)))
+                .andExpect(jsonPath("$.lineage.source").value(containsString("https://")));
+        mvc.perform(get("/api/software/{id}", BK_TETRIS))
+                .andExpect(jsonPath("$.lineage.kind").value("clone"))
+                .andExpect(jsonPath("$.lineage.reliability").value(nullValue()))
+                .andExpect(jsonPath("$.lineage.source").isString());
+        mvc.perform(get("/api/software/{id}", ELITE))
+                .andExpect(jsonPath("$.lineage.kind").value(nullValue()));
     }
 
     @Test

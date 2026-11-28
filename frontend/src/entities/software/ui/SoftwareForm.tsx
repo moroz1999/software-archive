@@ -16,6 +16,7 @@ import {preservationStatusValues} from '@/shared/api';
 import {useSoftwareForm} from '../model/software-form-context';
 import {CreditsEditor} from './CreditsEditor';
 import {HardwarePicker} from './HardwarePicker';
+import {LineageFields} from './LineageFields';
 import styles from './SoftwareForm.module.css';
 
 export interface SoftwareFormProps {
@@ -103,6 +104,9 @@ export function SoftwareForm({submitLabel, actions, categories, sources}: Softwa
                         />
                     )}
                 </FormField>
+            </FormSection>
+            <FormSection title={t('formSections.lineage')}>
+                <LineageFields/>
             </FormSection>
             <FormSection title={t('formSections.credits')} columns={1}>
                 <CreditsEditor value={values.credits ?? []} onChange={changeCredits} disabled={busy} error={refusals.credits}/>

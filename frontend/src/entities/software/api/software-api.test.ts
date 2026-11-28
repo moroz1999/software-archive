@@ -21,6 +21,7 @@ const DRAFT = {
     categories: [GAMES],
     preservation: 'donationware',
     instructions: 'Press Space to start',
+    lineage: {kind: 'port', reliability: 'reliable', rework: ['no-substantial-changes'], source: 'Elite, BBC Micro'},
     credits: [
         {id: PUBLISHER, ownerId: null, type: AUTHOR_LABEL, title: 'J.P. — Jane Publisher', roles: ['publisher']},
         {id: DEVELOPER, ownerId: null, type: GROUP, title: 'Nebula Studio', roles: ['developer']},
@@ -40,6 +41,7 @@ function details(fields: Partial<SoftwareDetailsDto> = {}): SoftwareDetailsDto {
     return {
         id: ID, title: 'Elite', description: null, releaseDate: null, platform: VECTOR, hardware: [], categories: [], credits: [], sources: [], links: [],
         compilationItems: [], compilations: [], preservation: 'missing-in-action', instructions: null, origins: [],
+        lineage: {kind: null, reliability: null, rework: [], source: null},
         added: {by: 'Zed', at: '2026-01-01T00:00:00Z'}, canChange: true, ...fields,
     };
 }
@@ -74,6 +76,7 @@ describe(fetchSoftware, () => {
             compilations: [],
             preservation: 'missing-in-action',
             instructions: 'Press Space to start',
+            lineage: {kind: null, reliability: null, rework: [], source: null},
             origins: [], added: {by: 'Zed', at: '2026-01-01T00:00:00Z'},
             canChange: true,
         });
@@ -130,7 +133,7 @@ describe(createSoftware, () => {
         expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/software');
         expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
             method: 'POST',
-            body: '{"title":"Elite","description":null,"releaseDate":"1985-09-20","platform":"vector","hardware":["vector06c","ay8910"],"categories":["00000000-0000-0000-0006-000000000001"],"credits":[{"id":"00000000-0000-0000-0003-000000000001","type":"author-label","roles":["publisher"]},{"id":"00000000-0000-0000-0004-000000000001","type":"group","roles":["developer"]}],"preservation":"donationware","instructions":"Press Space to start","compilationItemIds":null}',
+            body: '{"title":"Elite","description":null,"releaseDate":"1985-09-20","platform":"vector","hardware":["vector06c","ay8910"],"categories":["00000000-0000-0000-0006-000000000001"],"credits":[{"id":"00000000-0000-0000-0003-000000000001","type":"author-label","roles":["publisher"]},{"id":"00000000-0000-0000-0004-000000000001","type":"group","roles":["developer"]}],"preservation":"donationware","instructions":"Press Space to start","compilationItemIds":null,"lineage":{"kind":"port","reliability":"reliable","rework":["no-substantial-changes"],"source":"Elite, BBC Micro"}}',
         });
     });
 });
@@ -147,7 +150,7 @@ describe(updateSoftware, () => {
         expect(fetchMock.mock.calls[0]?.[0]).toBe(`/api/software/${ID}`);
         expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
             method: 'PUT',
-            body: '{"title":"Elite","description":null,"releaseDate":"1985-09-20","platform":"vector","hardware":["vector06c","ay8910"],"categories":["00000000-0000-0000-0006-000000000001"],"credits":[{"id":"00000000-0000-0000-0003-000000000001","type":"author-label","roles":["publisher"]},{"id":"00000000-0000-0000-0004-000000000001","type":"group","roles":["developer"]}],"preservation":"donationware","instructions":"Press Space to start","compilationItemIds":null}',
+            body: '{"title":"Elite","description":null,"releaseDate":"1985-09-20","platform":"vector","hardware":["vector06c","ay8910"],"categories":["00000000-0000-0000-0006-000000000001"],"credits":[{"id":"00000000-0000-0000-0003-000000000001","type":"author-label","roles":["publisher"]},{"id":"00000000-0000-0000-0004-000000000001","type":"group","roles":["developer"]}],"preservation":"donationware","instructions":"Press Space to start","compilationItemIds":null,"lineage":{"kind":"port","reliability":"reliable","rework":["no-substantial-changes"],"source":"Elite, BBC Micro"}}',
         });
     });
 });
